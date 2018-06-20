@@ -27,5 +27,7 @@ namespace Levels {
 		void SubscribeToEvents();
 
 		void HandleEndLoading(StringHash eventType, VariantMap& eventData);
+
+		Timer timer;
 	};
 }

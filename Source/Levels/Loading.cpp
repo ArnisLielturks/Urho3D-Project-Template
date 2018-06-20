@@ -40,10 +40,10 @@ void Loading::CreateUI()
 	ResourceCache* cache = GetSubsystem<ResourceCache>();
 
 	Text* text = ui->GetRoot()->CreateChild<Text>();
-	text->SetFont(cache->GetResource<Font>("Fonts/PainttheSky-Regular.otf"), 50);
 	text->SetHorizontalAlignment(HA_RIGHT);
 	text->SetPosition(IntVector2(-20, -20));
 	text->SetVerticalAlignment(VA_BOTTOM);
+	text->SetStyleAuto();
 	text->SetText("Loading...");
 
 	SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
@@ -74,11 +74,16 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 	if (input->IsMouseVisible()) {
 		input->SetMouseVisible(false);
 	}
+
+	if (timer.GetMSec(false) > 3000) {
+		SendEvent("EndLoading");
+		UnsubscribeFromEvent(E_UPDATE);
+	}
 }
 
 void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
-	data_[MyEvents::E_SET_LEVEL] = "Level1";
+	data_[MyEvents::E_SET_LEVEL] = "Level";
 	SendEvent(MyEvents::E_SET_LEVEL, data_);
 	UnsubscribeFromEvent(E_UPDATE);
 }

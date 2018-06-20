@@ -1,0 +1,9 @@
+{
+	"UnlimitedAmmo": false,
+	"Countdown": 3,
+	"Gametime": 55,
+	"Bots": 3,
+	"MenuMusic": true,
+    "DefaultServerIP": "127.0.0.1",
+    "Port": 55123
+}

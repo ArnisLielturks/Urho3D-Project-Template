@@ -7,25 +7,6 @@
 
 namespace Levels {
 
-	enum Maps {
-		CAFFE,
-		BALL,
-		PARK,
-		NONE
-	};
-
-	enum WindowTypes {
-		WINDOW_NONE,
-		NICKNAME,
-		ADDRESS,
-		NEW_GAME,
-		NEW_GAME_SETTINGS,
-		CHOOSE_MAP,
-		PLAY_WITH_FRIENDS,
-		PLAY_WITH_STRANGERS,
-		SERVER_LIST
-	};
-
 	class MainMenu : public BaseLevel
 	{
 		URHO3D_OBJECT(MainMenu, BaseLevel);

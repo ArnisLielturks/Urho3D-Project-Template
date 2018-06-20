@@ -117,6 +117,8 @@ void Urho3DPlayer::Start()
         }
     }
 
+    // LoadConfig();
+    
 	VariantMap& eventData = GetEventDataMap();
 	eventData[MyEvents::E_SET_LEVEL] = "Splash";
 	SendEvent(MyEvents::E_SET_LEVEL, eventData);

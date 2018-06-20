@@ -113,7 +113,7 @@ void Achievements::HandleGameEnd(StringHash eventType, VariantMap& eventData)
 void Achievements::LoadAchievementList()
 {
 	JSONFile configFile(context_);
-	configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/achievements.json");
+	configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
 	JSONValue value = configFile.GetRoot();
 	if (value.IsArray()) {
 		URHO3D_LOGINFOF("Achievements: %u", value.Size());
@@ -126,7 +126,7 @@ void Achievements::LoadAchievementList()
 				&& mapInfo.Contains("Text")
 				&& mapInfo["Text"].IsString()
 				&& mapInfo.Contains("Threshold")
-				&& mapInfo["Threshold"].IsString()
+				&& mapInfo["Threshold"].IsNumber()
 				&& mapInfo.Contains("Type")
 				&& mapInfo["Type"].IsString()) {
 
@@ -143,7 +143,7 @@ void Achievements::LoadAchievementList()
 
 			}
 			else {
-				URHO3D_LOGINFO("Map array element doesnt contain all needed info!");
+				URHO3D_LOGINFO("Achievement array element doesnt contain all needed info!");
 			}
 		}
 	}

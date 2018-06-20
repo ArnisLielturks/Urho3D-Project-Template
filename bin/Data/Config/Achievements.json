@@ -1,0 +1,37 @@
+[
+	{
+		"Event": "AchievementMap1Started",
+		"Image": "Textures/Achievements/cafeteria.png",
+		"Text": "School cafeteria",
+		"Type": "REPEAT",
+		"Threshold": 10
+	},
+	{
+		"Event": "AchievementMap2Started",
+		"Image": "Textures/Achievements/music-spell.png",
+		"Text": "School ball",
+		"Type": "REPEAT",
+		"Threshold": 10
+	},
+	{
+		"Event": "AchievementMap3Started",
+		"Image": "Textures/Achievements/tree-swing.png",
+		"Text": "Walk in the park",
+		"Type": "REPEAT",
+		"Threshold": 10
+	},
+	{
+		"Event": "AchievementHighestScore",
+		"Image": "Textures/Achievements/medallist.png",
+		"Text": "Winner!",
+		"Type": "REACH",
+		"Threshold": 10000
+	},
+	{
+		"Event": "AchievementFinishFirst",
+		"Image": "Textures/Achievements/medallist.png",
+		"Text": "Winner!",
+		"Type": "REPEAT",
+		"Threshold": 1
+	},
+]

@@ -46,9 +46,9 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
 
 	// Set String to display
 	messageElement->SetText(message);
+	messageElement->SetStyleAuto();
 
 	// Set font and text color
-	messageElement->SetFont(cache->GetResource<Font>("Fonts/PainttheSky-Regular.otf"), 30);
 	messageElement->SetColor(Color(0.0f, 1.0f, 0.0f));
 
 	// Align Text center-screen

@@ -100,6 +100,13 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 	if (!input->IsMouseVisible()) {
 		input->SetMouseVisible(true);
 	}
+
+	if (timer.GetMSec(false) > 500) {
+		VariantMap data;
+		data["Message"] = "New notification! " + String(timer.GetMSec(false));
+		SendEvent("ShowNotification", data);
+		timer.Reset();
+	}
 }
 
 void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)

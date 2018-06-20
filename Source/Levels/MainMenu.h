@@ -51,5 +51,7 @@ namespace Levels {
 		void HandleStartGame(StringHash eventType, VariantMap& eventData);
 
 		SharedPtr<Button> _startButton;
+
+		Timer timer;
 	};
 }

@@ -58,7 +58,14 @@ Switching between different scenes are created by using LevelManager. It uses fa
 
 ### How to create new level?
 To create new level you could look at the `Source/Levels/Splash.h` and `Source/Levels/Splash.cpp` files. New level class should extend BaseLevel class (`Source/BaseLevel.h`). BaseLevel class defines many methods that will be utilized by the LevelManager to allow unified interfaces for each of the levels. 
-When your level is ready, make sure to register it in the LevelManager (`Source/LevelManager.h`) class in the `RegisterAllFactories` method. When that's done, you can switch between levels by using the following code
+When your level is ready, make sure to register it in the LevelManager (`Source/LevelManager.h`) class in the `RegisterAllFactories` method. 
+```
+void RegisterAllFactories()
+{
+  context_->RegisterFactory<Levels::Splash>();
+}
+```
+When that's done, you can switch between levels by using the following code.
 ```
 VariantMap data;
 eventData[MyEvents::E_SET_LEVEL] = "Splash";

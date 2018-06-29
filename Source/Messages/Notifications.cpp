@@ -43,7 +43,6 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
 	String message = eventData["Message"].GetString();
 	// Construct new Text object
 	WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
-
 	// Set String to display
 	messageElement->SetText(message);
 	messageElement->SetStyleAuto();
@@ -54,7 +53,6 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
 	// Align Text center-screen
 	messageElement->SetHorizontalAlignment(HA_RIGHT);
 	messageElement->SetVerticalAlignment(VA_BOTTOM);
-
 
 	// Create light animation
 	SharedPtr<ObjectAnimation> notificationAnimation(new ObjectAnimation(context_));
@@ -69,8 +67,14 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
 	positionAnimation->SetKeyFrame(2.0f, IntVector2(-10, -200));
 	notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
+	SharedPtr<ValueAnimation> scaleAnimation(new ValueAnimation(context_));
+	scaleAnimation->SetKeyFrame(0.0f, 1.0f);
+	scaleAnimation->SetKeyFrame(2.0f, 0.0f);
+	scaleAnimation->SetKeyFrame(10.0f, 0.0f);
+	notificationAnimation->AddAttributeAnimation("Opacity", scaleAnimation);
+
 	messageElement->SetObjectAnimation(notificationAnimation);
-	messageElement->SetVar("Lifetime", 1.0f);
+	messageElement->SetVar("Lifetime", 2.0f);
 
 	_messages.Push(messageElement);
 }

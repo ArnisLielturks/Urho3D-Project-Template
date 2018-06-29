@@ -39,8 +39,6 @@ void MainMenu::Init()
 	// Create the UI content
 	CreateUI();
 
-	CreateSounds();
-
 	// Subscribe to global events for camera movement
 	SubscribeToEvents();
 	VariantMap data;
@@ -72,20 +70,6 @@ void MainMenu::CreateUI()
 	text->SetText("Start game!");
 	text->SetStyleAuto();
 	text->SetAlignment(HA_CENTER, VA_CENTER);
-}
-
-void MainMenu::CreateSounds()
-{
-	if (!GetGlobalVar("MenuMusic").GetBool()) {
-		return;
-	}
-	Node* soundNode = scene_->CreateChild("MenuMusic");
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* sound = cache->GetResource<Sound>("Sounds/FoodParty/menu.wav");
-	auto* soundSource = soundNode->CreateComponent<SoundSource>();
-	sound->SetLooped(true);
-	soundSource->SetAutoRemoveMode(REMOVE_COMPONENT);
-	soundSource->Play(sound);
 }
 
 void MainMenu::SubscribeToEvents()

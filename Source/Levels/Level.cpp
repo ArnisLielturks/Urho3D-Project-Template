@@ -49,8 +49,8 @@ void Level::CreateScene()
 	scene_->CreateComponent<Octree>(LOCAL);
 	scene_->CreateComponent<PhysicsWorld>(LOCAL);
 	scene_->CreateComponent<DebugRenderer>(LOCAL);
-	// File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Playground.xml", FILE_READ);
-	// scene_->LoadXML(loadFile);
+	File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml", FILE_READ);
+	scene_->LoadXML(loadFile);
 
 	CreateCamera();
 }

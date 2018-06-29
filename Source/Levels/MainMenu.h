@@ -28,7 +28,6 @@ namespace Levels {
 
 		void SubscribeToEvents();
 
-		void CreateSounds();
 		void HandleStartGame(StringHash eventType, VariantMap& eventData);
 
 		SharedPtr<Button> _startButton;

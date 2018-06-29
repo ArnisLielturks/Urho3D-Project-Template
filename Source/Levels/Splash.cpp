@@ -44,6 +44,48 @@ void Splash::CreateUI()
 	UI* ui = GetSubsystem<UI>();
 	ResourceCache* cache = GetSubsystem<ResourceCache>();
 
+	// Get the Urho3D fish texture
+	auto* decalTex = cache->GetResource<Texture2D>("Textures/UrhoIcon.png");
+	// Create a new sprite, set it to use the texture
+	SharedPtr<Sprite> sprite(new Sprite(context_));
+	sprite->SetTexture(decalTex);
+
+	auto* graphics = GetSubsystem<Graphics>();
+
+	// Get rendering window size as floats
+	auto width = (float)graphics->GetWidth();
+	auto height = (float)graphics->GetHeight();
+
+	// The UI root element is as big as the rendering window, set random position within it
+	sprite->SetPosition(width / 2, height / 2);
+
+	// Set sprite size & hotspot in its center
+	sprite->SetSize(IntVector2(decalTex->GetWidth(), decalTex->GetHeight()));
+	sprite->SetHotSpot(IntVector2(decalTex->GetWidth() / 2, decalTex->GetHeight() / 2));
+
+	// Set random rotation in degrees and random scale
+	sprite->SetRotation(Random() * 360.0f);
+	sprite->SetScale(Random(1.0f) + 0.5f);
+
+	// Set random color and additive blending mode
+	sprite->SetColor(Color(Random(0.5f) + 0.5f, Random(0.5f) + 0.5f, Random(0.5f) + 0.5f));
+	sprite->SetBlendMode(BLEND_ADD);
+
+	// Add as a child of the root UI element
+	ui->GetRoot()->AddChild(sprite);
+
+	SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
+	SharedPtr<ValueAnimation> scale(new ValueAnimation(context_));
+	// Use spline interpolation method
+	scale->SetInterpolationMethod(IM_SPLINE);
+	// Set spline tension
+	scale->SetKeyFrame(0.0f, Vector2(1, 1));
+	scale->SetKeyFrame(1.0f, Vector2(1.5, 1.5));
+	scale->SetKeyFrame(3.0f, Vector2(1, 1));
+	animation->AddAttributeAnimation("Scale", scale);
+
+	sprite->SetObjectAnimation(animation);
+	
 	Text* text = ui->GetRoot()->CreateChild<Text>();
 	text->SetHorizontalAlignment(HA_RIGHT);
 	text->SetPosition(IntVector2(-20, -20));
@@ -51,7 +93,7 @@ void Splash::CreateUI()
 	text->SetStyleAuto();
 	text->SetText("Splash...");
 
-	SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
+	/*SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
 	SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
 	// Use spline interpolation method
 	colorAnimation->SetInterpolationMethod(IM_SPLINE);
@@ -65,6 +107,7 @@ void Splash::CreateUI()
 	animation->AddAttributeAnimation("Position", colorAnimation);
 
 	text->SetObjectAnimation(animation);
+	*/
 }
 
 void Splash::SubscribeToEvents()

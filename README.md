@@ -86,6 +86,30 @@ void Splash::Init()
 }
 ```
 
+## Global game configuration
+When game is launched a config file located in `Data/Config/Game.json` is loaded. These values are globally used in the system which can specifiy all sorts of settings that users may want to change and use between game sessions. For instance it can contain all the user configured game settings - shadow quality, texture quality, resolution, sound settings etc.
+
+Config file content looks like this:
+```
+{
+    "UnlimitedAmmo": false,
+    "Countdown": 3,
+    "Gametime": 55,
+    "Bots": 3,
+    "MenuMusic": true,
+    "DefaultServerIP": "127.0.0.1",
+    "Port": 55123
+}
+```
+`Urho3DPlayer::LoadConfig()` is the method that loads this file after starting game. To retrieve any values in the code you have to call one of these methods:
+```
+GetGlobalVar("MenuMusic").GetBool();
+GetGlobalVar("Countdown").GetInt();
+GetGlobalVar("DefaultServerIP").GetString();
+```
+
+Config file saving is still in my TODO list!
+
 That's it!
 
 If you have any ideas how this can be improved, let me know!

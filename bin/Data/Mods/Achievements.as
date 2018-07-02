@@ -1,8 +1,13 @@
+#include "Helpers/Helper.as"
+
 /**
  * Entry function for the mod
  */
 void Start()
 {
+    // Function from Helpers/Helper.as file
+    Test();
+
     log.Info("Achievements.as loaded");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
 }

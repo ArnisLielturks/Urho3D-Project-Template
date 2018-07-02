@@ -141,18 +141,18 @@ void Urho3DPlayer::LoadConfig()
     JSONValue& content = json.GetRoot();
     if (content.IsObject()) {
         for (auto it = content.Begin(); it != content.End(); ++it) {
-            URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
+            //URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
             if ((*it).second_.IsBool()) {
                 engine_->SetGlobalVar((*it).first_, (*it).second_.GetBool());
-                URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
+                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
             }
             if ((*it).second_.IsString()) {
                 engine_->SetGlobalVar((*it).first_, (*it).second_.GetString());
-                URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
+                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
             }
             if ((*it).second_.IsNumber()) {
                 engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
-                URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
+                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
             }
         }
     }

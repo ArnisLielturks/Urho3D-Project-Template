@@ -5,7 +5,7 @@
 /// User defined event
 namespace MyEvents
 {
-	static const StringHash E_SET_LEVEL = StringHash("Set levels");
+	static const StringHash E_SET_LEVEL = StringHash("SetLevel");
 	// Control bits we define
 	static const unsigned CTRL_FORWARD = 1;
 	static const unsigned CTRL_BACK = 2;

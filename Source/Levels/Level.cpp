@@ -86,7 +86,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 	}
 	if (input->GetKeyDown(KEY_ESCAPE)) {
 		VariantMap eventData;
-		eventData[MyEvents::E_SET_LEVEL] = "ExitGame";
+		eventData["Name"] = "ExitGame";
 		eventData["Message"] = "";
 		SendEvent(MyEvents::E_SET_LEVEL, eventData);
 		UnsubscribeFromEvent(E_POSTUPDATE);
@@ -97,7 +97,7 @@ void Level::OnLoaded()
 {
 	if (shouldReturn) {
 		VariantMap eventData;
-		eventData[MyEvents::E_SET_LEVEL] = "MainMenu";
+		eventData["Name"] = "MainMenu";
 		eventData["Message"] = returnMessage;
 		SendEvent(MyEvents::E_SET_LEVEL, eventData);
 	}

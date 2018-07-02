@@ -122,7 +122,7 @@ void Urho3DPlayer::Start()
     _modLoader = context_->CreateObject<ModLoader>();
     
 	VariantMap& eventData = GetEventDataMap();
-	eventData[MyEvents::E_SET_LEVEL] = "Splash";
+	eventData["Name"] = "Splash";
 	SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 

@@ -68,13 +68,13 @@ void RegisterAllFactories()
 When that's done, you can switch between levels by using the following code.
 ```
 VariantMap data;
-eventData[MyEvents::E_SET_LEVEL] = "Splash";
+eventData["Name"] = "Splash";
 SendEvent(MyEvents::E_SET_LEVEL, eventData);
 ```
 You can also pass additional parameters for the new level
 ```
 VariantMap data;
-eventData[MyEvents::E_SET_LEVEL] = "Splash";
+eventData["Name"] = "Splash";
 eventData["Param1"] = 123;
 SendEvent(MyEvents::E_SET_LEVEL, eventData);
 ```

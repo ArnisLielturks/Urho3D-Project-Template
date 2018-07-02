@@ -9,7 +9,8 @@ void Start()
 
 void HandleLevelChange(StringHash eventType, VariantMap& eventData)
 {
-    log.Info(">>>>>>> Level " + eventData["Set levels"].GetString());
+    String levelName = eventData["Name"].GetString();
+    log.Info(">>>>>>> Level " + levelName);
 }
 
 void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
@@ -30,8 +31,7 @@ void DrawModNames()
         return;
     }
     CreateScriptName("Mods Loaded:", 0);
-    for (int i = 0; i < mods.length; i++) {
-        log.Info("-------------- " + mods[i]);
+    for (uint i = 0; i < mods.length; i++) {
         CreateScriptName(mods[i], i + 1);
     }
 }

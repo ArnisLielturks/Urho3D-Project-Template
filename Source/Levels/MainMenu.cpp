@@ -96,6 +96,6 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)
 {
 	VariantMap& levelEventData = GetEventDataMap();
-	levelEventData[MyEvents::E_SET_LEVEL] = "Loading";
+	levelEventData["Name"] = "Loading";
 	SendEvent(MyEvents::E_SET_LEVEL, levelEventData);
 }

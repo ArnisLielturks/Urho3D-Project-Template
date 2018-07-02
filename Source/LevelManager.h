@@ -41,7 +41,7 @@ private:
 			return;
 		}
 		// Push to queue
-		level_queue_.Push(eventData[MyEvents::E_SET_LEVEL].GetString());
+		level_queue_.Push(eventData["Name"].GetString());
 		data_ = eventData;
 
 		// Subscribe HandleUpdate() function for processing update events
@@ -140,9 +140,14 @@ private:
 			fade_window_ = SharedPtr<Window>();
 			// Unsubscribe update event
 			UnsubscribeFromEvent(E_UPDATE);
+
+			VariantMap data;
+			data["Name"] = level_queue_.Front();
+			SendEvent("LevelLoaded", data);
+
 			// Remove the task
 			level_queue_.PopFront();
-			level_->SendEvent("LevelLoaded");
+
 			// Release all unused resources
 			GetSubsystem<ResourceCache>()->ReleaseAllResources(false);
 			return;

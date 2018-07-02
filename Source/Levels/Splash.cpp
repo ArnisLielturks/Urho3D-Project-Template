@@ -128,7 +128,7 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Splash::HandleEndSplash()
 {
-	data_[MyEvents::E_SET_LEVEL] = "MainMenu";
+	data_["Name"] = "MainMenu";
 	SendEvent(MyEvents::E_SET_LEVEL, data_);
 	UnsubscribeFromEvent(E_UPDATE);
 }

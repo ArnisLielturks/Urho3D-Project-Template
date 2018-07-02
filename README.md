@@ -110,6 +110,25 @@ GetGlobalVar("DefaultServerIP").GetString();
 
 Config file saving is still in my TODO list!
 
+
+## AngelScript scripts (mods)
+All the functionality can be extended by using additional scripts. All the scripts that will be placed in `Data/Mods` folder and their extension will be `*.as` will be automatically loaded on game startup. Process will not load scripts which will be placed in subfolders! I have created few example scripts in the `Data/Mods` directory so it's worth checking them out! All the automatically loaded scripts should contain `void Start()` method otherwise it won't be loaded and the error log message will appear.
+
+Basic script(mod)
+```
+/**
+ * Entry function for the mod
+ */
+void Start()
+{
+    log.Info("Mod was loaded succesfully");
+}
+
+```
+
+Scripts can subscribe to all the application events, complete list of them will be added in the future so for now you will just have to dig into the C++ code.
+
+
 That's it!
 
 If you have any ideas how this can be improved, let me know!

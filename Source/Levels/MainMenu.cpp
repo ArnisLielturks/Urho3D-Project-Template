@@ -18,7 +18,6 @@ MainMenu::~MainMenu()
 void MainMenu::Init()
 {
     if (data_.Contains("Message")) {
-        URHO3D_LOGERROR("Main menu created with message : " + data_["Message"].GetString());
         //SharedPtr<Urho3D::MessageBox> messageBox(new Urho3D::MessageBox(context_, data_["Message"].GetString(), "Oh crap!"));
         VariantMap data;
         data["Title"] = "Error!";

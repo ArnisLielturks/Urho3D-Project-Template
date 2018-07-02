@@ -1,5 +1,11 @@
+/**
+ * Array of all the loaded mod (script) names
+ */
 Array<String>@  mods = {};
 
+/**
+ * Entry function for the mod
+ */
 void Start()
 {
     SubscribeToEvent("Set levels", "HandleLevelChange");
@@ -7,24 +13,35 @@ void Start()
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
 }
 
+/**
+ * Output debug message when level changing is requested
+ */
 void HandleLevelChange(StringHash eventType, VariantMap& eventData)
 {
     String levelName = eventData["Name"].GetString();
-    log.Info(">>>>>>> Level " + levelName);
+    log.Info("[Debugger.as] Level loaded: " + levelName);
 }
 
+/**
+ * Display all the loaded mods(scripts) when the level is finished loading
+ */
 void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
 {
     DrawModNames();
 }
 
+/**
+ * When all the mods are loaded, retrieve the list
+ */
 void HandleModsLoaded(StringHash eventType, VariantMap& eventData)
 {
     mods = eventData["Mods"].GetStringVector();
-    log.Info("############### Total mods loaded: " + mods.length);
-    DrawModNames();
+    log.Info("[Debugger.as] Total mods loaded: " + mods.length);
 }
 
+/**
+ * Create a list of loaded mods(scripts)
+ */
 void DrawModNames()
 {
     if (mods.empty) {
@@ -36,6 +53,9 @@ void DrawModNames()
     }
 }
 
+/**
+ * Create a single text element
+ */
 void CreateScriptName(String name, int index)
 {
     int fontSize = 10;

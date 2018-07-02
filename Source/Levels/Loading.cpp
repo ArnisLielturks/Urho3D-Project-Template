@@ -16,7 +16,6 @@ Loading::~Loading()
 
 void Loading::Init()
 {
-    URHO3D_LOGRAW("Starting level: Loading");
     BaseLevel::Init();
 
     // Create the scene content

@@ -16,7 +16,6 @@ Splash::~Splash()
 
 void Splash::Init()
 {
-    URHO3D_LOGRAW("Starting level: Splash");
     BaseLevel::Init();
 
     // Create the scene content

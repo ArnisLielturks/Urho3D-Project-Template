@@ -5,29 +5,29 @@
 
 namespace Levels {
 
-	class Splash : public BaseLevel
-	{
-		URHO3D_OBJECT(Splash, BaseLevel);
+    class Splash : public BaseLevel
+    {
+        URHO3D_OBJECT(Splash, BaseLevel);
 
-	public:
-		/// Construct.
-		Splash(Context* context);
+    public:
+        /// Construct.
+        Splash(Context* context);
 
-		virtual ~Splash();
-		void HandleUpdate(StringHash eventType, VariantMap& eventData);
+        virtual ~Splash();
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	protected:
-		virtual void Init();
+    protected:
+        virtual void Init();
 
-	private:
-		void CreateScene();
+    private:
+        void CreateScene();
 
-		void CreateUI();
+        void CreateUI();
 
-		void SubscribeToEvents();
+        void SubscribeToEvents();
 
-		void HandleEndSplash();
+        void HandleEndSplash();
 
-		Timer _timer;
-	};
+        Timer _timer;
+    };
 }

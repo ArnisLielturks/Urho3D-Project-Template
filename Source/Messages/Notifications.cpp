@@ -3,9 +3,9 @@
 
 /// Construct.
 Notifications::Notifications(Context* context) :
-	Object(context)
+    Object(context)
 {
-	Init();
+    Init();
 }
 
 Notifications::~Notifications()
@@ -14,22 +14,22 @@ Notifications::~Notifications()
 
 void Notifications::Init()
 {
-	SubscribeToEvents();
+    SubscribeToEvents();
 }
 
 void Notifications::Create()
 {
-	UI* ui = GetSubsystem<UI>();
+    UI* ui = GetSubsystem<UI>();
 
-	_baseElement = ui->GetRoot()->CreateChild("Menu");
-	SubscribeToEvents();
+    _baseElement = ui->GetRoot()->CreateChild("Menu");
+    SubscribeToEvents();
 }
 
 void Notifications::SubscribeToEvents()
 {
-	SubscribeToEvent("ShowNotification", URHO3D_HANDLER(Notifications, HandleNewNotification));
-	SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
-	SubscribeToEvent(StringHash("ClientGameRoundEnd"), URHO3D_HANDLER(Notifications, HandleGameEnd));
+    SubscribeToEvent("ShowNotification", URHO3D_HANDLER(Notifications, HandleNewNotification));
+    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
+    SubscribeToEvent(StringHash("ClientGameRoundEnd"), URHO3D_HANDLER(Notifications, HandleGameEnd));
 }
 
 void Notifications::Dispose()
@@ -38,69 +38,69 @@ void Notifications::Dispose()
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)
 {
-	auto* cache = GetSubsystem<ResourceCache>();
+    auto* cache = GetSubsystem<ResourceCache>();
 
-	String message = eventData["Message"].GetString();
-	// Construct new Text object
-	WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
-	// Set String to display
-	messageElement->SetText(message);
-	messageElement->SetStyleAuto();
+    String message = eventData["Message"].GetString();
+    // Construct new Text object
+    WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
+    // Set String to display
+    messageElement->SetText(message);
+    messageElement->SetStyleAuto();
 
-	// Set font and text color
-	messageElement->SetColor(Color(0.0f, 1.0f, 0.0f));
+    // Set font and text color
+    messageElement->SetColor(Color(0.0f, 1.0f, 0.0f));
 
-	// Align Text center-screen
-	messageElement->SetHorizontalAlignment(HA_RIGHT);
-	messageElement->SetVerticalAlignment(VA_BOTTOM);
+    // Align Text center-screen
+    messageElement->SetHorizontalAlignment(HA_RIGHT);
+    messageElement->SetVerticalAlignment(VA_BOTTOM);
 
-	// Create light animation
-	SharedPtr<ObjectAnimation> notificationAnimation(new ObjectAnimation(context_));
+    // Create light animation
+    SharedPtr<ObjectAnimation> notificationAnimation(new ObjectAnimation(context_));
 
-	// Create light position animation
-	SharedPtr<ValueAnimation> positionAnimation(new ValueAnimation(context_));
-	// Use spline interpolation method
-	positionAnimation->SetInterpolationMethod(IM_SPLINE);
-	// Set spline tension
-	positionAnimation->SetSplineTension(0.7f);
-	positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -10));
-	positionAnimation->SetKeyFrame(2.0f, IntVector2(-10, -200));
-	notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
+    // Create light position animation
+    SharedPtr<ValueAnimation> positionAnimation(new ValueAnimation(context_));
+    // Use spline interpolation method
+    positionAnimation->SetInterpolationMethod(IM_SPLINE);
+    // Set spline tension
+    positionAnimation->SetSplineTension(0.7f);
+    positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -10));
+    positionAnimation->SetKeyFrame(3.0f, IntVector2(-10, -200));
+    notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
-	SharedPtr<ValueAnimation> scaleAnimation(new ValueAnimation(context_));
-	scaleAnimation->SetKeyFrame(0.0f, 1.0f);
-	scaleAnimation->SetKeyFrame(2.0f, 0.0f);
-	scaleAnimation->SetKeyFrame(10.0f, 0.0f);
-	notificationAnimation->AddAttributeAnimation("Opacity", scaleAnimation);
+    SharedPtr<ValueAnimation> scaleAnimation(new ValueAnimation(context_));
+    scaleAnimation->SetKeyFrame(0.0f, 1.0f);
+    scaleAnimation->SetKeyFrame(3.0f, 0.0f);
+    scaleAnimation->SetKeyFrame(10.0f, 0.0f);
+    notificationAnimation->AddAttributeAnimation("Opacity", scaleAnimation);
 
-	messageElement->SetObjectAnimation(notificationAnimation);
-	messageElement->SetVar("Lifetime", 2.0f);
+    messageElement->SetObjectAnimation(notificationAnimation);
+    messageElement->SetVar("Lifetime", 3.0f);
 
-	_messages.Push(messageElement);
+    _messages.Push(messageElement);
 }
 
 void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-	using namespace Update;
+    using namespace Update;
 
-	float timeStep = eventData[P_TIMESTEP].GetFloat();
-	for (auto it = _messages.Begin(); it != _messages.End(); ++it) {
-		if ((*it).Refs() == 0) {
-			_messages.Remove((*it));
-			return;
-		}
-		float lifetime = (*it)->GetVar("Lifetime").GetFloat();
-		if (lifetime <= 0) {
-			(*it)->Remove();
-			_messages.Remove((*it));
-			return; 
-		}
-		lifetime -= timeStep;
-		(*it)->SetVar("Lifetime", lifetime);
-	}
+    float timeStep = eventData[P_TIMESTEP].GetFloat();
+    for (auto it = _messages.Begin(); it != _messages.End(); ++it) {
+        if ((*it).Refs() == 0) {
+            _messages.Remove((*it));
+            return;
+        }
+        float lifetime = (*it)->GetVar("Lifetime").GetFloat();
+        if (lifetime <= 0) {
+            (*it)->Remove();
+            _messages.Remove((*it));
+            return; 
+        }
+        lifetime -= timeStep;
+        (*it)->SetVar("Lifetime", lifetime);
+    }
 }
 
 void Notifications::HandleGameEnd(StringHash eventType, VariantMap& eventData)
 {
-	_messages.Clear();
+    _messages.Clear();
 }

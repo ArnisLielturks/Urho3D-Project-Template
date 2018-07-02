@@ -49,17 +49,17 @@ public:
     virtual void Stop() override;
 
 private:
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	void LoadConfig();
+    void LoadConfig();
 
     /// Flag whether CommandLine.txt was already successfully read.
     bool commandLineRead_;
 
-	SharedPtr<LevelManager> levelManager;
+    SharedPtr<LevelManager> levelManager;
 
-	SharedPtr<Message> _alertMessage;
-	SharedPtr<Notifications> _notifications;
-	SharedPtr<Achievements> _achievements;
+    SharedPtr<Message> _alertMessage;
+    SharedPtr<Notifications> _notifications;
+    SharedPtr<Achievements> _achievements;
     SharedPtr<ModLoader> _modLoader;
 };

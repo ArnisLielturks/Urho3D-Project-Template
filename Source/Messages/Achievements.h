@@ -6,34 +6,34 @@ using namespace Urho3D;
 
 class Achievements : public Object
 {
-	URHO3D_OBJECT(Achievements, Object);
+    URHO3D_OBJECT(Achievements, Object);
 
 public:
-	/// Construct.
-	Achievements(Context* context);
+    /// Construct.
+    Achievements(Context* context);
 
-	virtual ~Achievements();
+    virtual ~Achievements();
 
-	void Create();
+    void Create();
 
-	void Dispose();
+    void Dispose();
 
-	void HandleNewAchievement(StringHash eventType, VariantMap& eventData);
+    void HandleNewAchievement(StringHash eventType, VariantMap& eventData);
 
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	void HandleGameEnd(StringHash eventType, VariantMap& eventData);
+    void HandleGameEnd(StringHash eventType, VariantMap& eventData);
 
-	void LoadAchievementList();
+    void LoadAchievementList();
 
 protected:
-	virtual void Init();
+    virtual void Init();
 
 private:
 
-	void SubscribeToEvents();
+    void SubscribeToEvents();
 
-	WeakPtr<UIElement> _baseElement;
+    WeakPtr<UIElement> _baseElement;
 
-	Vector<SharedPtr<UIElement>> _messages;
+    Vector<SharedPtr<UIElement>> _messages;
 };

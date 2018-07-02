@@ -6,33 +6,33 @@ using namespace Urho3D;
 
 class Message : public Object
 {
-	URHO3D_OBJECT(Message, Object);
+    URHO3D_OBJECT(Message, Object);
 
 public:
-	/// Construct.
-	Message(Context* context);
+    /// Construct.
+    Message(Context* context);
 
-	virtual ~Message();
+    virtual ~Message();
 
-	void Create();
+    void Create();
 
-	void Dispose();
+    void Dispose();
 
-	void HandleOkButton(StringHash eventType, VariantMap& eventData);
+    void HandleOkButton(StringHash eventType, VariantMap& eventData);
 
-	void HandleShowMessage(StringHash eventType, VariantMap& eventData);
+    void HandleShowMessage(StringHash eventType, VariantMap& eventData);
 
 protected:
-	virtual void Init();
+    virtual void Init();
 
 private:
 
-	void SubscribeToEvents();
+    void SubscribeToEvents();
 
-	UIElement* _baseElement;
-	SharedPtr<Button> _okButton;
-	SharedPtr<Text> _title;
-	SharedPtr<Text> _message;
+    UIElement* _baseElement;
+    SharedPtr<Button> _okButton;
+    SharedPtr<Text> _title;
+    SharedPtr<Text> _message;
 
 
 };

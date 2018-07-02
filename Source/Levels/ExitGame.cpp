@@ -4,12 +4,12 @@
 
 using namespace Levels;
 
-	/// Construct.
+    /// Construct.
 ExitGame::ExitGame(Context* context) :
-	BaseLevel(context)
+    BaseLevel(context)
 {
-	_timer.Reset();
-	SubscribeToEvents();
+    _timer.Reset();
+    SubscribeToEvents();
 }
 
 ExitGame::~ExitGame()
@@ -23,14 +23,14 @@ void ExitGame::Init()
 
 void ExitGame::SubscribeToEvents()
 {
-	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ExitGame, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ExitGame, HandleUpdate));
 }
 
 void ExitGame::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-	if (_timer.GetMSec(false) > 1000) {
-		GetSubsystem<Engine>()->Exit();
-	}
+    if (_timer.GetMSec(false) > 3000) {
+        GetSubsystem<Engine>()->Exit();
+    }
 }
 
 void ExitGame::CreateUI()

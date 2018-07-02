@@ -4,25 +4,25 @@
 #include "../BaseLevel.h"
 
 namespace Levels {
-	class ExitGame : public BaseLevel
-	{
-		URHO3D_OBJECT(ExitGame, BaseLevel);
+    class ExitGame : public BaseLevel
+    {
+        URHO3D_OBJECT(ExitGame, BaseLevel);
 
-	public:
-		/// Construct.
-		ExitGame(Context* context);
+    public:
+        /// Construct.
+        ExitGame(Context* context);
 
-		virtual ~ExitGame();
-		void HandleUpdate(StringHash eventType, VariantMap& eventData);
+        virtual ~ExitGame();
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	protected:
-		virtual void Init();
+    protected:
+        virtual void Init();
 
-	private:
-		void SubscribeToEvents();
+    private:
+        void SubscribeToEvents();
 
-		void CreateUI();
+        void CreateUI();
 
-		Timer _timer;
-	};
+        Timer _timer;
+    };
 }

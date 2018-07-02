@@ -4,35 +4,35 @@
 #include "../BaseLevel.h"
 
 namespace Levels {
-	class Level : public BaseLevel
-	{
-		URHO3D_OBJECT(Level, BaseLevel);
+    class Level : public BaseLevel
+    {
+        URHO3D_OBJECT(Level, BaseLevel);
 
-	public:
-		/// Construct.
-		Level(Context* context);
+    public:
+        /// Construct.
+        Level(Context* context);
 
-		virtual ~Level();
-		void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+        virtual ~Level();
+        void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
 
-	protected:
-		virtual void Init();
+    protected:
+        virtual void Init();
 
-		virtual void OnLoaded();
+        virtual void OnLoaded();
 
-	private:
-		void CreateScene();
+    private:
+        void CreateScene();
 
-		void CreateUI();
+        void CreateUI();
 
-		void SubscribeToEvents();
+        void SubscribeToEvents();
 
-		SharedPtr<Node> _controlledNode;
-		unsigned int _id;
+        SharedPtr<Node> _controlledNode;
+        unsigned int _id;
 
-		bool shouldReturn;
-		String returnMessage;
+        bool shouldReturn;
+        String returnMessage;
 
-		WeakPtr<Node> _characterCameraNode;
-	};
+        WeakPtr<Node> _characterCameraNode;
+    };
 }

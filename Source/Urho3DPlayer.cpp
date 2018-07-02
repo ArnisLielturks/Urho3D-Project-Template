@@ -48,10 +48,10 @@ Urho3DPlayer::Urho3DPlayer(Context* context) :
     Application(context),
     commandLineRead_(false)
 {
-	context_->RegisterFactory<LevelManager>();
-	context_->RegisterFactory<Message>();
-	context_->RegisterFactory<Notifications>();
-	context_->RegisterFactory<Achievements>();
+    context_->RegisterFactory<LevelManager>();
+    context_->RegisterFactory<Message>();
+    context_->RegisterFactory<Notifications>();
+    context_->RegisterFactory<Achievements>();
     context_->RegisterFactory<ModLoader>();
 }
 
@@ -81,11 +81,11 @@ void Urho3DPlayer::Setup()
 
     // Show usage if not found
     // Use the script file name as the base name for the log file
-	engineParameters_[EP_LOG_NAME] = "EmptyProject.log";// filesystem->GetAppPreferencesDir("urho3d", "logs") + GetFileNameAndExtension(scriptFileName_) + ".log";
+    engineParameters_[EP_LOG_NAME] = "EmptyProject.log";// filesystem->GetAppPreferencesDir("urho3d", "logs") + GetFileNameAndExtension(scriptFileName_) + ".log";
     engineParameters_[EP_FULL_SCREEN] = false;
     engineParameters_[EP_WINDOW_WIDTH] = 800;
     engineParameters_[EP_WINDOW_HEIGHT] = 600;
-	engineParameters_[EP_LOG_LEVEL] = LOG_INFO;
+    engineParameters_[EP_LOG_LEVEL] = LOG_INFO;
 
     // Construct a search path to find the resource prefix with two entries:
     // The first entry is an empty path which will be substituted with program/bin directory -- this entry is for binary when it is still in build tree
@@ -101,7 +101,7 @@ void Urho3DPlayer::Start()
     auto* cache = GetSubsystem<ResourceCache>();
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
     
-	// Switch level
+    // Switch level
     // Reattempt reading the command line from the resource system now if not read before
     // Note that the engine can not be reconfigured at this point; only the script name can be specified
     if (GetArguments().Empty()) {
@@ -121,9 +121,9 @@ void Urho3DPlayer::Start()
     _achievements = context_->CreateObject<Achievements>();
     _modLoader = context_->CreateObject<ModLoader>();
     
-	VariantMap& eventData = GetEventDataMap();
-	eventData["Name"] = "Splash";
-	SendEvent(MyEvents::E_SET_LEVEL, eventData);
+    VariantMap& eventData = GetEventDataMap();
+    eventData["Name"] = "Splash";
+    SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 
 void Urho3DPlayer::Stop()
@@ -136,27 +136,27 @@ void Urho3DPlayer::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Urho3DPlayer::LoadConfig()
 {
-	JSONFile json(context_);
-	json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Game.json");
-	JSONValue& content = json.GetRoot();
-	if (content.IsObject()) {
-		for (auto it = content.Begin(); it != content.End(); ++it) {
-			URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
-			if ((*it).second_.IsBool()) {
-				engine_->SetGlobalVar((*it).first_, (*it).second_.GetBool());
-				URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
-			}
-			if ((*it).second_.IsString()) {
-				engine_->SetGlobalVar((*it).first_, (*it).second_.GetString());
-				URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
-			}
-			if ((*it).second_.IsNumber()) {
-				engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
-				URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
-			}
-		}
-	}
-	else {
-		URHO3D_LOGERROR("Config file (Game.json) format not correct!");
-	}
+    JSONFile json(context_);
+    json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Game.json");
+    JSONValue& content = json.GetRoot();
+    if (content.IsObject()) {
+        for (auto it = content.Begin(); it != content.End(); ++it) {
+            URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
+            if ((*it).second_.IsBool()) {
+                engine_->SetGlobalVar((*it).first_, (*it).second_.GetBool());
+                URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
+            }
+            if ((*it).second_.IsString()) {
+                engine_->SetGlobalVar((*it).first_, (*it).second_.GetString());
+                URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
+            }
+            if ((*it).second_.IsNumber()) {
+                engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
+                URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
+            }
+        }
+    }
+    else {
+        URHO3D_LOGERROR("Config file (Game.json) format not correct!");
+    }
 }

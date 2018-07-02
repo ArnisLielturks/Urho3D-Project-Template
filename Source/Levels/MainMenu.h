@@ -7,31 +7,29 @@
 
 namespace Levels {
 
-	class MainMenu : public BaseLevel
-	{
-		URHO3D_OBJECT(MainMenu, BaseLevel);
+    class MainMenu : public BaseLevel
+    {
+        URHO3D_OBJECT(MainMenu, BaseLevel);
 
-	public:
-		/// Construct.
-		MainMenu(Context* context);
+    public:
+        /// Construct.
+        MainMenu(Context* context);
 
-		virtual ~MainMenu();
-		void HandleUpdate(StringHash eventType, VariantMap& eventData);
+        virtual ~MainMenu();
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	protected:
-		virtual void Init();
+    protected:
+        virtual void Init();
 
-	private:
-		void CreateScene();
+    private:
+        void CreateScene();
 
-		void CreateUI();
+        void CreateUI();
 
-		void SubscribeToEvents();
+        void SubscribeToEvents();
 
-		void HandleStartGame(StringHash eventType, VariantMap& eventData);
+        void HandleStartGame(StringHash eventType, VariantMap& eventData);
 
-		SharedPtr<Button> _startButton;
-
-		Timer timer;
-	};
+        SharedPtr<Button> _startButton;
+    };
 }

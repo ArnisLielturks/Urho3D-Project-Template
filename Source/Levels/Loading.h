@@ -5,29 +5,29 @@
 
 namespace Levels {
 
-	class Loading : public BaseLevel
-	{
-		URHO3D_OBJECT(Loading, BaseLevel);
+    class Loading : public BaseLevel
+    {
+        URHO3D_OBJECT(Loading, BaseLevel);
 
-	public:
-		/// Construct.
-		Loading(Context* context);
+    public:
+        /// Construct.
+        Loading(Context* context);
 
-		virtual ~Loading();
-		void HandleUpdate(StringHash eventType, VariantMap& eventData);
+        virtual ~Loading();
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	protected:
-		virtual void Init();
+    protected:
+        virtual void Init();
 
-	private:
-		void CreateScene();
+    private:
+        void CreateScene();
 
-		void CreateUI();
+        void CreateUI();
 
-		void SubscribeToEvents();
+        void SubscribeToEvents();
 
-		void HandleEndLoading(StringHash eventType, VariantMap& eventData);
+        void HandleEndLoading(StringHash eventType, VariantMap& eventData);
 
-		Timer timer;
-	};
+        Timer timer;
+    };
 }

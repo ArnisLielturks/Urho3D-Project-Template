@@ -6,32 +6,32 @@ using namespace Urho3D;
 
 class Notifications : public Object
 {
-	URHO3D_OBJECT(Notifications, Object);
+    URHO3D_OBJECT(Notifications, Object);
 
 public:
-	/// Construct.
-	Notifications(Context* context);
+    /// Construct.
+    Notifications(Context* context);
 
-	virtual ~Notifications();
+    virtual ~Notifications();
 
-	void Create();
+    void Create();
 
-	void Dispose();
+    void Dispose();
 
-	void HandleNewNotification(StringHash eventType, VariantMap& eventData);
+    void HandleNewNotification(StringHash eventType, VariantMap& eventData);
 
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	void HandleGameEnd(StringHash eventType, VariantMap& eventData);
+    void HandleGameEnd(StringHash eventType, VariantMap& eventData);
 
 protected:
-	virtual void Init();
+    virtual void Init();
 
 private:
 
-	void SubscribeToEvents();
+    void SubscribeToEvents();
 
-	UIElement* _baseElement;
+    UIElement* _baseElement;
 
-	Vector<WeakPtr<Text>> _messages;
+    Vector<WeakPtr<Text>> _messages;
 };

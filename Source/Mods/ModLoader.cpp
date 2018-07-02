@@ -28,6 +28,8 @@ void ModLoader::Create()
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
     URHO3D_LOGINFO("Total mods found: " + String(result.Size()));
 
+    StringVector modNames;
+
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
@@ -36,7 +38,13 @@ void ModLoader::Create()
             URHO3D_LOGINFO("Mod " + (*it) + " succesfully loaded!");
         }
         _mods.Push(scriptFile);
+        modNames.Push((*it));
     }
+
+    VariantMap data;
+    data["Mods"] = modNames;
+    SendEvent("ModsLoaded", data);
+
 }
 
 void ModLoader::SubscribeToEvents()

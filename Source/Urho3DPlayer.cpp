@@ -53,13 +53,6 @@ Urho3DPlayer::Urho3DPlayer(Context* context) :
 	context_->RegisterFactory<Notifications>();
 	context_->RegisterFactory<Achievements>();
     context_->RegisterFactory<ModLoader>();
-
-
-	levelManager = context_->CreateObject<LevelManager>();
-	_alertMessage = context_->CreateObject<Message>();
-	_notifications = context_->CreateObject<Notifications>();
-	_achievements = context_->CreateObject<Achievements>();
-    _modLoader = context_->CreateObject<ModLoader>();
 }
 
 void Urho3DPlayer::Setup()
@@ -121,6 +114,12 @@ void Urho3DPlayer::Start()
     }
 
     LoadConfig();
+
+    levelManager = context_->CreateObject<LevelManager>();
+    _alertMessage = context_->CreateObject<Message>();
+    _notifications = context_->CreateObject<Notifications>();
+    _achievements = context_->CreateObject<Achievements>();
+    _modLoader = context_->CreateObject<ModLoader>();
     
 	VariantMap& eventData = GetEventDataMap();
 	eventData[MyEvents::E_SET_LEVEL] = "Splash";

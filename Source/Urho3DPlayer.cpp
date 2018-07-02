@@ -41,6 +41,7 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/AngelScript/ScriptAPI.h>
 
+
 URHO3D_DEFINE_APPLICATION_MAIN(Urho3DPlayer);
 
 Urho3DPlayer::Urho3DPlayer(Context* context) :
@@ -51,12 +52,14 @@ Urho3DPlayer::Urho3DPlayer(Context* context) :
 	context_->RegisterFactory<Message>();
 	context_->RegisterFactory<Notifications>();
 	context_->RegisterFactory<Achievements>();
+    context_->RegisterFactory<ModLoader>();
 
 
 	levelManager = context_->CreateObject<LevelManager>();
 	_alertMessage = context_->CreateObject<Message>();
 	_notifications = context_->CreateObject<Notifications>();
 	_achievements = context_->CreateObject<Achievements>();
+    _modLoader = context_->CreateObject<ModLoader>();
 }
 
 void Urho3DPlayer::Setup()

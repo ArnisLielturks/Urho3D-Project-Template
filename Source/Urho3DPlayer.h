@@ -23,11 +23,12 @@
 #pragma once
 
 #include <Urho3D/Engine/Application.h>
+#include <Urho3D/Network/Network.h>
 #include "LevelManager.h"
 #include "Messages/Message.h"
 #include "Messages/Achievements.h"
 #include "Messages/Notifications.h"
-#include <Urho3D/Network/Network.h>
+#include "Mods/ModLoader.h"
 
 using namespace Urho3D;
 
@@ -60,4 +61,5 @@ private:
 	SharedPtr<Message> _alertMessage;
 	SharedPtr<Notifications> _notifications;
 	SharedPtr<Achievements> _achievements;
+    SharedPtr<ModLoader> _modLoader;
 };

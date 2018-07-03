@@ -53,6 +53,10 @@ private:
 
     void LoadConfig();
 
+    void RegisterConsoleCommands();
+
+    void HandleExit(StringHash eventType, VariantMap& eventData);
+
     /// Flag whether CommandLine.txt was already successfully read.
     bool commandLineRead_;
 

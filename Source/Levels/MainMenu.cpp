@@ -27,11 +27,6 @@ void MainMenu::Init()
     URHO3D_LOGINFO("Starting level: MainMenu");
     BaseLevel::Init();
 
-    VariantMap map;
-    map["CONSOLE_COMMAND_NAME"] = "connect";
-    map["CONSOLE_COMMAND_EVENT"] = "HandleConnect";
-    SendEvent("ConsoleCommandAdd", map);
-
     // Create the scene content
     CreateScene();
 

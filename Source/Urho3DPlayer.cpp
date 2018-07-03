@@ -124,6 +124,8 @@ void Urho3DPlayer::Start()
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
+
+    RegisterConsoleCommands();
 }
 
 void Urho3DPlayer::Stop()
@@ -159,4 +161,20 @@ void Urho3DPlayer::LoadConfig()
     else {
         URHO3D_LOGERROR("Config file (Game.json) format not correct!");
     }
+}
+
+void Urho3DPlayer::RegisterConsoleCommands()
+{
+    VariantMap data;
+    data["ConsoleCommandName"] = "exit";
+    data["ConsoleCommandEvent"] = "HandleExit";
+    data["ConsoleCommandDescription"] = "Exits game";
+    SendEvent("ConsoleCommandAdd", data);
+
+    SubscribeToEvent("HandleExit", URHO3D_HANDLER(Urho3DPlayer, HandleExit));
+}
+
+void Urho3DPlayer::HandleExit(StringHash eventType, VariantMap& eventData)
+{
+    GetSubsystem<Engine>()->Exit();
 }

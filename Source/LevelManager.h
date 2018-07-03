@@ -36,19 +36,17 @@ private:
     void HandleSetLevelQueue(StringHash eventType, VariantMap& eventData)
     {
         // Busy now
-        if (level_queue_.Size()) {
-            URHO3D_LOGERROR("Level manager busy! Level already in the queue: " + level_queue_.Front());
-            return;
+        if (level_queue_.Size() == 0) {
+            // Init fade status
+            fade_status_ = 0;
         }
+
         // Push to queue
         level_queue_.Push(eventData["Name"].GetString());
         data_ = eventData;
 
         // Subscribe HandleUpdate() function for processing update events
         SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(LevelManager, HandleUpdate));
-
-        // Init fade status
-        fade_status_ = 0;
     }
 
     void HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -150,6 +148,14 @@ private:
 
             // Release all unused resources
             GetSubsystem<ResourceCache>()->ReleaseAllResources(false);
+
+            if (level_queue_.Size()) {
+                // Subscribe HandleUpdate() function for processing update events
+                SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(LevelManager, HandleUpdate));
+
+                // // Init fade status
+                fade_status_ = 0;
+            }
             return;
         }
     }
@@ -179,5 +185,5 @@ private:
     VariantMap data_;
     float fade_time_;
     int fade_status_;
-    const float MAX_FADE_TIME = 0.5f;
+    const float MAX_FADE_TIME = 1.0f;
 };

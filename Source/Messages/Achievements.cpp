@@ -135,11 +135,11 @@ void Achievements::LoadAchievementList()
                 String txt = mapInfo["Text"].GetString();
                 String type = mapInfo["Type"].GetString();
                 int threshold = mapInfo["Threshold"].GetInt();
-                URHO3D_LOGINFO("Achievement: '" + txt + "'");
-                URHO3D_LOGINFO("Image: " + img);
-                URHO3D_LOGINFO("Evt: " + evt);
-                URHO3D_LOGINFO("Type: " + type);
-                URHO3D_LOGINFOF("Threshold: %i", threshold);
+                // URHO3D_LOGINFO("Achievement: '" + txt + "'");
+                // URHO3D_LOGINFO("Image: " + img);
+                // URHO3D_LOGINFO("Evt: " + evt);
+                // URHO3D_LOGINFO("Type: " + type);
+                // URHO3D_LOGINFOF("Threshold: %i", threshold);
 
             }
             else {

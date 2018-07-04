@@ -24,7 +24,6 @@ void MainMenu::Init()
         data["Message"] = data_["Message"].GetString();
         SendEvent("ShowAlertMessage", data);
     }
-    URHO3D_LOGINFO("Starting level: MainMenu");
     BaseLevel::Init();
 
     // Create the scene content
@@ -69,6 +68,7 @@ void MainMenu::CreateUI()
 void MainMenu::SubscribeToEvents()
 {
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
+    SubscribeToEvent("KeyDown", URHO3D_HANDLER(MainMenu, HandleKeyDown));
     SubscribeToEvent(_startButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleStartGame));
 }
 
@@ -77,6 +77,18 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
     Input* input = GetSubsystem<Input>();
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
+    }
+}
+
+void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)
+{
+    int key = eventData["Key"].GetInt();
+
+    // Toggle console by pressing F1
+    if (key == KEY_F2) {
+        VariantMap data;
+        data["Name"] = "SettingsWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     }
 }
 

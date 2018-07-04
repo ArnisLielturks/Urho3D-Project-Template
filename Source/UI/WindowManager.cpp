@@ -69,6 +69,6 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
 
 void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& eventData)
 {
-    URHO3D_LOGINFO("Closing all windows: " + windowName);
+    URHO3D_LOGINFO("Closing all windows");
     _windowList.Clear();
 }

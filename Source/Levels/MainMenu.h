@@ -2,7 +2,6 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseLevel.h"
-#include "../Globals.h"
 #include <vector>
 
 namespace Levels {

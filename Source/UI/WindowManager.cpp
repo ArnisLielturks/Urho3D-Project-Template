@@ -28,6 +28,7 @@ void WindowManager::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_OPEN_WINDOW, URHO3D_HANDLER(WindowManager, HandleOpenWindow));
     SubscribeToEvent(MyEvents::E_CLOSE_WINDOW, URHO3D_HANDLER(WindowManager, HandleCloseWindow));
+    SubscribeToEvent(MyEvents::E_CLOSE_ALL_WINDOWS, URHO3D_HANDLER(WindowManager, HandleCloseAllWindows));
 }
 
 void WindowManager::Dispose()
@@ -64,4 +65,10 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
             return;
         }
     }
+}
+
+void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& eventData)
+{
+    URHO3D_LOGINFO("Closing all windows: " + windowName);
+    _windowList.Clear();
 }

@@ -100,6 +100,9 @@ private:
             // We can not create new level here, or it may cause errors, we have to create it at the next update point.
             level_ = SharedPtr<Object>();
             fade_status_++;
+
+            // Send event to close all active UI windows
+            SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
             return;
         }
 

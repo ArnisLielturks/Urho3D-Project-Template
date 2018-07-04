@@ -8,6 +8,7 @@ namespace MyEvents
     static const StringHash E_SET_LEVEL = StringHash("SetLevel");
     static const StringHash E_OPEN_WINDOW = StringHash("OpenWindow");
     static const StringHash E_CLOSE_WINDOW = StringHash("CloseWindow");
+    static const StringHash E_CLOSE_ALL_WINDOWS = StringHash("CloseAllWindows");
 
     // Control bits we define
     static const unsigned CTRL_FORWARD = 1;

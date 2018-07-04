@@ -25,6 +25,7 @@ private:
 
     void HandleOpenWindow(StringHash eventType, VariantMap& eventData);
     void HandleCloseWindow(StringHash eventType, VariantMap& eventData);
+    void HandleCloseAllWindows(StringHash eventType, VariantMap& eventData);
 
     Vector<SharedPtr<Object>> _windowList;
 

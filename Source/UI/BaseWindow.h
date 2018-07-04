@@ -6,9 +6,10 @@ class BaseWindow : public Object
 {
     URHO3D_OBJECT(BaseWindow, Object);
 public:
-    BaseWindow(Context* context) :
+    BaseWindow(Context* context, IntVector2 size = IntVector2(300, 200)) :
         Object(context) {
         SubscribeToBaseEvents();
+        _size = size;
         Init();
     }
 
@@ -21,7 +22,7 @@ public:
         UI* ui = GetSubsystem<UI>();
         _base = ui->GetRoot()->CreateChild<Window>();
         _base->SetStyleAuto();
-        _base->SetSize(IntVector2(500, 500));
+        _base->SetSize(_size);
         _base->SetAlignment(HA_CENTER, VA_CENTER);
     };
 
@@ -42,4 +43,5 @@ protected:
     }
 
     SharedPtr<Window> _base;
+    IntVector2 _size;
 };

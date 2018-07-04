@@ -4,7 +4,7 @@
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
-    BaseWindow(context)
+    BaseWindow(context, IntVector2(300, 300))
 {
     Init();
 }

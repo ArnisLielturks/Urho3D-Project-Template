@@ -68,7 +68,7 @@ void MainMenu::CreateUI()
 void MainMenu::SubscribeToEvents()
 {
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
-    SubscribeToEvent("KeyDown", URHO3D_HANDLER(MainMenu, HandleKeyDown));
+    SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(MainMenu, HandleKeyDown));
     SubscribeToEvent(_startButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleStartGame));
 }
 

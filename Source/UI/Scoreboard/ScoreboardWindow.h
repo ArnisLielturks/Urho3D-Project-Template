@@ -1,0 +1,29 @@
+#pragma once
+
+#include <Urho3D/Urho3DAll.h>
+#include "../BaseWindow.h"
+
+class ScoreboardWindow : public BaseWindow
+{
+    URHO3D_OBJECT(ScoreboardWindow, BaseWindow);
+
+public:
+    /// Construct.
+    ScoreboardWindow(Context* context);
+
+    virtual ~ScoreboardWindow();
+
+    virtual void Init();
+
+protected:
+
+    virtual void Create();
+
+private:
+
+    void SubscribeToEvents();
+
+    void HandleClose(StringHash eventType, VariantMap& eventData);
+
+    SharedPtr<Button> _closeButton;
+};

@@ -27,6 +27,9 @@ namespace Levels {
 
         void SubscribeToEvents();
 
+        void HandleKeyDown(StringHash eventType, VariantMap& eventData);
+        void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+
         SharedPtr<Node> _controlledNode;
         unsigned int _id;
 
@@ -34,5 +37,7 @@ namespace Levels {
         String returnMessage;
 
         WeakPtr<Node> _characterCameraNode;
+
+        bool _showScoreboard;
     };
 }

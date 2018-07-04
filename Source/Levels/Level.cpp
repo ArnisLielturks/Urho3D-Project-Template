@@ -7,7 +7,8 @@ using namespace Levels;
     /// Construct.
 Level::Level(Context* context) :
     BaseLevel(context),
-    shouldReturn(false)
+    shouldReturn(false),
+    _showScoreboard(false)
 {
 }
 
@@ -19,8 +20,6 @@ void Level::Init()
 {
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetNumViewports(1);
-
-    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Level, HandlePostUpdate));
 
     Network* network = GetSubsystem<Network>();
     network->RegisterRemoteEvent("SendPlayerNodeID");
@@ -64,11 +63,17 @@ void Level::CreateUI()
     text->SetHorizontalAlignment(HA_CENTER);
     text->SetVerticalAlignment(VA_CENTER);
     text->SetStyleAuto();
-    text->SetText("This is ingame text! Press ESC to exit game...");
+    text->SetText("This is ingame text!\nPress ESC to exit game\nPress TAB to show ScoreboardWindow\nPress F1 to show/hide console");
+    text->SetTextEffect(TextEffect::TE_STROKE);
+    text->SetFontSize(16);
+    text->SetColor(Color(0.8f, 0.8f, 0.2f));
 }
 
 void Level::SubscribeToEvents()
 {
+    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Level, HandlePostUpdate));
+    SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
+    SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
 }
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -100,5 +105,31 @@ void Level::OnLoaded()
         eventData["Name"] = "MainMenu";
         eventData["Message"] = returnMessage;
         SendEvent(MyEvents::E_SET_LEVEL, eventData);
+    }
+}
+
+void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
+{
+    int key = eventData["Key"].GetInt();
+
+    // Toggle console by pressing F1
+    if (key == KEY_TAB && !_showScoreboard) {
+        VariantMap data;
+        data["Name"] = "ScoreboardWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        _showScoreboard = true;
+    }
+}
+
+void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
+{
+    int key = eventData["Key"].GetInt();
+
+    // Toggle console by pressing F1
+    if (key == KEY_TAB && _showScoreboard) {
+        VariantMap data;
+        data["Name"] = "ScoreboardWindow";
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        _showScoreboard = false;
     }
 }

@@ -102,7 +102,7 @@ void BaseApplication::Start()
     _windowManager = context_->CreateObject<WindowManager>();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Level";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

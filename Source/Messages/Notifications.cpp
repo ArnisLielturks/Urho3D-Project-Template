@@ -45,6 +45,7 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
     // Set String to display
     messageElement->SetText(message);
+    messageElement->SetTextEffect(TextEffect::TE_SHADOW);
     messageElement->SetStyleAuto();
 
     // Set font and text color

@@ -89,6 +89,8 @@ void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         VariantMap data;
         data["Name"] = "SettingsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
+
+        SendEvent(MyEvents::E_SAVE_CONFIG);
     }
 }
 

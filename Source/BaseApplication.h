@@ -31,8 +31,11 @@ private:
 
     void LoadConfig();
     void SaveConfig();
+    void HandleSaveConfig(StringHash eventType, VariantMap& eventData);
 
     void RegisterConsoleCommands();
+
+    void SubscribeToEvents();
 
     void HandleExit(StringHash eventType, VariantMap& eventData);
 

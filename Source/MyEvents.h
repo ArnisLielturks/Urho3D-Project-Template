@@ -5,10 +5,19 @@
 /// User defined event
 namespace MyEvents
 {
+    // Start new level
     static const StringHash E_SET_LEVEL = StringHash("SetLevel");
+
+    // Open UI Window
     static const StringHash E_OPEN_WINDOW = StringHash("OpenWindow");
+    // Close UI Window
     static const StringHash E_CLOSE_WINDOW = StringHash("CloseWindow");
+    // Close all active UI Windows
     static const StringHash E_CLOSE_ALL_WINDOWS = StringHash("CloseAllWindows");
+
+
+    // Save configuration JSON file
+    static const StringHash E_SAVE_CONFIG = StringHash("SaveConfig");
 
     // Control bits we define
     static const unsigned CTRL_FORWARD = 1;

@@ -106,6 +106,8 @@ void BaseApplication::Start()
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
+
+    SubscribeToEvents();
 }
 
 void BaseApplication::Stop()
@@ -142,7 +144,6 @@ void BaseApplication::LoadConfig()
     else {
         URHO3D_LOGERROR("Config file (Game.json) format not correct!");
     }
-    SaveConfig();
 }
 
 void BaseApplication::SaveConfig()
@@ -165,6 +166,11 @@ void BaseApplication::SaveConfig()
     json.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
 }
 
+void BaseApplication::HandleSaveConfig(StringHash eventType, VariantMap& eventData)
+{
+    SaveConfig();
+}
+
 void BaseApplication::RegisterConsoleCommands()
 {
     VariantMap data;
@@ -179,4 +185,9 @@ void BaseApplication::RegisterConsoleCommands()
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 {
     GetSubsystem<Engine>()->Exit();
+}
+
+void BaseApplication::SubscribeToEvents()
+{
+    SubscribeToEvent(MyEvents::E_SAVE_CONFIG, URHO3D_HANDLER(BaseApplication, HandleSaveConfig));
 }

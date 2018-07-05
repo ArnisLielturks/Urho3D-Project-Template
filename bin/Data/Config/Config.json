@@ -1,6 +1,6 @@
 {
-	"ScreenWidth": 640,
-	"ScreenHeight": 480,
+	"ScreenWidth": 800,
+	"ScreenHeight": 600,
 	"Fullscreen": false,
 	"FrameLimiter": true,
 	"LowQualityShadows": false,

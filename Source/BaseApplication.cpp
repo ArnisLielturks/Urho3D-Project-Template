@@ -41,7 +41,6 @@ void BaseApplication::Setup()
     engineParameters_[EP_FULL_SCREEN] = engine_->GetGlobalVar("Fullscreen").GetBool();
     engineParameters_[EP_WINDOW_WIDTH] = engine_->GetGlobalVar("ScreenWidth").GetInt();
     engineParameters_[EP_WINDOW_HEIGHT] = engine_->GetGlobalVar("ScreenHeight").GetInt();
-    engineParameters_[EP_WINDOW_HEIGHT] = engine_->GetGlobalVar("ScreenHeight").GetInt();
     engineParameters_[EP_BORDERLESS] = false;
     engineParameters_[EP_FRAME_LIMITER] = engine_->GetGlobalVar("FrameLimiter").GetBool();
     engineParameters_[EP_WINDOW_TITLE] = "EmptyProject";

@@ -36,42 +36,56 @@ BaseApplication::BaseApplication(Context* context) :
 
 void BaseApplication::Setup()
 {
-    // Web platform depends on the resource system to read any data files. Skip parsing the command line file now
-    // and try later when the resource system is live
-    // Read command line from a file if no arguments given. This is primarily intended for mobile platforms.
-    // Note that the command file name uses a hardcoded path that does not utilize the resource system
-    // properly (including resource path prefix), as the resource system is not yet initialized at this point
-    FileSystem* filesystem = GetSubsystem<FileSystem>();
-    const String commandFileName = filesystem->GetProgramDir() + "Data/CommandLine.txt";
-    if (filesystem->FileExists(commandFileName)) {
-        SharedPtr<File> commandFile(new File(context_, commandFileName));
-        if (commandFile->IsOpen()) {
-            commandLineRead_ = true;
-            //while (!commandFile->IsEof()) {
-                String commandLine = commandFile->ReadLine();
-                URHO3D_LOGINFO("Line: " + commandLine);
-                ParseArguments(commandLine, false);
-                // Reparse engine startup parameters now
-                engineParameters_ = Engine::ParseParameters(GetArguments());
-            //}
-            commandFile->Close();
-        }
-    }
+    LoadConfig();
 
-    // Show usage if not found
-    // Use the script file name as the base name for the log file
-    engineParameters_[EP_LOG_NAME] = "EmptyProject.log";// filesystem->GetAppPreferencesDir("urho3d", "logs") + GetFileNameAndExtension(scriptFileName_) + ".log";
-    engineParameters_[EP_FULL_SCREEN] = false;
-    engineParameters_[EP_WINDOW_WIDTH] = 800;
-    engineParameters_[EP_WINDOW_HEIGHT] = 600;
+    engineParameters_[EP_FULL_SCREEN] = engine_->GetGlobalVar("Fullscreen").GetBool();
+    engineParameters_[EP_WINDOW_WIDTH] = engine_->GetGlobalVar("ScreenWidth").GetInt();
+    engineParameters_[EP_WINDOW_HEIGHT] = engine_->GetGlobalVar("ScreenHeight").GetInt();
+    engineParameters_[EP_WINDOW_HEIGHT] = engine_->GetGlobalVar("ScreenHeight").GetInt();
+    engineParameters_[EP_BORDERLESS] = false;
+    engineParameters_[EP_FRAME_LIMITER] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+    engineParameters_[EP_WINDOW_TITLE] = "EmptyProject";
+    engineParameters_[EP_WINDOW_ICON] = "Data/Textures/UrhoIcon.png";
+
+    // Logs
+    engineParameters_[EP_LOG_NAME] = "EmptyProject.log";
     engineParameters_[EP_LOG_LEVEL] = LOG_INFO;
+    engineParameters_[EP_LOG_QUIET] = false;
 
-    // Construct a search path to find the resource prefix with two entries:
-    // The first entry is an empty path which will be substituted with program/bin directory -- this entry is for binary when it is still in build tree
-    // The second and third entries are possible relative paths from the installed program/bin directory to the asset directory -- these entries are for binary when it is in the Urho3D SDK installation location
-    if (!engineParameters_.Contains(EP_RESOURCE_PREFIX_PATHS)) {
-        engineParameters_[EP_RESOURCE_PREFIX_PATHS] = ";../share/Resources;../share/Urho3D/Resources";
-    }
+    // Graphics
+    engineParameters_[EP_LOW_QUALITY_SHADOWS] = engine_->GetGlobalVar("LowQualityShadows").GetBool(); 
+    engineParameters_[EP_MATERIAL_QUALITY] = engine_->GetGlobalVar("MaterialQuality").GetInt(); // 0 - 15
+    engineParameters_[EP_MONITOR] = engine_->GetGlobalVar("Monitor").GetInt();
+    engineParameters_[EP_MULTI_SAMPLE] = engine_->GetGlobalVar("MultiSample").GetInt(); // 1 - N
+    engineParameters_[EP_SHADOWS] = engine_->GetGlobalVar("Shadows").GetBool();
+    engineParameters_[EP_TEXTURE_ANISOTROPY] = engine_->GetGlobalVar("TextureAnisotropy").GetInt();
+    engineParameters_[EP_TEXTURE_FILTER_MODE] = engine_->GetGlobalVar("TextureFilterMode").GetInt();
+    /*
+    FILTER_NEAREST = 0,
+    FILTER_BILINEAR = 1,
+    FILTER_TRILINEAR = 2,
+    FILTER_ANISOTROPIC = 3,
+    FILTER_NEAREST_ANISOTROPIC = 4,
+    FILTER_DEFAULT = 5,
+    MAX_FILTERMODES = 6
+    */
+    engineParameters_[EP_TEXTURE_QUALITY] = engine_->GetGlobalVar("TextureQuality").GetInt();
+    engineParameters_[EP_TRIPLE_BUFFER] = engine_->GetGlobalVar("TripleBuffer").GetBool();
+    engineParameters_[EP_VSYNC] = engine_->GetGlobalVar("VSync").GetBool();
+
+    // engineParameters_[EP_PACKAGE_CACHE_DIR] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+    // engineParameters_[EP_RENDER_PATH] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+    // engineParameters_[EP_RESOURCE_PACKAGES] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+    engineParameters_[EP_RESOURCE_PATHS] = engine_->GetGlobalVar("ResourcePaths").GetString();
+    // engineParameters_[EP_RESOURCE_PREFIX_PATHS] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+    // engineParameters_[EP_SHADER_CACHE_DIR] = engine_->GetGlobalVar("FrameLimiter").GetBool();
+
+    // Sound
+    engineParameters_[EP_SOUND] = engine_->GetGlobalVar("Sound").GetBool();
+    engineParameters_[EP_SOUND_BUFFER] = engine_->GetGlobalVar("SoundBuffer").GetInt();
+    engineParameters_[EP_SOUND_INTERPOLATION] = engine_->GetGlobalVar("SoundInterpolation").GetBool();
+    engineParameters_[EP_SOUND_MIX_RATE] = engine_->GetGlobalVar("SoundMixRate").GetInt();
+    engineParameters_[EP_SOUND_STEREO] = engine_->GetGlobalVar("SoundStereo").GetBool();
 }
 
 void BaseApplication::Start()
@@ -91,8 +105,6 @@ void BaseApplication::Start()
             ParseArguments(commandLine, false);
         }
     }
-
-    LoadConfig();
 
     levelManager = context_->CreateObject<LevelManager>();
     _alertMessage = context_->CreateObject<Message>();

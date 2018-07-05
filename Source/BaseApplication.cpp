@@ -119,11 +119,12 @@ void BaseApplication::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void BaseApplication::LoadConfig()
 {
     JSONFile json(context_);
-    json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Game.json");
+    json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
     JSONValue& content = json.GetRoot();
     if (content.IsObject()) {
         for (auto it = content.Begin(); it != content.End(); ++it) {
             //URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
+            _globalSettings[StringHash((*it).first_)] = (*it).first_;
             if ((*it).second_.IsBool()) {
                 engine_->SetGlobalVar((*it).first_, (*it).second_.GetBool());
                 //URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
@@ -141,6 +142,27 @@ void BaseApplication::LoadConfig()
     else {
         URHO3D_LOGERROR("Config file (Game.json) format not correct!");
     }
+    SaveConfig();
+}
+
+void BaseApplication::SaveConfig()
+{
+    URHO3D_LOGINFO("Saving config");
+    JSONFile json(context_);
+    JSONValue& content = json.GetRoot();
+    for (auto it = _globalSettings.Begin(); it != _globalSettings.End(); ++it) {
+        const Variant value = engine_->GetGlobalVar((*it).first_);
+        if (value.GetType() == VAR_STRING) {
+            content.Set((*it).second_.GetString(), value.GetString());
+        }
+        if (value.GetType() == VAR_BOOL) {
+            content.Set((*it).second_.GetString(), value.GetBool());
+        }
+        if (value.GetType() == VAR_INT) {
+            content.Set((*it).second_.GetString(), value.GetInt());
+        }
+    }
+    json.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
 }
 
 void BaseApplication::RegisterConsoleCommands()

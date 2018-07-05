@@ -30,6 +30,7 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     void LoadConfig();
+    void SaveConfig();
 
     void RegisterConsoleCommands();
 
@@ -44,4 +45,5 @@ private:
     SharedPtr<Achievements> _achievements;
     SharedPtr<ModLoader> _modLoader;
     SharedPtr<WindowManager> _windowManager;
+    VariantMap _globalSettings;
 };

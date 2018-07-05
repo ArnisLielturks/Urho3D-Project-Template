@@ -41,6 +41,10 @@ void MainMenu::Init()
     data["Title"] = "Error!";
     data["Message"] = "Seems like everything is ok!";
     SendEvent("ShowAlertMessage", data);
+
+    data["Title"] = "Error2!";
+    data["Message"] = "Seems like everything is ok2!";
+    SendEvent("ShowAlertMessage", data);
 }
 
 void MainMenu::CreateScene()

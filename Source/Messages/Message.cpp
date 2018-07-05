@@ -19,6 +19,10 @@ void Message::Init()
 
 void Message::Create()
 {
+    if (_baseElement) {
+        URHO3D_LOGERROR("Another pop-up message is already active");
+        return;
+    }
     UI* ui = GetSubsystem<UI>();
 
     //////////////
@@ -54,4 +58,5 @@ void Message::HandleOkButton(StringHash eventType, VariantMap& eventData)
 {
     _baseElement->SetVisible(false);
     _baseElement->Remove();
+    _baseElement = nullptr;
 }

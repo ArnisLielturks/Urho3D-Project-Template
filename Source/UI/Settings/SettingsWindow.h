@@ -25,6 +25,7 @@ private:
 
     void HandleClose(StringHash eventType, VariantMap& eventData);
     void ChangeVideoSettings(StringHash eventType, VariantMap& eventData);
+    SharedPtr<DropDownList> CreateMenu(const String& label, const char** items, IntVector2 position/*, EventHandler* handler*/);
 
     Button* CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
 

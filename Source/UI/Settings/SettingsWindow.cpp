@@ -20,6 +20,41 @@ void SettingsWindow::Init()
     SubscribeToEvents();
 }
 
+SharedPtr<DropDownList> SettingsWindow::CreateMenu(const String& label, const char** items, IntVector2 position/*, EventHandler* handler*/)
+{
+    SharedPtr<UIElement> container(new UIElement(context_));
+    container->SetPosition(position);
+    container->SetAlignment(HA_LEFT, VA_TOP);
+    container->SetLayout(LM_HORIZONTAL, 8);
+    _base->AddChild(container);
+
+    SharedPtr<Text> text(new Text(context_));
+    container->AddChild(text);
+    text->SetText(label);
+    text->SetStyleAuto();
+    //text->AddTag(TEXT_TAG);
+
+    SharedPtr<DropDownList> list(new DropDownList(context_));
+    container->AddChild(list);
+    list->SetMinWidth(100);
+    list->SetStyleAuto();
+
+    for (int i = 0; items[i]; ++i)
+    {
+        SharedPtr<Text> item(new Text(context_));
+        list->AddItem(item);
+        item->SetText(items[i]);
+        item->SetStyleAuto();
+        item->SetMinWidth(100);
+        //item->AddTag(TEXT_TAG);
+    }
+
+    text->SetMaxWidth(text->GetRowWidth(0));
+
+    //SubscribeToEvent(list, E_ITEMSELECTED, handler);
+    return list;
+}
+
 void SettingsWindow::Create()
 {
     UI* ui = GetSubsystem<UI>();
@@ -35,6 +70,19 @@ void SettingsWindow::Create()
     _audioTabButton = CreateButton("Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
     _graphicsTabButton = CreateButton("Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+
+    const char* thresholds[] = {
+        "0",
+        "3",
+        "6",
+        "9",
+        "12",
+        "15",
+        "18",
+        "21",
+        nullptr
+    };
+    CreateMenu("Resolutions", thresholds, IntVector2(20, 60));
 }
 
 Button* SettingsWindow::CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign)

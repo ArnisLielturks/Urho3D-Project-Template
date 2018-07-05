@@ -17,15 +17,14 @@ void Message::Init()
     SubscribeToEvents();
 }
 
-void Message::Create()
+bool Message::Create()
 {
-    if (_baseElement) {
+    if (_baseElement.Refs()) {
         URHO3D_LOGERROR("Another pop-up message is already active");
-        return;
+        return false;
     }
     UI* ui = GetSubsystem<UI>();
 
-    //////////////
     _baseElement = ui->GetRoot()->CreateChild("Menu");
     File startButtonFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/UI/Message.xml", FILE_READ);
     _baseElement->LoadXML(startButtonFile);
@@ -33,6 +32,8 @@ void Message::Create()
     _title = static_cast<Text*>(_baseElement->GetChild("MessageTitle", true));
     _message = static_cast<Text*>(_baseElement->GetChild("MessageBody", true));
     SubscribeToEvents();
+
+    return true;
 }
 
 void Message::SubscribeToEvents()
@@ -43,11 +44,12 @@ void Message::SubscribeToEvents()
 
 void Message::HandleShowMessage(StringHash eventType, VariantMap& eventData)
 {
-    Create();
     String title = eventData["Title"].GetString();
     String message = eventData["Message"].GetString();
-    _title->SetText(title);
-    _message->SetText(message);
+    if (Create() && _title.Refs() && _message.Refs()) {
+        _title->SetText(title);
+        _message->SetText(message);
+    }
 }
 
 void Message::Dispose()
@@ -59,4 +61,6 @@ void Message::HandleOkButton(StringHash eventType, VariantMap& eventData)
     _baseElement->SetVisible(false);
     _baseElement->Remove();
     _baseElement = nullptr;
+    _title = nullptr;
+    _message = nullptr;
 }

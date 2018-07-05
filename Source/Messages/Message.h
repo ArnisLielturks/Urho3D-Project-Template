@@ -14,7 +14,7 @@ public:
 
     virtual ~Message();
 
-    void Create();
+    bool Create();
 
     void Dispose();
 
@@ -29,10 +29,9 @@ private:
 
     void SubscribeToEvents();
 
-    UIElement* _baseElement;
+    SharedPtr<UIElement> _baseElement;
     SharedPtr<Button> _okButton;
     SharedPtr<Text> _title;
     SharedPtr<Text> _message;
-
 
 };

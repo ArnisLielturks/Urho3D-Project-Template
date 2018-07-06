@@ -18,6 +18,7 @@ namespace MyEvents
 
     // Save configuration JSON file
     static const StringHash E_SAVE_CONFIG = StringHash("SaveConfig");
+    static const StringHash E_ADD_CONFIG = StringHash("AddConfig");
 
     // Control bits we define
     static const unsigned CTRL_FORWARD = 1;

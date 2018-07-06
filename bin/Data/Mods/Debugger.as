@@ -8,7 +8,7 @@ Array<String>@  mods = {};
  */
 void Start()
 {
-    SubscribeToEvent("Set levels", "HandleLevelChange");
+    SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
 }
@@ -20,6 +20,12 @@ void HandleLevelChange(StringHash eventType, VariantMap& eventData)
 {
     String levelName = eventData["Name"].GetString();
     log.Info("[Debugger.as] Level loaded: " + levelName);
+
+    VariantMap data;
+    data["Name"] = "MyTestVariable";
+    SendEvent("AddConfig", data);
+
+    SetGlobalVar("MyTestVariable", 123.21);
 }
 
 /**

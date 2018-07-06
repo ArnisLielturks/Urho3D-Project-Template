@@ -18,5 +18,6 @@
 	"SoundBuffer": 100,
 	"SoundMixRate": 44100,
 	"SoundInterpolation": true,
-	"SoundStereo": true
+	"SoundStereo": true,
+	"MyTestVariable": 123.20999908447266
 }

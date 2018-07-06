@@ -32,6 +32,7 @@ private:
     void LoadConfig();
     void SaveConfig();
     void HandleSaveConfig(StringHash eventType, VariantMap& eventData);
+    void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 
     void RegisterConsoleCommands();
 

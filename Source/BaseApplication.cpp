@@ -147,7 +147,12 @@ void BaseApplication::LoadConfig()
                 //URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
             }
             if ((*it).second_.IsNumber()) {
-                engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
+                if ((*it).second_.GetNumberType() == JSONNT_FLOAT_DOUBLE) {
+                    engine_->SetGlobalVar((*it).first_, (*it).second_.GetFloat());
+                }
+                if ((*it).second_.GetNumberType() == JSONNT_INT) {
+                    engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
+                }
                 //URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
             }
         }
@@ -172,6 +177,12 @@ void BaseApplication::SaveConfig()
         }
         if (value.GetType() == VAR_INT) {
             content.Set((*it).second_.GetString(), value.GetInt());
+        }
+        if (value.GetType() == VAR_FLOAT) {
+            content.Set((*it).second_.GetString(), value.GetFloat());
+        }
+        if (value.GetType() == VAR_DOUBLE) {
+            content.Set((*it).second_.GetString(), value.GetFloat());
         }
     }
     json.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
@@ -201,4 +212,15 @@ void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 void BaseApplication::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_SAVE_CONFIG, URHO3D_HANDLER(BaseApplication, HandleSaveConfig));
+    SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
+}
+
+void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)
+{
+    URHO3D_LOGINFO("!!!!!!!!!!!!!1 HandleAddConfig");
+    String paramName = eventData["Name"].GetString();
+    if (!paramName.Empty()) {
+        URHO3D_LOGINFO("Adding new config value: " + paramName);
+        _globalSettings[paramName] = paramName;
+    }
 }

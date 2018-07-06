@@ -29,8 +29,9 @@ public:
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-    void LoadConfig();
+    void LoadConfig(String filename, String prefix = "", bool isMain = false);
     void SaveConfig();
+    void HandleLoadConfig(StringHash eventType, VariantMap& eventData);
     void HandleSaveConfig(StringHash eventType, VariantMap& eventData);
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 

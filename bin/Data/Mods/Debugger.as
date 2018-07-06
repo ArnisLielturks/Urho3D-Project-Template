@@ -11,6 +11,22 @@ void Start()
     SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
+
+    // Add new global config value
+    VariantMap data;
+    data["Name"] = "MyTestVariable";
+    SendEvent("AddConfig", data);
+
+    // Set a value for our variable
+    SetGlobalVar("MyTestVariable", 123.21);
+
+    VariantMap loadConfigData;
+    loadConfigData["Filepath"] = "Data/Mods/Helpers/Config.json";
+    loadConfigData["Prefix"] = "Debugger_";
+    // Load custom config file
+    SendEvent("LoadConfig", loadConfigData);
+
+    log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
 }
 
 /**
@@ -20,12 +36,6 @@ void HandleLevelChange(StringHash eventType, VariantMap& eventData)
 {
     String levelName = eventData["Name"].GetString();
     log.Info("[Debugger.as] Level loaded: " + levelName);
-
-    VariantMap data;
-    data["Name"] = "MyTestVariable";
-    SendEvent("AddConfig", data);
-
-    SetGlobalVar("MyTestVariable", 123.21);
 }
 
 /**

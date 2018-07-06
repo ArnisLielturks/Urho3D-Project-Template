@@ -36,7 +36,7 @@ BaseApplication::BaseApplication(Context* context) :
 
 void BaseApplication::Setup()
 {
-    LoadConfig();
+    LoadConfig("Data/Config/Config.json", "", true);
 
     engineParameters_[EP_FULL_SCREEN] = engine_->GetGlobalVar("Fullscreen").GetBool();
     engineParameters_[EP_WINDOW_WIDTH] = engine_->GetGlobalVar("ScreenWidth").GetInt();
@@ -105,6 +105,8 @@ void BaseApplication::Start()
         }
     }
 
+    SubscribeToEvents();
+
     levelManager = context_->CreateObject<LevelManager>();
     _alertMessage = context_->CreateObject<Message>();
     _notifications = context_->CreateObject<Notifications>();
@@ -117,8 +119,6 @@ void BaseApplication::Start()
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
-
-    SubscribeToEvents();
 }
 
 void BaseApplication::Stop()
@@ -129,31 +129,33 @@ void BaseApplication::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
 }
 
-void BaseApplication::LoadConfig()
+void BaseApplication::LoadConfig(String filename, String prefix, bool isMain)
 {
+    URHO3D_LOGINFO("Loading config file '" + filename + "' with '" + prefix + "' prefix");
     JSONFile json(context_);
-    json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
+    json.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + filename);
     JSONValue& content = json.GetRoot();
     if (content.IsObject()) {
         for (auto it = content.Begin(); it != content.End(); ++it) {
-            //URHO3D_LOGINFO("Loading setting '" + String((*it).first_) + "'");
-            _globalSettings[StringHash((*it).first_)] = (*it).first_;
+
+            // If it's the main config file, we should only then register this
+            // config parameter key for saving
+            if (isMain) {
+                _globalSettings[StringHash((*it).first_)] = (*it).first_;
+            }
             if ((*it).second_.IsBool()) {
-                engine_->SetGlobalVar((*it).first_, (*it).second_.GetBool());
-                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetBool()));
+                engine_->SetGlobalVar(prefix + (*it).first_, (*it).second_.GetBool());
             }
             if ((*it).second_.IsString()) {
-                engine_->SetGlobalVar((*it).first_, (*it).second_.GetString());
-                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetString()));
+                engine_->SetGlobalVar(prefix + (*it).first_, (*it).second_.GetString());
             }
             if ((*it).second_.IsNumber()) {
                 if ((*it).second_.GetNumberType() == JSONNT_FLOAT_DOUBLE) {
-                    engine_->SetGlobalVar((*it).first_, (*it).second_.GetFloat());
+                    engine_->SetGlobalVar(prefix + (*it).first_, (*it).second_.GetFloat());
                 }
                 if ((*it).second_.GetNumberType() == JSONNT_INT) {
-                    engine_->SetGlobalVar((*it).first_, (*it).second_.GetInt());
+                    engine_->SetGlobalVar(prefix + (*it).first_, (*it).second_.GetInt());
                 }
-                //URHO3D_LOGINFO("Value: " + String((*it).second_.GetInt()));
             }
         }
     }
@@ -188,6 +190,15 @@ void BaseApplication::SaveConfig()
     json.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
 }
 
+void BaseApplication::HandleLoadConfig(StringHash eventType, VariantMap& eventData)
+{
+    String filename = eventData["Filepath"].GetString();
+    String prefix = eventData["Prefix"].GetString();
+    if (!filename.Empty()) {
+        LoadConfig(filename, prefix);
+    }
+}
+
 void BaseApplication::HandleSaveConfig(StringHash eventType, VariantMap& eventData)
 {
     SaveConfig();
@@ -213,11 +224,12 @@ void BaseApplication::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_SAVE_CONFIG, URHO3D_HANDLER(BaseApplication, HandleSaveConfig));
     SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
+    SubscribeToEvent(MyEvents::E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
 }
 
 void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)
 {
-    URHO3D_LOGINFO("!!!!!!!!!!!!!1 HandleAddConfig");
+    URHO3D_LOGINFO("!!!!!!!!!!!!! HandleAddConfig");
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
         URHO3D_LOGINFO("Adding new config value: " + paramName);

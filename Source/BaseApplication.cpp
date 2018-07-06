@@ -184,7 +184,7 @@ void BaseApplication::HandleSaveConfig(StringHash eventType, VariantMap& eventDa
 
 void BaseApplication::RegisterConsoleCommands()
 {
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["ConsoleCommandName"] = "exit";
     data["ConsoleCommandEvent"] = "HandleExit";
     data["ConsoleCommandDescription"] = "Exits game";

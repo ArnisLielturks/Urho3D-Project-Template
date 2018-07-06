@@ -90,7 +90,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         cameraNode_->SetPosition(position);
     }
     if (input->GetKeyDown(KEY_ESCAPE)) {
-        VariantMap eventData;
+        VariantMap eventData = GetEventDataMap();;
         eventData["Name"] = "ExitGame";
         eventData["Message"] = "";
         SendEvent(MyEvents::E_SET_LEVEL, eventData);
@@ -101,7 +101,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 void Level::OnLoaded()
 {
     if (shouldReturn) {
-        VariantMap eventData;
+        VariantMap eventData = GetEventDataMap();;
         eventData["Name"] = "MainMenu";
         eventData["Message"] = returnMessage;
         SendEvent(MyEvents::E_SET_LEVEL, eventData);
@@ -114,7 +114,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && !_showScoreboard) {
-        VariantMap data;
+        VariantMap data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         _showScoreboard = true;
@@ -127,7 +127,7 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && _showScoreboard) {
-        VariantMap data;
+        VariantMap data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         _showScoreboard = false;

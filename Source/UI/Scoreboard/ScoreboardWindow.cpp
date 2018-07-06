@@ -102,7 +102,7 @@ void ScoreboardWindow::SubscribeToEvents()
 
 void ScoreboardWindow::HandleClose(StringHash eventType, VariantMap& eventData)
 {
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["Name"] = "ScoreboardWindow";
     SendEvent(MyEvents::E_CLOSE_WINDOW, data);
 }

@@ -220,7 +220,7 @@ void SettingsWindow::SubscribeToEvents()
 
 void SettingsWindow::HandleClose(StringHash eventType, VariantMap& eventData)
 {
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["Name"] = "SettingsWindow";
     SendEvent(MyEvents::E_CLOSE_WINDOW, data);
 }

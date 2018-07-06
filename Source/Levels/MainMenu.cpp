@@ -19,7 +19,7 @@ void MainMenu::Init()
 {
     if (data_.Contains("Message")) {
         //SharedPtr<Urho3D::MessageBox> messageBox(new Urho3D::MessageBox(context_, data_["Message"].GetString(), "Oh crap!"));
-        VariantMap data;
+        VariantMap data = GetEventDataMap();
         data["Title"] = "Error!";
         data["Message"] = data_["Message"].GetString();
         SendEvent("ShowAlertMessage", data);
@@ -34,11 +34,11 @@ void MainMenu::Init()
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["Message"] = "Entered menu!";
     SendEvent("NewAchievement", data);
 
-    data["Title"] = "Error!";
+    data["Title"] = "Hey!";
     data["Message"] = "Seems like everything is ok!";
     SendEvent("ShowAlertMessage", data);
 }
@@ -57,7 +57,8 @@ void MainMenu::CreateUI()
         _startButton->SetSize(IntVector2(100, 30));
         _startButton->SetStyleAuto();
 
-        _startButton->SetAlignment(HA_CENTER, VA_CENTER);
+        _startButton->SetPosition(IntVector2(-20, -100));
+        _startButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
 
         Text* text = _startButton->CreateChild<Text>();
         text->SetText("Start");
@@ -68,12 +69,23 @@ void MainMenu::CreateUI()
         _settingsButton = ui->GetRoot()->CreateChild<Button>();
         _settingsButton->SetSize(IntVector2(100, 30));
         _settingsButton->SetStyleAuto();
-        _settingsButton->SetPosition(IntVector2(-20, -20));
-
+        _settingsButton->SetPosition(IntVector2(-20, -60));
         _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
 
         Text* text = _settingsButton->CreateChild<Text>();
         text->SetText("Settings");
+        text->SetStyleAuto();
+        text->SetAlignment(HA_CENTER, VA_CENTER);
+    }
+    {
+        _exitButton = ui->GetRoot()->CreateChild<Button>();
+        _exitButton->SetSize(IntVector2(100, 30));
+        _exitButton->SetStyleAuto();
+        _exitButton->SetPosition(IntVector2(-20, -20));
+        _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+
+        Text* text = _exitButton->CreateChild<Text>();
+        text->SetText("Exit");
         text->SetStyleAuto();
         text->SetAlignment(HA_CENTER, VA_CENTER);
     }
@@ -85,6 +97,7 @@ void MainMenu::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(MainMenu, HandleKeyDown));
     SubscribeToEvent(_startButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleStartGame));
     SubscribeToEvent(_settingsButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleShowSettings));
+    SubscribeToEvent(_exitButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleExit));
 }
 
 void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -98,10 +111,6 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
     int key = eventData["Key"].GetInt();
-
-    // Toggle console by pressing F1
-    if (key == KEY_F2) {
-    }
 }
 
 void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)
@@ -116,4 +125,11 @@ void MainMenu::HandleShowSettings(StringHash eventType, VariantMap& eventData)
     VariantMap data = GetEventDataMap();
     data["Name"] = "SettingsWindow";
     SendEvent(MyEvents::E_OPEN_WINDOW, data);
+}
+
+void MainMenu::HandleExit(StringHash eventType, VariantMap& eventData)
+{
+    VariantMap data = GetEventDataMap();;
+    data["Name"] = "ExitGame";
+    SendEvent(MyEvents::E_SET_LEVEL, data);
 }

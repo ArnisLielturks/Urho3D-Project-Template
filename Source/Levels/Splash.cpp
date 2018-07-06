@@ -27,7 +27,7 @@ void Splash::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["Message"] = "Saw splash screen";
     SendEvent("NewAchievement", data);
 }

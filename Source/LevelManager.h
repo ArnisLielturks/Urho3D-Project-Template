@@ -142,7 +142,7 @@ private:
             // Unsubscribe update event
             UnsubscribeFromEvent(E_UPDATE);
 
-            VariantMap data;
+            VariantMap data = GetEventDataMap();
             data["Name"] = level_queue_.Front();
             SendEvent("LevelLoaded", data);
 

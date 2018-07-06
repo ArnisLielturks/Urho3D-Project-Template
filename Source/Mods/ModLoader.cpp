@@ -41,7 +41,7 @@ void ModLoader::Create()
         modNames.Push((*it));
     }
 
-    VariantMap data;
+    VariantMap data = GetEventDataMap();
     data["Mods"] = modNames;
     SendEvent("ModsLoaded", data);
 

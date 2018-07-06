@@ -228,6 +228,10 @@ void SettingsWindow::HandleClose(StringHash eventType, VariantMap& eventData)
 void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 {
     SendEvent(MyEvents::E_SAVE_CONFIG);
+    VariantMap data = GetEventDataMap();
+    data["Title"] = "Settings saved!";
+    data["Message"] = "You must restart the game for\nthe changes to take effect";
+    SendEvent("ShowAlertMessage", data);
 }
 
 void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventData)

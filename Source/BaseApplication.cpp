@@ -229,7 +229,6 @@ void BaseApplication::SubscribeToEvents()
 
 void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)
 {
-    URHO3D_LOGINFO("!!!!!!!!!!!!! HandleAddConfig");
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
         URHO3D_LOGINFO("Adding new config value: " + paramName);

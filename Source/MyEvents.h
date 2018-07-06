@@ -6,20 +6,43 @@
 namespace MyEvents
 {
     // Start new level
-    static const StringHash E_SET_LEVEL = StringHash("SetLevel");
+    URHO3D_EVENT(E_SET_LEVEL, SetLevel)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+        URHO3D_PARAM(P_MESSAGE, Message);
+    }
+
 
     // Open UI Window
-    static const StringHash E_OPEN_WINDOW = StringHash("OpenWindow");
+    URHO3D_EVENT(E_OPEN_WINDOW, OpenWindow)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+    }
     // Close UI Window
-    static const StringHash E_CLOSE_WINDOW = StringHash("CloseWindow");
+    URHO3D_EVENT(E_CLOSE_WINDOW, CloseWindow)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+    }
     // Close all active UI Windows
-    static const StringHash E_CLOSE_ALL_WINDOWS = StringHash("CloseAllWindows");
+    URHO3D_EVENT(E_CLOSE_ALL_WINDOWS, CloseAllWindows)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+    }
 
 
     // Save configuration JSON file
-    static const StringHash E_SAVE_CONFIG = StringHash("SaveConfig");
-    static const StringHash E_ADD_CONFIG = StringHash("AddConfig");
-    static const StringHash E_LOAD_CONFIG = StringHash("LoadConfig");
+    URHO3D_EVENT(E_SAVE_CONFIG, SaveConfig)
+    {
+    }
+    URHO3D_EVENT(E_ADD_CONFIG, AddConfig)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+    }
+    URHO3D_EVENT(E_LOAD_CONFIG, LoadConfig)
+    {
+        URHO3D_PARAM(P_FILEPATH, Filepath);
+        URHO3D_PARAM(P_PREFIX, Prefix);
+    }
 
     // Control bits we define
     static const unsigned CTRL_FORWARD = 1;

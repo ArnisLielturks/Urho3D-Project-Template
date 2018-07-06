@@ -52,17 +52,31 @@ void MainMenu::CreateUI()
 {
     UI* ui = GetSubsystem<UI>();
 
-    //////////////
-    _startButton = ui->GetRoot()->CreateChild<Button>();
-    _startButton->SetSize(IntVector2(100, 30));
-    _startButton->SetStyleAuto();
+    {
+        _startButton = ui->GetRoot()->CreateChild<Button>();
+        _startButton->SetSize(IntVector2(100, 30));
+        _startButton->SetStyleAuto();
 
-    _startButton->SetAlignment(HA_CENTER, VA_CENTER);
+        _startButton->SetAlignment(HA_CENTER, VA_CENTER);
 
-    Text* text = _startButton->CreateChild<Text>();
-    text->SetText("Start game!");
-    text->SetStyleAuto();
-    text->SetAlignment(HA_CENTER, VA_CENTER);
+        Text* text = _startButton->CreateChild<Text>();
+        text->SetText("Start");
+        text->SetStyleAuto();
+        text->SetAlignment(HA_CENTER, VA_CENTER);
+    }
+    {
+        _settingsButton = ui->GetRoot()->CreateChild<Button>();
+        _settingsButton->SetSize(IntVector2(100, 30));
+        _settingsButton->SetStyleAuto();
+        _settingsButton->SetPosition(IntVector2(-20, -20));
+
+        _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+
+        Text* text = _settingsButton->CreateChild<Text>();
+        text->SetText("Settings");
+        text->SetStyleAuto();
+        text->SetAlignment(HA_CENTER, VA_CENTER);
+    }
 }
 
 void MainMenu::SubscribeToEvents()
@@ -70,6 +84,7 @@ void MainMenu::SubscribeToEvents()
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(MainMenu, HandleKeyDown));
     SubscribeToEvent(_startButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleStartGame));
+    SubscribeToEvent(_settingsButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleShowSettings));
 }
 
 void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -86,11 +101,6 @@ void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_F2) {
-        VariantMap data;
-        data["Name"] = "SettingsWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
-
-        SendEvent(MyEvents::E_SAVE_CONFIG);
     }
 }
 
@@ -99,4 +109,11 @@ void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)
     VariantMap& levelEventData = GetEventDataMap();
     levelEventData["Name"] = "Loading";
     SendEvent(MyEvents::E_SET_LEVEL, levelEventData);
+}
+
+void MainMenu::HandleShowSettings(StringHash eventType, VariantMap& eventData)
+{
+    VariantMap data = GetEventDataMap();
+    data["Name"] = "SettingsWindow";
+    SendEvent(MyEvents::E_OPEN_WINDOW, data);
 }

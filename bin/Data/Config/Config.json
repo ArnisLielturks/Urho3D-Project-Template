@@ -1,4 +1,5 @@
 {
+	"ResourcePaths": "Data;CoreData",
 	"ScreenWidth": 800,
 	"ScreenHeight": 600,
 	"Fullscreen": false,
@@ -7,16 +8,15 @@
 	"MaterialQuality": 15,
 	"Monitor": 1,
 	"MultiSample": 1,
-	"ResourcePaths": "Data;CoreData",
 	"Shadows": true,
-	"Sound": true,
-	"SoundBuffer": 100,
-	"SoundMixRate": 44100,
-	"SoundInterpolation": true,
-	"SoundStereo": true,
 	"TextureAnisotropy": 4,
 	"TextureFilterMode": 3,
 	"TextureQuality": 2,
 	"TripleBuffer": true,
-	"VSync": true
+	"VSync": true,
+	"Sound": true,
+	"SoundBuffer": 100,
+	"SoundMixRate": 44100,
+	"SoundInterpolation": true,
+	"SoundStereo": true
 }

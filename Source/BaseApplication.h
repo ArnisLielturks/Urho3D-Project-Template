@@ -35,6 +35,8 @@ private:
     void HandleSaveConfig(StringHash eventType, VariantMap& eventData);
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 
+	void HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData);
+
     void RegisterConsoleCommands();
 
     void SubscribeToEvents();

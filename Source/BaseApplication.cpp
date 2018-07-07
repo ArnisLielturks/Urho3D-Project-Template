@@ -18,6 +18,7 @@
 #include <Urho3D/Math/MathDefs.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/AngelScript/ScriptAPI.h>
+#include <string>
 
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -213,6 +214,18 @@ void BaseApplication::RegisterConsoleCommands()
     SendEvent("ConsoleCommandAdd", data);
 
     SubscribeToEvent("HandleExit", URHO3D_HANDLER(BaseApplication, HandleExit));
+
+	// Register all global variables as a console commands
+	for (auto it = _globalSettings.Begin(); it != _globalSettings.End(); ++it) {
+		using namespace MyEvents::ConsoleCommandAdd;
+		VariantMap data = GetEventDataMap();
+		data[P_NAME] = (*it).second_;
+		data[P_EVENT] = "ConsoleGlobalVariableChange";
+		data[P_DESCRIPTION] = "Show/Change global variable value";
+		SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+	}
+
+	SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(BaseApplication, HandleConsoleGlobalVariableChange));
 }
 
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
@@ -234,4 +247,74 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
         URHO3D_LOGINFO("Adding new config value: " + paramName);
         _globalSettings[paramName] = paramName;
     }
+}
+
+void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData)
+{
+	StringVector params = eventData["Parameters"].GetStringVector();
+
+	const Variant value = engine_->GetGlobalVar(params[0]);
+
+	// Only show variable
+	if (params.Size() == 1 && !value.IsEmpty()) {
+		String stringValue;
+		if (value.GetType() == VAR_STRING) {
+			stringValue = value.GetString();
+		}
+		if (value.GetType() == VAR_BOOL) {
+			stringValue = value.GetBool() ? "1" : "0";
+		}
+		if (value.GetType() == VAR_INT) {
+			stringValue = String(value.GetInt());
+		}
+		if (value.GetType() == VAR_FLOAT) {
+			stringValue = String(value.GetFloat());
+		}
+		if (value.GetType() == VAR_DOUBLE) {
+			stringValue = String(value.GetDouble());
+		}
+		URHO3D_LOGINFO("Global variable '" + params[0] + "' = " + stringValue);
+		return;
+	}
+
+	// Read console input parameters and change global variable
+	if (params.Size() == 2) {
+		String oldValue;
+		String newValue;
+		if (value.GetType() == VAR_STRING) {
+			oldValue = value.GetString();
+			SetGlobalVar(params[0], params[1]);
+			newValue = params[1];
+		}
+		if (value.GetType() == VAR_BOOL) {
+			oldValue = value.GetBool() ? "1" : "0";
+			if (params[1] == "1" || params[1] == "true") {
+				SetGlobalVar(params[0], true);
+				newValue = "1";
+			}
+			if (params[1] == "0" || params[1] == "false") {
+				SetGlobalVar(params[0], false);
+				newValue = "0";
+			}
+		}
+		if (value.GetType() == VAR_INT) {
+			oldValue = String(value.GetInt());
+			int newIntVal = std::stoi(params[1].CString());
+			SetGlobalVar(params[0], newIntVal);
+			newValue = String(newIntVal);
+		}
+		if (value.GetType() == VAR_FLOAT) {
+			oldValue = String(value.GetFloat());
+			float newFloatVal = std::stof(params[1].CString());
+			SetGlobalVar(params[0], newFloatVal);
+			newValue = String(newFloatVal);
+		}
+		if (value.GetType() == VAR_DOUBLE) {
+			oldValue = String(value.GetDouble());
+			float newFloatVal = std::stof(params[1].CString());
+			SetGlobalVar(params[0], newFloatVal);
+			newValue = String(newFloatVal);
+		}
+		URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
+	}
 }

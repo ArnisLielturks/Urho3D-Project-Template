@@ -29,6 +29,18 @@ namespace MyEvents
         URHO3D_PARAM(P_NAME, Name);
     }
 
+	URHO3D_EVENT(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd)
+	{
+		URHO3D_PARAM(P_NAME, ConsoleCommandName);
+		URHO3D_PARAM(P_EVENT, ConsoleCommandEvent);
+		URHO3D_PARAM(P_DESCRIPTION, ConsoleCommandDescription);
+	}
+
+	URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGE, ConsoleGlobalVariableChange)
+	{
+		URHO3D_PARAM(P_NAME, GlobalVariableName);
+		URHO3D_PARAM(P_VALUE, GlobalVariableValue);
+	}
 
     // Save configuration JSON file
     URHO3D_EVENT(E_SAVE_CONFIG, SaveConfig)

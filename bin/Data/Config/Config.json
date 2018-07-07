@@ -15,6 +15,7 @@
 	"TripleBuffer": true,
 	"VSync": true,
 	"Sound": true,
+	"SoundVolume": 0.5,
 	"SoundBuffer": 100,
 	"SoundMixRate": 44100,
 	"SoundInterpolation": true,

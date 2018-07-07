@@ -83,6 +83,36 @@ SharedPtr<UIElement> SettingsWindow::CreateCheckbox(const String& label, bool is
     return container;
 }
 
+SharedPtr<UIElement> SettingsWindow::CreateSlider(const String& text, IntVector2 position, float value)
+{
+	SharedPtr<UIElement> container(_base->CreateChild<UIElement>());
+	container->SetPosition(position);
+	container->SetAlignment(HA_LEFT, VA_TOP);
+	container->SetLayout(LM_HORIZONTAL, 8);
+
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+
+	// Create text and slider below it
+	auto* sliderText = container->CreateChild<Text>();
+	//sliderText->SetPosition(IntV);
+	sliderText->SetStyleAuto();
+	sliderText->SetFont(font, 12);
+	sliderText->SetText(text);
+	sliderText->SetMinWidth(200);
+
+	auto* slider = container->CreateChild<Slider>();
+	slider->SetStyleAuto();
+	//slider->SetPosition(position);
+	//slider->SetSize(size);
+	slider->SetMinWidth(150);
+	// Use 0-1 range for controlling sound/music master volume
+	slider->SetRange(1.0f);
+	slider->SetValue(value);
+
+	return container;
+}
+
 void SettingsWindow::Create()
 {
     UI* ui = GetSubsystem<UI>();
@@ -184,6 +214,8 @@ void SettingsWindow::CreateAudioSettingsView()
     _activeSettingElements.Push(CreateCheckbox("Enable audio", GetGlobalVar("Sound").GetBool(), IntVector2(20, 60)));
     _activeSettingElements.Push(CreateCheckbox("Stereo", GetGlobalVar("SoundStereo").GetBool(), IntVector2(20, 90)));
     _activeSettingElements.Push(CreateCheckbox("Sound interpolation", GetGlobalVar("SoundInterpolation").GetBool(), IntVector2(20, 120)));
+	_activeSettingElements.Push(CreateSlider("Volume", IntVector2(20, 150), GetGlobalVar("SoundVolume").GetFloat()));
+
 }
 
 void SettingsWindow::CreatePlayerSettingsView()

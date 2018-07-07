@@ -43,9 +43,6 @@ private:
 
     void HandleExit(StringHash eventType, VariantMap& eventData);
 
-    /// Flag whether CommandLine.txt was already successfully read.
-    bool commandLineRead_;
-
     SharedPtr<LevelManager> levelManager;
     SharedPtr<Message> _alertMessage;
     SharedPtr<Notifications> _notifications;

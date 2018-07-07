@@ -24,8 +24,7 @@
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
 BaseApplication::BaseApplication(Context* context) :
-    Application(context),
-    commandLineRead_(false)
+    Application(context)
 {
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
@@ -316,5 +315,12 @@ void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, Va
 			newValue = String(newFloatVal);
 		}
 		URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
+
+		// Let others know that configuration was updated, to allow game tweaking accordingly
+		using namespace MyEvents::ConsoleGlobalVariableChanged;
+		VariantMap data = GetEventDataMap();
+		data[P_NAME] = params[0];
+		data[P_VALUE] = newValue;
+		SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
 	}
 }

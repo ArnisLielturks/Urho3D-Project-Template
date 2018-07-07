@@ -24,10 +24,16 @@ bool Message::Create()
         return false;
     }
     UI* ui = GetSubsystem<UI>();
+	Graphics* graphics = GetSubsystem<Graphics>();
 
     _baseElement = ui->GetRoot()->CreateChild("Menu");
+	_baseElement->SetWidth(graphics->GetWidth());
+	_baseElement->SetHeight(graphics->GetHeight());
+	_baseElement->SetPosition(IntVector2(0, 0));
+	_baseElement->SetColor(Color(0, 0, 0, 0.7));
+	UIElement* messageContainer = _baseElement->CreateChild<UIElement>();
     File startButtonFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/UI/Message.xml", FILE_READ);
-    _baseElement->LoadXML(startButtonFile);
+	messageContainer->LoadXML(startButtonFile);
     _okButton = static_cast<Button*>(_baseElement->GetChild("MessageOkButton", true));
     _title = static_cast<Text*>(_baseElement->GetChild("MessageTitle", true));
     _message = static_cast<Text*>(_baseElement->GetChild("MessageBody", true));

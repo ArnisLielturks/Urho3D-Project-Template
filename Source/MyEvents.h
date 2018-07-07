@@ -42,6 +42,12 @@ namespace MyEvents
 		URHO3D_PARAM(P_VALUE, GlobalVariableValue);
 	}
 
+	URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGED, ConsoleGlobalVariableChanged)
+	{
+		URHO3D_PARAM(P_NAME, GlobalVariableName);
+		URHO3D_PARAM(P_VALUE, GlobalVariableValue);
+	}
+
     // Save configuration JSON file
     URHO3D_EVENT(E_SAVE_CONFIG, SaveConfig)
     {

@@ -29,6 +29,7 @@ public:
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+	void LoadINIConfig(String filename);
     void LoadConfig(String filename, String prefix = "", bool isMain = false);
     void SaveConfig();
     void HandleLoadConfig(StringHash eventType, VariantMap& eventData);

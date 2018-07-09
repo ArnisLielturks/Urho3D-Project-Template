@@ -10,6 +10,8 @@
 #include <Urho3D/Engine/Console.h>
 
 #include "BaseApplication.h"
+#include "Config/ConfigFile.h"
+
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Resource/XMLFile.h>
@@ -26,6 +28,7 @@ URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
+	ConfigFile::RegisterObject(context);
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();
@@ -89,6 +92,9 @@ void BaseApplication::Setup()
 
 void BaseApplication::Start()
 {
+	// Does not work, resource cache should be initialized
+	//LoadINIConfig("Config/config.cfg");
+
     UI* ui = GetSubsystem<UI>();
     auto* cache = GetSubsystem<ResourceCache>();
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
@@ -323,4 +329,16 @@ void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, Va
 		data[P_VALUE] = newValue;
 		SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
 	}
+}
+
+void BaseApplication::LoadINIConfig(String filename)
+{
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto configFile = cache->GetResource<ConfigFile>(filename);
+
+	auto width = configFile->GetInt("engine", "WindowWidth", 1024);
+	auto height = configFile->GetInt("engine", "WindowHeight", 768);
+
+	URHO3D_LOGINFO("Width: " + String(width));
+	URHO3D_LOGINFO("Height: " + String(height));
 }

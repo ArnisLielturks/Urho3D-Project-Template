@@ -63,7 +63,7 @@ void Level::CreateUI()
     text->SetHorizontalAlignment(HA_CENTER);
     text->SetVerticalAlignment(VA_CENTER);
     text->SetStyleAuto();
-    text->SetText("This is ingame text!\nPress ESC to exit game\nPress TAB to show ScoreboardWindow\nPress F1 to show/hide console");
+    text->SetText("This is ingame text!\nPress ESC to pause game\nPress TAB to show ScoreboardWindow\nPress F1 to show/hide console");
     text->SetTextEffect(TextEffect::TE_STROKE);
     text->SetFontSize(16);
     text->SetColor(Color(0.8f, 0.8f, 0.2f));

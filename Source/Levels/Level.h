@@ -26,6 +26,7 @@ namespace Levels {
         void CreateUI();
 
         void SubscribeToEvents();
+        void UnsubscribeToEvents();
 
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
@@ -40,6 +41,5 @@ namespace Levels {
         WeakPtr<Node> _characterCameraNode;
 
         bool _showScoreboard;
-        bool _showPauseWindow;
     };
 }

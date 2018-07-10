@@ -24,6 +24,9 @@ private:
     void SubscribeToEvents();
 
     void HandleClose(StringHash eventType, VariantMap& eventData);
+    void HandleExit(StringHash eventType, VariantMap& eventData);
+    Button* CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
 
     SharedPtr<Button> _closeButton;
+    SharedPtr<Button> _exitButton;
 };

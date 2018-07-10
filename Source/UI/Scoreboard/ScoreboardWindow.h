@@ -22,8 +22,4 @@ protected:
 private:
 
     void SubscribeToEvents();
-
-    void HandleClose(StringHash eventType, VariantMap& eventData);
-
-    SharedPtr<Button> _closeButton;
 };

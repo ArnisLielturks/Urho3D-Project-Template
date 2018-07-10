@@ -97,12 +97,4 @@ void ScoreboardWindow::Create()
 
 void ScoreboardWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(_closeButton, E_RELEASED, URHO3D_HANDLER(ScoreboardWindow, HandleClose));
-}
-
-void ScoreboardWindow::HandleClose(StringHash eventType, VariantMap& eventData)
-{
-    VariantMap data = GetEventDataMap();
-    data["Name"] = "ScoreboardWindow";
-    SendEvent(MyEvents::E_CLOSE_WINDOW, data);
 }

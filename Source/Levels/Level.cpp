@@ -8,8 +8,7 @@ using namespace Levels;
 Level::Level(Context* context) :
     BaseLevel(context),
     shouldReturn(false),
-    _showScoreboard(false),
-    _showPauseWindow(false)
+    _showScoreboard(false)
 {
 }
 
@@ -77,6 +76,13 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
 }
 
+void Level::UnsubscribeToEvents()
+{
+    UnsubscribeFromEvent(E_POSTUPDATE);
+    UnsubscribeFromEvent(E_KEYDOWN);
+    UnsubscribeFromEvent(E_KEYUP);
+}
+
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
     if (!scene_->IsUpdateEnabled()) {
@@ -92,13 +98,6 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         Vector3 position = _controlledNode->GetWorldPosition();
         position.y_ += 3.5;
         cameraNode_->SetPosition(position);
-    }
-    if (input->GetKeyDown(KEY_ESCAPE)) {
-        VariantMap eventData = GetEventDataMap();;
-        eventData["Name"] = "ExitGame";
-        eventData["Message"] = "";
-        SendEvent(MyEvents::E_SET_LEVEL, eventData);
-        UnsubscribeFromEvent(E_POSTUPDATE);
     }
 }
 
@@ -124,12 +123,12 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         _showScoreboard = true;
     }
 
-    if (key == KEY_P && !_showPauseWindow) {
+    if (key == KEY_ESCAPE) {
+        UnsubscribeToEvents();
         VariantMap data = GetEventDataMap();
         data["Name"] = "PauseWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
-        _showPauseWindow = true;
         Pause();
     }
 }
@@ -145,13 +144,6 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         _showScoreboard = false;
     }
-
-    if (key == KEY_P && _showPauseWindow) {
-        VariantMap data = GetEventDataMap();
-        data["Name"] = "PauseWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-        _showPauseWindow = false;
-    }
 }
 
 void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
@@ -159,6 +151,8 @@ void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
     String name = eventData["Name"].GetString();
     if (name == "PauseWindow") {
         UnsubscribeFromEvent(MyEvents::E_WINDOW_CLOSED);
+        SubscribeToEvents();
+
         Input* input = GetSubsystem<Input>();
         if (input->IsMouseVisible()) {
             input->SetMouseVisible(false);

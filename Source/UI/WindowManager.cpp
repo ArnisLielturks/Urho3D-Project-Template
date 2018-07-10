@@ -62,6 +62,7 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
             _windowList.Remove(*it);
+            SendEvent(MyEvents::E_WINDOW_CLOSED, eventData);
             return;
         }
     }

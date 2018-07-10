@@ -23,6 +23,11 @@ namespace MyEvents
     {
         URHO3D_PARAM(P_NAME, Name);
     }
+    // When specific UI window is closed
+    URHO3D_EVENT(E_WINDOW_CLOSED, WindowClosed)
+    {
+        URHO3D_PARAM(P_NAME, Name);
+    }
     // Close all active UI Windows
     URHO3D_EVENT(E_CLOSE_ALL_WINDOWS, CloseAllWindows)
     {

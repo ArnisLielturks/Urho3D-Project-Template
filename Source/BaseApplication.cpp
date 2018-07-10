@@ -11,6 +11,7 @@
 
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
+#include "Input/ControllerInput.h"
 
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/Graphics/Graphics.h>
@@ -29,6 +30,7 @@ BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
 	ConfigFile::RegisterObject(context);
+	context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();
@@ -119,6 +121,8 @@ void BaseApplication::Start()
     _achievements = context_->CreateObject<Achievements>();
 	context_->RegisterSubsystem<ModLoader>();
     _windowManager = context_->CreateObject<WindowManager>();
+
+	context_->RegisterSubsystem<ControllerInput>();
 
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "Splash";

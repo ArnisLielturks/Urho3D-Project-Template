@@ -57,23 +57,22 @@ namespace MyEvents
     URHO3D_EVENT(E_SAVE_CONFIG, SaveConfig)
     {
     }
+
     URHO3D_EVENT(E_ADD_CONFIG, AddConfig)
     {
         URHO3D_PARAM(P_NAME, Name);
     }
+
     URHO3D_EVENT(E_LOAD_CONFIG, LoadConfig)
     {
         URHO3D_PARAM(P_FILEPATH, Filepath);
         URHO3D_PARAM(P_PREFIX, Prefix);
     }
 
-    // Control bits we define
-    static const unsigned CTRL_FORWARD = 1;
-    static const unsigned CTRL_BACK = 2;
-    static const unsigned CTRL_LEFT = 4;
-    static const unsigned CTRL_RIGHT = 8;
-    static const unsigned CTRL_JUMP = 16;
-    static const unsigned CTRL_ACTION = 32;
+	URHO3D_EVENT(E_START_INPUT_MAPPING, StartInputMapping)
+	{
+		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction);
+	}
 
     static const unsigned COLLISION_TERRAIN_LEVEL = 1;
     static const unsigned COLLISION_PLAYER_LEVEL = 2;

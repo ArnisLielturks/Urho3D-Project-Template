@@ -1,5 +1,6 @@
 #include <Urho3D/Urho3DAll.h>
 #include "ModLoader.h"
+#include "../MyEvents.h"
 
 /// Construct.
 ModLoader::ModLoader(Context* context) :
@@ -49,10 +50,37 @@ void ModLoader::Create()
 
 void ModLoader::SubscribeToEvents()
 {
-
+	SubscribeConsoleCommands();
+	SubscribeToEvent("HandleReloadMods", URHO3D_HANDLER(ModLoader, HandleReload));
 }
 
 void ModLoader::Dispose()
 {
     _mods.Clear();
+}
+
+void ModLoader::Reload()
+{
+	//_mods.Clear();
+	for (auto it = _mods.Begin(); it != _mods.End(); ++it) {
+		(*it)->RemoveEventHandlers();
+		(*it)->Execute("void Stop()");
+		(*it)->Execute("void Start()");
+	}
+}
+
+void ModLoader::SubscribeConsoleCommands()
+{
+	using namespace MyEvents::ConsoleCommandAdd;
+
+	VariantMap data = GetEventDataMap();
+	data[P_NAME] = "reload_mods";
+	data[P_EVENT] = "HandleReloadMods";
+	data[P_DESCRIPTION] = "Reload all scripts";
+	SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+}
+
+void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)
+{
+	Reload();
 }

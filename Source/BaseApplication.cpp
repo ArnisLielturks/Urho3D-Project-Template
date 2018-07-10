@@ -117,11 +117,11 @@ void BaseApplication::Start()
     _alertMessage = context_->CreateObject<Message>();
     _notifications = context_->CreateObject<Notifications>();
     _achievements = context_->CreateObject<Achievements>();
-    _modLoader = context_->CreateObject<ModLoader>();
+	context_->RegisterSubsystem<ModLoader>();
     _windowManager = context_->CreateObject<WindowManager>();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Level";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

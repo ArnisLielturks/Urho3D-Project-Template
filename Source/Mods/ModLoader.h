@@ -18,12 +18,16 @@ public:
 
     void Dispose();
 
+	void Reload();
+
 protected:
     virtual void Init();
 
 private:
 
     void SubscribeToEvents();
+	void SubscribeConsoleCommands();
+	void HandleReload(StringHash eventType, VariantMap& eventData);
 
     /**
      * List of all the loaded mods

@@ -30,6 +30,75 @@ void Splash::Init()
     VariantMap data = GetEventDataMap();
     data["Message"] = "Saw splash screen";
     SendEvent("NewAchievement", data);
+
+	WorkQueue* workQueue = GetSubsystem<WorkQueue>();
+	SharedPtr<WorkItem> item = workQueue->GetFreeItem();
+	item->priority_ = M_MAX_UNSIGNED;
+	item->workFunction_ = CheckThreading;
+	item->aux_ = this;
+	// send E_WORKITEMCOMPLETED event after finishing WorkItem
+	item->sendEvent_ = true;
+
+	item->start_ = nullptr;// &(*start);
+	item->end_ = nullptr;// &(*end);
+	workQueue->AddWorkItem(item);
+
+}
+
+void Levels::CheckThreading(const WorkItem* item, unsigned threadIndex)
+{
+	Splash* splashScreen = reinterpret_cast<Splash*>(item->aux_);
+	Time::Sleep(1);
+	auto* network = splashScreen->context_->GetSubsystem<Network>();
+	SharedPtr<HttpRequest> httpRequest_(network->MakeHttpRequest("http://httpbin.org/ip"));
+
+	bool done = false;
+	String message_;
+	Timer timer;
+	while(!done) {
+		if (timer.GetMSec(false) > 1000) {
+			done = true;
+			continue;
+		}
+		// Initializing HTTP request
+		if (httpRequest_->GetState() == HTTP_INITIALIZING) {
+			done = false;
+		}
+		// An error has occurred
+		else if (httpRequest_->GetState() == HTTP_ERROR) {
+			URHO3D_LOGINFO("An error has occurred.");
+			done = true;
+		}
+		// Get message data
+		else {
+			if (httpRequest_->GetAvailableSize() > 0) {
+				message_ += httpRequest_->ReadLine();
+			}
+			else if (message_.Length() > 0) {
+				URHO3D_LOGINFO("Processing...");
+
+				SharedPtr<JSONFile> json(new JSONFile(splashScreen->context_));
+				URHO3D_LOGINFO("message_ " + message_);
+				json->FromString(message_);
+
+				JSONValue val = json->GetRoot().Get("origin");
+
+				if (val.IsNull()) {
+					URHO3D_LOGINFO("Invalid string.");
+					//done = true;
+				}
+				else {
+					URHO3D_LOGINFO("Your IP is: " + val.GetString());
+					done = true;
+				}
+			}
+		}
+	}
+}
+
+void Splash::Test()
+{
+	URHO3D_LOGINFO("Test()");
 }
 
 void Splash::CreateScene()
@@ -112,6 +181,7 @@ void Splash::CreateUI()
 void Splash::SubscribeToEvents()
 {
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Splash, HandleUpdate));
+	SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Splash, HandleWorkItemFinished));
 }
 
 void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -127,7 +197,18 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Splash::HandleEndSplash()
 {
-    data_["Name"] = "MainMenu";
-    SendEvent(MyEvents::E_SET_LEVEL, data_);
-    UnsubscribeFromEvent(E_UPDATE);
+	//WorkQueue* workQueue = GetSubsystem<WorkQueue>();
+	//workQueue->Complete(100);
+	UnsubscribeFromEvent(E_UPDATE);
+	VariantMap data = GetEventDataMap();
+	data["Name"] = "MainMenu";
+    SendEvent(MyEvents::E_SET_LEVEL, data);
+}
+
+void Splash::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
+{
+	using namespace WorkItemCompleted;
+
+	WorkItem* item = static_cast<WorkItem*>(eventData[P_ITEM].GetPtr());
+	URHO3D_LOGINFO("FISNISHED!!!");
 }

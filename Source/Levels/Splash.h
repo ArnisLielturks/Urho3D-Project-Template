@@ -9,7 +9,7 @@ namespace Levels {
     {
         URHO3D_OBJECT(Splash, BaseLevel);
 
-    public:
+	public:
         /// Construct.
         Splash(Context* context);
 
@@ -20,6 +20,10 @@ namespace Levels {
         virtual void Init();
 
     private:
+		friend void CheckThreading(const WorkItem* item, unsigned threadIndex);
+
+		void Test();
+
         void CreateScene();
 
         void CreateUI();
@@ -27,6 +31,8 @@ namespace Levels {
         void SubscribeToEvents();
 
         void HandleEndSplash();
+
+		void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
 
         Timer _timer;
     };

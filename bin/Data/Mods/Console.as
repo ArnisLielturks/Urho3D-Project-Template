@@ -46,6 +46,11 @@ void Start()
     Subscribe();
 }
 
+void Stop()
+{
+    console.visible = false;
+}
+
 /**
  * Handle 'KeyDown' events
  */

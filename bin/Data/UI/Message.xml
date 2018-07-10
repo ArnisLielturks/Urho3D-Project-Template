@@ -5,7 +5,7 @@
 	<attribute name="Pivot" value="0.5 0.5" />
 	<element type="Window">
 		<attribute name="Name" value="Message" />
-		<attribute name="Size" value="300 200" />
+		<attribute name="Size" value="300 150" />
 		<attribute name="Min Anchor" value="0.5 0.5" />
 		<attribute name="Max Anchor" value="0.5 0.5" />
 		<attribute name="Pivot" value="0.5 0.5" />

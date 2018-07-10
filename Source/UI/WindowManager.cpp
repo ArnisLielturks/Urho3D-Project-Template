@@ -4,6 +4,7 @@
 
 #include "Settings/SettingsWindow.h"
 #include "Scoreboard/ScoreboardWindow.h"
+#include "Pause/PauseWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -22,6 +23,7 @@ void WindowManager::RegisterAllFactories()
     // Register classes
     context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();
+    context_->RegisterFactory<PauseWindow>();
 }
 
 void WindowManager::SubscribeToEvents()

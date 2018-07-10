@@ -29,6 +29,7 @@ namespace Levels {
 
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+        void HandleWindowClosed(StringHash eventType, VariantMap& eventData);
 
         SharedPtr<Node> _controlledNode;
         unsigned int _id;
@@ -39,5 +40,6 @@ namespace Levels {
         WeakPtr<Node> _characterCameraNode;
 
         bool _showScoreboard;
+        bool _showPauseWindow;
     };
 }

@@ -8,7 +8,8 @@ using namespace Levels;
 Level::Level(Context* context) :
     BaseLevel(context),
     shouldReturn(false),
-    _showScoreboard(false)
+    _showScoreboard(false),
+    _showPauseWindow(false)
 {
 }
 
@@ -78,6 +79,9 @@ void Level::SubscribeToEvents()
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
+    if (!scene_->IsUpdateEnabled()) {
+        return;
+    }
     float timeStep = eventData["TimeStep"].GetFloat();
     cameraNode_->Yaw(timeStep * 50);
     Input* input = GetSubsystem<Input>();
@@ -119,6 +123,15 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         _showScoreboard = true;
     }
+
+    if (key == KEY_P && !_showPauseWindow) {
+        VariantMap data = GetEventDataMap();
+        data["Name"] = "PauseWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
+        _showPauseWindow = true;
+        Pause();
+    }
 }
 
 void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
@@ -131,5 +144,25 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         _showScoreboard = false;
+    }
+
+    if (key == KEY_P && _showPauseWindow) {
+        VariantMap data = GetEventDataMap();
+        data["Name"] = "PauseWindow";
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        _showPauseWindow = false;
+    }
+}
+
+void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
+{
+    String name = eventData["Name"].GetString();
+    if (name == "PauseWindow") {
+        UnsubscribeFromEvent(MyEvents::E_WINDOW_CLOSED);
+        Input* input = GetSubsystem<Input>();
+        if (input->IsMouseVisible()) {
+            input->SetMouseVisible(false);
+        }
+        Run();
     }
 }

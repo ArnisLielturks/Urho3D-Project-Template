@@ -25,14 +25,17 @@ private:
 
     void CreateGraphicsSettingsView();
     void CreateAudioSettingsView();
-    void CreatePlayerSettingsView();
+    void CreateControllerSettingsView();
 
     void HandleClose(StringHash eventType, VariantMap& eventData);
     void HandleSave(StringHash eventType, VariantMap& eventData);
     
     void ShowVideoSettings(StringHash eventType, VariantMap& eventData);
     void ShowAudioSettings(StringHash eventType, VariantMap& eventData);
-    void ShowPlayerSettings(StringHash eventType, VariantMap& eventData);
+    void ShowControllerSettings(StringHash eventType, VariantMap& eventData);
+
+    void HandleChangeControls(StringHash eventType, VariantMap& eventData);
+    void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
 
     void ClearView();
 
@@ -40,10 +43,11 @@ private:
     Button* CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
     SharedPtr<UIElement> CreateCheckbox(const String& label, bool isActive, IntVector2 position/*, EventHandler* handler*/);
 	SharedPtr<UIElement> CreateSlider(const String& text, IntVector2 position, float value);
+    SharedPtr<UIElement> CreateLineEdit(const String& text, IntVector2 position, String value, String actionName);
 
     SharedPtr<Button> _closeButton;
     SharedPtr<Button> _saveButton;
-    SharedPtr<Button> _playerTabButton;
+    SharedPtr<Button> _controlsTabButton;
     SharedPtr<Button> _audioTabButton;
     SharedPtr<Button> _graphicsTabButton;
 

@@ -16,6 +16,10 @@ public:
 
 	Controls GetControls();
 
+	HashMap<int, String> GetControlNames();
+
+	String GetActionKeyName(int action);
+
 protected:
     virtual void Init();
 
@@ -54,7 +58,7 @@ private:
 
 
 	// Control names
-	Urho3D::HashMap<int, String> _controlMapNames;
+	HashMap<int, String> _controlMapNames;
 
 	int _activeAction;
 	SharedPtr<ConfigFile> _configFile;

@@ -180,11 +180,9 @@ void ControllerInput::ReleaseConfiguredKey(int key, int action)
 		int actionCode = (*it).second_;
 		if (key == keyCode) {
 			_mappedKeyboardKeysToControls.Erase(keyCode);
-			it--;
 		}
 		if (action == actionCode) {
 			_mappedKeyboardKeysToControls.Erase(keyCode);
-			it--;
 		}
 	}
 
@@ -193,11 +191,9 @@ void ControllerInput::ReleaseConfiguredKey(int key, int action)
 		int actionCode = (*it).first_;
 		if (key == keyCode) {
 			_mappedKeyboardControlsToKeys.Erase(actionCode);
-			it--;
 		}
 		if (action == actionCode) {
 			_mappedKeyboardControlsToKeys.Erase(actionCode);
-			it--;
 		}
 	}
 
@@ -240,15 +236,24 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 		_mappedMouseKeysToControls[key] = action;
 	}
 
+	using namespace MyEvents::InputMappingFinished;
+	VariantMap data = GetEventDataMap();
+	data[P_CONTROLLER] = controller;
+	data[P_CONTROL_ACTION] = action;
+	data[P_ACTION_NAME] = _controlMapNames[action];
+	data[P_KEY] = key;
+	data[P_KEY_NAME] = input->GetKeyName(key);
+	SendEvent(MyEvents::E_INPUT_MAPPING_FINISHED, data);
+
 	SaveConfig();
 }
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
 {
-	URHO3D_LOGINFO("Starting input listener!");
 	using namespace MyEvents::StartInputMapping;
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_INT) {
 		_activeAction = eventData[P_CONTROL_ACTION].GetInt();
+		URHO3D_LOGINFO("Starting input listener!");
 		URHO3D_LOGINFO("Control: " + _mappedKeyboardControlsToKeys[_activeAction]);
 	}
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_STRING) {
@@ -256,6 +261,7 @@ void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap
 		for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 			if ((*it).second_ == control) {
 				_activeAction = (*it).first_;
+				URHO3D_LOGINFO("Starting input listener!");
 				URHO3D_LOGINFO("Control: " + control);
 			}
 		}
@@ -275,9 +281,9 @@ void ControllerInput::RegisterConsoleCommands()
 
 void ControllerInput::HandleStartInputListeningConsole(StringHash eventType, VariantMap& eventData)
 {
-	using namespace MyEvents::StartInputMapping;
 	StringVector parameters = eventData["Parameters"].GetStringVector();
 	if (parameters.Size() == 2) {
+		using namespace MyEvents::StartInputMapping;
 		VariantMap data = GetEventDataMap();
 		data[P_CONTROL_ACTION] = parameters[1];
 		SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
@@ -303,4 +309,32 @@ void ControllerInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
     _controls.yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
     _controls.pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
     _controls.pitch_ = Clamp(_controls.pitch_, -90.0f, 90.0f);
+}
+
+HashMap<int, String> ControllerInput::GetControlNames()
+{
+	return _controlMapNames;
+}
+
+String ControllerInput::GetActionKeyName(int action)
+{
+	if (_mappedKeyboardControlsToKeys.Contains(action)) {
+		auto* input = GetSubsystem<Input>();
+		return input->GetKeyName(_mappedKeyboardControlsToKeys[action]);
+	}
+	if (_mappedMouseControlsToKeys.Contains(action)) {
+		auto* input = GetSubsystem<Input>();
+		int key = _mappedMouseControlsToKeys[action];
+		if (key == MOUSEB_LEFT) {
+			return "MOUSEB_LEFT";
+		}
+		if (key == MOUSEB_MIDDLE) {
+			return "MOUSEB_MIDDLE";
+		}
+		if (key == MOUSEB_RIGHT) {
+			return "MOUSEB_RIGHT";
+		}
+	}
+
+	return String::EMPTY;
 }

@@ -11,6 +11,7 @@ void Start()
     SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
+    SubscribeToEvent("InputMappingFinished", "HandleInputMappingFinished");
 
     // Add new global config value
     VariantMap data;
@@ -27,6 +28,17 @@ void Start()
     SendEvent("LoadConfig", loadConfigData);
 
     log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
+}
+
+void HandleInputMappingFinished(StringHash eventType, VariantMap& eventData)
+{
+    log.Info("------------");
+    log.Info("Controller: " + eventData["Controller"].GetString());
+    log.Info("ControlAction: " + String(eventData["ControlAction"].GetInt()));
+    log.Info("ActionName: " + eventData["ActionName"].GetString());
+    log.Info("Key: " + String(eventData["Key"].GetInt()));
+    log.Info("KeyName: " + eventData["KeyName"].GetString());
+    log.Info("------------");
 }
 
 /**

@@ -1,6 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "SettingsWindow.h"
 #include "../../MyEvents.h"
+#include "../../Input/ControllerInput.h"
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
@@ -113,6 +114,49 @@ SharedPtr<UIElement> SettingsWindow::CreateSlider(const String& text, IntVector2
 	return container;
 }
 
+SharedPtr<UIElement> SettingsWindow::CreateLineEdit(const String& text, IntVector2 position, String value, String actionName)
+{
+	SharedPtr<UIElement> container(new UIElement(context_));//(_base->CreateChild<UIElement>());
+    container->SetStyleAuto();
+	container->SetPosition(position);
+    container->SetMinHeight(30);
+	container->SetAlignment(HA_LEFT, VA_TOP);
+	container->SetLayout(LM_HORIZONTAL, 8);
+
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+
+	// Create text and slider below it
+	auto* label = container->CreateChild<Text>();
+	//sliderText->SetPosition(IntV);
+	label->SetStyleAuto();
+	label->SetFont(font, 12);
+	label->SetText(text);
+	label->SetMinWidth(180);
+    label->SetAlignment(HA_LEFT, VA_CENTER);
+
+    Button* button = container->CreateChild<Button>();
+    button->SetStyleAuto();
+    button->SetMinWidth(130);
+    button->SetVar("ActionName", actionName);
+
+    Text* buttonText = button->CreateChild<Text>();
+    buttonText->SetText(value);
+    buttonText->SetName(actionName);
+    buttonText->SetStyleAuto();
+    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+
+    SubscribeToEvent(button, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleChangeControls));
+
+	// auto* lineEdit = container->CreateChild<LineEdit>();
+	// lineEdit->SetStyleAuto();
+	// lineEdit->SetMinWidth(130);
+    // lineEdit->SetText(value);
+    // lineEdit->SetVar("ActionName", actionName);
+
+	return container;
+}
+
 void SettingsWindow::Create()
 {
     UI* ui = GetSubsystem<UI>();
@@ -123,7 +167,7 @@ void SettingsWindow::Create()
     _closeButton = CreateButton("X", IntVector2(-5, 5), IntVector2(20, 20), HA_RIGHT, VA_TOP);
 
     int index = 0;
-    _playerTabButton = CreateButton("Player", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _controlsTabButton = CreateButton("Controls", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
     _audioTabButton = CreateButton("Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
@@ -218,11 +262,28 @@ void SettingsWindow::CreateAudioSettingsView()
 
 }
 
-void SettingsWindow::CreatePlayerSettingsView()
+void SettingsWindow::CreateControllerSettingsView()
 {
+    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+    HashMap<int, String> controlNames = controllerInput->GetControlNames();
+
     ClearView();
-    _activeSettingElements.Push(CreateCheckbox("Player?", true, IntVector2(20, 60)));
-    _activeSettingElements.Push(CreateCheckbox("Player!", false, IntVector2(20, 90)));
+
+    auto* list = _base->CreateChild<ListView>();
+    list->SetSelectOnClickEnd(true);
+    list->SetHighlightMode(HM_ALWAYS);
+    list->SetMinHeight(300);
+    list->SetWidth(360);
+    list->SetPosition(IntVector2(20, 60));
+    list->SetStyleAuto();
+
+    int index = 0;
+    for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
+        SharedPtr<UIElement> singleItem(CreateLineEdit((*it).second_, IntVector2(20, 60 + index * 30), controllerInput->GetActionKeyName((*it).first_), (*it).second_));
+        list->AddItem(singleItem);
+        _activeSettingElements.Push(singleItem);
+        index++;
+    }
 }
 
 Button* SettingsWindow::CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign)
@@ -245,9 +306,11 @@ void SettingsWindow::SubscribeToEvents()
 {
     SubscribeToEvent(_closeButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleClose));
     SubscribeToEvent(_graphicsTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowVideoSettings));
-    SubscribeToEvent(_playerTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowPlayerSettings));
+    SubscribeToEvent(_controlsTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowControllerSettings));
     SubscribeToEvent(_audioTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowAudioSettings));
     SubscribeToEvent(_saveButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleSave));
+
+    SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
 }
 
 void SettingsWindow::HandleClose(StringHash eventType, VariantMap& eventData)
@@ -303,9 +366,9 @@ void SettingsWindow::ShowAudioSettings(StringHash eventType, VariantMap& eventDa
     CreateAudioSettingsView();
 }
 
-void SettingsWindow::ShowPlayerSettings(StringHash eventType, VariantMap& eventData)
+void SettingsWindow::ShowControllerSettings(StringHash eventType, VariantMap& eventData)
 {
-    CreatePlayerSettingsView();
+    CreateControllerSettingsView();
 }
 
 void SettingsWindow::ClearView()
@@ -314,4 +377,30 @@ void SettingsWindow::ClearView()
         (*it)->Remove();
     }
     _activeSettingElements.Clear();
+}
+
+void SettingsWindow::HandleChangeControls(StringHash eventType, VariantMap& eventData)
+{
+    auto* input = GetSubsystem<Input>();
+    using namespace Released;
+    Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
+    String actionName = button->GetVar("ActionName").GetString();
+    if (!actionName.Empty()) {
+        using namespace MyEvents::StartInputMapping;
+		VariantMap data = GetEventDataMap();
+		data[P_CONTROL_ACTION] = actionName;
+		SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+    }
+}
+
+void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)
+{
+    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+    HashMap<int, String> controlNames = controllerInput->GetControlNames();
+    for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
+        Text* text = dynamic_cast<Text*>(_base->GetChild((*it).second_, true));
+        if (text) {
+            text->SetText(controllerInput->GetActionKeyName((*it).first_));
+        }
+    }
 }

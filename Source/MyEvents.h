@@ -65,13 +65,22 @@ namespace MyEvents
 
     URHO3D_EVENT(E_LOAD_CONFIG, LoadConfig)
     {
-        URHO3D_PARAM(P_FILEPATH, Filepath);
-        URHO3D_PARAM(P_PREFIX, Prefix);
+        URHO3D_PARAM(P_FILEPATH, Filepath); //string
+        URHO3D_PARAM(P_PREFIX, Prefix); //string
     }
 
 	URHO3D_EVENT(E_START_INPUT_MAPPING, StartInputMapping)
 	{
-		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction);
+		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // string or int
+	}
+
+    URHO3D_EVENT(E_INPUT_MAPPING_FINISHED, InputMappingFinished)
+	{
+        URHO3D_PARAM(P_CONTROLLER, Controller); // string - keyboard, mouse, joystick
+		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // int
+        URHO3D_PARAM(P_ACTION_NAME, ActionName); // string
+        URHO3D_PARAM(P_KEY, Key); // int
+        URHO3D_PARAM(P_KEY_NAME, KeyName); // string
 	}
 
     static const unsigned COLLISION_TERRAIN_LEVEL = 1;

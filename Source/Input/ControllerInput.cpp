@@ -111,6 +111,9 @@ void ControllerInput::SubscribeToEvents()
 	SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(ControllerInput, HandleMouseButtonDown));
 	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(ControllerInput, HandleMouseButtonUp));
 
+	SubscribeToEvent(E_JOYSTICKBUTTONDOWN, URHO3D_HANDLER(ControllerInput, HandleJoystickKeyDown));
+	SubscribeToEvent(E_JOYSTICKBUTTONUP, URHO3D_HANDLER(ControllerInput, HandleJoystickKeyUp));
+
 	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ControllerInput, HandleUpdate));
 	SubscribeToEvent("StartInputMappingConsole", URHO3D_HANDLER(ControllerInput, HandleStartInputListeningConsole));
 	RegisterConsoleCommands();
@@ -170,6 +173,24 @@ void ControllerInput::HandleMouseButtonUp(StringHash eventType, VariantMap& even
 
 	auto* input = GetSubsystem<Input>();
 	_controls.Set(_mappedMouseKeysToControls[key], false);
+}
+
+void ControllerInput::HandleJoystickKeyDown(StringHash eventType, VariantMap& eventData)
+{
+	using namespace JoystickButtonDown;
+	int key = eventData[P_BUTTON].GetInt();
+	int joystick = eventData[P_JOYSTICKID].GetInt();
+	auto* input = GetSubsystem<Input>();
+	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(key) + " => " + String(key));
+}
+
+void ControllerInput::HandleJoystickKeyUp(StringHash eventType, VariantMap& eventData)
+{
+	using namespace JoystickButtonUp;
+	int key = eventData[P_BUTTON].GetInt();
+	int joystick = eventData[P_JOYSTICKID].GetInt();
+	auto* input = GetSubsystem<Input>();
+	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(key) + " => " + String(key));
 }
 
 void ControllerInput::ReleaseConfiguredKey(int key, int action)

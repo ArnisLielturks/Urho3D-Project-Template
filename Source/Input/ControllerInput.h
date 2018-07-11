@@ -37,11 +37,15 @@ private:
 	void SetConfiguredKey(int action, int key, String controller);
 
 	void HandleStartInputListeningConsole(StringHash eventType, VariantMap& eventData);
+	
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
 
 	void HandleMouseButtonDown(StringHash eventType, VariantMap& eventData);
 	void HandleMouseButtonUp(StringHash eventType, VariantMap& eventData);
+
+	void HandleJoystickKeyDown(StringHash eventType, VariantMap& eventData);
+	void HandleJoystickKeyUp(StringHash eventType, VariantMap& eventData);
 
 	void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);

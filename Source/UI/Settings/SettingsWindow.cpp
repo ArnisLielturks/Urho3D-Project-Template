@@ -141,6 +141,7 @@ SharedPtr<UIElement> SettingsWindow::CreateControlsElement(const String& text, I
     button->SetMinWidth(40);
     button->SetVar("ActionName", actionName);
     button->SetPosition(IntVector2(-10, 0));
+    button->SetFocusMode(FM_RESETFOCUS);
 
     Text* buttonText = button->CreateChild<Text>();
     buttonText->SetText(value);
@@ -298,6 +299,7 @@ Button* SettingsWindow::CreateButton(String name, IntVector2 position, IntVector
     button->SetPosition(position);
     button->SetStyleAuto();
     button->SetAlignment(hAlign, vAlign);
+    button->SetFocusMode(FM_RESETFOCUS);
 
     Text* text = button->CreateChild<Text>();
     text->SetText(name);
@@ -393,11 +395,22 @@ void SettingsWindow::HandleChangeControls(StringHash eventType, VariantMap& even
     using namespace Released;
     Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
     String actionName = button->GetVar("ActionName").GetString();
+
+    Text* text = dynamic_cast<Text*>(button->GetChild(actionName, true));
+    if (text) {
+        text->SetText("...");
+    }
+
     if (!actionName.Empty()) {
         using namespace MyEvents::StartInputMapping;
 		VariantMap data = GetEventDataMap();
 		data[P_CONTROL_ACTION] = actionName;
 		SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+
+        Input* input = GetSubsystem<Input>();
+        if (input->IsMouseVisible()) {
+            input->SetMouseVisible(false);
+        }
     }
 }
 
@@ -410,5 +423,10 @@ void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eve
         if (text) {
             text->SetText(controllerInput->GetActionKeyName((*it).first_));
         }
+    }
+
+    Input* input = GetSubsystem<Input>();
+    if (!input->IsMouseVisible()) {
+        input->SetMouseVisible(true);
     }
 }

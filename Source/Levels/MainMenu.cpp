@@ -59,6 +59,7 @@ void MainMenu::CreateUI()
 
         _startButton->SetPosition(IntVector2(-20, -100));
         _startButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+        _startButton->SetFocusMode(FM_RESETFOCUS);
 
         Text* text = _startButton->CreateChild<Text>();
         text->SetText("Start");
@@ -71,6 +72,7 @@ void MainMenu::CreateUI()
         _settingsButton->SetStyleAuto();
         _settingsButton->SetPosition(IntVector2(-20, -60));
         _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+        _settingsButton->SetFocusMode(FM_RESETFOCUS);
 
         Text* text = _settingsButton->CreateChild<Text>();
         text->SetText("Settings");
@@ -83,11 +85,17 @@ void MainMenu::CreateUI()
         _exitButton->SetStyleAuto();
         _exitButton->SetPosition(IntVector2(-20, -20));
         _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+        _exitButton->SetFocusMode(FM_RESETFOCUS);
 
         Text* text = _exitButton->CreateChild<Text>();
         text->SetText("Exit");
         text->SetStyleAuto();
         text->SetAlignment(HA_CENTER, VA_CENTER);
+    }
+
+    Input* input = GetSubsystem<Input>();
+    if (!input->IsMouseVisible()) {
+        input->SetMouseVisible(true);
     }
 }
 
@@ -102,10 +110,6 @@ void MainMenu::SubscribeToEvents()
 
 void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    Input* input = GetSubsystem<Input>();
-    if (!input->IsMouseVisible()) {
-        input->SetMouseVisible(true);
-    }
 }
 
 void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)

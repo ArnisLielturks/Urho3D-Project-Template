@@ -275,13 +275,14 @@ void SettingsWindow::CreateControllerSettingsView()
 
     ClearView();
 
-    auto* list = _base->CreateChild<ListView>();
+    SharedPtr<ListView> list(_base->CreateChild<ListView>());
     list->SetSelectOnClickEnd(true);
     list->SetHighlightMode(HM_ALWAYS);
     list->SetMinHeight(320);
     list->SetWidth(360);
     list->SetPosition(IntVector2(20, 60));
     list->SetStyleAuto();
+    _activeSettingElements.Push(list);
 
     int index = 0;
     for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
@@ -398,7 +399,7 @@ void SettingsWindow::HandleChangeControls(StringHash eventType, VariantMap& even
 
     Text* text = dynamic_cast<Text*>(button->GetChild(actionName, true));
     if (text) {
-        text->SetText("...");
+        text->SetText("Press any key...");
     }
 
     if (!actionName.Empty()) {

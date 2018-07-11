@@ -43,7 +43,7 @@ private:
     Button* CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
     SharedPtr<UIElement> CreateCheckbox(const String& label, bool isActive, IntVector2 position/*, EventHandler* handler*/);
 	SharedPtr<UIElement> CreateSlider(const String& text, IntVector2 position, float value);
-    SharedPtr<UIElement> CreateLineEdit(const String& text, IntVector2 position, String value, String actionName);
+    SharedPtr<UIElement> CreateControlsElement(const String& text, IntVector2 position, String value, String actionName);
 
     SharedPtr<Button> _closeButton;
     SharedPtr<Button> _saveButton;

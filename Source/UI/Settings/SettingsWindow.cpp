@@ -114,14 +114,14 @@ SharedPtr<UIElement> SettingsWindow::CreateSlider(const String& text, IntVector2
 	return container;
 }
 
-SharedPtr<UIElement> SettingsWindow::CreateLineEdit(const String& text, IntVector2 position, String value, String actionName)
+SharedPtr<UIElement> SettingsWindow::CreateControlsElement(const String& text, IntVector2 position, String value, String actionName)
 {
 	SharedPtr<UIElement> container(new UIElement(context_));//(_base->CreateChild<UIElement>());
     container->SetStyleAuto();
 	container->SetPosition(position);
     container->SetMinHeight(30);
 	container->SetAlignment(HA_LEFT, VA_TOP);
-	container->SetLayout(LM_HORIZONTAL, 8);
+	container->SetLayout(LM_HORIZONTAL, 8, IntRect(4, 4, 4, 4));
 
 	auto* cache = GetSubsystem<ResourceCache>();
 	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
@@ -132,13 +132,15 @@ SharedPtr<UIElement> SettingsWindow::CreateLineEdit(const String& text, IntVecto
 	label->SetStyleAuto();
 	label->SetFont(font, 12);
 	label->SetText(text);
-	label->SetMinWidth(180);
+	label->SetMinWidth(250);
     label->SetAlignment(HA_LEFT, VA_CENTER);
+    label->SetPosition(IntVector2(10, 0));
 
     Button* button = container->CreateChild<Button>();
     button->SetStyleAuto();
-    button->SetMinWidth(130);
+    button->SetMinWidth(40);
     button->SetVar("ActionName", actionName);
+    button->SetPosition(IntVector2(-10, 0));
 
     Text* buttonText = button->CreateChild<Text>();
     buttonText->SetText(value);
@@ -174,6 +176,9 @@ void SettingsWindow::Create()
     _graphicsTabButton = CreateButton("Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
     _saveButton = CreateButton("Save", IntVector2(-20, -20), IntVector2(width, 20), HA_RIGHT, VA_BOTTOM);
+
+    _saveButton->SetVisible(false);
+    CreateControllerSettingsView();
 }
 
 void SettingsWindow::CreateGraphicsSettingsView()
@@ -272,14 +277,14 @@ void SettingsWindow::CreateControllerSettingsView()
     auto* list = _base->CreateChild<ListView>();
     list->SetSelectOnClickEnd(true);
     list->SetHighlightMode(HM_ALWAYS);
-    list->SetMinHeight(300);
+    list->SetMinHeight(320);
     list->SetWidth(360);
     list->SetPosition(IntVector2(20, 60));
     list->SetStyleAuto();
 
     int index = 0;
     for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
-        SharedPtr<UIElement> singleItem(CreateLineEdit((*it).second_, IntVector2(20, 60 + index * 30), controllerInput->GetActionKeyName((*it).first_), (*it).second_));
+        SharedPtr<UIElement> singleItem(CreateControlsElement((*it).second_, IntVector2(20, 60 + index * 30), controllerInput->GetActionKeyName((*it).first_), (*it).second_));
         list->AddItem(singleItem);
         _activeSettingElements.Push(singleItem);
         index++;
@@ -331,6 +336,7 @@ void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 
 void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventData)
 {
+    _saveButton->SetVisible(true);
     CreateGraphicsSettingsView();
     // auto* graphics = GetSubsystem<Graphics>();
     // {
@@ -363,11 +369,13 @@ void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventDa
 
 void SettingsWindow::ShowAudioSettings(StringHash eventType, VariantMap& eventData)
 {
+    _saveButton->SetVisible(true);
     CreateAudioSettingsView();
 }
 
 void SettingsWindow::ShowControllerSettings(StringHash eventType, VariantMap& eventData)
 {
+    _saveButton->SetVisible(false);
     CreateControllerSettingsView();
 }
 

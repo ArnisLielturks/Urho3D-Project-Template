@@ -98,8 +98,10 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     }
 
     // Movement speed as world units per second
-    const float MOVE_SPEED = 2.0f;
+    float MOVE_SPEED = 2.0f;
     Controls controls = GetSubsystem<ControllerInput>()->GetControls();
+    if (controls.IsDown(CTRL_SPRINT))
+        MOVE_SPEED = 10.0f;
     if (controls.IsDown(CTRL_FORWARD))
         cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
     if (controls.IsDown(CTRL_BACK))
@@ -108,6 +110,9 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
     if (controls.IsDown(CTRL_RIGHT))
         cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+
+    // Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
+    cameraNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
 }
 
 void Level::OnLoaded()

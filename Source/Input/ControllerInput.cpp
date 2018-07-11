@@ -1,7 +1,6 @@
 #include <Urho3D/Urho3DAll.h>
 #include "ControllerInput.h"
 #include "../MyEvents.h"
-#include "../Config/ConfigFile.h"
 #include "../Global.h"
 
 /// Construct.
@@ -15,6 +14,7 @@ ControllerInput::ControllerInput(Context* context) :
 	_controlMapNames[CTRL_RIGHT] = "CTRL_RIGHT";
 	_controlMapNames[CTRL_JUMP] = "CTRL_JUMP";
 	_controlMapNames[CTRL_ACTION] = "CTRL_ACTION";
+	_controlMapNames[CTRL_SPRINT] = "CTRL_SPRINT";
 
 	Init();
 }
@@ -34,28 +34,38 @@ void ControllerInput::Init()
 void ControllerInput::LoadConfig()
 {
 	auto* cache = GetSubsystem<ResourceCache>();
-	auto configFile = cache->GetResource<ConfigFile>("Config/controls.cfg");
+	_configFile = cache->GetResource<ConfigFile>("Config/controls.cfg");
 
-	_mappedControls[CTRL_FORWARD] = configFile->GetInt("controls", "CTRL_FORWARD", KEY_W);
-	_mappedControls[CTRL_BACK] = configFile->GetInt("controls", "CTRL_BACK", KEY_S);
-	_mappedControls[CTRL_LEFT] = configFile->GetInt("controls", "CTRL_LEFT", KEY_A);
-	_mappedControls[CTRL_RIGHT] = configFile->GetInt("controls", "CTRL_RIGHT", KEY_D);
-	_mappedControls[CTRL_JUMP] = configFile->GetInt("controls", "CTRL_JUMP", KEY_SPACE);
-	_mappedControls[CTRL_ACTION] = configFile->GetInt("controls", "CTRL_ACTION", KEY_E);
+	CreateConfigMaps();
+}
 
-	SaveConfig();
+void ControllerInput::CreateConfigMaps()
+{
+	_mappedControlsToKeys.Clear();
+	_mappedKeysToControls.Clear();
+
+	_mappedControlsToKeys[CTRL_FORWARD] = _configFile->GetInt("controls", "CTRL_FORWARD", KEY_W);
+	_mappedControlsToKeys[CTRL_BACK] = _configFile->GetInt("controls", "CTRL_BACK", KEY_S);
+	_mappedControlsToKeys[CTRL_LEFT] = _configFile->GetInt("controls", "CTRL_LEFT", KEY_A);
+	_mappedControlsToKeys[CTRL_RIGHT] = _configFile->GetInt("controls", "CTRL_RIGHT", KEY_D);
+	_mappedControlsToKeys[CTRL_JUMP] = _configFile->GetInt("controls", "CTRL_JUMP", KEY_SPACE);
+	_mappedControlsToKeys[CTRL_ACTION] = _configFile->GetInt("controls", "CTRL_ACTION", KEY_E);
+	_mappedControlsToKeys[CTRL_SPRINT] = _configFile->GetInt("controls", "CTRL_SPRINT", KEY_LSHIFT);
+
+	for (auto it = _mappedControlsToKeys.Begin(); it != _mappedControlsToKeys.End(); ++it) {
+		_mappedKeysToControls[(*it).second_] = (*it).first_;
+	}
 }
 
 void ControllerInput::SaveConfig()
 {
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto configFile = cache->GetResource<ConfigFile>("Config/controls.cfg");
 
-	for (auto it = _mappedControls.Begin(); it != _mappedControls.End(); ++it) {
-		configFile->Set("controls", _controlMapNames[(*it).first_], String((*it).second_));
+	for (auto it = _mappedControlsToKeys.Begin(); it != _mappedControlsToKeys.End(); ++it) {
+		_configFile->Set("controls", _controlMapNames[(*it).first_], String((*it).second_));
 	}
+
 	Urho3D::File file(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/controls.cfg", Urho3D::FILE_WRITE);
-	configFile->Save(file, true);
+	_configFile->Save(file, true);
 	file.Close();
 }
 
@@ -64,6 +74,7 @@ void ControllerInput::SubscribeToEvents()
 	SubscribeToEvent(MyEvents::E_START_INPUT_MAPPING, URHO3D_HANDLER(ControllerInput, HandleStartInputListening));
 	SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ControllerInput, HandleKeyDown));
 	SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(ControllerInput, HandleKeyUp));
+	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ControllerInput, HandleUpdate));
 	SubscribeToEvent("StartInputMappingConsole", URHO3D_HANDLER(ControllerInput, HandleStartInputListeningConsole));
 	RegisterConsoleCommands();
 }
@@ -74,24 +85,21 @@ void ControllerInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 	int key = eventData[P_KEY].GetInt();
 
 	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
-		int oldKey = _mappedControls[_activeAction];
-		_mappedControls[_activeAction] = key;
+		int oldKey = _mappedControlsToKeys[_activeAction];
+		_mappedControlsToKeys[_activeAction] = key;
 
 		URHO3D_LOGINFO("Changed control '" + _controlMapNames[_activeAction] + "' from key " + String(oldKey) + " to key " + String(key));
 
 		SaveConfig();
 
 		_activeAction = 0;
+
+		CreateConfigMaps();
 		return;
 	}
 
 	auto* input = GetSubsystem<Input>();
-	_controls.Set(CTRL_FORWARD, input->GetKeyDown(_mappedControls[CTRL_FORWARD]));
-	_controls.Set(CTRL_BACK, input->GetKeyDown(_mappedControls[CTRL_BACK]));
-	_controls.Set(CTRL_LEFT, input->GetKeyDown(_mappedControls[CTRL_LEFT]));
-	_controls.Set(CTRL_RIGHT, input->GetKeyDown(_mappedControls[CTRL_RIGHT]));
-	_controls.Set(CTRL_JUMP, input->GetKeyDown(_mappedControls[CTRL_JUMP]));
-	_controls.Set(CTRL_ACTION, input->GetMouseButtonDown(_mappedControls[CTRL_ACTION]));
+	_controls.Set(_mappedKeysToControls[key], true);
 }
 
 void ControllerInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
@@ -104,12 +112,7 @@ void ControllerInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 	}
 
 	auto* input = GetSubsystem<Input>();
-	_controls.Set(CTRL_FORWARD, input->GetKeyDown(_mappedControls[CTRL_FORWARD]));
-	_controls.Set(CTRL_BACK, input->GetKeyDown(_mappedControls[CTRL_BACK]));
-	_controls.Set(CTRL_LEFT, input->GetKeyDown(_mappedControls[CTRL_LEFT]));
-	_controls.Set(CTRL_RIGHT, input->GetKeyDown(_mappedControls[CTRL_RIGHT]));
-	_controls.Set(CTRL_JUMP, input->GetKeyDown(_mappedControls[CTRL_JUMP]));
-	_controls.Set(CTRL_ACTION, input->GetMouseButtonDown(_mappedControls[CTRL_ACTION]));
+	_controls.Set(_mappedKeysToControls[key], false);
 }
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
@@ -118,7 +121,7 @@ void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap
 	using namespace MyEvents::StartInputMapping;
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_INT) {
 		_activeAction = eventData[P_CONTROL_ACTION].GetInt();
-		URHO3D_LOGINFO("Control: " + _mappedControls[_activeAction]);
+		URHO3D_LOGINFO("Control: " + _mappedControlsToKeys[_activeAction]);
 	}
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_STRING) {
 		String control = eventData[P_CONTROL_ACTION].GetString();
@@ -131,7 +134,6 @@ void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap
 	}
 
 	_timer.Reset();
-	// SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ControllerInput, HandleUpdate));
 }
 
 void ControllerInput::RegisterConsoleCommands()
@@ -164,17 +166,13 @@ Controls ControllerInput::GetControls()
 
 void ControllerInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-	// if (_activeAction > 0) {
-	// 	Input* input = GetSubsystem<Input>();
+	auto* input = GetSubsystem<Input>();
+    // Mouse sensitivity as degrees per pixel
+    const float MOUSE_SENSITIVITY = 0.1f;
 
-	// 	int oldKey = _mappedControls[_activeAction];
-	// 	_mappedControls[_activeAction] = key;
-
-	// 	URHO3D_LOGINFO("Changed control '" + _controlMapNames[_activeAction] + "' from key " + String(oldKey) + " to key " + String(key));
-
-	// 	SaveConfig();
-
-	// 	_activeAction = 0;
-	// 	UnsubscribeFromEvent(E_UPDATE);
-	// }
+    // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees
+    IntVector2 mouseMove = input->GetMouseMove();
+    _controls.yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
+    _controls.pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
+    _controls.pitch_ = Clamp(_controls.pitch_, -90.0f, 90.0f);
 }

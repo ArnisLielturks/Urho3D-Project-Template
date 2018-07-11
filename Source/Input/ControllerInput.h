@@ -2,7 +2,7 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseLevel.h"
-
+#include "../Config/ConfigFile.h"
 
 class ControllerInput : public Object
 {
@@ -24,6 +24,7 @@ private:
 	void UnsubscribeToEvents();
 	void RegisterConsoleCommands();
 
+	void CreateConfigMaps();
 	void LoadConfig();
 	void SaveConfig();
 	void DefaultConfig();
@@ -34,11 +35,13 @@ private:
 	void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	HashMap<int, int> _mappedControls;
+	HashMap<int, int> _mappedControlsToKeys;
+	HashMap<int, int> _mappedKeysToControls;
 
 	int _activeAction;
 
 	Urho3D::HashMap<int, String> _controlMapNames;
+	SharedPtr<ConfigFile> _configFile;
 
 	Controls _controls;
 	Timer _timer;

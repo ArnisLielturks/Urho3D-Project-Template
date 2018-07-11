@@ -8,3 +8,4 @@ static const unsigned CTRL_RIGHT = 8;
 static const unsigned CTRL_JUMP = 16;
 static const unsigned CTRL_ACTION = 32;
 static const unsigned CTRL_SPRINT = 64;
+static const unsigned CTRL_UP = 128;

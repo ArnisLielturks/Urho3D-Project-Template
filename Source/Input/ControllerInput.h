@@ -29,18 +29,34 @@ private:
 	void SaveConfig();
 	void DefaultConfig();
 
+	void ReleaseConfiguredKey(int key, int action);
+	void SetConfiguredKey(int action, int key, String controller);
+
 	void HandleStartInputListeningConsole(StringHash eventType, VariantMap& eventData);
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+
+	void HandleMouseButtonDown(StringHash eventType, VariantMap& eventData);
+	void HandleMouseButtonUp(StringHash eventType, VariantMap& eventData);
+
 	void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	HashMap<int, int> _mappedControlsToKeys;
-	HashMap<int, int> _mappedKeysToControls;
+	// Control against keyboard key map
+	HashMap<int, int> _mappedKeyboardControlsToKeys;
+	// Keyboard key against control map
+	HashMap<int, int> _mappedKeyboardKeysToControls;
+
+	// Control against mouse key map
+	HashMap<int, int> _mappedMouseControlsToKeys;
+	// Mouse key against control map
+	HashMap<int, int> _mappedMouseKeysToControls;
+
+
+	// Control names
+	Urho3D::HashMap<int, String> _controlMapNames;
 
 	int _activeAction;
-
-	Urho3D::HashMap<int, String> _controlMapNames;
 	SharedPtr<ConfigFile> _configFile;
 
 	Controls _controls;

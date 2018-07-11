@@ -125,7 +125,7 @@ void BaseApplication::Start()
 	context_->RegisterSubsystem<ControllerInput>();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "Level";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

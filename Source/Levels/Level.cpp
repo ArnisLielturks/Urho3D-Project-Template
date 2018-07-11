@@ -110,6 +110,8 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
     if (controls.IsDown(CTRL_RIGHT))
         cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+    if (controls.IsDown(CTRL_UP))
+        cameraNode_->Translate(Vector3::UP * MOVE_SPEED * timeStep);
 
     // Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
     cameraNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));

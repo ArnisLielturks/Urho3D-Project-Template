@@ -1,6 +1,8 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Level.h"
 #include "../MyEvents.h"
+#include "../Global.h"
+#include "../Input/ControllerInput.h"
 
 using namespace Levels;
 
@@ -89,16 +91,23 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         return;
     }
     float timeStep = eventData["TimeStep"].GetFloat();
-    cameraNode_->Yaw(timeStep * 50);
+    //cameraNode_->Yaw(timeStep * 50);
     Input* input = GetSubsystem<Input>();
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
-    if (_controlledNode) {
-        Vector3 position = _controlledNode->GetWorldPosition();
-        position.y_ += 3.5;
-        cameraNode_->SetPosition(position);
-    }
+
+    // Movement speed as world units per second
+    const float MOVE_SPEED = 2.0f;
+    Controls controls = GetSubsystem<ControllerInput>()->GetControls();
+    if (controls.IsDown(CTRL_FORWARD))
+        cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+    if (controls.IsDown(CTRL_BACK))
+        cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+    if (controls.IsDown(CTRL_LEFT))
+        cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+    if (controls.IsDown(CTRL_RIGHT))
+        cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
 }
 
 void Level::OnLoaded()

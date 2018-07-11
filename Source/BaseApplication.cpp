@@ -30,7 +30,7 @@ BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
 	ConfigFile::RegisterObject(context);
-	context_->RegisterFactory<ControllerInput>();
+    context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();

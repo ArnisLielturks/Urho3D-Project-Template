@@ -2,6 +2,7 @@
  * Array of all the loaded mod (script) names
  */
 Array<String>@  mods = {};
+Array<Text@> textElements;
 
 /**
  * Entry function for the mod
@@ -65,6 +66,7 @@ void HandleModsLoaded(StringHash eventType, VariantMap& eventData)
 {
     mods = eventData["Mods"].GetStringVector();
     log.Info("[Debugger.as] Total mods loaded: " + mods.length);
+    DrawModNames();
 }
 
 /**
@@ -75,6 +77,11 @@ void DrawModNames()
     if (mods.empty) {
         return;
     }
+
+    for (uint i = 0; i < textElements.length; i++) {
+        textElements[i].Remove();
+    }
+    textElements.Clear();
     CreateScriptName("Mods Loaded:", 0);
     for (uint i = 0; i < mods.length; i++) {
         CreateScriptName(mods[i], i + 1);
@@ -106,4 +113,6 @@ void CreateScriptName(String name, int index)
 
     // Add Text instance to the UI root element
     ui.root.AddChild(helloText);
+
+    textElements.Push(helloText);
 }

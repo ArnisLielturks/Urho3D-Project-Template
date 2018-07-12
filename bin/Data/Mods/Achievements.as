@@ -12,6 +12,11 @@ void Start()
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
 }
 
+void Stop()
+{
+
+}
+
 /**
  * When specific level is loaded, show achievement
  */

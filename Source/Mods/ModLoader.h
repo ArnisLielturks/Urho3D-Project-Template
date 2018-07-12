@@ -31,6 +31,8 @@ private:
 
     void HandleReloadScript(StringHash eventType, VariantMap& eventData);
 
+    void CheckAllMods();
+
     /**
      * List of all the loaded mods
      */

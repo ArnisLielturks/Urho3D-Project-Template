@@ -60,6 +60,10 @@ void ControllerInput::LoadConfig()
 			int key = _configFile->GetInt("mouse", controlName, 0);
 			_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, controlCode);
 		}
+		if (_configFile->GetInt("joystick", controlName, -1) != -1) {
+			int key = _configFile->GetInt("joystick", controlName, 0);
+			_inputHandlers[ControllerType::JOYSTICK]->SetKeyToAction(key, controlCode);
+		}
 	}
 }
 

@@ -2,12 +2,24 @@
 #include "ControllerInput.h"
 #include "../MyEvents.h"
 #include "../Global.h"
+#include "Controllers/KeyboardInput.h"
+#include "Controllers/MouseInput.h"
+#include "Controllers/JoystickInput.h"
 
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :
-    Object(context),
-	_activeAction(0)
+    Object(context)
 {
+
+	context_->RegisterFactory<BaseInput>();
+	context_->RegisterFactory<KeyboardInput>();
+	context_->RegisterFactory<MouseInput>();
+	context_->RegisterFactory<JoystickInput>();
+
+	_inputHandlers[ControllerType::KEYBOARD] = context_->CreateObject<KeyboardInput>();
+	_inputHandlers[ControllerType::MOUSE] = context_->CreateObject<MouseInput>();
+	_inputHandlers[ControllerType::JOYSTICK] = context_->CreateObject<JoystickInput>();
+
 	_controlMapNames[CTRL_FORWARD] = "CTRL_FORWARD";
 	_controlMapNames[CTRL_BACK] = "CTRL_BACK";
 	_controlMapNames[CTRL_LEFT] = "CTRL_LEFT";
@@ -42,28 +54,13 @@ void ControllerInput::LoadConfig()
 		int controlCode = (*it).first_;
 		if (_configFile->GetInt("keyboard", controlName, -1) != -1) {
 			int key = _configFile->GetInt("keyboard", controlName, 0);
-			_mappedKeyboardControlsToKeys[controlCode] = key;
-			_mappedKeyboardKeysToControls[key] = controlCode;
-			URHO3D_LOGINFO("Keyboard control " + controlName + " => " + String(key));
+			_inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(key, controlCode);
 		}
 		if (_configFile->GetInt("mouse", controlName, -1) != -1) {
 			int key = _configFile->GetInt("mouse", controlName, 0);
-			_mappedMouseControlsToKeys[controlCode] = key;
-			_mappedMouseKeysToControls[key] = controlCode;
-			URHO3D_LOGINFO("Mouse control " + controlName + " => " + String(key));
+			_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, controlCode);
 		}
 	}
-
-	CreateConfigMaps();
-}
-
-void ControllerInput::CreateConfigMaps()
-{
-	// _mappedKeyboardControlsToKeys.Clear();
-	// _mappedKeyboardKeysToControls.Clear();
-
-	// _mappedMouseControlsToKeys.Clear();
-	// _mappedMouseKeysToControls.Clear();
 }
 
 void ControllerInput::SaveConfig()
@@ -73,30 +70,31 @@ void ControllerInput::SaveConfig()
 		int controlCode = (*it).first_;
 		_configFile->Set("keyboard", controlName, "-1");
 		_configFile->Set("mouse", controlName, "-1");
+		_configFile->Set("joystick", controlName, "-1");
 	}
-	for (auto it = _mappedKeyboardControlsToKeys.Begin(); it != _mappedKeyboardControlsToKeys.End(); ++it) {
-		int controlCode = (*it).first_;
-		int keyCode = (*it).second_;
-		if (_controlMapNames.Contains(controlCode) && !_controlMapNames[controlCode].Empty()) {
-			String controlName = _controlMapNames[controlCode];
-			String value = String(keyCode);
-			_configFile->Set("keyboard", controlName, value);
-			URHO3D_LOGINFO(">>>>>>>> Setting keyboard : " + controlName + " => " + value);
+
+	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+		HashMap<int, int> configMap = (*it).second_->GetConfigMap();
+		int type = (*it).first_;
+		String typeName;
+		HashMap<int, String> map;
+		map[ControllerType::KEYBOARD] = "keyboard";
+		map[ControllerType::MOUSE] = "mouse";
+		map[ControllerType::JOYSTICK] = "joystick";
+
+		for (auto it2 = configMap.Begin(); it2 != configMap.End(); ++it2) {
+			int controlCode = (*it2).first_;
+		 	int keyCode = (*it2).second_;
+			 if (_controlMapNames.Contains(controlCode) && !_controlMapNames[controlCode].Empty()) {
+				String controlName = _controlMapNames[controlCode];
+				String value = String(keyCode);
+				_configFile->Set(map[type], controlName, value);
+				URHO3D_LOGINFO(">>>>>>>> Setting " + map[type] + " : " + controlName + " => " + value);
+			}
 		}
 	}
 
-	for (auto it = _mappedMouseControlsToKeys.Begin(); it != _mappedMouseControlsToKeys.End(); ++it) {
-		int controlCode = (*it).first_;
-		int keyCode = (*it).second_;
-		if (_controlMapNames.Contains(controlCode) && !_controlMapNames[controlCode].Empty()) {
-			String controlName = _controlMapNames[controlCode];
-			String value = String(keyCode);
-			_configFile->Set("mouse", controlName, value);
-			URHO3D_LOGINFO(">>>>>>>> Setting keyboard : " + controlName + " => " + value);
-		}
-	}
-
-	Urho3D::File file(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/controls.cfg", Urho3D::FILE_WRITE);
+	File file(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/controls.cfg", Urho3D::FILE_WRITE);
 	_configFile->Save(file, true);
 	file.Close();
 }
@@ -105,158 +103,41 @@ void ControllerInput::SubscribeToEvents()
 {
 	SubscribeToEvent(MyEvents::E_START_INPUT_MAPPING, URHO3D_HANDLER(ControllerInput, HandleStartInputListening));
 
-	SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ControllerInput, HandleKeyDown));
-	SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(ControllerInput, HandleKeyUp));
-
-	SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(ControllerInput, HandleMouseButtonDown));
-	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(ControllerInput, HandleMouseButtonUp));
-
-	SubscribeToEvent(E_JOYSTICKBUTTONDOWN, URHO3D_HANDLER(ControllerInput, HandleJoystickKeyDown));
-	SubscribeToEvent(E_JOYSTICKBUTTONUP, URHO3D_HANDLER(ControllerInput, HandleJoystickKeyUp));
-
 	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ControllerInput, HandleUpdate));
 	SubscribeToEvent("StartInputMappingConsole", URHO3D_HANDLER(ControllerInput, HandleStartInputListeningConsole));
 	RegisterConsoleCommands();
 }
 
-void ControllerInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
-{
-	using namespace KeyDown;
-	int key = eventData[P_KEY].GetInt();
-
-	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
-		SetConfiguredKey(_activeAction, key, "keyboard");
-		_activeAction = 0;
-		return;
-	}
-
-	auto* input = GetSubsystem<Input>();
-	_controls.Set(_mappedKeyboardKeysToControls[key], true);
-}
-
-void ControllerInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
-{
-	using namespace KeyUp;
-	int key = eventData[P_KEY].GetInt();
-
-	if (_activeAction > 0) {
-		return;
-	}
-
-	auto* input = GetSubsystem<Input>();
-	_controls.Set(_mappedKeyboardKeysToControls[key], false);
-}
-
-void ControllerInput::HandleMouseButtonDown(StringHash eventType, VariantMap& eventData)
-{
-	using namespace MouseButtonDown;
-	int key = eventData[P_BUTTON].GetInt();
-
-	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
-		SetConfiguredKey(_activeAction, key, "mouse");
-		_activeAction = 0;
-		return;
-	}
-
-	auto* input = GetSubsystem<Input>();
-	_controls.Set(_mappedMouseKeysToControls[key], true);
-}
-
-void ControllerInput::HandleMouseButtonUp(StringHash eventType, VariantMap& eventData)
-{
-	using namespace MouseButtonDown;
-	int key = eventData[P_BUTTON].GetInt();
-
-	if (_activeAction > 0) {
-		return;
-	}
-
-	auto* input = GetSubsystem<Input>();
-	_controls.Set(_mappedMouseKeysToControls[key], false);
-}
-
-void ControllerInput::HandleJoystickKeyDown(StringHash eventType, VariantMap& eventData)
-{
-	using namespace JoystickButtonDown;
-	int key = eventData[P_BUTTON].GetInt();
-	int joystick = eventData[P_JOYSTICKID].GetInt();
-	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(key) + " => " + String(key));
-}
-
-void ControllerInput::HandleJoystickKeyUp(StringHash eventType, VariantMap& eventData)
-{
-	using namespace JoystickButtonUp;
-	int key = eventData[P_BUTTON].GetInt();
-	int joystick = eventData[P_JOYSTICKID].GetInt();
-	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(key) + " => " + String(key));
-}
-
 void ControllerInput::ReleaseConfiguredKey(int key, int action)
 {
-	// Release key if used
-	for (auto it = _mappedKeyboardKeysToControls.Begin(); it != _mappedKeyboardKeysToControls.End(); ++it) {
-		int keyCode = (*it).first_;
-		int actionCode = (*it).second_;
-		if (key == keyCode) {
-			_mappedKeyboardKeysToControls.Erase(keyCode);
-		}
-		if (action == actionCode) {
-			_mappedKeyboardKeysToControls.Erase(keyCode);
-		}
+	// Clear all input handler mappings against key and actions
+	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+		(*it).second_->ReleaseKey(key);
+		(*it).second_->ReleaseAction(key);
 	}
-
-	for (auto it = _mappedKeyboardControlsToKeys.Begin(); it != _mappedKeyboardControlsToKeys.End(); ++it) {
-		int keyCode = (*it).second_;
-		int actionCode = (*it).first_;
-		if (key == keyCode) {
-			_mappedKeyboardControlsToKeys.Erase(actionCode);
-		}
-		if (action == actionCode) {
-			_mappedKeyboardControlsToKeys.Erase(actionCode);
-		}
-	}
-
-	// Release key if used
-	for (auto it = _mappedMouseKeysToControls.Begin(); it != _mappedMouseKeysToControls.End(); ++it) {
-		int keyCode = (*it).first_;
-		int actionCode = (*it).second_;
-		if (key == keyCode) {
-			_mappedMouseKeysToControls.Erase(keyCode);
-		}
-		if (action == actionCode) {
-			_mappedMouseKeysToControls.Erase(keyCode);
-		}
-	}
-
-	for (auto it = _mappedMouseControlsToKeys.Begin(); it != _mappedMouseControlsToKeys.End(); ++it) {
-		int keyCode = (*it).second_;
-		int actionCode = (*it).first_;
-		if (key == keyCode) {
-			_mappedMouseControlsToKeys.Erase(actionCode);
-		}
-		if (action == actionCode) {
-			_mappedMouseControlsToKeys.Erase(actionCode);
-		}
-	}
-
 }
 
 void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 {
+	// Clear previously assigned key and/or action
 	ReleaseConfiguredKey(key, action);
 	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Setting " + controller + " key " + input->GetKeyName(key) + "[" + String(key) + "] to action " + String(action));
 	if (controller == "keyboard") {
-		_mappedKeyboardControlsToKeys[action] = key;
-		_mappedKeyboardKeysToControls[key] = action;
+		_inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(key, action);
 	}
 	if (controller == "mouse") {
-		_mappedMouseControlsToKeys[action] = key;
-		_mappedMouseKeysToControls[key] = action;
+		_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, action);
+	}
+	if (controller == "joystick") {
+		_inputHandlers[ControllerType::JOYSTICK]->SetKeyToAction(key, action);
 	}
 
+	// Stop listening for keyboard key mapping
+	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+		(*it).second_->StopMappingAction();
+	}
+
+	// Send out event with all the details about the mapped control
 	using namespace MyEvents::InputMappingFinished;
 	VariantMap data = GetEventDataMap();
 	data[P_CONTROLLER] = controller;
@@ -271,24 +152,28 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
 {
+	int activeAction = 0;
+
 	using namespace MyEvents::StartInputMapping;
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_INT) {
-		_activeAction = eventData[P_CONTROL_ACTION].GetInt();
-		URHO3D_LOGINFO("Starting input listener!");
-		URHO3D_LOGINFO("Control: " + _mappedKeyboardControlsToKeys[_activeAction]);
+		activeAction = eventData[P_CONTROL_ACTION].GetInt();
 	}
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_STRING) {
 		String control = eventData[P_CONTROL_ACTION].GetString();
 		for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 			if ((*it).second_ == control) {
-				_activeAction = (*it).first_;
-				URHO3D_LOGINFO("Starting input listener!");
-				URHO3D_LOGINFO("Control: " + control);
+				activeAction = (*it).first_;
 			}
 		}
 	}
 
-	_timer.Reset();
+	if (activeAction > 0) {
+		// Prepare all input handlers for key mapping against specific action
+		for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+			(*it).second_->StartMappingAction(activeAction);
+		}
+		URHO3D_LOGINFO("Starting to map action!");
+	}
 }
 
 void ControllerInput::RegisterConsoleCommands()
@@ -339,23 +224,20 @@ HashMap<int, String> ControllerInput::GetControlNames()
 
 String ControllerInput::GetActionKeyName(int action)
 {
-	if (_mappedKeyboardControlsToKeys.Contains(action)) {
-		auto* input = GetSubsystem<Input>();
-		return input->GetKeyName(_mappedKeyboardControlsToKeys[action]);
+	String keyName = _inputHandlers[ControllerType::KEYBOARD]->GetActionKeyName(action);
+	if (!keyName.Empty()) {
+		return keyName;
 	}
-	if (_mappedMouseControlsToKeys.Contains(action)) {
-		auto* input = GetSubsystem<Input>();
-		int key = _mappedMouseControlsToKeys[action];
-		if (key == MOUSEB_LEFT) {
-			return "MOUSEB_LEFT";
-		}
-		if (key == MOUSEB_MIDDLE) {
-			return "MOUSEB_MIDDLE";
-		}
-		if (key == MOUSEB_RIGHT) {
-			return "MOUSEB_RIGHT";
-		}
+
+	keyName = _inputHandlers[ControllerType::MOUSE]->GetActionKeyName(action);
+	if (!keyName.Empty()) {
+		return keyName;
 	}
 
 	return String::EMPTY;
+}
+
+void ControllerInput::SetActionState(int action, bool active)
+{
+	_controls.Set(action, active);
 }

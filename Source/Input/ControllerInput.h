@@ -1,8 +1,17 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
-#include "../BaseLevel.h"
 #include "../Config/ConfigFile.h"
+#include "Controllers/BaseInput.h"
+
+/**
+ * Different types of input handlers
+ */
+enum ControllerType {
+	KEYBOARD,
+	MOUSE,
+	JOYSTICK
+};
 
 class ControllerInput : public Object
 {
@@ -14,11 +23,36 @@ public:
 
     virtual ~ControllerInput();
 
+	/**
+	 * Get the already processed controls
+	 */
 	Controls GetControls();
 
+	/**
+	 * Get mapping against all controls
+	 */
 	HashMap<int, String> GetControlNames();
 
+	/**
+	 * Retrieve key name for specific action
+	 */
 	String GetActionKeyName(int action);
+
+	/**
+	 * Set the controls action
+	 */
+	void SetActionState(int action, bool active);
+
+	/**
+	 * Clear action and key from configuration mapping
+	 * Used before assigning new key to control
+	 */
+	void ReleaseConfiguredKey(int key, int action);
+
+	/**
+	 * Map specific key to specific action
+	 */
+	void SetConfiguredKey(int action, int key, String controller);
 
 protected:
     virtual void Init();
@@ -28,45 +62,44 @@ private:
 	void UnsubscribeToEvents();
 	void RegisterConsoleCommands();
 
-	void CreateConfigMaps();
+	/**
+	 * Load INI configuration file
+	 */
 	void LoadConfig();
+
+	/**
+	 * Save INIT configuration file
+	 */
 	void SaveConfig();
-	void DefaultConfig();
 
-	void ReleaseConfiguredKey(int key, int action);
-	void SetConfiguredKey(int action, int key, String controller);
-
+	/**
+	 * Start mapping specific action from console command
+	 */
 	void HandleStartInputListeningConsole(StringHash eventType, VariantMap& eventData);
-	
-	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
 
-	void HandleMouseButtonDown(StringHash eventType, VariantMap& eventData);
-	void HandleMouseButtonUp(StringHash eventType, VariantMap& eventData);
-
-	void HandleJoystickKeyDown(StringHash eventType, VariantMap& eventData);
-	void HandleJoystickKeyUp(StringHash eventType, VariantMap& eventData);
-
+	/**
+	 * Start mapping specific action
+	 */
 	void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	// Control against keyboard key map
-	HashMap<int, int> _mappedKeyboardControlsToKeys;
-	// Keyboard key against control map
-	HashMap<int, int> _mappedKeyboardKeysToControls;
-
-	// Control against mouse key map
-	HashMap<int, int> _mappedMouseControlsToKeys;
-	// Mouse key against control map
-	HashMap<int, int> _mappedMouseKeysToControls;
-
-
-	// Control names
+	/**
+	 * Action key to string map
+	 */
 	HashMap<int, String> _controlMapNames;
 
-	int _activeAction;
+	/**
+	 * Loaded configuration file
+	 */
 	SharedPtr<ConfigFile> _configFile;
 
+	/**
+	 * Active controls
+	 */
 	Controls _controls;
-	Timer _timer;
+
+	/**
+	 * All input handlers
+	 */
+	HashMap<int, SharedPtr<BaseInput>> _inputHandlers;
 };

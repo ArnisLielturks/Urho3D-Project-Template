@@ -6,25 +6,17 @@ class BaseWindow : public Object
 {
     URHO3D_OBJECT(BaseWindow, Object);
 public:
-    BaseWindow(Context* context, IntVector2 size = IntVector2(300, 200)) :
-        Object(context) {
-        SubscribeToBaseEvents();
-        _size = size;
-        Init();
-    }
+    BaseWindow(Context* context, IntVector2 size = IntVector2(300, 200));
 
-    virtual ~BaseWindow()
-    {
-        Dispose();
-    }
+    virtual ~BaseWindow();
 
-    virtual void Init() {
-        UI* ui = GetSubsystem<UI>();
-        _base = ui->GetRoot()->CreateChild<Window>();
-        _base->SetStyleAuto();
-        _base->SetSize(_size);
-        _base->SetAlignment(HA_CENTER, VA_CENTER);
-    };
+    virtual void Init();
+
+    SharedPtr<UIElement> CreateMenu(UIElement* parent, const String& label, StringVector options, int selected, IntVector2 position/*, EventHandler* handler*/);
+    Button* CreateButton(UIElement* parent, String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
+    SharedPtr<UIElement> CreateCheckbox(UIElement* parent, const String& label, bool isActive, IntVector2 position/*, EventHandler* handler*/);
+	SharedPtr<UIElement> CreateSlider(UIElement* parent, const String& text, IntVector2 position, float value);
+    SharedPtr<UIElement> CreateControlsElement(const String& text, IntVector2 position, String value, String actionName, EventHandler* handler);
 
 private:
     void SubscribeToBaseEvents()

@@ -21,145 +21,6 @@ void SettingsWindow::Init()
     SubscribeToEvents();
 }
 
-SharedPtr<UIElement> SettingsWindow::CreateMenu(const String& label, StringVector options, int selected, IntVector2 position/*, EventHandler* handler*/)
-{
-    SharedPtr<UIElement> container(new UIElement(context_));
-    container->SetPosition(position);
-    container->SetAlignment(HA_LEFT, VA_TOP);
-    container->SetLayout(LM_HORIZONTAL, 8);
-    _base->AddChild(container);
-
-    SharedPtr<Text> text(new Text(context_));
-    container->AddChild(text);
-    text->SetText(label);
-    text->SetStyleAuto();
-    text->SetMinWidth(200);
-    //text->AddTag(TEXT_TAG);
-
-    SharedPtr<DropDownList> list(new DropDownList(context_));
-    container->AddChild(list);
-    list->SetMinWidth(150);
-    list->SetStyleAuto();
-
-    for (auto it = options.Begin(); it != options.End(); ++it)
-    {
-        SharedPtr<Text> item(new Text(context_));
-        list->AddItem(item);
-        item->SetText((*it));
-        item->SetStyleAuto();
-        item->SetMinWidth(150);
-        //item->AddTag(TEXT_TAG);
-    }
-
-    list->SetSelection(selected);
-
-    //text->SetMaxWidth(text->GetRowWidth(0));
-
-    //SubscribeToEvent(list, E_ITEMSELECTED, handler);
-    return container;
-}
-
-SharedPtr<UIElement> SettingsWindow::CreateCheckbox(const String& label, bool isActive, IntVector2 position/*, EventHandler* handler*/)
-{
-    SharedPtr<UIElement> container(new UIElement(context_));
-    container->SetPosition(position);
-    container->SetAlignment(HA_LEFT, VA_TOP);
-    container->SetLayout(LM_HORIZONTAL, 8);
-    _base->AddChild(container);
-
-    SharedPtr<Text> text(new Text(context_));
-    container->AddChild(text);
-    text->SetText(label);
-    text->SetStyleAuto();
-    text->SetMinWidth(200);
-
-    SharedPtr<CheckBox> box(new CheckBox(context_));
-    container->AddChild(box);
-    box->SetStyleAuto();
-    box->SetChecked(isActive);
-
-    // text->AddTag(TEXT_TAG);
-
-    //SubscribeToEvent(box, E_TOGGLED, handler);
-    return container;
-}
-
-SharedPtr<UIElement> SettingsWindow::CreateSlider(const String& text, IntVector2 position, float value)
-{
-	SharedPtr<UIElement> container(_base->CreateChild<UIElement>());
-	container->SetPosition(position);
-	container->SetAlignment(HA_LEFT, VA_TOP);
-	container->SetLayout(LM_HORIZONTAL, 8);
-
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
-
-	// Create text and slider below it
-	auto* sliderText = container->CreateChild<Text>();
-	//sliderText->SetPosition(IntV);
-	sliderText->SetStyleAuto();
-	sliderText->SetFont(font, 12);
-	sliderText->SetText(text);
-	sliderText->SetMinWidth(200);
-
-	auto* slider = container->CreateChild<Slider>();
-	slider->SetStyleAuto();
-	//slider->SetPosition(position);
-	//slider->SetSize(size);
-	slider->SetMinWidth(150);
-	// Use 0-1 range for controlling sound/music master volume
-	slider->SetRange(1.0f);
-	slider->SetValue(value);
-
-	return container;
-}
-
-SharedPtr<UIElement> SettingsWindow::CreateControlsElement(const String& text, IntVector2 position, String value, String actionName)
-{
-	SharedPtr<UIElement> container(new UIElement(context_));//(_base->CreateChild<UIElement>());
-    container->SetStyleAuto();
-	container->SetPosition(position);
-    container->SetMinHeight(30);
-	container->SetAlignment(HA_LEFT, VA_TOP);
-	container->SetLayout(LM_HORIZONTAL, 8, IntRect(4, 4, 4, 4));
-
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
-
-	// Create text and slider below it
-	auto* label = container->CreateChild<Text>();
-	//sliderText->SetPosition(IntV);
-	label->SetStyleAuto();
-	label->SetFont(font, 12);
-	label->SetText(text);
-	label->SetMinWidth(250);
-    label->SetAlignment(HA_LEFT, VA_CENTER);
-    label->SetPosition(IntVector2(10, 0));
-
-    Button* button = container->CreateChild<Button>();
-    button->SetStyleAuto();
-    button->SetMinWidth(40);
-    button->SetVar("ActionName", actionName);
-    button->SetPosition(IntVector2(-10, 0));
-    button->SetFocusMode(FM_RESETFOCUS);
-
-    Text* buttonText = button->CreateChild<Text>();
-    buttonText->SetText(value);
-    buttonText->SetName(actionName);
-    buttonText->SetStyleAuto();
-    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-
-    SubscribeToEvent(button, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleChangeControls));
-
-	// auto* lineEdit = container->CreateChild<LineEdit>();
-	// lineEdit->SetStyleAuto();
-	// lineEdit->SetMinWidth(130);
-    // lineEdit->SetText(value);
-    // lineEdit->SetVar("ActionName", actionName);
-
-	return container;
-}
-
 void SettingsWindow::Create()
 {
     UI* ui = GetSubsystem<UI>();
@@ -167,16 +28,16 @@ void SettingsWindow::Create()
     int margin = 10;
     int width = 110;
 
-    _closeButton = CreateButton("X", IntVector2(-5, 5), IntVector2(20, 20), HA_RIGHT, VA_TOP);
+    _closeButton = CreateButton(_base, "X", IntVector2(-5, 5), IntVector2(20, 20), HA_RIGHT, VA_TOP);
 
     int index = 0;
-    _controlsTabButton = CreateButton("Controls", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _controlsTabButton = CreateButton(_base, "Controls", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _audioTabButton = CreateButton("Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _audioTabButton = CreateButton(_base, "Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _graphicsTabButton = CreateButton("Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _graphicsTabButton = CreateButton(_base, "Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _saveButton = CreateButton("Save", IntVector2(-20, -20), IntVector2(width, 20), HA_RIGHT, VA_BOTTOM);
+    _saveButton = CreateButton(_base, "Save", IntVector2(-20, -20), IntVector2(width, 20), HA_RIGHT, VA_BOTTOM);
 
     _saveButton->SetVisible(false);
     CreateControllerSettingsView();
@@ -202,13 +63,13 @@ void SettingsWindow::CreateGraphicsSettingsView()
             supportedResolutions.Push(resolution);
         }
     }
-    _activeSettingElements.Push(CreateMenu("Resolution", supportedResolutions, activeIndex, IntVector2(20, 60)));
-    _activeSettingElements.Push(CreateCheckbox("Fullscreen", GetGlobalVar("Fullscreen").GetBool(), IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox("Vertical sync", GetGlobalVar("VSync").GetBool(), IntVector2(20, 120)));
-    _activeSettingElements.Push(CreateCheckbox("Triple buffer", GetGlobalVar("TripleBuffer").GetBool(), IntVector2(20, 150)));
+    _activeSettingElements.Push(CreateMenu(_base, "Resolution", supportedResolutions, activeIndex, IntVector2(20, 60)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Fullscreen", GetGlobalVar("Fullscreen").GetBool(), IntVector2(20, 90)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Vertical sync", GetGlobalVar("VSync").GetBool(), IntVector2(20, 120)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Triple buffer", GetGlobalVar("TripleBuffer").GetBool(), IntVector2(20, 150)));
 
-    _activeSettingElements.Push(CreateCheckbox("Enable shadows", GetGlobalVar("Shadows").GetBool(), IntVector2(20, 200)));
-    _activeSettingElements.Push(CreateCheckbox("Low quality shadows", GetGlobalVar("LowQualityShadows").GetBool(), IntVector2(20, 230)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Enable shadows", GetGlobalVar("Shadows").GetBool(), IntVector2(20, 200)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Low quality shadows", GetGlobalVar("LowQualityShadows").GetBool(), IntVector2(20, 230)));
 
     StringVector supportedQualitySettings;
     supportedQualitySettings.Push("Low"); //0
@@ -219,7 +80,7 @@ void SettingsWindow::CreateGraphicsSettingsView()
     if (activeTextureQualityIndex > 2) {
         activeTextureQualityIndex = 3;
     }
-    _activeSettingElements.Push(CreateMenu("TextureQuality", supportedQualitySettings, activeTextureQualityIndex, IntVector2(20, 260)));
+    _activeSettingElements.Push(CreateMenu(_base, "TextureQuality", supportedQualitySettings, activeTextureQualityIndex, IntVector2(20, 260)));
 
     // FILTER_NEAREST = 0,
     // FILTER_BILINEAR = 1,
@@ -236,7 +97,7 @@ void SettingsWindow::CreateGraphicsSettingsView()
     textureAnisotropySettings.Push("Nearest anistropic");
     textureAnisotropySettings.Push("Default");
     textureAnisotropySettings.Push("Max");
-    _activeSettingElements.Push(CreateMenu("Texture anisotropy level", textureAnisotropySettings, GetGlobalVar("TextureAnisotropy").GetInt(), IntVector2(20, 290)));
+    _activeSettingElements.Push(CreateMenu(_base, "Texture anisotropy level", textureAnisotropySettings, GetGlobalVar("TextureAnisotropy").GetInt(), IntVector2(20, 290)));
 
     //  FILTER_NEAREST = 0,
     // FILTER_BILINEAR,
@@ -253,18 +114,18 @@ void SettingsWindow::CreateGraphicsSettingsView()
     textureFilterModes.Push("Nearest anistropic");
     textureFilterModes.Push("Default");
     textureFilterModes.Push("Max");
-    _activeSettingElements.Push(CreateMenu("Texture filer mode", textureFilterModes, GetGlobalVar("TextureFilterMode").GetInt(), IntVector2(20, 320)));
+    _activeSettingElements.Push(CreateMenu(_base, "Texture filer mode", textureFilterModes, GetGlobalVar("TextureFilterMode").GetInt(), IntVector2(20, 320)));
 }
 
 void SettingsWindow::CreateAudioSettingsView()
 {
     ClearView();
-    // _activeSettingElements.Push(CreateCheckbox("Audio?", true, IntVector2(20, 60)));
-    // _activeSettingElements.Push(CreateCheckbox("Audio!", false, IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox("Enable audio", GetGlobalVar("Sound").GetBool(), IntVector2(20, 60)));
-    _activeSettingElements.Push(CreateCheckbox("Stereo", GetGlobalVar("SoundStereo").GetBool(), IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox("Sound interpolation", GetGlobalVar("SoundInterpolation").GetBool(), IntVector2(20, 120)));
-	_activeSettingElements.Push(CreateSlider("Volume", IntVector2(20, 150), GetGlobalVar("SoundVolume").GetFloat()));
+    // _activeSettingElements.Push(CreateCheckbox(_base, "Audio?", true, IntVector2(20, 60)));
+    // _activeSettingElements.Push(CreateCheckbox(_base, "Audio!", false, IntVector2(20, 90)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Enable audio", GetGlobalVar("Sound").GetBool(), IntVector2(20, 60)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Stereo", GetGlobalVar("SoundStereo").GetBool(), IntVector2(20, 90)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Sound interpolation", GetGlobalVar("SoundInterpolation").GetBool(), IntVector2(20, 120)));
+	_activeSettingElements.Push(CreateSlider(_base, "Volume", IntVector2(20, 150), GetGlobalVar("SoundVolume").GetFloat()));
 
 }
 
@@ -286,28 +147,19 @@ void SettingsWindow::CreateControllerSettingsView()
 
     int index = 0;
     for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
-        SharedPtr<UIElement> singleItem(CreateControlsElement((*it).second_, IntVector2(20, 60 + index * 30), controllerInput->GetActionKeyName((*it).first_), (*it).second_));
+        SharedPtr<UIElement> singleItem(
+            CreateControlsElement(
+                (*it).second_, 
+                IntVector2(20, 60 + index * 30), 
+                controllerInput->GetActionKeyName((*it).first_), 
+                (*it).second_,
+                URHO3D_HANDLER(SettingsWindow, HandleChangeControls)
+            )
+        );
         list->AddItem(singleItem);
         _activeSettingElements.Push(singleItem);
         index++;
     }
-}
-
-Button* SettingsWindow::CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-{
-    Button* button = _base->CreateChild<Button>();
-    button->SetSize(size);
-    button->SetPosition(position);
-    button->SetStyleAuto();
-    button->SetAlignment(hAlign, vAlign);
-    button->SetFocusMode(FM_RESETFOCUS);
-
-    Text* text = button->CreateChild<Text>();
-    text->SetText(name);
-    text->SetStyleAuto();
-    text->SetAlignment(HA_CENTER, VA_CENTER);
-
-    return button;
 }
 
 void SettingsWindow::SubscribeToEvents()

@@ -3,6 +3,20 @@
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseWindow.h"
 
+enum SettingsButtonType {
+    CLOSE,
+    SAVE,
+    CONTROLS,
+    AUDIO,
+    VIDEO
+};
+
+enum SettingsViewType {
+    CONTROLS_VIEW,
+    AUDIO_VIEW,
+    VIDEO_VIEW
+};
+
 class SettingsWindow : public BaseWindow
 {
     URHO3D_OBJECT(SettingsWindow, BaseWindow);
@@ -39,11 +53,9 @@ private:
 
     void ClearView();
 
-    SharedPtr<Button> _closeButton;
-    SharedPtr<Button> _saveButton;
-    SharedPtr<Button> _controlsTabButton;
-    SharedPtr<Button> _audioTabButton;
-    SharedPtr<Button> _graphicsTabButton;
+    HashMap<int, SharedPtr<Button>> _buttons;
+
+    SettingsViewType _openedView;
 
     Vector<SharedPtr<UIElement>> _activeSettingElements;
 };

@@ -28,24 +28,25 @@ void SettingsWindow::Create()
     int margin = 10;
     int width = 110;
 
-    _closeButton = CreateButton(_base, "X", IntVector2(-5, 5), IntVector2(20, 20), HA_RIGHT, VA_TOP);
+    _buttons[SettingsButtonType::CLOSE] = CreateButton(_base, "X", IntVector2(-5, 5), IntVector2(20, 20), HA_RIGHT, VA_TOP);
 
     int index = 0;
-    _controlsTabButton = CreateButton(_base, "Controls", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _buttons[SettingsButtonType::CONTROLS] = CreateButton(_base, "Controls", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _audioTabButton = CreateButton(_base, "Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _buttons[SettingsButtonType::AUDIO] = CreateButton(_base, "Audio", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _graphicsTabButton = CreateButton(_base, "Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
+    _buttons[SettingsButtonType::VIDEO] = CreateButton(_base, "Video", IntVector2(margin + index * margin + index * width, 5), IntVector2(width, 20), HA_LEFT, VA_TOP);
     index++;
-    _saveButton = CreateButton(_base, "Save", IntVector2(-20, -20), IntVector2(width, 20), HA_RIGHT, VA_BOTTOM);
+    _buttons[SettingsButtonType::SAVE] = CreateButton(_base, "Save", IntVector2(-20, -20), IntVector2(width, 20), HA_RIGHT, VA_BOTTOM);
 
-    _saveButton->SetVisible(false);
+    _buttons[SettingsButtonType::SAVE]->SetVisible(false);
     CreateControllerSettingsView();
 }
 
 void SettingsWindow::CreateGraphicsSettingsView()
 {
     ClearView();
+    _openedView = SettingsViewType::VIDEO_VIEW;
     auto* graphics = GetSubsystem<Graphics>();
 
     String activeResolution = String(GetGlobalVar("ScreenWidth").GetInt()) + "x" + String(GetGlobalVar("ScreenHeight").GetInt());
@@ -120,6 +121,7 @@ void SettingsWindow::CreateGraphicsSettingsView()
 void SettingsWindow::CreateAudioSettingsView()
 {
     ClearView();
+    _openedView = SettingsViewType::AUDIO_VIEW;
     // _activeSettingElements.Push(CreateCheckbox(_base, "Audio?", true, IntVector2(20, 60)));
     // _activeSettingElements.Push(CreateCheckbox(_base, "Audio!", false, IntVector2(20, 90)));
     _activeSettingElements.Push(CreateCheckbox(_base, "Enable audio", GetGlobalVar("Sound").GetBool(), IntVector2(20, 60)));
@@ -135,6 +137,8 @@ void SettingsWindow::CreateControllerSettingsView()
     HashMap<int, String> controlNames = controllerInput->GetControlNames();
 
     ClearView();
+
+    _openedView = SettingsViewType::CONTROLS_VIEW;
 
     SharedPtr<ListView> list(_base->CreateChild<ListView>());
     list->SetSelectOnClickEnd(true);
@@ -164,11 +168,11 @@ void SettingsWindow::CreateControllerSettingsView()
 
 void SettingsWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(_closeButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleClose));
-    SubscribeToEvent(_graphicsTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowVideoSettings));
-    SubscribeToEvent(_controlsTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowControllerSettings));
-    SubscribeToEvent(_audioTabButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowAudioSettings));
-    SubscribeToEvent(_saveButton, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleSave));
+    SubscribeToEvent(_buttons[SettingsButtonType::CLOSE], E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleClose));
+    SubscribeToEvent(_buttons[SettingsButtonType::VIDEO], E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowVideoSettings));
+    SubscribeToEvent(_buttons[SettingsButtonType::CONTROLS], E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowControllerSettings));
+    SubscribeToEvent(_buttons[SettingsButtonType::AUDIO], E_RELEASED, URHO3D_HANDLER(SettingsWindow, ShowAudioSettings));
+    SubscribeToEvent(_buttons[SettingsButtonType::SAVE], E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleSave));
 
     SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
 }
@@ -191,7 +195,7 @@ void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 
 void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventData)
 {
-    _saveButton->SetVisible(true);
+    _buttons[SettingsButtonType::SAVE]->SetVisible(true);
     CreateGraphicsSettingsView();
     // auto* graphics = GetSubsystem<Graphics>();
     // {
@@ -224,13 +228,13 @@ void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventDa
 
 void SettingsWindow::ShowAudioSettings(StringHash eventType, VariantMap& eventData)
 {
-    _saveButton->SetVisible(true);
+    _buttons[SettingsButtonType::SAVE]->SetVisible(true);
     CreateAudioSettingsView();
 }
 
 void SettingsWindow::ShowControllerSettings(StringHash eventType, VariantMap& eventData)
 {
-    _saveButton->SetVisible(false);
+    _buttons[SettingsButtonType::SAVE]->SetVisible(false);
     CreateControllerSettingsView();
 }
 

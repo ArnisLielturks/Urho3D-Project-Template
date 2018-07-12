@@ -80,10 +80,6 @@ void Splash::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "Saw splash screen";
-    SendEvent("NewAchievement", data);
-
 	WorkQueue* workQueue = GetSubsystem<WorkQueue>();
 	SharedPtr<WorkItem> item = workQueue->GetFreeItem();
 	item->priority_ = M_MAX_UNSIGNED;
@@ -95,7 +91,6 @@ void Splash::Init()
 	item->start_ = nullptr;// &(*start);
 	item->end_ = nullptr;// &(*end);
 	workQueue->AddWorkItem(item);
-
 }
 
 void Splash::Test()

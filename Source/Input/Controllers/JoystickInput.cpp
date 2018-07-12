@@ -23,8 +23,8 @@ void JoystickInput::Init()
 
 void JoystickInput::SubscribeToEvents()
 {
-	SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(JoystickInput, HandleKeyDown));
-	SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(JoystickInput, HandleKeyUp));
+	SubscribeToEvent(E_JOYSTICKBUTTONDOWN, URHO3D_HANDLER(JoystickInput, HandleKeyDown));
+	SubscribeToEvent(E_JOYSTICKBUTTONUP, URHO3D_HANDLER(JoystickInput, HandleKeyUp));
 }
 
 void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)

@@ -20,14 +20,14 @@ ControllerInput::ControllerInput(Context* context) :
 	_inputHandlers[ControllerType::MOUSE] = context_->CreateObject<MouseInput>();
 	_inputHandlers[ControllerType::JOYSTICK] = context_->CreateObject<JoystickInput>();
 
-	_controlMapNames[CTRL_FORWARD] = "CTRL_FORWARD";
-	_controlMapNames[CTRL_BACK] = "CTRL_BACK";
-	_controlMapNames[CTRL_LEFT] = "CTRL_LEFT";
-	_controlMapNames[CTRL_RIGHT] = "CTRL_RIGHT";
-	_controlMapNames[CTRL_JUMP] = "CTRL_JUMP";
-	_controlMapNames[CTRL_ACTION] = "CTRL_ACTION";
-	_controlMapNames[CTRL_SPRINT] = "CTRL_SPRINT";
-	_controlMapNames[CTRL_UP] = "CTRL_UP";
+	_controlMapNames[CTRL_FORWARD] = "Move forward";
+	_controlMapNames[CTRL_BACK] = "Move backward";
+	_controlMapNames[CTRL_LEFT] = "Strafe left";
+	_controlMapNames[CTRL_RIGHT] = "Strafe right";
+	_controlMapNames[CTRL_JUMP] = "Jump";
+	_controlMapNames[CTRL_ACTION] = "Primary action";
+	_controlMapNames[CTRL_SPRINT] = "Sprint";
+	_controlMapNames[CTRL_UP] = "Move up";
 
 	Init();
 }
@@ -51,6 +51,7 @@ void ControllerInput::LoadConfig()
 
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 		String controlName = (*it).second_;
+		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
 		if (_configFile->GetInt("keyboard", controlName, -1) != -1) {
 			int key = _configFile->GetInt("keyboard", controlName, 0);
@@ -71,6 +72,7 @@ void ControllerInput::SaveConfig()
 {
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 		String controlName = (*it).second_;
+		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
 		_configFile->Set("keyboard", controlName, "-1");
 		_configFile->Set("mouse", controlName, "-1");
@@ -91,6 +93,7 @@ void ControllerInput::SaveConfig()
 		 	int keyCode = (*it2).second_;
 			 if (_controlMapNames.Contains(controlCode) && !_controlMapNames[controlCode].Empty()) {
 				String controlName = _controlMapNames[controlCode];
+				controlName.Replace(" ", "_");
 				String value = String(keyCode);
 				_configFile->Set(map[type], controlName, value);
 				URHO3D_LOGINFO(">>>>>>>> Setting " + map[type] + " : " + controlName + " => " + value);

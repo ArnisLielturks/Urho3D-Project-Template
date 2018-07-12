@@ -40,7 +40,10 @@ void ModLoader::Create()
         }
         _mods.Push(scriptFile);
         modNames.Push((*it));
+        _scriptMap["Mods/" + (*it)] = scriptFile;
     }
+
+    SubscribeToEvent(E_FILECHANGED, URHO3D_HANDLER(ModLoader, HandleReloadScript));
 
     VariantMap data = GetEventDataMap();
     data["Mods"] = modNames;
@@ -83,4 +86,25 @@ void ModLoader::SubscribeConsoleCommands()
 void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)
 {
 	Reload();
+}
+
+
+void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
+{
+    using namespace FileChanged;
+    String filename = eventData[P_RESOURCENAME].GetString();
+    if (_scriptMap.Contains(filename)) {
+        URHO3D_LOGINFO("Reloading mod " + filename);
+        if (_scriptMap[filename]->GetFunction("void Stop()")) {
+            _scriptMap[filename]->Execute("void Stop()");
+        }
+        auto* cache = GetSubsystem<ResourceCache>();
+        cache->ReleaseResource<ScriptFile>(filename, true);
+        _scriptMap[filename].Reset();
+
+        _scriptMap[filename] = cache->GetResource<ScriptFile>(filename);
+        if (_scriptMap[filename]->GetFunction("void Start()")) {
+            _scriptMap[filename]->Execute("void Start()");
+        }
+    }
 }

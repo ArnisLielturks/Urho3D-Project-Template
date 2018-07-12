@@ -99,6 +99,7 @@ void BaseApplication::Start()
 
     UI* ui = GetSubsystem<UI>();
     auto* cache = GetSubsystem<ResourceCache>();
+    cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
     // Switch level

@@ -29,8 +29,12 @@ private:
 	void SubscribeConsoleCommands();
 	void HandleReload(StringHash eventType, VariantMap& eventData);
 
+    void HandleReloadScript(StringHash eventType, VariantMap& eventData);
+
     /**
      * List of all the loaded mods
      */
     Vector<SharedPtr<ScriptFile>> _mods;
+
+    HashMap<String, SharedPtr<ScriptFile>> _scriptMap;
 };

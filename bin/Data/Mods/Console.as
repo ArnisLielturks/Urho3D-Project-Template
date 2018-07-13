@@ -40,7 +40,7 @@ void Start()
     console.autoVisibleOnError = false;
     console.UpdateElements();
     console.commandInterpreter = "ScriptEventInvoker";
-    log.timeStamp = false;
+    // log.timeStamp = false;
     log.level = 1;
 
     Subscribe();

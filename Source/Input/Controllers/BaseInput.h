@@ -29,6 +29,10 @@ public:
 		_mappedControlToKey[action] = key;
 	}
 
+	bool IsActionUsed(int action) {
+		return _mappedControlToKey.Contains(action);
+	}
+
 	/**
 	 * Get all action mapping against controls
 	 */
@@ -64,12 +68,6 @@ public:
 			int actionCode = (*it).first_;
 			if (action == actionCode) {
 				_mappedControlToKey.Erase(actionCode);
-			}
-		}
-		for (auto it = _mappedKeyToControl.Begin(); it != _mappedKeyToControl.End(); ++it) {
-			int keyCode = (*it).first_;
-			int actionCode = (*it).second_;
-			if (action == actionCode) {
 				_mappedKeyToControl.Erase(keyCode);
 			}
 		}

@@ -24,46 +24,43 @@ SOFTWARE.
 
 #pragma once
 
+#include "ConfigFile.h"
+
 #include <Urho3D/Urho3D.h>
-#include <Urho3D/Resource/Resource.h>
 #include <Urho3D/Core/Object.h>
-#include <Urho3D/Core/StringUtils.h>
+#include <Urho3D/Core/Variant.h>
+#include <Urho3D/Resource/Resource.h>
 
-typedef Urho3D::Vector<Urho3D::String> ConfigSection;
-typedef Urho3D::Vector<ConfigSection> ConfigMap;
+typedef Urho3D::HashMap<Urho3D::String, Urho3D::Variant> SettingsMap;
 
-class ConfigFile : public Urho3D::Resource {
+class State;
+
+class ConfigManager : public Urho3D::Object {
+  URHO3D_OBJECT(ConfigManager, Urho3D::Object);
+
 public:
-  URHO3D_OBJECT(ConfigFile, Urho3D::Object);
 
-public:
-  ConfigFile(Urho3D::Context* context, bool caseSensitive = false);
-  ~ConfigFile() override = default;
+  ConfigManager(Urho3D::Context* context, const Urho3D::String& defaultFileName = "settings.cfg", bool caseSensitive = false, bool saveDefaultParameters = true);
+  ~ConfigManager() override = default;;
 
   static void RegisterObject(Urho3D::Context* context);
 
-  void SetCaseSensitive(bool caseSensitive) {
-    caseSensitive_ = caseSensitive;
+  // Gets the settings map
+  SettingsMap& GetMap() {
+    return map_;
   }
 
-  /// Load resource from stream. May be called from a worker thread. Return true if successful.
-  virtual bool BeginLoad(Urho3D::Deserializer& source);
-  /// Save resource.
-  virtual bool Save(Urho3D::Serializer& dest) const;
-  /// Smart Save resource, replacing only the values, keeping whitespacing and comments.
-  virtual bool Save(Urho3D::Serializer& dest, bool smartSave) const;
-
-  /// Deserialize from a string. Return true if successful.
-  bool FromString(const Urho3D::String& source);
-
-  const ConfigMap* GetMap() {
-    return &configMap_;
-  }
-
+  // Check if value exists
   bool Has(const Urho3D::String& section, const Urho3D::String& parameter);
 
+  // Set value
+  void Set(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::Variant& value);
+
+  // Get value
+  const Urho3D::Variant Get(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::Variant& defaultValue = Urho3D::Variant::EMPTY);
   const Urho3D::String GetString(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::String& defaultValue = Urho3D::String::EMPTY);
   const int GetInt(const Urho3D::String& section, const Urho3D::String& parameter, const int defaultValue = 0);
+  const int GetUInt(const Urho3D::String& section, const Urho3D::String& parameter, const unsigned defaultValue = 0);
   const bool GetBool(const Urho3D::String& section, const Urho3D::String& parameter, const bool defaultValue = false);
   const float GetFloat(const Urho3D::String& section, const Urho3D::String& parameter, const float defaultValue = 0.f);
   const Urho3D::Vector2 GetVector2(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::Vector2& defaultValue = Urho3D::Vector2::ZERO);
@@ -77,17 +74,35 @@ public:
   const Urho3D::Matrix3x4 GetMatrix3x4(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::Matrix3x4& defaultValue = Urho3D::Matrix3x4::IDENTITY);
   const Urho3D::Matrix4 GetMatrix4(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::Matrix4& defaultValue = Urho3D::Matrix4::IDENTITY);
 
-  void Set(const Urho3D::String& section, const Urho3D::String& parameter, const Urho3D::String& value);
 
-  // Returns header without bracket.
-  static const Urho3D::String ParseHeader(Urho3D::String line);
-  // Set property; Empty if no property.
-  static const void ParseProperty(Urho3D::String line, Urho3D::String& property, Urho3D::String& value);
-  // Strip comments and whitespace.
-  static const Urho3D::String ParseComments(Urho3D::String line);
+  // Clears all settings
+  void Clear();
+
+  // Load settings from file
+  bool Load(bool overwriteExisting = true) {
+    return Load(defaultFileName_, overwriteExisting);
+  }
+  bool Load(const Urho3D::String& fileName, bool overwriteExisting = true);
+  bool Load(ConfigFile& configFile, bool overwriteExisting = true);
+
+  // Save settings to file
+  bool Save(bool smartSave = true) {
+    return Save(defaultFileName_, smartSave);
+  }
+  bool Save(const Urho3D::String& fileName, bool smartSave = true);
+  bool Save(ConfigFile& configFile);
+  void SaveSettingsMap(Urho3D::String section, SettingsMap& map, ConfigFile& configFile);
 
 protected:
 
+  SettingsMap* GetSection(const Urho3D::String& section, bool create = false);
+
+protected:
+
+  bool saveDefaultParameters_;
   bool caseSensitive_;
-  ConfigMap configMap_;
+
+  Urho3D::String defaultFileName_;
+
+  SettingsMap map_;
 };

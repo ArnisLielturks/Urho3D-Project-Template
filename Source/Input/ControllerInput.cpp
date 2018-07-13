@@ -29,6 +29,9 @@ ControllerInput::ControllerInput(Context* context) :
 	_controlMapNames[CTRL_SPRINT] = "Sprint";
 	_controlMapNames[CTRL_UP] = "Move up";
 
+	_configManager = new ConfigManager(context);
+
+	_configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/controls.cfg";
 	Init();
 }
 
@@ -47,22 +50,26 @@ void ControllerInput::Init()
 void ControllerInput::LoadConfig()
 {
 	auto* cache = GetSubsystem<ResourceCache>();
-	_configFile = cache->GetResource<ConfigFile>("Config/controls.cfg");
+	bool loaded = _configManager->Load(_configurationFile, true);
+	if (!loaded) {
+		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
+		return;
+	}
 
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
-		if (_configFile->GetInt("keyboard", controlName, -1) != -1) {
-			int key = _configFile->GetInt("keyboard", controlName, 0);
+		if (_configManager->GetInt("keyboard", controlName, -1) != -1) {
+			int key = _configManager->GetInt("keyboard", controlName, 0);
 			_inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(key, controlCode);
 		}
-		if (_configFile->GetInt("mouse", controlName, -1) != -1) {
-			int key = _configFile->GetInt("mouse", controlName, 0);
+		if (_configManager->GetInt("mouse", controlName, -1) != -1) {
+			int key = _configManager->GetInt("mouse", controlName, 0);
 			_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, controlCode);
 		}
-		if (_configFile->GetInt("joystick", controlName, -1) != -1) {
-			int key = _configFile->GetInt("joystick", controlName, 0);
+		if (_configManager->GetInt("joystick", controlName, -1) != -1) {
+			int key = _configManager->GetInt("joystick", controlName, 0);
 			_inputHandlers[ControllerType::JOYSTICK]->SetKeyToAction(key, controlCode);
 		}
 	}
@@ -74,9 +81,9 @@ void ControllerInput::SaveConfig()
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
-		_configFile->Set("keyboard", controlName, "-1");
-		_configFile->Set("mouse", controlName, "-1");
-		_configFile->Set("joystick", controlName, "-1");
+		_configManager->Set("keyboard", controlName, "-1");
+		_configManager->Set("mouse", controlName, "-1");
+		_configManager->Set("joystick", controlName, "-1");
 	}
 
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
@@ -95,15 +102,12 @@ void ControllerInput::SaveConfig()
 				String controlName = _controlMapNames[controlCode];
 				controlName.Replace(" ", "_");
 				String value = String(keyCode);
-				_configFile->Set(map[type], controlName, value);
-				URHO3D_LOGINFO(">>>>>>>> Setting " + map[type] + " : " + controlName + " => " + value);
+				_configManager->Set(map[type], controlName, value);
 			}
 		}
 	}
 
-	File file(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/controls.cfg", Urho3D::FILE_WRITE);
-	_configFile->Save(file, true);
-	file.Close();
+	_configManager->Save(_configurationFile, true);
 }
 
 void ControllerInput::SubscribeToEvents()
@@ -119,8 +123,7 @@ void ControllerInput::ReleaseConfiguredKey(int key, int action)
 {
 	// Clear all input handler mappings against key and actions
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
-		(*it).second_->ReleaseKey(key);
-		(*it).second_->ReleaseAction(key);
+		(*it).second_->ReleaseAction(action);
 	}
 }
 
@@ -231,14 +234,11 @@ HashMap<int, String> ControllerInput::GetControlNames()
 
 String ControllerInput::GetActionKeyName(int action)
 {
-	String keyName = _inputHandlers[ControllerType::KEYBOARD]->GetActionKeyName(action);
-	if (!keyName.Empty()) {
-		return keyName;
-	}
-
-	keyName = _inputHandlers[ControllerType::MOUSE]->GetActionKeyName(action);
-	if (!keyName.Empty()) {
-		return keyName;
+	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+		if ((*it).second_->IsActionUsed(action)) {
+			String keyName = (*it).second_->GetActionKeyName(action);
+			return keyName;
+		}
 	}
 
 	return String::EMPTY;

@@ -8,6 +8,7 @@
 #include "Messages/Notifications.h"
 #include "Mods/ModLoader.h"
 #include "UI/WindowManager.h"
+#include "Config/ConfigManager.h"
 
 using namespace Urho3D;
 
@@ -42,6 +43,8 @@ private:
 
     void SubscribeToEvents();
 
+    void SetEngineParameter(String parameter, Variant value);
+
     void HandleExit(StringHash eventType, VariantMap& eventData);
 
     SharedPtr<LevelManager> levelManager;
@@ -50,4 +53,11 @@ private:
     SharedPtr<Achievements> _achievements;
     SharedPtr<WindowManager> _windowManager;
     VariantMap _globalSettings;
+
+    /**
+	 * Loaded configuration file
+	 */
+	SharedPtr<ConfigManager> _configManager;
+
+    String _configurationFile;
 };

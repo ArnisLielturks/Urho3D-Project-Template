@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
-#include "../Config/ConfigFile.h"
+#include "../Config/ConfigManager.h"
 #include "Controllers/BaseInput.h"
 
 /**
@@ -91,7 +91,7 @@ private:
 	/**
 	 * Loaded configuration file
 	 */
-	SharedPtr<ConfigFile> _configFile;
+	SharedPtr<ConfigManager> _configManager;
 
 	/**
 	 * Active controls
@@ -102,4 +102,9 @@ private:
 	 * All input handlers
 	 */
 	HashMap<int, SharedPtr<BaseInput>> _inputHandlers;
+
+	/**
+	 * Filepath + filename to the configuration file
+	 */
+	String _configurationFile;
 };

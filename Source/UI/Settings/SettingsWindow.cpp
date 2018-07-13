@@ -49,7 +49,7 @@ void SettingsWindow::CreateGraphicsSettingsView()
     _openedView = SettingsViewType::VIDEO_VIEW;
     auto* graphics = GetSubsystem<Graphics>();
 
-    String activeResolution = String(GetGlobalVar("ScreenWidth").GetInt()) + "x" + String(GetGlobalVar("ScreenHeight").GetInt());
+    String activeResolution = String(GetGlobalVar("WindowWidth").GetInt()) + "x" + String(GetGlobalVar("WindowHeight").GetInt());
 
     URHO3D_LOGINFO("Active resolution " + activeResolution);
     int activeIndex = 0;

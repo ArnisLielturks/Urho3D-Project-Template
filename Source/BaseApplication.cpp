@@ -30,6 +30,8 @@ BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
 	ConfigFile::RegisterObject(context);
+    ConfigManager::RegisterObject(context);
+
     context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
@@ -37,66 +39,21 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     context_->RegisterFactory<ModLoader>();
     context_->RegisterFactory<WindowManager>();
+
+    _configManager = new ConfigManager(context);
+
+    _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
 }
 
 void BaseApplication::Setup()
 {
-    LoadConfig("Data/Config/Config.json", "", true);
+    //LoadConfig("Data/Config/Config.json", "", true);
+    LoadINIConfig(_configurationFile);
 
-    engineParameters_[EP_FULL_SCREEN] = engine_->GetGlobalVar("Fullscreen").GetBool();
-    engineParameters_[EP_WINDOW_WIDTH] = engine_->GetGlobalVar("ScreenWidth").GetInt();
-    engineParameters_[EP_WINDOW_HEIGHT] = engine_->GetGlobalVar("ScreenHeight").GetInt();
-    engineParameters_[EP_BORDERLESS] = false;
-    engineParameters_[EP_FRAME_LIMITER] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-    engineParameters_[EP_WINDOW_TITLE] = "EmptyProject";
-    engineParameters_[EP_WINDOW_ICON] = "Data/Textures/UrhoIcon.png";
-
-    // Logs
-    engineParameters_[EP_LOG_NAME] = "EmptyProject.log";
-    engineParameters_[EP_LOG_LEVEL] = LOG_INFO;
-    engineParameters_[EP_LOG_QUIET] = false;
-
-    // Graphics
-    engineParameters_[EP_LOW_QUALITY_SHADOWS] = engine_->GetGlobalVar("LowQualityShadows").GetBool(); 
-    engineParameters_[EP_MATERIAL_QUALITY] = engine_->GetGlobalVar("MaterialQuality").GetInt(); // 0 - 15
-    engineParameters_[EP_MONITOR] = engine_->GetGlobalVar("Monitor").GetInt();
-    engineParameters_[EP_MULTI_SAMPLE] = engine_->GetGlobalVar("MultiSample").GetInt(); // 1 - N
-    engineParameters_[EP_SHADOWS] = engine_->GetGlobalVar("Shadows").GetBool();
-    engineParameters_[EP_TEXTURE_ANISOTROPY] = engine_->GetGlobalVar("TextureAnisotropy").GetInt();
-    engineParameters_[EP_TEXTURE_FILTER_MODE] = engine_->GetGlobalVar("TextureFilterMode").GetInt();
-    /*
-    FILTER_NEAREST = 0,
-    FILTER_BILINEAR = 1,
-    FILTER_TRILINEAR = 2,
-    FILTER_ANISOTROPIC = 3,
-    FILTER_NEAREST_ANISOTROPIC = 4,
-    FILTER_DEFAULT = 5,
-    MAX_FILTERMODES = 6
-    */
-    engineParameters_[EP_TEXTURE_QUALITY] = engine_->GetGlobalVar("TextureQuality").GetInt();
-    engineParameters_[EP_TRIPLE_BUFFER] = engine_->GetGlobalVar("TripleBuffer").GetBool();
-    engineParameters_[EP_VSYNC] = engine_->GetGlobalVar("VSync").GetBool();
-
-    // engineParameters_[EP_PACKAGE_CACHE_DIR] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-    // engineParameters_[EP_RENDER_PATH] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-    // engineParameters_[EP_RESOURCE_PACKAGES] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-    engineParameters_[EP_RESOURCE_PATHS] = engine_->GetGlobalVar("ResourcePaths").GetString();
-    // engineParameters_[EP_RESOURCE_PREFIX_PATHS] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-    // engineParameters_[EP_SHADER_CACHE_DIR] = engine_->GetGlobalVar("FrameLimiter").GetBool();
-
-    // Sound
-    engineParameters_[EP_SOUND] = engine_->GetGlobalVar("Sound").GetBool();
-    engineParameters_[EP_SOUND_BUFFER] = engine_->GetGlobalVar("SoundBuffer").GetInt();
-    engineParameters_[EP_SOUND_INTERPOLATION] = engine_->GetGlobalVar("SoundInterpolation").GetBool();
-    engineParameters_[EP_SOUND_MIX_RATE] = engine_->GetGlobalVar("SoundMixRate").GetInt();
-    engineParameters_[EP_SOUND_STEREO] = engine_->GetGlobalVar("SoundStereo").GetBool();
 }
 
 void BaseApplication::Start()
 {
-	// Does not work, resource cache should be initialized
-	//LoadINIConfig("Config/config.cfg");
-
     UI* ui = GetSubsystem<UI>();
     auto* cache = GetSubsystem<ResourceCache>();
     cache->SetAutoReloadResources(true);
@@ -338,12 +295,64 @@ void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, Va
 
 void BaseApplication::LoadINIConfig(String filename)
 {
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto configFile = cache->GetResource<ConfigFile>(filename);
+	bool loaded = _configManager->Load(filename, true);
+	if (!loaded) {
+		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
+		return;
+	}
 
-	auto width = configFile->GetInt("engine", "WindowWidth", 1024);
-	auto height = configFile->GetInt("engine", "WindowHeight", 768);
+    SetEngineParameter(EP_FULL_SCREEN, _configManager->GetBool("engine", "FullScreen", false));
+    SetEngineParameter(EP_WINDOW_WIDTH, _configManager->GetInt("engine", "WindowWidth", 800));
+    SetEngineParameter(EP_WINDOW_HEIGHT, _configManager->GetInt("engine", "WindowHeight", 600));
+    SetEngineParameter(EP_BORDERLESS, _configManager->GetBool("engine", "Borderless", false));
+    SetEngineParameter(EP_FRAME_LIMITER, _configManager->GetBool("engine", "FrameLimiter", true));
+    SetEngineParameter(EP_WINDOW_TITLE, "EmptyProject");
+    SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
 
-	URHO3D_LOGINFO("Width: " + String(width));
-	URHO3D_LOGINFO("Height: " + String(height));
+    // Logs
+    SetEngineParameter(EP_LOG_NAME, _configManager->GetString("engine", "LogName", "EmptyProject.log"));
+    SetEngineParameter(EP_LOG_LEVEL, _configManager->GetInt("engine", "LogLevel", LOG_INFO));
+    SetEngineParameter(EP_LOG_QUIET, _configManager->GetBool("engine", "LogQuiet", false));
+
+    // Graphics
+    SetEngineParameter(EP_LOW_QUALITY_SHADOWS, _configManager->GetBool("engine", "LowQualityShadows", false));
+    SetEngineParameter(EP_MATERIAL_QUALITY, _configManager->GetInt("engine", "MaterialQuality", 15));
+    SetEngineParameter(EP_MONITOR, _configManager->GetInt("engine", "Monitor", 0));
+    SetEngineParameter(EP_MULTI_SAMPLE, _configManager->GetInt("engine", "MultiSample", 1));
+    SetEngineParameter(EP_SHADOWS, _configManager->GetBool("engine", "Shadows", true));
+    SetEngineParameter(EP_TEXTURE_ANISOTROPY, _configManager->GetInt("engine", "TextureAnisotropy", 16));
+    SetEngineParameter(EP_TEXTURE_FILTER_MODE, _configManager->GetInt("engine", "TextureFilterMode", 5));
+    /*
+    FILTER_NEAREST = 0,
+    FILTER_BILINEAR = 1,
+    FILTER_TRILINEAR = 2,
+    FILTER_ANISOTROPIC = 3,
+    FILTER_NEAREST_ANISOTROPIC = 4,
+    FILTER_DEFAULT = 5,
+    MAX_FILTERMODES = 6
+    */
+    SetEngineParameter(EP_TEXTURE_QUALITY, _configManager->GetInt("engine", "TextureQuality", 2));
+    SetEngineParameter(EP_TRIPLE_BUFFER, _configManager->GetBool("engine", "TripleBuffer", true));
+    SetEngineParameter(EP_VSYNC, _configManager->GetBool("engine", "VerticalSync", true));
+
+    // SetEngineParameter(EP_PACKAGE_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
+    // SetEngineParameter(EP_RENDER_PATH, engine_->GetGlobalVar("FrameLimiter").GetBool());
+    // SetEngineParameter(EP_RESOURCE_PACKAGES, engine_->GetGlobalVar("FrameLimiter").GetBool());
+    SetEngineParameter(EP_RESOURCE_PATHS, _configManager->GetString("engine", "ResourcePaths", "Data;CoreData"));
+    // SetEngineParameter(EP_RESOURCE_PREFIX_PATHS, engine_->GetGlobalVar("FrameLimiter").GetBool());
+    // SetEngineParameter(EP_SHADER_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
+
+    // Sound
+    SetEngineParameter(EP_SOUND, _configManager->GetBool("engine", "Sound", true));
+    SetEngineParameter(EP_SOUND_BUFFER, _configManager->GetInt("engine", "SoundBuffer", 100));
+    SetEngineParameter(EP_SOUND_INTERPOLATION, _configManager->GetBool("engine", "SoundInterpolation", true));
+    SetEngineParameter(EP_SOUND_MIX_RATE, _configManager->GetInt("engine", "SoundMixRate", 44100));
+    SetEngineParameter(EP_SOUND_STEREO, _configManager->GetBool("engine", "SoundStereo", true));
+}
+
+void BaseApplication::SetEngineParameter(String parameter, Variant value)
+{
+    URHO3D_LOGINFO(".... Setting Engine parameter " + parameter);
+    engineParameters_[parameter] = value;
+    engine_->SetGlobalVar(parameter, value);
 }

@@ -355,4 +355,5 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
     URHO3D_LOGINFO(".... Setting Engine parameter " + parameter);
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
+	_globalSettings[parameter] = parameter;
 }

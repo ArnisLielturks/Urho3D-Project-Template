@@ -19,7 +19,7 @@ public:
 	/**
 	 * Get name of the key which uses specific action
 	 */
-	virtual String GetActionKeyName(int action) {};
+	virtual String GetActionKeyName(int action) { return String::EMPTY; };
 
 	/**
 	 * Bind key to specific action
@@ -71,6 +71,14 @@ public:
 				_mappedKeyToControl.Erase(keyCode);
 			}
 		}
+		for (auto it = _mappedKeyToControl.Begin(); it != _mappedKeyToControl.End(); ++it) {
+			int keyCode = (*it).first_;
+			int actionCode = (*it).second_;
+			if (action == actionCode) {
+				_mappedKeyToControl.Erase(keyCode);
+				_mappedControlToKey.Erase(actionCode);
+			}
+		}
 	}
 
 	/**
@@ -83,6 +91,7 @@ public:
 			int actionCode = (*it).second_;
 			if (key == keyCode) {
 				_mappedKeyToControl.Erase(keyCode);
+				_mappedControlToKey.Erase(actionCode);
 			}
 		}
 		for (auto it = _mappedControlToKey.Begin(); it != _mappedControlToKey.End(); ++it) {
@@ -90,6 +99,7 @@ public:
 			int actionCode = (*it).first_;
 			if (key == keyCode) {
 				_mappedControlToKey.Erase(actionCode);
+				_mappedKeyToControl.Erase(keyCode);
 			}
 		}
 	}

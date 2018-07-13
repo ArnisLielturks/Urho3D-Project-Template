@@ -43,6 +43,9 @@ public:
 	 */
 	void SetActionState(int action, bool active);
 
+	void UpdateYaw(float yaw);
+	void UpdatePitch(float pitch);
+
 	/**
 	 * Clear action and key from configuration mapping
 	 * Used before assigning new key to control
@@ -81,7 +84,6 @@ private:
 	 * Start mapping specific action
 	 */
 	void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
 	/**
 	 * Action key to string map

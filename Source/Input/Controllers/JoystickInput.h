@@ -23,4 +23,9 @@ private:
 
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+	void HandleAxisMove(StringHash eventType, VariantMap& eventData);
+	void HandleHatMove(StringHash eventType, VariantMap& eventData);
+	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+	Vector2 _axisPosition;
 };

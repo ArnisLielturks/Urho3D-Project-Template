@@ -25,6 +25,7 @@ void MouseInput::SubscribeToEvents()
 {
 	SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(MouseInput, HandleKeyDown));
 	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(MouseInput, HandleKeyUp));
+	SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(MouseInput, HandleMouseMove));
 }
 
 void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
@@ -58,6 +59,16 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], false);
 	}
+}
+
+void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
+{
+	using namespace MouseMove;
+	float dx = eventData[P_DX].GetInt();
+	float dy = eventData[P_DY].GetInt();
+	ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+	controllerInput->UpdateYaw(dx);
+	controllerInput->UpdatePitch(dy);
 }
 
 String MouseInput::GetActionKeyName(int action)

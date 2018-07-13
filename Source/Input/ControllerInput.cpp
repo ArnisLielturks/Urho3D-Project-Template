@@ -114,7 +114,6 @@ void ControllerInput::SubscribeToEvents()
 {
 	SubscribeToEvent(MyEvents::E_START_INPUT_MAPPING, URHO3D_HANDLER(ControllerInput, HandleStartInputListening));
 
-	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ControllerInput, HandleUpdate));
 	SubscribeToEvent("StartInputMappingConsole", URHO3D_HANDLER(ControllerInput, HandleStartInputListeningConsole));
 	RegisterConsoleCommands();
 }
@@ -124,6 +123,7 @@ void ControllerInput::ReleaseConfiguredKey(int key, int action)
 	// Clear all input handler mappings against key and actions
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
 		(*it).second_->ReleaseAction(action);
+		(*it).second_->ReleaseKey(key);
 	}
 }
 
@@ -214,19 +214,18 @@ Controls ControllerInput::GetControls()
 	return _controls;
 }
 
-void ControllerInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
+void ControllerInput::UpdateYaw(float yaw)
 {
-	auto* input = GetSubsystem<Input>();
-    // Mouse sensitivity as degrees per pixel
-    const float MOUSE_SENSITIVITY = 0.1f;
-
-    // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees
-    IntVector2 mouseMove = input->GetMouseMove();
-    _controls.yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-    _controls.pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-    _controls.pitch_ = Clamp(_controls.pitch_, -90.0f, 90.0f);
+	const float MOUSE_SENSITIVITY = 0.1f;
+	_controls.yaw_ += MOUSE_SENSITIVITY * yaw;
 }
 
+void ControllerInput::UpdatePitch(float pitch)
+{
+	const float MOUSE_SENSITIVITY = 0.1f;
+	_controls.pitch_ += MOUSE_SENSITIVITY * pitch;
+	_controls.pitch_ = Clamp(_controls.pitch_, -90.0f, 90.0f);
+}
 HashMap<int, String> ControllerInput::GetControlNames()
 {
 	return _controlMapNames;

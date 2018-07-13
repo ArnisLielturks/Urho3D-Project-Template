@@ -23,4 +23,5 @@ private:
 
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+	void HandleMouseMove(StringHash eventType, VariantMap& eventData);
 };

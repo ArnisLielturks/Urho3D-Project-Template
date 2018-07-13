@@ -3,8 +3,13 @@
  */
 void Start()
 {
-    log.Info("Minimap.as loaded");
+    log.Info("LevelLoader.as START");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
+}
+
+void Stop()
+{
+	log.Info("LevelLoader.as STOP");
 }
 
 /**

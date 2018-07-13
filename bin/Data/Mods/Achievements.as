@@ -5,6 +5,7 @@
  */
 void Start()
 {
+    log.Info("Achievements.as START");
     // Function from Helpers/Helper.as file
     Test();
 
@@ -14,7 +15,7 @@ void Start()
 
 void Stop()
 {
-
+    log.Info("Achievements.as STOP");
 }
 
 /**

@@ -9,6 +9,8 @@ Array<Text@> textElements;
  */
 void Start()
 {
+
+    log.Info("Debugger.as START");
     SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
@@ -29,6 +31,12 @@ void Start()
     SendEvent("LoadConfig", loadConfigData);
 
     log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
+
+}
+
+void Stop()
+{
+    log.Info("Debugger.as STOP");
 }
 
 void HandleInputMappingFinished(StringHash eventType, VariantMap& eventData)

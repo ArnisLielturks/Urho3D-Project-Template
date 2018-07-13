@@ -19,6 +19,7 @@ Console@ console = engine.CreateConsole();
 
 void Start()
 {
+    log.Info("Console.as START");
     // No need to create console if the engine is in headless mode
     if (engine.headless) {
         return;
@@ -48,6 +49,7 @@ void Start()
 
 void Stop()
 {
+    log.Info("Console.as STOP");
     console.visible = false;
 }
 

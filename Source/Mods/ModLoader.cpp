@@ -100,7 +100,6 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
 {
     using namespace FileChanged;
     String filename = eventData[P_RESOURCENAME].GetString();
-
     if (_scriptMap.Contains(filename)) {
         URHO3D_LOGINFO("Reloading mod " + filename);
         if (_scriptMap[filename]->GetFunction("void Stop()")) {
@@ -126,9 +125,9 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
         Vector<String> result;
         // Scan Data/Mods directory for all *.as files
         GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
-
+		VariantMap loadedMods;
         for (auto it = result.Begin(); it != result.End(); ++it) {
-
+			loadedMods["Mods/" + (*it)] = true;
             // Check if reloaded file is in the mods directory
             if ("Mods/" + (*it) == filename) {
                 auto* cache = GetSubsystem<ResourceCache>();
@@ -144,7 +143,15 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
                 }
             }
         }
-
+		for (auto it = _scriptMap.Begin(); it != _scriptMap.End(); ++it) {
+			if (!loadedMods.Contains((*it).first_)) {
+				if (_scriptMap[(*it).first_]->GetFunction("void Stop()")) {
+					_scriptMap[(*it).first_]->Execute("void Stop()");
+				}
+				URHO3D_LOGWARNING("Unloading mod '" + (*it).first_ + "'");
+				_scriptMap.Erase((*it).first_);
+			}
+		}
         CheckAllMods();
     }
 }

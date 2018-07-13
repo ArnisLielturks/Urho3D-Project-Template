@@ -83,7 +83,7 @@ void BaseApplication::Start()
 	context_->RegisterSubsystem<ControllerInput>();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

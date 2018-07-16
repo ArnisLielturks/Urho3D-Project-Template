@@ -5,8 +5,27 @@
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
-    BaseWindow(context, IntVector2(400, 400))
+    BaseWindow(context, IntVector2(400, 430))
 {
+	_textureQualityMapping[0] = "Low";
+	_textureQualityMapping[1] = "Medium";
+	_textureQualityMapping[2] = "High";
+	_textureQualityMapping[15] = "Max";
+
+	// FILTER_NEAREST = 0,
+	// FILTER_BILINEAR = 1,
+	// FILTER_TRILINEAR = 2,
+	// FILTER_ANISOTROPIC = 3,
+	// FILTER_NEAREST_ANISOTROPIC = 4,
+	// FILTER_DEFAULT = 5,
+	// MAX_FILTERMODES
+	_textureFilterModesMapping[0] = "Nearest";
+	_textureFilterModesMapping[1] = "Bilinear";
+	_textureFilterModesMapping[2] = "Trilinear";
+	_textureFilterModesMapping[3] = "Anistropic";
+	_textureFilterModesMapping[4] = "Nearest Anistropic";
+	_textureFilterModesMapping[5] = "Default";
+	_textureFilterModesMapping[6] = "Max";
     Init();
 }
 
@@ -45,11 +64,12 @@ void SettingsWindow::Create()
 
 void SettingsWindow::CreateGraphicsSettingsView()
 {
+	InitGraphicsSettings();
     ClearView();
     _openedView = SettingsViewType::VIDEO_VIEW;
     auto* graphics = GetSubsystem<Graphics>();
 
-    String activeResolution = String(GetGlobalVar("WindowWidth").GetInt()) + "x" + String(GetGlobalVar("WindowHeight").GetInt());
+    String activeResolution = String(_graphicsSettings.width) + "x" + String(_graphicsSettings.height);
 
     URHO3D_LOGINFO("Active resolution " + activeResolution);
     int activeIndex = 0;
@@ -64,58 +84,54 @@ void SettingsWindow::CreateGraphicsSettingsView()
             supportedResolutions.Push(resolution);
         }
     }
-    _activeSettingElements.Push(CreateMenu(_base, "Resolution", supportedResolutions, activeIndex, IntVector2(20, 60)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Fullscreen", GetGlobalVar("Fullscreen").GetBool(), IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Vertical sync", GetGlobalVar("VSync").GetBool(), IntVector2(20, 120)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Triple buffer", GetGlobalVar("TripleBuffer").GetBool(), IntVector2(20, 150)));
+    _activeSettingElements.Push(CreateMenu(_base, "Resolution", supportedResolutions, activeIndex, IntVector2(20, 60), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsChange)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Fullscreen", _graphicsSettings.fullscreen, IntVector2(20, 90), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsToggle)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Vertical sync", _graphicsSettings.vsync, IntVector2(20, 120), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsToggle)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Triple buffer", _graphicsSettings.tripleBuffer, IntVector2(20, 150), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsToggle)));
 
-    _activeSettingElements.Push(CreateCheckbox(_base, "Enable shadows", GetGlobalVar("Shadows").GetBool(), IntVector2(20, 200)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Low quality shadows", GetGlobalVar("LowQualityShadows").GetBool(), IntVector2(20, 230)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Enable shadows", _graphicsSettings.shadows, IntVector2(20, 200), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsToggle)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Low quality shadows", _graphicsSettings.lowQualityShadows, IntVector2(20, 230), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsToggle)));
 
     StringVector supportedQualitySettings;
-    supportedQualitySettings.Push("Low"); //0
-    supportedQualitySettings.Push("Medium"); // 1
-    supportedQualitySettings.Push("High"); // 2
-    supportedQualitySettings.Push("Max"); // 15
-    int activeTextureQualityIndex = GetGlobalVar("TextureQuality").GetInt();
+    supportedQualitySettings.Push(_textureQualityMapping[0]); //0
+    supportedQualitySettings.Push(_textureQualityMapping[1]); // 1
+    supportedQualitySettings.Push(_textureQualityMapping[2]); // 2
+    supportedQualitySettings.Push(_textureQualityMapping[15]); // 15
+    int activeTextureQualityIndex = _graphicsSettings.textureQuality;
     if (activeTextureQualityIndex > 2) {
         activeTextureQualityIndex = 3;
     }
-    _activeSettingElements.Push(CreateMenu(_base, "TextureQuality", supportedQualitySettings, activeTextureQualityIndex, IntVector2(20, 260)));
+    _activeSettingElements.Push(CreateMenu(_base, "Texture quality", supportedQualitySettings, activeTextureQualityIndex, IntVector2(20, 260), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsChange)));
 
-    // FILTER_NEAREST = 0,
-    // FILTER_BILINEAR = 1,
-    // FILTER_TRILINEAR = 2,
-    // FILTER_ANISOTROPIC = 3,
-    // FILTER_NEAREST_ANISOTROPIC = 4,
-    // FILTER_DEFAULT = 5,
-    // MAX_FILTERMODES
+	int activeItem = 0;
     StringVector textureAnisotropySettings;
-    textureAnisotropySettings.Push("Nearest");
-    textureAnisotropySettings.Push("Bilinear");
-    textureAnisotropySettings.Push("Trilinear");
-    textureAnisotropySettings.Push("Anistropic");
-    textureAnisotropySettings.Push("Nearest anistropic");
-    textureAnisotropySettings.Push("Default");
-    textureAnisotropySettings.Push("Max");
-    _activeSettingElements.Push(CreateMenu(_base, "Texture anisotropy level", textureAnisotropySettings, GetGlobalVar("TextureAnisotropy").GetInt(), IntVector2(20, 290)));
+	for (int i = 1; i <= 16; i++) {
+		textureAnisotropySettings.Push(String(i));
+		if (i == _graphicsSettings.textureAnistropy) {
+			activeItem = i - 1;
+		}
+	}
+    _activeSettingElements.Push(CreateMenu(_base, "Texture anisotropy level", textureAnisotropySettings, activeItem, IntVector2(20, 290), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsChange)));
 
-    //  FILTER_NEAREST = 0,
-    // FILTER_BILINEAR,
-    // FILTER_TRILINEAR,
-    // FILTER_ANISOTROPIC,
-    // FILTER_NEAREST_ANISOTROPIC,
-    // FILTER_DEFAULT,
-    // MAX_FILTERMODES
     StringVector textureFilterModes;
-    textureFilterModes.Push("Nearest");
-    textureFilterModes.Push("Bilinear");
-    textureFilterModes.Push("Trilinear");
-    textureFilterModes.Push("Anistropic");
-    textureFilterModes.Push("Nearest anistropic");
-    textureFilterModes.Push("Default");
-    textureFilterModes.Push("Max");
-    _activeSettingElements.Push(CreateMenu(_base, "Texture filer mode", textureFilterModes, GetGlobalVar("TextureFilterMode").GetInt(), IntVector2(20, 320)));
+	int index = 0;
+	for (auto it = _textureFilterModesMapping.Begin(); it != _textureFilterModesMapping.End(); ++it) {
+		textureFilterModes.Push((*it).second_);
+		if ((*it).first_ == _graphicsSettings.textureFilterMode) {
+			activeItem = index;
+		}
+		index++;
+	}
+    _activeSettingElements.Push(CreateMenu(_base, "Texture filer mode", textureFilterModes, activeItem, IntVector2(20, 320), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsChange)));
+
+	StringVector multisampleLevel;
+	for (int i = 1; i <= 16; i++) {
+		multisampleLevel.Push(String(i));
+		if (i == _graphicsSettings.multisample) {
+			activeItem = i - 1;
+		}
+	}
+	_activeSettingElements.Push(CreateMenu(_base, "Multisample", multisampleLevel, activeItem, IntVector2(20, 350), URHO3D_HANDLER(SettingsWindow, HandleGraphicsSettingsChange)));
 }
 
 void SettingsWindow::CreateAudioSettingsView()
@@ -186,44 +202,41 @@ void SettingsWindow::HandleClose(StringHash eventType, VariantMap& eventData)
 
 void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 {
-    SendEvent(MyEvents::E_SAVE_CONFIG);
-    VariantMap data = GetEventDataMap();
-    data["Title"] = "Settings saved!";
-    data["Message"] = "You must restart the game for\nthe changes to take effect";
-    SendEvent("ShowAlertMessage", data);
+	if (_openedView == SettingsViewType::VIDEO_VIEW) {
+		Graphics* graphics = GetSubsystem<Graphics>();
+		graphics->SetMode(
+			_graphicsSettings.width,
+			_graphicsSettings.height,
+			_graphicsSettings.fullscreen,
+			false,
+			false,
+			false,
+			_graphicsSettings.vsync,
+			_graphicsSettings.tripleBuffer,
+			_graphicsSettings.multisample,
+			0,
+			0
+		);
+		
+		auto* renderer = GetSubsystem<Renderer>();
+		renderer->SetTextureFilterMode(TextureFilterMode(_graphicsSettings.textureFilterMode));
+		renderer->SetTextureAnisotropy(_graphicsSettings.textureAnistropy);
+		renderer->SetTextureQuality(_graphicsSettings.textureQuality);
+		renderer->SetShadowQuality(SHADOWQUALITY_SIMPLE_16BIT);
+		renderer->SetDrawShadows(_graphicsSettings.shadows);
+	}
+
+	SendEvent(MyEvents::E_SAVE_CONFIG);
+	VariantMap data = GetEventDataMap();
+	data["Title"] = "Settings saved!";
+	data["Message"] = "You must restart the game for\nthe changes to take effect";
+	SendEvent("ShowAlertMessage", data);
 }
 
 void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventData)
 {
     _buttons[SettingsButtonType::SAVE]->SetVisible(true);
     CreateGraphicsSettingsView();
-    // auto* graphics = GetSubsystem<Graphics>();
-    // {
-    //     URHO3D_LOGINFO("Monitor count: " + String(graphics->GetMonitorCount()));
-    //     URHO3D_LOGINFO("Currently selected monitor: " + String(graphics->GetCurrentMonitor()));
-    //     IntVector2 desktopResolution = graphics->GetDesktopResolution(0);
-    //     //Desktop resolution
-    //     URHO3D_LOGINFO(">>>>>>> 0 SCREEN X " + String(desktopResolution.x_) + "; Y " + String(desktopResolution.y_));
-    //     PODVector<IntVector3> resolutions = graphics->GetResolutions(0);
-    //     for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
-    //         //All supported resolutions
-    //         URHO3D_LOGINFO(">>>>>>> 0 SCREEN X " + String((*it).x_) + "; Y " + String((*it).y_) + "; HZ " + String((*it).z_));
-    //     }
-    // }
-    // graphics->SetMode(
-    //     GetGlobalVar("ScreenWidth").GetInt(),
-    //     GetGlobalVar("ScreenHeight").GetInt(),
-    //     GetGlobalVar("Fullscreen").GetBool(),
-    //     false,
-    //     false,
-    //     false,
-    //     GetGlobalVar("VSync").GetBool(),
-    //     GetGlobalVar("TripleBuffer").GetBool(),
-    //     GetGlobalVar("MultiSample").GetInt(),
-    //     GetGlobalVar("Monitor").GetInt(),
-    //     0
-    // );
-    //graphics->ResetRenderTargets();
 }
 
 void SettingsWindow::ShowAudioSettings(StringHash eventType, VariantMap& eventData)
@@ -286,4 +299,82 @@ void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eve
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
     }
+}
+
+void SettingsWindow::HandleGraphicsSettingsChange(StringHash eventType, VariantMap& eventData)
+{
+	using namespace ItemSelected;
+	DropDownList* dropdown = static_cast<DropDownList*>(eventData[P_ELEMENT].GetPtr());
+	int selected = eventData[P_SELECTION].GetInt();
+	Text* text = static_cast<Text*>(dropdown->GetSelectedItem());
+	if (dropdown->GetName() == "Resolution") {
+		String resolution = text->GetText();
+		StringVector dimensions = resolution.Split('x', false);
+		if (dimensions.Size() == 2) {
+			int width = ToInt(dimensions[0]);
+			_graphicsSettings.width = width;
+
+			int height = ToInt(dimensions[1]);
+			_graphicsSettings.height = height;
+		}
+		URHO3D_LOGINFOF("New resolution %d x %d", _graphicsSettings.width, _graphicsSettings.height);
+	}
+	if (dropdown->GetName() == "Texture quality") {
+		URHO3D_LOGINFO("Texture quality: " + text->GetText());
+		_graphicsSettings.textureQuality = ToInt(text->GetText());
+	}
+	if (dropdown->GetName() == "Texture anisotropy level") {
+		URHO3D_LOGINFO("Texture anisotropy level: " + text->GetText());
+		_graphicsSettings.textureAnistropy = ToInt(text->GetText());
+	}
+	if (dropdown->GetName() == "Texture filer mode") {
+		URHO3D_LOGINFO("Texture filer mode: " + text->GetText());
+		for (auto it = _textureFilterModesMapping.Begin(); it != _textureFilterModesMapping.End(); ++it) {
+			if ((*it).second_ == text->GetText()) {
+				_graphicsSettings.textureFilterMode = (*it).first_;
+			}
+		}
+		URHO3D_LOGINFO("Texture filer mode: " + String(_graphicsSettings.textureFilterMode));
+	}
+	if (dropdown->GetName() == "Multisample") {
+		URHO3D_LOGINFO("Multisample: " + text->GetText());
+		_graphicsSettings.multisample = ToInt(text->GetText());
+	}
+}
+
+void SettingsWindow::HandleGraphicsSettingsToggle(StringHash eventType, VariantMap& eventData)
+{
+	using namespace Toggled;
+	CheckBox* checkbox = static_cast<CheckBox*>(eventData[P_ELEMENT].GetPtr());
+	bool isChecked = eventData[P_STATE].GetBool();
+	if (checkbox->GetName() == "Fullscreen") {
+		_graphicsSettings.fullscreen = isChecked;
+	}
+	if (checkbox->GetName() == "Vertical sync") {
+		_graphicsSettings.vsync = isChecked;
+	}
+	if (checkbox->GetName() == "Triple buffer") {
+		_graphicsSettings.tripleBuffer = isChecked;
+	}
+	if (checkbox->GetName() == "Enable shadows") {
+		_graphicsSettings.shadows = isChecked;
+	}
+	if (checkbox->GetName() == "Low quality shadows") {
+		_graphicsSettings.lowQualityShadows = isChecked;
+	}
+}
+
+void SettingsWindow::InitGraphicsSettings()
+{
+	_graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
+	_graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
+	_graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool();
+	_graphicsSettings.vsync = GetGlobalVar("VSync").GetBool();
+	_graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool();
+	_graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool();
+	_graphicsSettings.lowQualityShadows = GetGlobalVar("LowQualityShadows").GetBool();
+	_graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt();
+	_graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt();
+	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt();
+	_graphicsSettings.multisample = GetGlobalVar("Multisample").GetInt();
 }

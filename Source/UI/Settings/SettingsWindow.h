@@ -17,6 +17,20 @@ enum SettingsViewType {
     VIDEO_VIEW
 };
 
+struct GraphicsSettings {
+	int width;
+	int height;
+	bool fullscreen;
+	bool vsync;
+	bool tripleBuffer;
+	bool shadows;
+	bool lowQualityShadows;
+	int textureQuality;
+	int textureAnistropy;
+	int textureFilterMode;
+	int multisample;
+};
+
 class SettingsWindow : public BaseWindow
 {
     URHO3D_OBJECT(SettingsWindow, BaseWindow);
@@ -51,11 +65,22 @@ private:
     void HandleChangeControls(StringHash eventType, VariantMap& eventData);
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
 
+	void HandleGraphicsSettingsChange(StringHash eventType, VariantMap& eventData);
+	void HandleGraphicsSettingsToggle(StringHash eventType, VariantMap& eventData);
+
     void ClearView();
+
+	void InitGraphicsSettings();
+
 
     HashMap<int, SharedPtr<Button>> _buttons;
 
     SettingsViewType _openedView;
 
     Vector<SharedPtr<UIElement>> _activeSettingElements;
+
+	GraphicsSettings _graphicsSettings;
+
+	HashMap<int, String> _textureQualityMapping;
+	HashMap<int, String> _textureFilterModesMapping;
 };

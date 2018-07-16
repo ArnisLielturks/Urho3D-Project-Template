@@ -24,7 +24,7 @@ void BaseWindow::Init()
     _base->SetAlignment(HA_CENTER, VA_CENTER);
 }
 
-SharedPtr<UIElement> BaseWindow::CreateMenu(UIElement* parent, const String& label, StringVector options, int selected, IntVector2 position/*, EventHandler* handler*/)
+SharedPtr<UIElement> BaseWindow::CreateMenu(UIElement* parent, const String& label, StringVector options, int selected, IntVector2 position, EventHandler* handler)
 {
     SharedPtr<UIElement> container(parent->CreateChild<UIElement>());
     container->SetPosition(position);
@@ -43,12 +43,15 @@ SharedPtr<UIElement> BaseWindow::CreateMenu(UIElement* parent, const String& lab
     container->AddChild(list);
     list->SetMinWidth(150);
     list->SetStyleAuto();
+	list->SetName(label);
+	SubscribeToEvent(list, E_ITEMSELECTED, handler);
 
     for (auto it = options.Begin(); it != options.End(); ++it)
     {
         SharedPtr<Text> item(new Text(context_));
         list->AddItem(item);
         item->SetText((*it));
+		item->SetName((*it));
         item->SetStyleAuto();
         item->SetMinWidth(150);
         //item->AddTag(TEXT_TAG);
@@ -62,7 +65,7 @@ SharedPtr<UIElement> BaseWindow::CreateMenu(UIElement* parent, const String& lab
     return container;
 }
 
-SharedPtr<UIElement> BaseWindow::CreateCheckbox(UIElement* parent, const String& label, bool isActive, IntVector2 position/*, EventHandler* handler*/)
+SharedPtr<UIElement> BaseWindow::CreateCheckbox(UIElement* parent, const String& label, bool isActive, IntVector2 position, EventHandler* handler)
 {
     SharedPtr<UIElement> container(parent->CreateChild<UIElement>());
     container->SetPosition(position);
@@ -78,8 +81,10 @@ SharedPtr<UIElement> BaseWindow::CreateCheckbox(UIElement* parent, const String&
 
     SharedPtr<CheckBox> box(new CheckBox(context_));
     container->AddChild(box);
+	box->SetName(label);
     box->SetStyleAuto();
     box->SetChecked(isActive);
+	SubscribeToEvent(box, E_TOGGLED, handler);
 
     // text->AddTag(TEXT_TAG);
 

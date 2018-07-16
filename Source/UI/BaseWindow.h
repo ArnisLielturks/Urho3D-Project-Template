@@ -15,7 +15,7 @@ public:
     SharedPtr<UIElement> CreateMenu(UIElement* parent, const String& label, StringVector options, int selected, IntVector2 position, EventHandler* handler = nullptr);
     Button* CreateButton(UIElement* parent, String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign);
     SharedPtr<UIElement> CreateCheckbox(UIElement* parent, const String& label, bool isActive, IntVector2 position, EventHandler* handler = nullptr);
-	SharedPtr<UIElement> CreateSlider(UIElement* parent, const String& text, IntVector2 position, float value);
+	SharedPtr<UIElement> CreateSlider(UIElement* parent, const String& text, IntVector2 position, float value, EventHandler* handler = nullptr);
     SharedPtr<UIElement> CreateControlsElement(const String& text, IntVector2 position, String value, String actionName, EventHandler* handler);
 
 private:

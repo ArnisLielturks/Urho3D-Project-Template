@@ -92,7 +92,7 @@ SharedPtr<UIElement> BaseWindow::CreateCheckbox(UIElement* parent, const String&
     return container;
 }
 
-SharedPtr<UIElement> BaseWindow::CreateSlider(UIElement* parent, const String& text, IntVector2 position, float value)
+SharedPtr<UIElement> BaseWindow::CreateSlider(UIElement* parent, const String& text, IntVector2 position, float value, EventHandler* handler)
 {
 	SharedPtr<UIElement> container(parent->CreateChild<UIElement>());
 	container->SetPosition(position);
@@ -118,6 +118,8 @@ SharedPtr<UIElement> BaseWindow::CreateSlider(UIElement* parent, const String& t
 	// Use 0-1 range for controlling sound/music master volume
 	slider->SetRange(1.0f);
 	slider->SetValue(value);
+	slider->SetName(text);
+	SubscribeToEvent(slider, E_SLIDERCHANGED, handler);
 
 	return container;
 }

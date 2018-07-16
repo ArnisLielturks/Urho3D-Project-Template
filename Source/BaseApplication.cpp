@@ -348,6 +348,12 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_SOUND_INTERPOLATION, _configManager->GetBool("engine", "SoundInterpolation", true));
     SetEngineParameter(EP_SOUND_MIX_RATE, _configManager->GetInt("engine", "SoundMixRate", 44100));
     SetEngineParameter(EP_SOUND_STEREO, _configManager->GetBool("engine", "SoundStereo", true));
+
+	engine_->SetGlobalVar("SoundMasterVolume" , _configManager->GetFloat("engine", "SoundMasterVolume", 1.0));
+	engine_->SetGlobalVar("SoundEffectsVolume", _configManager->GetFloat("engine", "SoundEffectsVolume", 1.0));
+	engine_->SetGlobalVar("SoundAmbientVolume", _configManager->GetFloat("engine", "SoundAmbientVolume", 1.0));
+	engine_->SetGlobalVar("SoundVoiceVolume", _configManager->GetFloat("engine", "SoundVoiceVolume", 1.0));
+	engine_->SetGlobalVar("SoundMusicVolume", _configManager->GetFloat("engine", "SoundMusicVolume", 1.0));
 }
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)

@@ -136,15 +136,17 @@ void SettingsWindow::CreateGraphicsSettingsView()
 
 void SettingsWindow::CreateAudioSettingsView()
 {
+	InitAudioSettings();
     ClearView();
     _openedView = SettingsViewType::AUDIO_VIEW;
-    // _activeSettingElements.Push(CreateCheckbox(_base, "Audio?", true, IntVector2(20, 60)));
-    // _activeSettingElements.Push(CreateCheckbox(_base, "Audio!", false, IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Enable audio", GetGlobalVar("Sound").GetBool(), IntVector2(20, 60)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Stereo", GetGlobalVar("SoundStereo").GetBool(), IntVector2(20, 90)));
-    _activeSettingElements.Push(CreateCheckbox(_base, "Sound interpolation", GetGlobalVar("SoundInterpolation").GetBool(), IntVector2(20, 120)));
-	_activeSettingElements.Push(CreateSlider(_base, "Volume", IntVector2(20, 150), GetGlobalVar("SoundVolume").GetFloat()));
-
+    //_activeSettingElements.Push(CreateCheckbox(_base, "Enable audio", _audioSettings.enabled, IntVector2(20, 60), URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsToggle)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Stereo", _audioSettings.stereo, IntVector2(20, 60), URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsToggle)));
+    _activeSettingElements.Push(CreateCheckbox(_base, "Sound interpolation", _audioSettings.soundInterpolation, IntVector2(20, 90), URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsToggle)));
+	_activeSettingElements.Push(CreateSlider(_base, "Master volume", IntVector2(20, 120), _audioSettings.masterVolume, URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsSlider)));
+	_activeSettingElements.Push(CreateSlider(_base, "Effects volume", IntVector2(20, 150), _audioSettings.effectsVolume, URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsSlider)));
+	_activeSettingElements.Push(CreateSlider(_base, "Ambient volume", IntVector2(20, 180), _audioSettings.ambientVolume, URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsSlider)));
+	_activeSettingElements.Push(CreateSlider(_base, "Voice volume", IntVector2(20, 210), _audioSettings.voiceVolume, URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsSlider)));
+	_activeSettingElements.Push(CreateSlider(_base, "Music volume", IntVector2(20, 240), _audioSettings.musicVolume, URHO3D_HANDLER(SettingsWindow, HandleAudioSettingsSlider)));
 }
 
 void SettingsWindow::CreateControllerSettingsView()
@@ -362,6 +364,63 @@ void SettingsWindow::HandleGraphicsSettingsToggle(StringHash eventType, VariantM
 	if (checkbox->GetName() == "Low quality shadows") {
 		_graphicsSettings.lowQualityShadows = isChecked;
 	}
+}
+
+void SettingsWindow::HandleAudioSettingsToggle(StringHash eventType, VariantMap& eventData)
+{
+	using namespace Toggled;
+	CheckBox* checkbox = static_cast<CheckBox*>(eventData[P_ELEMENT].GetPtr());
+	bool isChecked = eventData[P_STATE].GetBool();
+	if (checkbox->GetName() == "Enable audio") {
+		_audioSettings.enabled = isChecked;
+	}
+	if (checkbox->GetName() == "Stereo") {
+		_audioSettings.stereo = isChecked;
+	}
+	if (checkbox->GetName() == "Sound interpolation") {
+		_audioSettings.soundInterpolation = isChecked;
+	}
+	Audio* audio = GetSubsystem<Audio>();
+	audio->SetMode(_audioSettings.soundBuffer, _audioSettings.mixRate, _audioSettings.stereo, _audioSettings.soundInterpolation);
+}
+
+void SettingsWindow::HandleAudioSettingsSlider(StringHash eventType, VariantMap& eventData)
+{
+	using namespace SliderChanged;
+	Slider* slider = static_cast<Slider*>(eventData[P_ELEMENT].GetPtr());
+	float value = eventData[P_VALUE].GetFloat();
+	Audio* audio = GetSubsystem<Audio>();
+	if (slider->GetName() == "Master volume") {
+		audio->SetMasterGain(SOUND_MASTER, value);
+	}
+	if (slider->GetName() == "Effects volume") {
+		audio->SetMasterGain(SOUND_EFFECT, value);
+	}
+	if (slider->GetName() == "Ambient volume") {
+		audio->SetMasterGain(SOUND_AMBIENT, value);
+	}
+	if (slider->GetName() == "Voice volume") {
+		audio->SetMasterGain(SOUND_VOICE, value);
+	}
+	if (slider->GetName() == "Music volume") {
+		audio->SetMasterGain(SOUND_MUSIC, value);
+	}
+}
+
+void SettingsWindow::InitAudioSettings()
+{
+	_audioSettings.enabled = GetGlobalVar("Sound").GetBool();
+	_audioSettings.stereo = GetGlobalVar("SoundStereo").GetBool();
+	_audioSettings.soundInterpolation = GetGlobalVar("SoundInterpolation").GetBool();
+	_audioSettings.mixRate = GetGlobalVar("SoundMixRate").GetFloat();
+	_audioSettings.soundBuffer = GetGlobalVar("SoundBuffer").GetFloat();
+
+	URHO3D_LOGINFOF("Audio %f", GetGlobalVar("SoundMasterVolume").GetFloat());
+	_audioSettings.masterVolume = GetGlobalVar("SoundMasterVolume").GetFloat();
+	_audioSettings.effectsVolume = GetGlobalVar("SoundEffectsVolume").GetFloat();
+	_audioSettings.ambientVolume = GetGlobalVar("SoundAmbientVolume").GetFloat();
+	_audioSettings.voiceVolume = GetGlobalVar("SoundVoiceVolume").GetFloat();
+	_audioSettings.musicVolume = GetGlobalVar("SoundMusicVolume").GetFloat();
 }
 
 void SettingsWindow::InitGraphicsSettings()

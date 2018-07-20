@@ -6,6 +6,7 @@
 #include "Levels/Level.h"
 #include "Levels/ExitGame.h"
 #include "Levels/Loading.h"
+#include "Levels/Credits.h"
 #include "MyEvents.h"
 
 class LevelManager : public Object
@@ -31,6 +32,7 @@ private:
         context_->RegisterFactory<Levels::MainMenu>();
         context_->RegisterFactory<Levels::ExitGame>();
         context_->RegisterFactory<Levels::Loading>();
+		context_->RegisterFactory<Levels::Credits>();
     }
 
     void HandleSetLevelQueue(StringHash eventType, VariantMap& eventData)

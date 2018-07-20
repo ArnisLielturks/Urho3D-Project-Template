@@ -57,7 +57,7 @@ void MainMenu::CreateUI()
         _startButton->SetSize(IntVector2(100, 30));
         _startButton->SetStyleAuto();
 
-        _startButton->SetPosition(IntVector2(-20, -100));
+        _startButton->SetPosition(IntVector2(-20, -140));
         _startButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
         _startButton->SetFocusMode(FM_RESETFOCUS);
 
@@ -70,7 +70,7 @@ void MainMenu::CreateUI()
         _settingsButton = ui->GetRoot()->CreateChild<Button>();
         _settingsButton->SetSize(IntVector2(100, 30));
         _settingsButton->SetStyleAuto();
-        _settingsButton->SetPosition(IntVector2(-20, -60));
+        _settingsButton->SetPosition(IntVector2(-20, -100));
         _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
         _settingsButton->SetFocusMode(FM_RESETFOCUS);
 
@@ -79,6 +79,19 @@ void MainMenu::CreateUI()
         text->SetStyleAuto();
         text->SetAlignment(HA_CENTER, VA_CENTER);
     }
+	{
+		_creditsButton = ui->GetRoot()->CreateChild<Button>();
+		_creditsButton->SetSize(IntVector2(100, 30));
+		_creditsButton->SetStyleAuto();
+		_creditsButton->SetPosition(IntVector2(-20, -60));
+		_creditsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+		_creditsButton->SetFocusMode(FM_RESETFOCUS);
+
+		Text* text = _creditsButton->CreateChild<Text>();
+		text->SetText("Credits");
+		text->SetStyleAuto();
+		text->SetAlignment(HA_CENTER, VA_CENTER);
+	}
     {
         _exitButton = ui->GetRoot()->CreateChild<Button>();
         _exitButton->SetSize(IntVector2(100, 30));
@@ -105,6 +118,7 @@ void MainMenu::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(MainMenu, HandleKeyDown));
     SubscribeToEvent(_startButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleStartGame));
     SubscribeToEvent(_settingsButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleShowSettings));
+	SubscribeToEvent(_creditsButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleShowCredits));
     SubscribeToEvent(_exitButton, E_RELEASED, URHO3D_HANDLER(MainMenu, HandleExit));
 }
 
@@ -136,4 +150,11 @@ void MainMenu::HandleExit(StringHash eventType, VariantMap& eventData)
     VariantMap data = GetEventDataMap();;
     data["Name"] = "ExitGame";
     SendEvent(MyEvents::E_SET_LEVEL, data);
+}
+
+void MainMenu::HandleShowCredits(StringHash eventType, VariantMap& eventData)
+{
+	VariantMap data = GetEventDataMap();;
+	data["Name"] = "Credits";
+	SendEvent(MyEvents::E_SET_LEVEL, data);
 }

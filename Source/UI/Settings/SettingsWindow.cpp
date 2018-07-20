@@ -161,7 +161,7 @@ void SettingsWindow::CreateControllerSettingsView()
     SharedPtr<ListView> list(_base->CreateChild<ListView>());
     list->SetSelectOnClickEnd(true);
     list->SetHighlightMode(HM_ALWAYS);
-    list->SetMinHeight(320);
+    list->SetMinHeight(350);
     list->SetWidth(360);
     list->SetPosition(IntVector2(20, 60));
     list->SetStyleAuto();

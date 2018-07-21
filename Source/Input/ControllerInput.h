@@ -26,7 +26,9 @@ public:
 	/**
 	 * Get the already processed controls
 	 */
-	Controls GetControls();
+	Controls GetControls(int index = 0);
+
+	Vector<int> GetControlIndexes();
 
 	/**
 	 * Get mapping against all controls
@@ -41,10 +43,13 @@ public:
 	/**
 	 * Set the controls action
 	 */
-	void SetActionState(int action, bool active);
+	void SetActionState(int action, bool active, int index = 0);
 
-	void UpdateYaw(float yaw);
-	void UpdatePitch(float pitch);
+	void UpdateYaw(float yaw, int index = 0);
+	void UpdatePitch(float pitch, int index = 0);
+
+	void CreateController(int controllerIndex);
+	void DestroyController(int controllerIndex);
 
 	/**
 	 * Clear action and key from configuration mapping
@@ -98,7 +103,7 @@ private:
 	/**
 	 * Active controls
 	 */
-	Controls _controls;
+	HashMap<int, Controls> _controls;
 
 	/**
 	 * All input handlers

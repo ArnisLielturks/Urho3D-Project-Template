@@ -87,4 +87,16 @@ namespace MyEvents
         URHO3D_PARAM(P_KEY, Key); // int - key ID, relative to P_CONTROLLEr
         URHO3D_PARAM(P_KEY_NAME, KeyName); // string - key name
 	}
+
+	// New controller/joystick added
+	URHO3D_EVENT(E_CONTROLLER_ADDED, ControllerAdded)
+	{
+		URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
+	}
+
+	// controller/joystick removed
+	URHO3D_EVENT(E_CONTROLLER_REMOVED, ControllerRemoved)
+	{
+		URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
+	}
 }

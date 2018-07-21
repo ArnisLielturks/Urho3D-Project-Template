@@ -209,23 +209,47 @@ void ControllerInput::HandleStartInputListeningConsole(StringHash eventType, Var
 	URHO3D_LOGERROR("Invalid number of parameters!");
 }
 
-Controls ControllerInput::GetControls()
+Controls ControllerInput::GetControls(int index)
 {
-	return _controls;
+	return _controls[index];
 }
 
-void ControllerInput::UpdateYaw(float yaw)
+void ControllerInput::UpdateYaw(float yaw, int index)
 {
 	const float MOUSE_SENSITIVITY = 0.1f;
-	_controls.yaw_ += MOUSE_SENSITIVITY * yaw;
+	_controls[index].yaw_ += MOUSE_SENSITIVITY * yaw;
 }
 
-void ControllerInput::UpdatePitch(float pitch)
+void ControllerInput::UpdatePitch(float pitch, int index)
 {
 	const float MOUSE_SENSITIVITY = 0.1f;
-	_controls.pitch_ += MOUSE_SENSITIVITY * pitch;
-	_controls.pitch_ = Clamp(_controls.pitch_, -90.0f, 90.0f);
+	_controls[index].pitch_ += MOUSE_SENSITIVITY * pitch;
+	_controls[index].pitch_ = Clamp(_controls[index].pitch_, -90.0f, 90.0f);
 }
+
+void ControllerInput::CreateController(int controllerIndex)
+{
+	using namespace MyEvents::ControllerAdded;
+	_controls[controllerIndex] = Controls();
+	VariantMap data = GetEventDataMap();
+	data[P_INDEX] = controllerIndex;
+	SendEvent(MyEvents::E_CONTROLLER_ADDED, data);
+}
+
+void ControllerInput::DestroyController(int controllerIndex)
+{
+	// Don't allow destroying first input controller
+	if (controllerIndex > 0) {
+		_controls.Erase(controllerIndex);
+
+		using namespace MyEvents::ControllerRemoved;
+
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = controllerIndex;
+		SendEvent(MyEvents::E_CONTROLLER_REMOVED, data);
+	}
+}
+
 HashMap<int, String> ControllerInput::GetControlNames()
 {
 	return _controlMapNames;
@@ -243,7 +267,16 @@ String ControllerInput::GetActionKeyName(int action)
 	return String::EMPTY;
 }
 
-void ControllerInput::SetActionState(int action, bool active)
+void ControllerInput::SetActionState(int action, bool active, int index)
 {
-	_controls.Set(action, active);
+	_controls[index].Set(action, active);
+}
+
+Vector<int> ControllerInput::GetControlIndexes()
+{
+	Vector<int> indexes;
+	for (auto it = _controls.Begin(); it != _controls.End(); ++it) {
+		indexes.Push((*it).first_);
+	}
+	return indexes;
 }

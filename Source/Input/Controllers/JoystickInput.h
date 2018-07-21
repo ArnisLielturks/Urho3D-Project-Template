@@ -21,11 +21,14 @@ protected:
 private:
     void SubscribeToEvents();
 
+	void HandleJoystickConnected(StringHash eventType, VariantMap& eventData);
+	void HandleJoystickDisconnected(StringHash eventType, VariantMap& eventData);
+
 	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
 	void HandleAxisMove(StringHash eventType, VariantMap& eventData);
 	void HandleHatMove(StringHash eventType, VariantMap& eventData);
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	Vector2 _axisPosition;
+	HashMap<int, Vector2> _axisPosition;
 };

@@ -116,7 +116,7 @@ namespace MyEvents
 	}
 
     // stop all sounds in progress
-	URHO3D_EVENT(E_STOP_ALL_SOUNDS, StopAllSound)
+	URHO3D_EVENT(E_STOP_ALL_SOUNDS, StopAllSounds)
 	{
 	}
 }

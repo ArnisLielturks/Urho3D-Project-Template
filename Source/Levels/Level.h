@@ -28,6 +28,9 @@ namespace Levels {
         void SubscribeToEvents();
         void UnsubscribeToEvents();
 
+        void StartAudio();
+        void StopAllAudio();
+
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
         void HandleWindowClosed(StringHash eventType, VariantMap& eventData);

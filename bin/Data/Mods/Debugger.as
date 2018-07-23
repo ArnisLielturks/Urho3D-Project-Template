@@ -9,7 +9,6 @@ Array<Text@> textElements;
  */
 void Start()
 {
-
     log.Info("Debugger.as START");
     SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
@@ -32,7 +31,36 @@ void Start()
 
     log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
 
+    // DelayedExecute(1.0, false, "void PlaySound()");
 }
+
+// void PlaySound()
+// {
+//     VariantMap data;
+//     // data["Index"] = 0;
+//     // data["Type"] = "Music";
+//     // SendEvent("PlaySound", data);
+
+//     data["Index"] = 1;
+//     data["Type"] = "Music";
+//     SendEvent("PlaySound", data);
+
+//     data["Index"] = 2;
+//     data["Type"] = "Effect";
+//     //data["SoundFile"] = "Sounds/PlayerFistHit.wav";
+//     SendEvent("PlaySound", data);
+
+//     // DelayedExecute(10.0, false, "void StopSound()");
+// }
+
+// void StopSound()
+// {
+//     VariantMap data;
+//     data["Index"] = -1;
+//     data["Type"] = "Music";
+//     SendEvent("StopSound", data);
+//     // DelayedExecute(1.0, false, "void PlaySound()");
+// }
 
 void Stop()
 {
@@ -57,6 +85,31 @@ void HandleLevelChange(StringHash eventType, VariantMap& eventData)
 {
     String levelName = eventData["Name"].GetString();
     log.Info("[Debugger.as] Level loaded: " + levelName);
+
+    if (levelName == "Splash") {
+        // Stop all previous music first
+        VariantMap data;
+        data["Index"] = -1;
+        data["Type"] = "Music";
+        SendEvent("StopSound", data);
+
+        // Play sound by our choice
+        data["Index"] = 0;
+        data["Type"] = "Music";
+        SendEvent("PlaySound", data);
+    }
+    if (levelName == "MainMenu") {
+        //Stop all previous music first
+        VariantMap data;
+        data["Index"] = -1;
+        data["Type"] = "Music";
+        SendEvent("StopSound", data);
+
+        // Play sound by our choice
+        data["Index"] = 1;
+        data["Type"] = "Music";
+        SendEvent("PlaySound", data);
+    }
 }
 
 /**

@@ -22,8 +22,6 @@ namespace Levels {
     private:
 		friend void CheckThreading(const WorkItem* item, unsigned threadIndex);
 
-		void Test();
-
         void CreateScene();
 
         void CreateUI();

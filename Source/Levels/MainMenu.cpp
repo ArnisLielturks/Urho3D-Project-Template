@@ -1,7 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "MainMenu.h"
 #include "../MyEvents.h"
-#include <string>
+#include "../Audio/AudioManagerDefs.h"
 
 using namespace Levels;
 
@@ -133,6 +133,14 @@ void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
 void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)
 {
+    {
+        using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     VariantMap& levelEventData = GetEventDataMap();
     levelEventData["Name"] = "Loading";
     SendEvent(MyEvents::E_SET_LEVEL, levelEventData);
@@ -140,6 +148,14 @@ void MainMenu::HandleStartGame(StringHash eventType, VariantMap& eventData)
 
 void MainMenu::HandleShowSettings(StringHash eventType, VariantMap& eventData)
 {
+    {
+        using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     VariantMap data = GetEventDataMap();
     data["Name"] = "SettingsWindow";
     SendEvent(MyEvents::E_OPEN_WINDOW, data);
@@ -147,6 +163,14 @@ void MainMenu::HandleShowSettings(StringHash eventType, VariantMap& eventData)
 
 void MainMenu::HandleExit(StringHash eventType, VariantMap& eventData)
 {
+    {
+        using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     VariantMap data = GetEventDataMap();;
     data["Name"] = "ExitGame";
     SendEvent(MyEvents::E_SET_LEVEL, data);
@@ -154,6 +178,14 @@ void MainMenu::HandleExit(StringHash eventType, VariantMap& eventData)
 
 void MainMenu::HandleShowCredits(StringHash eventType, VariantMap& eventData)
 {
+    {
+        using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
 	VariantMap data = GetEventDataMap();;
 	data["Name"] = "Credits";
 	SendEvent(MyEvents::E_SET_LEVEL, data);

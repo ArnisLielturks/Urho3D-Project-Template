@@ -160,6 +160,7 @@ void HandleConsoleCommand(StringHash eventType, VariantMap& eventData)
  */
 void ParseCommand(String line)
 {
+    log.Info("Command: " + line);
     // All the parameters that are provided after the command will be passed
     // as a String array. 
     Array<String> commands = line.Split(' ', true);

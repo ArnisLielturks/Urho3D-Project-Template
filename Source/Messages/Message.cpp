@@ -1,5 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Message.h"
+#include "../Audio/AudioManagerDefs.h"
+#include "../MyEvents.h"
 
 /// Construct.
 Message::Message(Context* context) :
@@ -64,6 +66,14 @@ void Message::Dispose()
 
 void Message::HandleOkButton(StringHash eventType, VariantMap& eventData)
 {
+    {
+        using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     _baseElement->SetVisible(false);
     _baseElement->Remove();
     _baseElement = nullptr;

@@ -2,6 +2,7 @@
 #include "SettingsWindow.h"
 #include "../../MyEvents.h"
 #include "../../Input/ControllerInput.h"
+#include "../../Audio/AudioManagerDefs.h"
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
@@ -197,13 +198,31 @@ void SettingsWindow::SubscribeToEvents()
 
 void SettingsWindow::HandleClose(StringHash eventType, VariantMap& eventData)
 {
-    VariantMap data = GetEventDataMap();
-    data["Name"] = "SettingsWindow";
-    SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+	{
+		using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
+	{
+		VariantMap data = GetEventDataMap();
+		data["Name"] = "SettingsWindow";
+		SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+	}
 }
 
 void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 {
+	{
+		using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
 	if (_openedView == SettingsViewType::VIDEO_VIEW) {
 		Graphics* graphics = GetSubsystem<Graphics>();
 		graphics->SetMode(
@@ -237,18 +256,42 @@ void SettingsWindow::HandleSave(StringHash eventType, VariantMap& eventData)
 
 void SettingsWindow::ShowVideoSettings(StringHash eventType, VariantMap& eventData)
 {
+	{
+		using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     _buttons[SettingsButtonType::SAVE]->SetVisible(true);
     CreateGraphicsSettingsView();
 }
 
 void SettingsWindow::ShowAudioSettings(StringHash eventType, VariantMap& eventData)
 {
+	{
+		using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     _buttons[SettingsButtonType::SAVE]->SetVisible(true);
     CreateAudioSettingsView();
 }
 
 void SettingsWindow::ShowControllerSettings(StringHash eventType, VariantMap& eventData)
 {
+	{
+		using namespace AudioDefs;
+		using namespace MyEvents::PlaySound;
+		VariantMap data = GetEventDataMap();
+		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+		data[P_TYPE] = SOUND_EFFECT;
+		SendEvent(MyEvents::E_PLAY_SOUND, data);
+	}
     _buttons[SettingsButtonType::SAVE]->SetVisible(false);
     CreateControllerSettingsView();
 }

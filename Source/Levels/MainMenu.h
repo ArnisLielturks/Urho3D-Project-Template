@@ -14,7 +14,7 @@ namespace Levels {
         /// Construct.
         MainMenu(Context* context);
 
-        virtual ~MainMenu();
+        ~MainMenu();
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:

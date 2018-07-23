@@ -25,9 +25,16 @@ public:
 
 	/**
 	 * Get the already processed controls
+	 * If multiple controller support is disabled, only the
+	 * controls with index 0 will be returned
 	 */
 	Controls GetControls(int index = 0);
 
+	/**
+	 * Get a vector of all the controller indexes
+	 * 0: mouse/keyboard/first joystick
+	 * 1 - N: All the additional joysticks or other controllers
+	 */
 	Vector<int> GetControlIndexes();
 
 	/**
@@ -61,6 +68,12 @@ public:
 	 * Map specific key to specific action
 	 */
 	void SetConfiguredKey(int action, int key, String controller);
+
+	/**
+	 * Enable/disable multiple controls support
+	 * This defines if each joystick should have it's own controls or not
+	 */
+	void SetMultipleControllerSupport(bool enabled);
 
 protected:
     virtual void Init();
@@ -114,4 +127,9 @@ private:
 	 * Filepath + filename to the configuration file
 	 */
 	String _configurationFile;
+
+	/**
+	 * Multiple controller support
+	 */
+	bool _multipleControllerSupport;
 };

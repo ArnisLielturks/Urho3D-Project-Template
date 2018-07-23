@@ -71,7 +71,9 @@ protected:
         // }
 
         // Remove all UI elements from UI sub-system
-        GetSubsystem<UI>()->GetRoot()->RemoveAllChildren();
+        if (GetSubsystem<UI>()) {
+            GetSubsystem<UI>()->GetRoot()->RemoveAllChildren();
+        }
     }
 
     virtual void CreateCamera()

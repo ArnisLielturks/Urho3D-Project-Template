@@ -23,6 +23,10 @@ public:
         SubscribeToEvent(MyEvents::E_SET_LEVEL, URHO3D_HANDLER(LevelManager, HandleSetLevelQueue));
     }
 
+    ~LevelManager()
+    {
+    }
+
 private:
     void RegisterAllFactories()
     {

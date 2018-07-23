@@ -8,7 +8,8 @@
 
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :
-    Object(context)
+    Object(context),
+	_multipleControllerSupport(true)
 {
 
 	context_->RegisterFactory<BaseInput>();
@@ -211,17 +212,26 @@ void ControllerInput::HandleStartInputListeningConsole(StringHash eventType, Var
 
 Controls ControllerInput::GetControls(int index)
 {
+	if (!_multipleControllerSupport) {
+		index = 0;
+	}
 	return _controls[index];
 }
 
 void ControllerInput::UpdateYaw(float yaw, int index)
 {
+	if (!_multipleControllerSupport) {
+		index = 0;
+	}
 	const float MOUSE_SENSITIVITY = 0.1f;
 	_controls[index].yaw_ += MOUSE_SENSITIVITY * yaw;
 }
 
 void ControllerInput::UpdatePitch(float pitch, int index)
 {
+	if (!_multipleControllerSupport) {
+		index = 0;
+	}
 	const float MOUSE_SENSITIVITY = 0.1f;
 	_controls[index].pitch_ += MOUSE_SENSITIVITY * pitch;
 	_controls[index].pitch_ = Clamp(_controls[index].pitch_, -90.0f, 90.0f);
@@ -229,6 +239,9 @@ void ControllerInput::UpdatePitch(float pitch, int index)
 
 void ControllerInput::CreateController(int controllerIndex)
 {
+	if (!_multipleControllerSupport) {
+		return;
+	}
 	using namespace MyEvents::ControllerAdded;
 	_controls[controllerIndex] = Controls();
 	VariantMap data = GetEventDataMap();
@@ -238,6 +251,9 @@ void ControllerInput::CreateController(int controllerIndex)
 
 void ControllerInput::DestroyController(int controllerIndex)
 {
+	if (!_multipleControllerSupport) {
+		return;
+	}
 	// Don't allow destroying first input controller
 	if (controllerIndex > 0) {
 		_controls.Erase(controllerIndex);
@@ -269,14 +285,27 @@ String ControllerInput::GetActionKeyName(int action)
 
 void ControllerInput::SetActionState(int action, bool active, int index)
 {
+	if (!_multipleControllerSupport) {
+		index = 0;
+	}
 	_controls[index].Set(action, active);
 }
 
 Vector<int> ControllerInput::GetControlIndexes()
 {
 	Vector<int> indexes;
+	if (!_multipleControllerSupport) {
+		indexes.Push(0);
+		return indexes;
+	}
+
 	for (auto it = _controls.Begin(); it != _controls.End(); ++it) {
 		indexes.Push((*it).first_);
 	}
 	return indexes;
+}
+
+void ControllerInput::SetMultipleControllerSupport(bool enabled)
+{
+	_multipleControllerSupport = enabled;
 }

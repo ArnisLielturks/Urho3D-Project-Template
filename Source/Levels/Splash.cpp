@@ -93,11 +93,6 @@ void Splash::Init()
 	workQueue->AddWorkItem(item);
 }
 
-void Splash::Test()
-{
-	URHO3D_LOGINFO("Test()");
-}
-
 void Splash::CreateScene()
 {
     return;

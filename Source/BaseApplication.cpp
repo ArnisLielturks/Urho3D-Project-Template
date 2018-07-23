@@ -1,27 +1,7 @@
-#include <Urho3D/AngelScript/ScriptFile.h>
-#include <Urho3D/AngelScript/Script.h>
-#include <Urho3D/Core/Main.h>
-#include <Urho3D/Engine/Engine.h>
-#include <Urho3D/Engine/EngineDefs.h>
-#include <Urho3D/IO/FileSystem.h>
-#include <Urho3D/IO/Log.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/Resource/ResourceEvents.h>
-#include <Urho3D/Engine/Console.h>
-
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
-
-#include <Urho3D/UI/Button.h>
-#include <Urho3D/Graphics/Graphics.h>
-#include <Urho3D/Resource/XMLFile.h>
-#include <Urho3D/Input/Input.h>
-#include <Urho3D/DebugNew.h>
-#include <Urho3D/Math/MathDefs.h>
-#include <Urho3D/Core/CoreEvents.h>
-#include <Urho3D/AngelScript/ScriptAPI.h>
-#include <string>
+#include "Audio/AudioManager.h"
 
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -39,6 +19,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     context_->RegisterFactory<ModLoader>();
     context_->RegisterFactory<WindowManager>();
+    context_->RegisterFactory<AudioManager>();
 
     _configManager = new ConfigManager(context);
 
@@ -73,14 +54,22 @@ void BaseApplication::Start()
 
     SubscribeToEvents();
 
-    levelManager = context_->CreateObject<LevelManager>();
+    context_->RegisterSubsystem<LevelManager>();
     _alertMessage = context_->CreateObject<Message>();
     _notifications = context_->CreateObject<Notifications>();
     _achievements = context_->CreateObject<Achievements>();
 	context_->RegisterSubsystem<ModLoader>();
     _windowManager = context_->CreateObject<WindowManager>();
 
+    context_->RegisterSubsystem<AudioManager>();
+    // Allow multiple music tracks to play at the same time
+    context_->GetSubsystem<AudioManager>()->AllowMultipleMusicTracks(true);
+    // Allow multiple ambient tracks to play at the same time
+    context_->GetSubsystem<AudioManager>()->AllowMultipleAmbientTracks(true);
+
 	context_->RegisterSubsystem<ControllerInput>();
+    // Single player mode, all the input is handled by single Controls object
+    context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(false);
 
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "Splash";
@@ -333,7 +322,7 @@ void BaseApplication::LoadINIConfig(String filename)
     */
     SetEngineParameter(EP_TEXTURE_QUALITY, _configManager->GetInt("engine", "TextureQuality", 2));
     SetEngineParameter(EP_TRIPLE_BUFFER, _configManager->GetBool("engine", "TripleBuffer", true));
-    SetEngineParameter(EP_VSYNC, _configManager->GetBool("engine", "VerticalSync", true));
+    SetEngineParameter(EP_VSYNC, _configManager->GetBool("engine", "VSync", true));
 
     // SetEngineParameter(EP_PACKAGE_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
     // SetEngineParameter(EP_RENDER_PATH, engine_->GetGlobalVar("FrameLimiter").GetBool());

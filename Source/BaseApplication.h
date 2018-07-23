@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Urho3D/Engine/Application.h>
-#include <Urho3D/Network/Network.h>
+#include <Urho3D/Urho3DAll.h>
 #include "LevelManager.h"
 #include "Messages/Message.h"
 #include "Messages/Achievements.h"
@@ -47,7 +46,6 @@ private:
 
     void HandleExit(StringHash eventType, VariantMap& eventData);
 
-    SharedPtr<LevelManager> levelManager;
     SharedPtr<Message> _alertMessage;
     SharedPtr<Notifications> _notifications;
     SharedPtr<Achievements> _achievements;

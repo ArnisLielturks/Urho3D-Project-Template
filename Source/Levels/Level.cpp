@@ -2,6 +2,7 @@
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
+#include "../Audio/AudioManagerDefs.h"
 #include "../Input/ControllerInput.h"
 
 using namespace Levels;
@@ -16,12 +17,16 @@ Level::Level(Context* context) :
 
 Level::~Level()
 {
+    StopAllAudio();
 }
 
 void Level::Init()
 {
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetNumViewports(1);
+
+    StopAllAudio();
+    StartAudio();
 
     Network* network = GetSubsystem<Network>();
     network->RegisterRemoteEvent("SendPlayerNodeID");
@@ -42,7 +47,20 @@ void Level::Init()
     input->SetMouseVisible(false);
 }
 
+void Level::StartAudio()
+{
+    using namespace AudioDefs;
+    using namespace MyEvents::PlaySound;
+    VariantMap data = GetEventDataMap();
+    data[P_INDEX] = AMBIENT_SOUNDS::LEVEL;
+    data[P_TYPE] = SOUND_AMBIENT;
+    SendEvent(MyEvents::E_PLAY_SOUND, data);
+}
 
+void Level::StopAllAudio()
+{
+    SendEvent(MyEvents::E_STOP_ALL_SOUNDS);
+}
 
 void Level::CreateScene()
 {

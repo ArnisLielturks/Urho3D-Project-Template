@@ -265,20 +265,20 @@ void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, Va
 		}
 		if (value.GetType() == VAR_INT) {
 			oldValue = String(value.GetInt());
-			int newIntVal = std::stoi(params[1].CString());
+			int newIntVal = ToInt(params[1].CString());
 			SetGlobalVar(params[0], newIntVal);
 			newValue = String(newIntVal);
 		}
 		if (value.GetType() == VAR_FLOAT) {
 			oldValue = String(value.GetFloat());
-			float newFloatVal = std::stof(params[1].CString());
+			float newFloatVal = ToFloat(params[1].CString());
 			SetGlobalVar(params[0], newFloatVal);
 			newValue = String(newFloatVal);
 		}
 		if (value.GetType() == VAR_DOUBLE) {
 			oldValue = String(value.GetDouble());
-			float newFloatVal = std::stof(params[1].CString());
-			SetGlobalVar(params[0], newFloatVal);
+			float newFloatVal = ToFloat(params[1].CString());
+			SetGlobalVar(params[0],newFloatVal);
 			newValue = String(newFloatVal);
 		}
 		URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");

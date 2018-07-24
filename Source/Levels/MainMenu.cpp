@@ -3,6 +3,7 @@
 #include "../MyEvents.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../UI/NuklearUI.h"
+#include <ctime>
 
 using namespace Levels;
 
@@ -136,7 +137,11 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
     static int checkbox;
     static int option;
 
-
+	// Get logo texture
+	SharedPtr< ResourceCache > const cache(GetSubsystem< ResourceCache >());
+	SharedPtr< Texture2D > const LogoTexture(cache->GetResource< Texture2D >("Textures/UrhoIcon.png"));
+	struct nk_image logo;
+	logo = nk_image_ptr((void*)LogoTexture.Get());
     if (_showGUI && nk_begin(nuklear->GetNkContext(), "DemoWindow", nk_rect(50, 50, 400, 400), NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE)) {
         /* fixed widget pixel width */
         nk_layout_row_static(nuklear->GetNkContext(), 30, 80, 1);
@@ -190,6 +195,18 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
             nk_label_wrap(nuklear->GetNkContext(), "This is another long text to show dynamic window changes on multiline text");
             nk_tree_pop(nuklear->GetNkContext());
         }
+		if (nk_tree_push(nuklear->GetNkContext(), NK_TREE_NODE, "Image", NK_MINIMIZED))
+			 {
+			nk_layout_row_dynamic(nuklear->GetNkContext(), 70, 1);
+			if (logo.handle.ptr == NULL)
+				 {
+
+			}
+			else {
+				nk_button_image_label(nuklear->GetNkContext(), logo, "logo", NK_TEXT_CENTERED);
+			}
+			nk_tree_pop(nuklear->GetNkContext());
+		}
         if (nk_tree_push(nuklear->GetNkContext(), NK_TREE_NODE, "Button", NK_MINIMIZED))
         {
             /* Buttons Widgets */

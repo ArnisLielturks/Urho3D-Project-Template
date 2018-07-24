@@ -119,4 +119,18 @@ namespace MyEvents
 	URHO3D_EVENT(E_STOP_ALL_SOUNDS, StopAllSounds)
 	{
 	}
+
+    // Level changing started
+	URHO3D_EVENT(E_LEVEL_CHANGING_STARTED, LevelChangingStarted)
+	{
+        URHO3D_PARAM(P_FROM, From); // string
+        URHO3D_PARAM(P_TO, To); // string
+	}
+
+    // Level changing finished
+	URHO3D_EVENT(E_LEVEL_CHANGING_FINISHED, LevelChangingFinished)
+	{
+        URHO3D_PARAM(P_FROM, From); // string
+        URHO3D_PARAM(P_TO, To); // string
+	}
 }

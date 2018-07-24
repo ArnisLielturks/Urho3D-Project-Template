@@ -4,7 +4,7 @@
 void Start()
 {
     log.Info("LevelLoader.as START");
-    SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
+    SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
 }
 
 void Stop()
@@ -17,7 +17,8 @@ void Stop()
  */
 void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
 {
-    String levelName = eventData["Name"].GetString();
+    String previousLevelName = eventData["From"].GetString();
+    String levelName = eventData["To"].GetString();
 
     VariantMap data;
     data["Message"] = "Level '" + levelName + "' loaded!";

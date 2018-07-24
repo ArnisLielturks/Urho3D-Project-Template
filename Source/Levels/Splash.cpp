@@ -4,6 +4,8 @@
 
 using namespace Levels;
 
+static int SPLASH_TIME = 1000;
+
 namespace Levels {
     void CheckThreading(const WorkItem* item, unsigned threadIndex)
     {
@@ -146,12 +148,12 @@ void Splash::CreateUI()
 
     sprite->SetObjectAnimation(animation);
     
-    Text* text = ui->GetRoot()->CreateChild<Text>();
-    text->SetHorizontalAlignment(HA_RIGHT);
-    text->SetPosition(IntVector2(-20, -20));
-    text->SetVerticalAlignment(VA_BOTTOM);
-    text->SetStyleAuto();
-    text->SetText("Splash...");
+    // Text* text = ui->GetRoot()->CreateChild<Text>();
+    // text->SetHorizontalAlignment(HA_RIGHT);
+    // text->SetPosition(IntVector2(-20, -20));
+    // text->SetVerticalAlignment(VA_BOTTOM);
+    // text->SetStyleAuto();
+    // text->SetText("Splash...");
 
     /*SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
@@ -182,7 +184,7 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
-    if (_timer.GetMSec(false) > 2000) {
+    if (_timer.GetMSec(false) > SPLASH_TIME) {
         HandleEndSplash();
     }
 }

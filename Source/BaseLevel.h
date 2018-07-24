@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
+#include "MyEvents.h"
 
 class BaseLevel : public Object
 {
@@ -23,7 +24,7 @@ private:
     void SubscribeToBaseEvents()
     {
         SubscribeToEvent("LevelStart", URHO3D_HANDLER(BaseLevel, HandleStart));
-        SubscribeToEvent("LevelLoaded", URHO3D_HANDLER(BaseLevel, HandleLevelLoaded));
+        SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, URHO3D_HANDLER(BaseLevel, HandleLevelLoaded));
     }
 
     void HandleStart(StringHash eventType, VariantMap& eventData)

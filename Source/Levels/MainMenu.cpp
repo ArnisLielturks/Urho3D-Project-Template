@@ -2,6 +2,7 @@
 #include "MainMenu.h"
 #include "../MyEvents.h"
 #include "../Audio/AudioManagerDefs.h"
+#include "../UI/NuklearUI.h"
 
 using namespace Levels;
 
@@ -124,6 +125,44 @@ void MainMenu::SubscribeToEvents()
 
 void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
+    auto nuklear = GetSubsystem<NuklearUI>();
+    enum {EASY, HARD};
+    static int op = EASY;
+    static float value = 0.6f;
+    static int i =  20;
+    static size_t progress = 1;
+
+    if (nk_begin(nuklear->GetNkContext(), "Show", nk_rect(50, 50, 400, 400),
+        NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
+        /* fixed widget pixel width */
+        nk_layout_row_static(nuklear->GetNkContext(), 30, 80, 1);
+        if (nk_button_label(nuklear->GetNkContext(), "button")) {
+            /* event handling */
+        }
+
+        /* fixed widget window ratio width */
+        nk_layout_row_dynamic(nuklear->GetNkContext(), 30, 2);
+        if (nk_option_label(nuklear->GetNkContext(), "easy", op == EASY)) op = EASY;
+        if (nk_option_label(nuklear->GetNkContext(), "hard", op == HARD)) op = HARD;
+
+        /* custom widget pixel width */
+        nk_layout_row_begin(nuklear->GetNkContext(), NK_STATIC, 30, 2);
+        {
+            nk_layout_row_push(nuklear->GetNkContext(), 50);
+            nk_label(nuklear->GetNkContext(), "Volume:", NK_TEXT_LEFT);
+            nk_layout_row_push(nuklear->GetNkContext(), 110);
+            nk_slider_float(nuklear->GetNkContext(), 0, &value, 1.0f, 0.05f);
+        }
+        nk_layout_row_end(nuklear->GetNkContext());
+
+        nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
+        {
+            nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
+            nk_progress(nuklear->GetNkContext(), &progress, 1000, NK_MODIFIABLE);
+        }
+        progress += 1;
+    }
+    nk_end(nuklear->GetNkContext());
 }
 
 void MainMenu::HandleKeyDown(StringHash eventType, VariantMap& eventData)

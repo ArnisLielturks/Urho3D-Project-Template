@@ -2,7 +2,7 @@
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
 #include "Audio/AudioManager.h"
-
+#include "UI/NuklearUI.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
@@ -12,6 +12,7 @@ BaseApplication::BaseApplication(Context* context) :
 	ConfigFile::RegisterObject(context);
     ConfigManager::RegisterObject(context);
 
+    context_->RegisterFactory<NuklearUI>();
     context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
@@ -54,6 +55,14 @@ void BaseApplication::Start()
 
     SubscribeToEvents();
 
+    auto nuklear = new NuklearUI(context_);
+    context_->RegisterSubsystem(nuklear);
+    // Initialize default font of your choice or use default one.
+    nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_default(nuklear->GetFontAtlas(), 13.f, 0);
+
+    // Additional font initialization here. See https://github.com/vurtun/nuklear/blob/master/demo/sdl_opengl3/main.c
+    nuklear->FinalizeFonts();
+
     context_->RegisterSubsystem<LevelManager>();
     _alertMessage = context_->CreateObject<Message>();
     _notifications = context_->CreateObject<Notifications>();
@@ -72,7 +81,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(false);
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
@@ -194,6 +203,7 @@ void BaseApplication::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_SAVE_CONFIG, URHO3D_HANDLER(BaseApplication, HandleSaveConfig));
     SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
     SubscribeToEvent(MyEvents::E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(BaseApplication, HandleUpdate));
 }
 
 void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)

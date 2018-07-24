@@ -11,9 +11,11 @@ void Start()
 {
     log.Info("Debugger.as START");
     SubscribeToEvent("SetLevel", "HandleLevelChange");
-    SubscribeToEvent("LevelLoaded", "HandleLevelLoaded");
+    SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
     SubscribeToEvent("InputMappingFinished", "HandleInputMappingFinished");
+    SubscribeToEvent("LevelChangingStarted", "HandleLevelChangingStarted");
+    SubscribeToEvent("LevelChangingFinished", "HandleLevelChangingFinished");
 
     // Add new global config value
     VariantMap data;
@@ -34,6 +36,23 @@ void Start()
     // DelayedExecute(1.0, false, "void PlaySound()");
 }
 
+void HandleLevelChangingStarted(StringHash eventType, VariantMap& eventData)
+{
+    String from = eventData["From"].GetString();
+    String to = eventData["To"].GetString();
+    log.Info("########### STARTED ############");
+    log.Info(">>>>>>>>>>>>>> FROM : " + from);
+    log.Info(">>>>>>>>>>>>>> TO : " + to);
+}
+
+void HandleLevelChangingFinished(StringHash eventType, VariantMap& eventData)
+{
+    String from = eventData["From"].GetString();
+    String to = eventData["To"].GetString();
+    log.Info("########### FINISHED ############");
+    log.Info(">>>>>>>>>>>>>> FROM : " + from);
+    log.Info(">>>>>>>>>>>>>> TO : " + to);
+}
 // void PlaySound()
 // {
 //     VariantMap data;

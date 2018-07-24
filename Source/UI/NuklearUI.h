@@ -25,6 +25,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_STANDARD_VARARGS
 
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Graphics/VertexBuffer.h>

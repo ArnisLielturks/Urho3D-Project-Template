@@ -17,9 +17,6 @@ public:
         Dispose();
     }
 
-    virtual void Init() {
-    }
-
 private:
     void SubscribeToBaseEvents()
     {
@@ -39,6 +36,9 @@ private:
     }
 
 protected:
+
+    virtual void Init() {
+    }
 
     virtual void OnLoaded()
     {

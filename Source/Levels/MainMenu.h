@@ -18,7 +18,7 @@ namespace Levels {
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
-        void Init override ();
+        void Init () override;
 
     private:
         void CreateScene();
@@ -37,5 +37,7 @@ namespace Levels {
         SharedPtr<Button> _settingsButton;
 		SharedPtr<Button> _creditsButton;
         SharedPtr<Button> _exitButton;
+
+        bool _showGUI;
     };
 }

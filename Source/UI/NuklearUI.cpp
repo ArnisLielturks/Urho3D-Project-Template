@@ -27,7 +27,7 @@
 #include <Urho3D/Input/InputEvents.h>
 #include <Urho3D/Graphics/GraphicsEvents.h>
 #include "NuklearUI.h"
-// #undef NK_IMPLEMENTATION
+#undef NK_IMPLEMENTATION
 
 using namespace Urho3D;
 
@@ -229,7 +229,7 @@ void NuklearUI::OnRawEvent(StringHash, VariantMap& args)
         nk_input_glyph(ctx, glyph);
     }
     else if (evt->type == SDL_MOUSEWHEEL)
-        nk_input_scroll(ctx, (float)evt->wheel.y);
+        nk_input_scroll(ctx, {0, (float)evt->wheel.y});
 }
 
 void NuklearUI::OnInputEnd(StringHash, VariantMap&)

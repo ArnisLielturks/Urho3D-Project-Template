@@ -17,7 +17,7 @@ namespace Levels {
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
-        void Init override ();
+        void Init () override;
 
     private:
 		friend void CheckThreading(const WorkItem* item, unsigned threadIndex);

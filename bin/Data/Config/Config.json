@@ -1,7 +1,7 @@
 {
 	"FullScreen": false,
-	"WindowWidth": 1024,
-	"WindowHeight": 768,
+	"WindowWidth": 800,
+	"WindowHeight": 600,
 	"Borderless": false,
 	"FrameLimiter": true,
 	"WindowTitle": "EmptyProject",
@@ -9,7 +9,7 @@
 	"LogName": "File.log",
 	"LogLevel": 1,
 	"LogQuiet": false,
-	"LowQualityShadows": true,
+	"LowQualityShadows": false,
 	"MaterialQuality": 16,
 	"Monitor": 1,
 	"MultiSample": 4,

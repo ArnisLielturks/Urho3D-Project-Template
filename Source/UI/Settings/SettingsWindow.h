@@ -24,11 +24,12 @@ struct GraphicsSettings {
 	int vsync;
 	int tripleBuffer;
 	int shadows;
-	int lowQualityShadows;
+	int shadowQuality;
 	int textureQuality;
 	int textureAnistropy;
 	int textureFilterMode;
 	int multisample;
+    int activeResolution;
 };
 
 struct AudioSettings{
@@ -64,11 +65,9 @@ private:
 
     void SubscribeToEvents();
 
-    void CreateAudioSettingsView();
     void CreateControllerSettingsView();
 
-    void HandleClose(StringHash eventType, VariantMap& eventData);
-    void HandleSave(StringHash eventType, VariantMap& eventData);
+    void SaveVideoSettings();
 
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 	void DrawWindow();
@@ -78,14 +77,6 @@ private:
 
     void HandleChangeControls(StringHash eventType, VariantMap& eventData);
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
-
-	void HandleGraphicsSettingsChange(StringHash eventType, VariantMap& eventData);
-	void HandleGraphicsSettingsToggle(StringHash eventType, VariantMap& eventData);
-
-	void HandleAudioSettingsToggle(StringHash eventType, VariantMap& eventData);
-	void HandleAudioSettingsSlider(StringHash eventType, VariantMap& eventData);
-
-    void ClearView();
 
 	void InitGraphicsSettings();
 	void InitAudioSettings();
@@ -103,8 +94,6 @@ private:
 	AudioSettings _audioSettings;
 	AudioSettings _audioSettingsNew;
 
-	HashMap<int, String> _textureQualityMapping;
-	HashMap<int, String> _textureFilterModesMapping;
-
-	const char *_supportedResolutions;
+	char **_supportedResolutions;
+    StringVector _resoulutionVector;
 };

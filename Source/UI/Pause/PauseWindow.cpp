@@ -1,10 +1,13 @@
 #include <Urho3D/Urho3DAll.h>
 #include "PauseWindow.h"
 #include "../../MyEvents.h"
+#include "../../UI/NuklearUI.h"
+#include "../../Audio/AudioManagerDefs.h"
 
 /// Construct.
 PauseWindow::PauseWindow(Context* context) :
-    BaseWindow(context, IntVector2(200, 200))
+    BaseWindow(context),
+    _active(true)
 {
     Init();
 }
@@ -26,72 +29,88 @@ void PauseWindow::Create()
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
     }
-
-    UI* ui = GetSubsystem<UI>();
-
-	_resumeButton = CreateButton("Resume", IntVector2(0, -100), IntVector2(150, 30), HA_CENTER, VA_BOTTOM);
-	_menuButton = CreateButton("Return to menu", IntVector2(0, -60), IntVector2(150, 30), HA_CENTER, VA_BOTTOM);
-    _exitButton = CreateButton("Exit game", IntVector2(0, -20), IntVector2(150, 30), HA_CENTER, VA_BOTTOM);
-
-    {
-        Text* text = _base->CreateChild<Text>();
-        text->SetText("Pause");
-        text->SetStyleAuto();
-        text->SetColor(Color(0.2f, 0.8f, 0.2f));
-        text->SetAlignment(HA_CENTER, VA_TOP);
-        text->SetPosition(IntVector2(0, 10));
-        text->SetFontSize(20);
-    }
-}
-
-Button* PauseWindow::CreateButton(String name, IntVector2 position, IntVector2 size, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-{
-    Button* button = _base->CreateChild<Button>();
-    button->SetSize(size);
-    button->SetPosition(position);
-    button->SetStyleAuto();
-    button->SetAlignment(hAlign, vAlign);
-
-    Text* text = button->CreateChild<Text>();
-    text->SetText(name);
-    text->SetStyleAuto();
-    text->SetAlignment(HA_CENTER, VA_CENTER);
-
-    return button;
 }
 
 void PauseWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(_resumeButton, E_RELEASED, URHO3D_HANDLER(PauseWindow, HandleResume));
-	SubscribeToEvent(_menuButton, E_RELEASED, URHO3D_HANDLER(PauseWindow, HandleReturnToMenu));
-    SubscribeToEvent(_exitButton, E_RELEASED, URHO3D_HANDLER(PauseWindow, HandleExit));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(PauseWindow, HandleUpdate));
 }
 
-void PauseWindow::HandleResume(StringHash eventType, VariantMap& eventData)
+void PauseWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    VariantMap data = GetEventDataMap();
-    data["Name"] = "PauseWindow";
-    SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-}
+    auto graphics = GetSubsystem<Graphics>();
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto ctx = nuklear->GetNkContext();
+    nk_style_default(ctx);
 
-void PauseWindow::HandleReturnToMenu(StringHash eventType, VariantMap& eventData)
-{
-	VariantMap data = GetEventDataMap();
+    if (nk_begin(nuklear->GetNkContext(), "Pause", nk_rect(graphics->GetWidth() / 2 - 100, graphics->GetHeight() / 2 - 60, 200, 160), NK_WINDOW_BORDER)) {
+        nk_layout_row_dynamic(ctx, 30, 1);
+        nk_label(nuklear->GetNkContext(), "Pause", NK_TEXT_CENTERED);
 
-	data["Name"] = "MainMenu";
-	SendEvent(MyEvents::E_SET_LEVEL, data);
+        nk_layout_row_dynamic(ctx, 30, 1);
+        if (nk_button_label(nuklear->GetNkContext(), "Resume")) {
+            if (_active) {
+                {
+                    using namespace AudioDefs;
+                    using namespace MyEvents::PlaySound;
+                    VariantMap data = GetEventDataMap();
+                    data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+                    data[P_TYPE] = SOUND_EFFECT;
+                    SendEvent(MyEvents::E_PLAY_SOUND, data);
+                }
+                VariantMap data = GetEventDataMap();
+                data["Name"] = "PauseWindow";
+                SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+                _active = false;
+            }
+        }
+        nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
 
-	data["Name"] = "PauseWindow";
-	SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-}
+        nk_layout_row_dynamic(ctx, 30, 1);
+        if (nk_button_label(nuklear->GetNkContext(), "Return to menu")) {
+            if (_active) {
+                {
+                    using namespace AudioDefs;
+                    using namespace MyEvents::PlaySound;
+                    VariantMap data = GetEventDataMap();
+                    data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+                    data[P_TYPE] = SOUND_EFFECT;
+                    SendEvent(MyEvents::E_PLAY_SOUND, data);
+                }
+                VariantMap data = GetEventDataMap();
 
-void PauseWindow::HandleExit(StringHash eventType, VariantMap& eventData)
-{
-    VariantMap data = GetEventDataMap();
+                data["Name"] = "MainMenu";
+                SendEvent(MyEvents::E_SET_LEVEL, data);
 
-	data["Name"] = "ExitGame";
-	SendEvent(MyEvents::E_SET_LEVEL, data);
+                data["Name"] = "PauseWindow";
+                SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+                _active = false;
+            }
+        }
+        nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
 
-	data["Name"] = "PauseWindow";
-	SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        nk_layout_row_dynamic(ctx, 30, 1);
+        if (nk_button_label(nuklear->GetNkContext(), "Exit game")) {
+            if (_active) {
+                {
+                    using namespace AudioDefs;
+                    using namespace MyEvents::PlaySound;
+                    VariantMap data = GetEventDataMap();
+                    data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+                    data[P_TYPE] = SOUND_EFFECT;
+                    SendEvent(MyEvents::E_PLAY_SOUND, data);
+                }
+                VariantMap data = GetEventDataMap();
+
+                data["Name"] = "ExitGame";
+                SendEvent(MyEvents::E_SET_LEVEL, data);
+
+                data["Name"] = "PauseWindow";
+                SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+                _active = false;
+            }
+        }
+        nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
+    }
+    nk_end(ctx);
 }

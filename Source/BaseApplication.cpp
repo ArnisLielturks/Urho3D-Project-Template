@@ -353,6 +353,13 @@ void BaseApplication::LoadINIConfig(String filename)
 	engine_->SetGlobalVar("SoundAmbientVolume", _configManager->GetFloat("engine", "SoundAmbientVolume", 1.0));
 	engine_->SetGlobalVar("SoundVoiceVolume", _configManager->GetFloat("engine", "SoundVoiceVolume", 1.0));
 	engine_->SetGlobalVar("SoundMusicVolume", _configManager->GetFloat("engine", "SoundMusicVolume", 1.0));
+
+    Audio* audio = GetSubsystem<Audio>();
+	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("SoundMasterVolume").GetFloat());
+	audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("SoundEffectsVolume").GetFloat());
+	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("SoundAmbientVolume").GetFloat());
+	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("SoundVoiceVolume").GetFloat());
+	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("SoundMusicVolume").GetFloat());
 }
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)

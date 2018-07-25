@@ -21,22 +21,20 @@ namespace Levels {
         void Init () override;
 
     private:
+
+        void draw();
         void CreateScene();
 
         void CreateUI();
 
         void SubscribeToEvents();
 
-        void HandleStartGame(StringHash eventType, VariantMap& eventData);
-        void HandleShowSettings(StringHash eventType, VariantMap& eventData);
-		void HandleShowCredits(StringHash eventType, VariantMap& eventData);
-        void HandleExit(StringHash eventType, VariantMap& eventData);
-        void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-
         SharedPtr<Button> _startButton;
         SharedPtr<Button> _settingsButton;
 		SharedPtr<Button> _creditsButton;
         SharedPtr<Button> _exitButton;
+
+        bool _active;
 
         bool _showGUI;
     };

@@ -20,11 +20,11 @@ enum SettingsViewType {
 struct GraphicsSettings {
 	int width;
 	int height;
-	bool fullscreen;
-	bool vsync;
-	bool tripleBuffer;
-	bool shadows;
-	bool lowQualityShadows;
+	int fullscreen;
+	int vsync;
+	int tripleBuffer;
+	int shadows;
+	int lowQualityShadows;
 	int textureQuality;
 	int textureAnistropy;
 	int textureFilterMode;
@@ -33,8 +33,8 @@ struct GraphicsSettings {
 
 struct AudioSettings{
 	bool enabled;
-	bool stereo;
-	bool soundInterpolation;
+	int stereo;
+	int soundInterpolation;
 	int soundBuffer;
 	int mixRate;
 	float masterVolume;
@@ -64,16 +64,17 @@ private:
 
     void SubscribeToEvents();
 
-    void CreateGraphicsSettingsView();
     void CreateAudioSettingsView();
     void CreateControllerSettingsView();
 
     void HandleClose(StringHash eventType, VariantMap& eventData);
     void HandleSave(StringHash eventType, VariantMap& eventData);
-    
-    void ShowVideoSettings(StringHash eventType, VariantMap& eventData);
-    void ShowAudioSettings(StringHash eventType, VariantMap& eventData);
-    void ShowControllerSettings(StringHash eventType, VariantMap& eventData);
+
+	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+	void DrawWindow();
+	void DrawControlsSettings();
+	void DrawVideoSettings();
+	void DrawAudioSettings();
 
     void HandleChangeControls(StringHash eventType, VariantMap& eventData);
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
@@ -88,7 +89,7 @@ private:
 
 	void InitGraphicsSettings();
 	void InitAudioSettings();
-
+	void ApplyAudioSettings();
 
     HashMap<int, SharedPtr<Button>> _buttons;
 
@@ -97,8 +98,13 @@ private:
     Vector<SharedPtr<UIElement>> _activeSettingElements;
 
 	GraphicsSettings _graphicsSettings;
+	GraphicsSettings _graphicsSettingsNew;
+
 	AudioSettings _audioSettings;
+	AudioSettings _audioSettingsNew;
 
 	HashMap<int, String> _textureQualityMapping;
 	HashMap<int, String> _textureFilterModesMapping;
+
+	const char *_supportedResolutions;
 };

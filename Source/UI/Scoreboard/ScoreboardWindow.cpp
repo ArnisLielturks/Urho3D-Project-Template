@@ -1,10 +1,11 @@
 #include <Urho3D/Urho3DAll.h>
 #include "ScoreboardWindow.h"
 #include "../../MyEvents.h"
+#include "../../UI/NuklearUI.h"
 
 /// Construct.
 ScoreboardWindow::ScoreboardWindow(Context* context) :
-    BaseWindow(context, IntVector2(300, 300))
+    BaseWindow(context)
 {
     Init();
 }
@@ -22,79 +23,43 @@ void ScoreboardWindow::Init()
 
 void ScoreboardWindow::Create()
 {
-    UI* ui = GetSubsystem<UI>();
-
-    {
-        Text* text = _base->CreateChild<Text>();
-        text->SetText("Scoreboard");
-        text->SetStyleAuto();
-        text->SetColor(Color(0.2f, 0.8f, 0.2f));
-        text->SetAlignment(HA_CENTER, VA_TOP);
-        text->SetPosition(IntVector2(0, 10));
-        text->SetFontSize(20);
-    }
-
-    {
-        Text* text = _base->CreateChild<Text>();
-        text->SetText("Name");
-        text->SetStyleAuto();
-        text->SetColor(Color(0.8f, 0.8f, 0.2f));
-        text->SetAlignment(HA_LEFT, VA_TOP);
-        text->SetPosition(IntVector2(20, 40));
-        text->SetFontSize(14);
-    }
-
-    {
-        Text* text = _base->CreateChild<Text>();
-        text->SetText("Ping");
-        text->SetStyleAuto();
-        text->SetColor(Color(0.8f, 0.8f, 0.2f));
-        text->SetAlignment(HA_CENTER, VA_TOP);
-        text->SetPosition(IntVector2(0, 40));
-        text->SetFontSize(14);
-    }
-
-    {
-        Text* text = _base->CreateChild<Text>();
-        text->SetText("Score");
-        text->SetStyleAuto();
-        text->SetColor(Color(0.8f, 0.8f, 0.2f));
-        text->SetAlignment(HA_RIGHT, VA_TOP);
-        text->SetPosition(IntVector2(-20, 40));
-        text->SetFontSize(14);
-    }
-
-    for (int i = 0; i < 10; i++) {
-        {
-            Text* text = _base->CreateChild<Text>();
-            text->SetText("Player"  + String(i));
-            text->SetStyleAuto();
-            text->SetColor(Color(0.8f, 0.2f, 0.2f));
-            text->SetAlignment(HA_LEFT, VA_TOP);
-            text->SetPosition(IntVector2(20, 60 + i * 20));
-            text->SetFontSize(14);
-        }
-        {
-            Text* text = _base->CreateChild<Text>();
-            text->SetText(String(i * 12));
-            text->SetStyleAuto();
-            text->SetColor(Color(0.8f, 0.2f, 0.2f));
-            text->SetAlignment(HA_CENTER, VA_TOP);
-            text->SetPosition(IntVector2(0, 60 + i * 20));
-            text->SetFontSize(14);
-        }
-        {
-            Text* text = _base->CreateChild<Text>();
-            text->SetText(String(i * 35));
-            text->SetStyleAuto();
-            text->SetColor(Color(0.8f, 0.2f, 0.2f));
-            text->SetAlignment(HA_RIGHT, VA_TOP);
-            text->SetPosition(IntVector2(-20, 60 + i * 20));
-            text->SetFontSize(14);
-        }
-    }
 }
 
 void ScoreboardWindow::SubscribeToEvents()
 {
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ScoreboardWindow, HandleUpdate));
+}
+
+
+void ScoreboardWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    auto graphics = GetSubsystem<Graphics>();
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto ctx = nuklear->GetNkContext();
+    nk_style_default(ctx);
+    static struct nk_color color = {20, 200, 50, 255};
+
+    if (nk_begin(nuklear->GetNkContext(), "Pause", nk_rect(graphics->GetWidth() / 2 - 200, graphics->GetHeight() / 2 - 200, 400, 400), NK_WINDOW_BORDER)) {
+        nk_layout_row_dynamic(ctx, 30, 1);
+        nk_label(nuklear->GetNkContext(), "Scoreboard", NK_TEXT_CENTERED);
+
+        nk_layout_row_dynamic(ctx, 30, 3);
+        nk_label_colored(nuklear->GetNkContext(), "Player", NK_TEXT_LEFT, color);
+        nk_label_colored(nuklear->GetNkContext(), "Score", NK_TEXT_CENTERED, color);
+        nk_label_colored(nuklear->GetNkContext(), "Ping", NK_TEXT_RIGHT, color);
+        
+        for (int i = 1; i < 10; i++) {
+            nk_layout_row_dynamic(ctx, 30, 3);
+            String name = "Player " + String(i);
+            nk_label(nuklear->GetNkContext(), name.CString(), NK_TEXT_LEFT);
+
+            String points = String(i * 12);
+            nk_label(nuklear->GetNkContext(), points.CString(), NK_TEXT_CENTERED);
+
+            String ping = String(i * 3);
+            nk_label(nuklear->GetNkContext(), ping.CString(), NK_TEXT_RIGHT);
+        }
+
+    }
+    nk_end(ctx);
 }

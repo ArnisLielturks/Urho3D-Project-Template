@@ -2,6 +2,7 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../UI/NuklearUI.h"
+
 using namespace Urho3D;
 
 class SingleAchievement : public Animatable
@@ -20,14 +21,16 @@ public:
     void SetVar(StringHash key, const Variant& value);
     const Variant& GetVar(const StringHash& key) const;
 private:
-        void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
-        /// Handle attribute animation added.
-        void OnAttributeAnimationAdded() override;
-        /// Handle attribute animation removed.
-        void OnAttributeAnimationRemoved() override;
-        float _size;
-        struct nk_image _image{};
-        VariantMap vars_;
+    void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+    /// Handle attribute animation added.
+    void OnAttributeAnimationAdded() override;
+    /// Handle attribute animation removed.
+    void OnAttributeAnimationRemoved() override;
+
+    float _size;
+    SharedPtr<Texture2D> _imageTexture;
+    struct nk_image _image{};
+    VariantMap vars_;
 };
 
 class Achievements : public Object

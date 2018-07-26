@@ -16,11 +16,9 @@ public:
 
     bool Create();
 
-    void Dispose();
-
-    void HandleOkButton(StringHash eventType, VariantMap& eventData);
-
     void HandleShowMessage(StringHash eventType, VariantMap& eventData);
+
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
 protected:
     virtual void Init();
@@ -29,9 +27,6 @@ private:
 
     void SubscribeToEvents();
 
-    SharedPtr<UIElement> _baseElement;
-    SharedPtr<Button> _okButton;
-    SharedPtr<Text> _title;
-    SharedPtr<Text> _message;
-
+    String _title;
+    String _message;
 };

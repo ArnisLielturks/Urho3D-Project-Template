@@ -2,12 +2,28 @@
 #include "Message.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
+#include "../UI/NuklearUI.h"
+
+static struct nk_rect _outerRect;
+static struct nk_rect _innerRect;
 
 /// Construct.
 Message::Message(Context* context) :
     Object(context)
 {
     Init();
+    int width = 300;
+    int height = 160;
+    auto graphics = GetSubsystem<Graphics>();
+    _innerRect.x = graphics->GetWidth() / 2 - width / 2;
+    _innerRect.w = width;
+    _innerRect.y = graphics->GetHeight() / 2 - height / 2;
+    _innerRect.h = height;
+
+    _outerRect.x = 0;
+    _outerRect.w = graphics->GetWidth();
+    _outerRect.y = 0;
+    _outerRect.h = graphics->GetHeight();
 }
 
 Message::~Message()
@@ -21,62 +37,65 @@ void Message::Init()
 
 bool Message::Create()
 {
-    if (_baseElement.Refs()) {
-        URHO3D_LOGERROR("Another pop-up message is already active");
-        return false;
-    }
-    UI* ui = GetSubsystem<UI>();
-	Graphics* graphics = GetSubsystem<Graphics>();
-
-    _baseElement = ui->GetRoot()->CreateChild("Menu");
-	_baseElement->SetWidth(graphics->GetWidth());
-	_baseElement->SetHeight(graphics->GetHeight());
-	_baseElement->SetPosition(IntVector2(0, 0));
-	_baseElement->SetColor(Color(0, 0, 0, 0.7));
-	UIElement* messageContainer = _baseElement->CreateChild<UIElement>();
-    File startButtonFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/UI/Message.xml", FILE_READ);
-	messageContainer->LoadXML(startButtonFile);
-    _okButton = static_cast<Button*>(_baseElement->GetChild("MessageOkButton", true));
-    _title = static_cast<Text*>(_baseElement->GetChild("MessageTitle", true));
-    _message = static_cast<Text*>(_baseElement->GetChild("MessageBody", true));
     SubscribeToEvents();
-
     return true;
 }
 
 void Message::SubscribeToEvents()
 {
-    SubscribeToEvent(_okButton, E_RELEASED, URHO3D_HANDLER(Message, HandleOkButton));
     SubscribeToEvent("ShowAlertMessage", URHO3D_HANDLER(Message, HandleShowMessage));
 }
 
 void Message::HandleShowMessage(StringHash eventType, VariantMap& eventData)
 {
-    String title = eventData["Title"].GetString();
-    String message = eventData["Message"].GetString();
-    if (Create() && _title.Refs() && _message.Refs()) {
-        _title->SetText(title);
-        _message->SetText(message);
+    _title = eventData["Title"].GetString();
+    _message = eventData["Message"].GetString();
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Message, HandleUpdate));
+}
+
+void Message::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto ctx = nuklear->GetNkContext();
+    if (nuklear && ctx) {
+
+        nk_style_default(ctx);
+
+        ctx->style.window.background = nk_rgba(0, 0, 0, 0);
+        ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
+        ctx->style.window.border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.combo_border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.contextual_border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.menu_border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.group_border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.tooltip_border_color = nk_rgb(255, 165, 0);
+        ctx->style.window.scrollbar_size = nk_vec2(16, 16);
+        ctx->style.window.border_color = nk_rgba(0, 0, 0, 0);
+        ctx->style.window.border = 1;
+
+        if (nk_begin(nuklear->GetNkContext(), "PopUpMessageOuter", _outerRect, NK_WINDOW_NO_SCROLLBAR)) {
+
+        }
+        nk_end(ctx);
+
+        nk_style_default(ctx);
+        if (nk_begin(nuklear->GetNkContext(), "PopUpMessageInner", _innerRect, NK_WINDOW_NO_SCROLLBAR)) {
+            nk_layout_row_dynamic(ctx, 1, 1);
+            nk_spacing(nuklear->GetNkContext(), 1);
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(nuklear->GetNkContext(), _title.CString(), NK_TEXT_CENTERED);
+            nk_layout_row_dynamic(ctx, 2, 1);
+            nk_spacing(nuklear->GetNkContext(), 1);
+
+            nk_layout_row_dynamic(ctx, 60, 1);
+            nk_label_wrap(nuklear->GetNkContext(), "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.");
+
+            nk_layout_row_dynamic(ctx, 30, 3);
+            nk_spacing(nuklear->GetNkContext(), 1);
+            if (nk_button_label(nuklear->GetNkContext(), "Ok")) {
+                UnsubscribeFromEvent(E_UPDATE);
+            }
+        }
+        nk_end(ctx);
     }
-}
-
-void Message::Dispose()
-{
-}
-
-void Message::HandleOkButton(StringHash eventType, VariantMap& eventData)
-{
-    {
-        using namespace AudioDefs;
-		using namespace MyEvents::PlaySound;
-		VariantMap data = GetEventDataMap();
-		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
-		data[P_TYPE] = SOUND_EFFECT;
-		SendEvent(MyEvents::E_PLAY_SOUND, data);
-	}
-    _baseElement->SetVisible(false);
-    _baseElement->Remove();
-    _baseElement = nullptr;
-    _title = nullptr;
-    _message = nullptr;
 }

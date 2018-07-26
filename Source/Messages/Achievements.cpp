@@ -21,8 +21,10 @@ SingleAchievement::~SingleAchievement()
 void SingleAchievement::SetImage(String image)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    SharedPtr<Texture2D> const LogoTexture(cache->GetResource< Texture2D >(image));
-    _image = nk_image_ptr((void*)LogoTexture.Get());
+    _imageTexture = cache->GetResource<Texture2D>(image);
+    if (_imageTexture) {
+        _image = nk_image_ptr((void*)_imageTexture.Get());
+    }
 }
 
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -32,7 +34,7 @@ void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& event
     auto ctx = nuklear->GetNkContext();
     nk_style_default(ctx);
 
-    if (nk_begin(nuklear->GetNkContext(), "Pause", nk_rect((int)_size, graphics->GetHeight() - 100, 200, 80), NK_WINDOW_NO_SCROLLBAR)) {
+    if (nk_begin(nuklear->GetNkContext(), "SingleAchievement", nk_rect((int)_size, graphics->GetHeight() - 100, 200, 80), NK_WINDOW_NO_SCROLLBAR)) {
 
         nk_layout_row_dynamic(ctx, 70, 2);
         if (_image.handle.ptr == NULL)
@@ -62,12 +64,12 @@ void SingleAchievement::OnAttributeAnimationRemoved()
         UnsubscribeFromEvent(E_POSTUPDATE);
 }
 
-void SingleAchievement::::SetVar(StringHash key, const Variant& value)
+void SingleAchievement::SetVar(StringHash key, const Variant& value)
 {
     vars_[key] = value;
 }
 
-const Variant& UIElement::GetVar(const StringHash& key) const
+const Variant& SingleAchievement::GetVar(const StringHash& key) const
 {
     VariantMap::ConstIterator i = vars_.Find(key);
     return i != vars_.End() ? i->second_ : Variant::EMPTY;
@@ -130,7 +132,7 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
 
     singleAchievement->SetObjectAnimation(objAnimation);
     singleAchievement->SetVar("Lifetime", 8.0f);
-    _activeAchievements.Push(SingleAchievement);
+    _activeAchievements.Push(singleAchievement);
 }
 
 void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)

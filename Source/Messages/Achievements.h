@@ -1,8 +1,34 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
-
+#include "../UI/NuklearUI.h"
 using namespace Urho3D;
+
+class SingleAchievement : public Animatable
+{
+    URHO3D_OBJECT(SingleAchievement, Animatable);
+public:
+    /// Construct.
+    SingleAchievement(Context* context);
+
+    virtual ~SingleAchievement();
+
+    static void RegisterObject(Context* context);
+
+    void SetImage(String image);
+
+    void SetVar(StringHash key, const Variant& value);
+    const Variant& GetVar(const StringHash& key) const;
+private:
+        void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+        /// Handle attribute animation added.
+        void OnAttributeAnimationAdded() override;
+        /// Handle attribute animation removed.
+        void OnAttributeAnimationRemoved() override;
+        float _size;
+        struct nk_image _image{};
+        VariantMap vars_;
+};
 
 class Achievements : public Object
 {
@@ -33,7 +59,5 @@ private:
 
     void SubscribeToEvents();
 
-    WeakPtr<UIElement> _baseElement;
-
-    Vector<SharedPtr<UIElement>> _messages;
+    Vector<SharedPtr<SingleAchievement>> _activeAchievements;
 };

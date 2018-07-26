@@ -34,39 +34,6 @@ void SettingsWindow::Create()
 {
 }
 
-void SettingsWindow::CreateControllerSettingsView()
-{
-    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
-    // HashMap<int, String> controlNames = controllerInput->GetControlNames();
-
-    // _openedView = SettingsViewType::CONTROLS_VIEW;
-
-    // // SharedPtr<ListView> list(_base->CreateChild<ListView>());
-    // list->SetSelectOnClickEnd(true);
-    // list->SetHighlightMode(HM_ALWAYS);
-    // list->SetMinHeight(350);
-    // list->SetWidth(360);
-    // list->SetPosition(IntVector2(20, 60));
-    // list->SetStyleAuto();
-    // _activeSettingElements.Push(list);
-
-    // int index = 0;
-    // for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
-    //     // SharedPtr<UIElement> singleItem(
-    //     //     CreateControlsElement(
-    //     //         (*it).second_, 
-    //     //         IntVector2(20, 60 + index * 30), 
-    //     //         controllerInput->GetActionKeyName((*it).first_), 
-    //     //         (*it).second_,
-    //     //         URHO3D_HANDLER(SettingsWindow, HandleChangeControls)
-    //     //     )
-    //     // );
-    //     // list->AddItem(singleItem);
-    //     // _activeSettingElements.Push(singleItem);
-    //     // index++;
-    // }
-}
-
 void SettingsWindow::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
@@ -123,42 +90,8 @@ void SettingsWindow::SaveVideoSettings()
 	//SendEvent("ShowAlertMessage", data);
 }
 
-void SettingsWindow::HandleChangeControls(StringHash eventType, VariantMap& eventData)
-{
-    auto* input = GetSubsystem<Input>();
-    using namespace Released;
-    Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
-    String actionName = button->GetVar("ActionName").GetString();
-
-    Text* text = dynamic_cast<Text*>(button->GetChild(actionName, true));
-    if (text) {
-        text->SetText("Press any key...");
-    }
-
-    if (!actionName.Empty()) {
-        using namespace MyEvents::StartInputMapping;
-		VariantMap data = GetEventDataMap();
-		data[P_CONTROL_ACTION] = actionName;
-		SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
-
-        Input* input = GetSubsystem<Input>();
-        if (input->IsMouseVisible()) {
-            input->SetMouseVisible(false);
-        }
-    }
-}
-
 void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)
 {
-    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
-    HashMap<int, String> controlNames = controllerInput->GetControlNames();
-    for (auto it = controlNames.Begin(); it != controlNames.End(); ++it) {
-        // Text* text = dynamic_cast<Text*>(_base->GetChild((*it).second_, true));
-        // if (text) {
-        //     text->SetText(controllerInput->GetActionKeyName((*it).first_));
-        // }
-    }
-
     Input* input = GetSubsystem<Input>();
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
@@ -301,11 +234,16 @@ void SettingsWindow::DrawControlsSettings()
             nk_label(nuklear->GetNkContext(), (*it).second_.CString(), NK_TEXT_LEFT);
 
             nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-            if (nk_button_label(nuklear->GetNkContext(), controllerInput->GetActionKeyName((*it).first_).CString())) {
+            if (nk_button_label(nuklear->GetNkContext(), controllerInput->GetActionKeyName((*it).first_).CString()) && !controllerInput->IsMappingInProgress()) {
                 using namespace MyEvents::StartInputMapping;
                 VariantMap data = GetEventDataMap();
                 data[P_CONTROL_ACTION] = (*it).second_;
                 SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+
+				Input* input = GetSubsystem<Input>();
+				if (input->IsMouseVisible()) {
+					input->SetMouseVisible(false);
+				}
             }
             nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
         }

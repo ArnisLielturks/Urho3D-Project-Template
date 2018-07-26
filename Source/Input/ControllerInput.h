@@ -75,6 +75,11 @@ public:
 	 */
 	void SetMultipleControllerSupport(bool enabled);
 
+	/**
+	 * Detect if mapping is in progress
+	 */
+	bool IsMappingInProgress();
+
 protected:
     virtual void Init();
 
@@ -132,4 +137,9 @@ private:
 	 * Multiple controller support
 	 */
 	bool _multipleControllerSupport;
+
+	/**
+	 * Currently active action for input mapping
+	 */
+	int _activeAction;
 };

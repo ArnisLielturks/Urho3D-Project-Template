@@ -22,10 +22,7 @@
 #define NK_IMPLEMENTATION 1
 #include <string.h>
 #include <SDL/SDL.h>
-#include <Urho3D/Graphics/Graphics.h>
-#include <Urho3D/Core/CoreEvents.h>
-#include <Urho3D/Input/InputEvents.h>
-#include <Urho3D/Graphics/GraphicsEvents.h>
+#include <Urho3D/Urho3DAll.h>
 #include "NuklearUI.h"
 #undef NK_IMPLEMENTATION
 
@@ -202,6 +199,10 @@ void NuklearUI::OnRawEvent(StringHash, VariantMap& args)
     }
     else if (evt->type == SDL_MOUSEBUTTONDOWN || evt->type == SDL_MOUSEBUTTONUP)
     {
+        Input* input = GetSubsystem<Input>();
+        if (!input->IsMouseVisible()) {
+            return;
+        }
         /* mouse button */
         int down = evt->type == SDL_MOUSEBUTTONDOWN;
         const int x = evt->button.x, y = evt->button.y;
@@ -214,6 +215,10 @@ void NuklearUI::OnRawEvent(StringHash, VariantMap& args)
     }
     else if (evt->type == SDL_MOUSEMOTION)
     {
+        Input* input = GetSubsystem<Input>();
+        if (!input->IsMouseVisible()) {
+            return;
+        }
         if (ctx->input.mouse.grabbed)
         {
             int x = (int)ctx->input.mouse.prev.x, y = (int)ctx->input.mouse.prev.y;
@@ -228,8 +233,13 @@ void NuklearUI::OnRawEvent(StringHash, VariantMap& args)
         memcpy(glyph, evt->text.text, NK_UTF_SIZE);
         nk_input_glyph(ctx, glyph);
     }
-    else if (evt->type == SDL_MOUSEWHEEL)
+    else if (evt->type == SDL_MOUSEWHEEL) {
+        Input* input = GetSubsystem<Input>();
+        if (!input->IsMouseVisible()) {
+            return;
+        }
         nk_input_scroll(ctx, {0, (float)evt->wheel.y});
+    }
 }
 
 void NuklearUI::OnInputEnd(StringHash, VariantMap&)

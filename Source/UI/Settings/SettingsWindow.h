@@ -65,8 +65,6 @@ private:
 
     void SubscribeToEvents();
 
-    void CreateControllerSettingsView();
-
     void SaveVideoSettings();
 
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
@@ -75,7 +73,6 @@ private:
 	void DrawVideoSettings();
 	void DrawAudioSettings();
 
-    void HandleChangeControls(StringHash eventType, VariantMap& eventData);
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
 
 	void InitGraphicsSettings();

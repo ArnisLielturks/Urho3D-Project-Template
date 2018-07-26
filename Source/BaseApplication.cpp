@@ -18,6 +18,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();
     context_->RegisterFactory<Achievements>();
+    SingleAchievement::RegisterObject(context_);
     context_->RegisterFactory<ModLoader>();
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();

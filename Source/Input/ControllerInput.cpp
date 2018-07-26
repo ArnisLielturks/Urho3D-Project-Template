@@ -9,7 +9,8 @@
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :
     Object(context),
-	_multipleControllerSupport(true)
+	_multipleControllerSupport(true),
+	_activeAction(-1)
 {
 
 	context_->RegisterFactory<BaseInput>();
@@ -146,6 +147,7 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 	// Stop listening for keyboard key mapping
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
 		(*it).second_->StopMappingAction();
+		_activeAction = -1;
 	}
 
 	// Send out event with all the details about the mapped control
@@ -163,25 +165,23 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
 {
-	int activeAction = 0;
-
 	using namespace MyEvents::StartInputMapping;
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_INT) {
-		activeAction = eventData[P_CONTROL_ACTION].GetInt();
+		_activeAction = eventData[P_CONTROL_ACTION].GetInt();
 	}
 	if (eventData[P_CONTROL_ACTION].GetType() == VAR_STRING) {
 		String control = eventData[P_CONTROL_ACTION].GetString();
 		for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 			if ((*it).second_ == control) {
-				activeAction = (*it).first_;
+				_activeAction = (*it).first_;
 			}
 		}
 	}
 
-	if (activeAction > 0) {
+	if (_activeAction >= 0) {
 		// Prepare all input handlers for key mapping against specific action
 		for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
-			(*it).second_->StartMappingAction(activeAction);
+			(*it).second_->StartMappingAction(_activeAction);
 		}
 		URHO3D_LOGINFO("Starting to map action!");
 	}
@@ -273,6 +273,9 @@ HashMap<int, String> ControllerInput::GetControlNames()
 
 String ControllerInput::GetActionKeyName(int action)
 {
+	if (action == _activeAction) {
+		return "...";
+	}
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
 		if ((*it).second_->IsActionUsed(action)) {
 			String keyName = (*it).second_->GetActionKeyName(action);
@@ -308,4 +311,9 @@ Vector<int> ControllerInput::GetControlIndexes()
 void ControllerInput::SetMultipleControllerSupport(bool enabled)
 {
 	_multipleControllerSupport = enabled;
+}
+
+bool ControllerInput::IsMappingInProgress()
+{
+	return _activeAction >= 0;
 }

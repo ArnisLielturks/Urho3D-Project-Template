@@ -1,6 +1,78 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Achievements.h"
 
+void SingleAchievement::RegisterObject(Context* context)
+{
+    context->RegisterFactory<SingleAchievement>();
+    URHO3D_ATTRIBUTE("Size", float, _size, 1, AM_FILE);
+}
+
+/// Construct.
+SingleAchievement::SingleAchievement(Context* context) :
+    Animatable(context)
+{
+    //SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
+}
+
+SingleAchievement::~SingleAchievement()
+{
+}
+
+void SingleAchievement::SetImage(String image)
+{
+    auto* cache = GetSubsystem<ResourceCache>();
+    SharedPtr<Texture2D> const LogoTexture(cache->GetResource< Texture2D >(image));
+    _image = nk_image_ptr((void*)LogoTexture.Get());
+}
+
+void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
+{
+    auto graphics = GetSubsystem<Graphics>();
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto ctx = nuklear->GetNkContext();
+    nk_style_default(ctx);
+
+    if (nk_begin(nuklear->GetNkContext(), "Pause", nk_rect((int)_size, graphics->GetHeight() - 100, 200, 80), NK_WINDOW_NO_SCROLLBAR)) {
+
+        nk_layout_row_dynamic(ctx, 70, 2);
+        if (_image.handle.ptr == NULL)
+        {
+        }
+        else {
+            nk_button_image_label(nuklear->GetNkContext(), _image, "logo", NK_TEXT_CENTERED);
+        }
+        nk_label_wrap(nuklear->GetNkContext(), "This is your achievement text that hopefylly dalksjdlkdjad sahdjkahdaskjd");
+    }
+    nk_end(ctx);
+
+    using namespace PostUpdate;
+
+    UpdateAttributeAnimations(eventData[P_TIMESTEP].GetFloat());
+}
+
+void SingleAchievement::OnAttributeAnimationAdded()
+{
+    if (attributeAnimationInfos_.Size() == 1)
+        SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
+}
+
+void SingleAchievement::OnAttributeAnimationRemoved()
+{
+    if (attributeAnimationInfos_.Empty())
+        UnsubscribeFromEvent(E_POSTUPDATE);
+}
+
+void SingleAchievement::::SetVar(StringHash key, const Variant& value)
+{
+    vars_[key] = value;
+}
+
+const Variant& UIElement::GetVar(const StringHash& key) const
+{
+    VariantMap::ConstIterator i = vars_.Find(key);
+    return i != vars_.End() ? i->second_ : Variant::EMPTY;
+}
+
 /// Construct.
 Achievements::Achievements(Context* context) :
     Object(context)
@@ -21,12 +93,6 @@ void Achievements::Init()
 
 void Achievements::Create()
 {
-    UI* ui = GetSubsystem<UI>();
-
-    _baseElement = ui->GetRoot()->CreateChild("Menu");
-    _baseElement->SetVerticalAlignment(VA_BOTTOM);
-    _baseElement->SetHorizontalAlignment(HA_LEFT);
-    _baseElement->SetPosition(IntVector2(10, -10));
 }
 
 void Achievements::SubscribeToEvents()
@@ -41,47 +107,30 @@ void Achievements::Dispose()
 
 void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventData)
 {
-    if (!_baseElement) {
-        Create();
-    }
-    auto* cache = GetSubsystem<ResourceCache>();
-
     String message = eventData["Message"].GetString();
     URHO3D_LOGINFO("New achievement: " + message);
-    // Construct new Text object
-    SharedPtr<UIElement> achievementElement(_baseElement->CreateChild<UIElement>());
-
-    File achievementLayout(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/UI/Achievement.xml", FILE_READ);
-    achievementElement->LoadXML(achievementLayout);
-
-    Text* messageElement = dynamic_cast<Text*>(achievementElement->GetChild("Text", true));
-    // Set String to display
-    messageElement->SetText(message);
-
-    Sprite* image = dynamic_cast<Sprite*>(achievementElement->GetChild("Image", true));
-    auto* img = cache->GetResource<Texture2D>("Textures/UrhoIcon.png");
-    image->SetTexture(img);
-
+    
+    SharedPtr<SingleAchievement> singleAchievement = context_->CreateObject<SingleAchievement>();
+    singleAchievement->SetImage("Textures/UrhoIcon.png");
     // Create light animation
-    SharedPtr<ObjectAnimation> notificationAnimation(new ObjectAnimation(context_));
+    SharedPtr<ObjectAnimation> objAnimation(new ObjectAnimation(context_));
 
     // Create light position animation
-    SharedPtr<ValueAnimation> positionAnimation(new ValueAnimation(context_));
+    SharedPtr<ValueAnimation> positionAnimation2(new ValueAnimation(context_));
     // Use spline interpolation method
-    positionAnimation->SetInterpolationMethod(IM_SPLINE);
+    positionAnimation2->SetInterpolationMethod(IM_LINEAR);
     // Set spline tension
-    positionAnimation->SetSplineTension(0.7f);
-    positionAnimation->SetKeyFrame(0.0f, IntVector2(-achievementElement->GetWidth() - 20, 0));
-    positionAnimation->SetKeyFrame(1.0f, IntVector2(0, 0));
-    positionAnimation->SetKeyFrame(5.0f, IntVector2(0, 0));
-    positionAnimation->SetKeyFrame(6.0f, IntVector2(-achievementElement->GetWidth() - 20, 0));
-    positionAnimation->SetKeyFrame(10.0f, IntVector2(-achievementElement->GetWidth() - 20, 0));
-    notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
+    //positionAnimation2->SetSplineTension(0.7f);
+    positionAnimation2->SetKeyFrame(0.0f, -200.0f);
+    positionAnimation2->SetKeyFrame(1.0f, 10.0f);
+    positionAnimation2->SetKeyFrame(5.0f, 10.0f);
+    positionAnimation2->SetKeyFrame(6.0f, -200.0f);
+    positionAnimation2->SetKeyFrame(10.0f, -400.0f);
+    objAnimation->AddAttributeAnimation("Size", positionAnimation2);
 
-    achievementElement->SetObjectAnimation(notificationAnimation);
-    achievementElement->SetVar("Lifetime", 10.0f);
-
-    _messages.Push(achievementElement);
+    singleAchievement->SetObjectAnimation(objAnimation);
+    singleAchievement->SetVar("Lifetime", 8.0f);
+    _activeAchievements.Push(SingleAchievement);
 }
 
 void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -89,15 +138,15 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
     using namespace Update;
 
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    for (auto it = _messages.Begin(); it != _messages.End(); ++it) {
+    for (auto it = _activeAchievements.Begin(); it != _activeAchievements.End(); ++it) {
         if ((*it).Refs() == 0) {
-            _messages.Remove((*it));
+            _activeAchievements.Remove((*it));
             return;
         }
         float lifetime = (*it)->GetVar("Lifetime").GetFloat();
         if (lifetime <= 0) {
-            (*it)->Remove();
-            _messages.Remove((*it));
+            // (*it)->Remove();
+            _activeAchievements.Remove((*it));
             return; 
         }
         lifetime -= timeStep;
@@ -107,7 +156,7 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Achievements::HandleGameEnd(StringHash eventType, VariantMap& eventData)
 {
-    _messages.Clear();
+    _activeAchievements.Clear();
 }
 
 void Achievements::LoadAchievementList()

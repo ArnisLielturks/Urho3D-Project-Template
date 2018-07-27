@@ -148,7 +148,8 @@ void SettingsWindow::InitGraphicsSettings()
     for (int i = 0; i < _resoulutionVector.Size(); i++) {
 
         _supportedResolutions[i] = new char[_resoulutionVector.At(i).Length()];
-        memcpy(_supportedResolutions[i], _resoulutionVector.At(i).CString(), _resoulutionVector.At(i).Length());
+        _supportedResolutions[i] = const_cast<char*>(_resoulutionVector.At(i).CString());
+        //strncpy(_supportedResolutions[i], _resoulutionVector.At(i).CString(), _resoulutionVector.At(i).CStringLength(_resoulutionVector.At(i).CString()));
     }
 
     _graphicsSettingsNew = _graphicsSettings;

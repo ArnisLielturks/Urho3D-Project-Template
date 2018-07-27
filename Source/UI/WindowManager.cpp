@@ -88,37 +88,19 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
 void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventData)
 {
     String windowName = eventData["Name"].GetString();
-
-    URHO3D_LOGINFO("Closing window: " + windowName);
-    for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
-        if ((*it)->GetType() == StringHash(windowName)) {
-
-            if (_persistentWindows.Contains(windowName)) {
-                URHO3D_LOGINFO("Cannot destroy persistent window " + windowName);
-                BaseWindow* window = (*it)->Cast<BaseWindow>();
-                window->SetActive(false);
-
-                if (windowName == "ConsoleWindow") {
-                    _consoleVisible = false;
-                }
-                return;
-            }
-
-            _windowList.Erase(it);
-            SendEvent(MyEvents::E_WINDOW_CLOSED, eventData);
-            return;
-        }
-    }
+    _closeQueue.Push(windowName);
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& eventData)
 {
     URHO3D_LOGINFO("Closing all windows");
     for (auto it = _openedWindows.Begin(); it != _openedWindows.End(); ++it) {
-        using namespace MyEvents::WindowClosed;
+        _closeQueue.Push((*it));
+        /*using namespace MyEvents::WindowClosed;
         VariantMap data;
         data[P_NAME] = (*it);
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);*/
         /*if (!(*it)) {
             _windowList.Erase(it);
             continue;
@@ -136,6 +118,8 @@ void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& even
     }
 
     _openedWindows.Clear();
+
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 bool WindowManager::IsWindowOpen(String windowName)
@@ -157,4 +141,42 @@ bool WindowManager::IsWindowOpen(String windowName)
 bool WindowManager::IsConsoleVisible()
 {
     return _consoleVisible;
+}
+
+void WindowManager::CloseWindow(String windowName)
+{
+    using namespace MyEvents::CloseWindow;
+    URHO3D_LOGINFO("Closing window: " + windowName);
+    for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
+        if ((*it)->GetType() == StringHash(windowName)) {
+
+            if (_persistentWindows.Contains(windowName)) {
+                URHO3D_LOGINFO("Cannot destroy persistent window " + windowName);
+                BaseWindow* window = (*it)->Cast<BaseWindow>();
+                window->SetActive(false);
+
+                if (windowName == "ConsoleWindow") {
+                    _consoleVisible = false;
+                    VariantMap data;
+                    data[P_NAME] = windowName;
+                    SendEvent(MyEvents::E_WINDOW_CLOSED, data);
+                }
+                return;
+            }
+
+            _windowList.Erase(it);
+            VariantMap data;
+            data[P_NAME] = windowName;
+            SendEvent(MyEvents::E_WINDOW_CLOSED, data);
+            return;
+        }
+    }
+}
+
+void WindowManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    for (auto it = _closeQueue.Begin(); it != _closeQueue.End(); ++it) {
+        CloseWindow((*it));
+    }
+    UnsubscribeFromEvent(E_UPDATE);
 }

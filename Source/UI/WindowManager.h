@@ -29,6 +29,9 @@ private:
     void HandleOpenWindow(StringHash eventType, VariantMap& eventData);
     void HandleCloseWindow(StringHash eventType, VariantMap& eventData);
     void HandleCloseAllWindows(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+    void CloseWindow(String windowName);
 
     List<SharedPtr<Object>> _windowList;
 
@@ -36,4 +39,5 @@ private:
     List<String> _openedWindows;
 
     bool _consoleVisible;
+    List<String> _closeQueue;
 };

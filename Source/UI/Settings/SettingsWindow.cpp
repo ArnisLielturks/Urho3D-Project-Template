@@ -10,6 +10,8 @@ SettingsWindow::SettingsWindow(Context* context) :
     BaseWindow(context),
 	_openedView(SettingsViewType::CONTROLS_VIEW)
 {
+	_supportedResolutions = new char*[100];
+
     Init();
 	InitAudioSettings();
 	InitGraphicsSettings();
@@ -17,9 +19,7 @@ SettingsWindow::SettingsWindow(Context* context) :
 
 SettingsWindow::~SettingsWindow()
 {
-    if (_supportedResolutions) {
-        delete[] _supportedResolutions;
-    }
+    delete _supportedResolutions;
 }
 
 void SettingsWindow::Init()
@@ -144,7 +144,6 @@ void SettingsWindow::InitGraphicsSettings()
 	    }
 	}
 
-    _supportedResolutions = new char*[_resoulutionVector.Size()];
     for (int i = 0; i < _resoulutionVector.Size(); i++) {
 
         _supportedResolutions[i] = new char[_resoulutionVector.At(i).Length()];

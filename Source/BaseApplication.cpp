@@ -359,6 +359,9 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_SOUND_MIX_RATE, _configManager->GetInt("engine", "SoundMixRate", 44100));
     SetEngineParameter(EP_SOUND_STEREO, _configManager->GetBool("engine", "SoundStereo", true));
 
+    SetEngineParameter(EP_FLUSH_GPU, _configManager->GetBool("engine", "FlushGPU", true));
+    SetEngineParameter(EP_WORKER_THREADS, _configManager->GetBool("engine", "WorkerThreads ", true));
+
 	engine_->SetGlobalVar("SoundMasterVolume" , _configManager->GetFloat("engine", "SoundMasterVolume", 1.0));
 	engine_->SetGlobalVar("SoundEffectsVolume", _configManager->GetFloat("engine", "SoundEffectsVolume", 1.0));
 	engine_->SetGlobalVar("SoundAmbientVolume", _configManager->GetFloat("engine", "SoundAmbientVolume", 1.0));

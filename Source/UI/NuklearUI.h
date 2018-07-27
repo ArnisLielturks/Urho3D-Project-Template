@@ -59,8 +59,8 @@ protected:
     /*const int MAX_VERTEX_MEMORY = 2048 * 1024;
     const int MAX_ELEMENT_MEMORY = 512 * 1024;*/
 
-    const int MAX_VERTEX_MEMORY = 2048 * 512;
-    const int MAX_ELEMENT_MEMORY = 512 * 512;
+    const int MAX_VERTEX_MEMORY = 2048 * 128;
+    const int MAX_ELEMENT_MEMORY = 512 * 128;
 
     Urho3D::Graphics* _graphics = 0;
     nk_context _nk_ctx;

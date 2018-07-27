@@ -15,10 +15,6 @@ Level::Level(Context* context) :
     _showScoreboard(false),
     _showWeaponChoice(false)
 {
-    Input* input = GetSubsystem<Input>();
-    if (input->IsMouseVisible()) {
-        input->SetMouseVisible(false);
-    }
 }
 
 Level::~Level()
@@ -50,7 +46,9 @@ void Level::Init()
     SubscribeToEvents();
 
     Input* input = GetSubsystem<Input>();
-    input->SetMouseVisible(false);
+    if (input->IsMouseVisible()) {
+        input->SetMouseVisible(false);
+    }
 }
 
 void Level::StartAudio()

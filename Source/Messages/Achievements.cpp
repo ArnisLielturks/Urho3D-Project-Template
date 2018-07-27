@@ -11,11 +11,12 @@ void SingleAchievement::RegisterObject(Context* context)
 SingleAchievement::SingleAchievement(Context* context) :
     Animatable(context)
 {
-    //SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
+    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
 }
 
 SingleAchievement::~SingleAchievement()
 {
+    UnsubscribeFromEvent(E_POSTUPDATE);
 }
 
 void SingleAchievement::SetImage(String image)
@@ -92,6 +93,8 @@ const Variant& SingleAchievement::GetVar(const StringHash& key) const
     return i != vars_.End() ? i->second_ : Variant::EMPTY;
 }
 
+// ------------------------------------------
+
 /// Construct.
 Achievements::Achievements(Context* context) :
     Object(context)
@@ -117,7 +120,7 @@ void Achievements::Create()
 void Achievements::SubscribeToEvents()
 {
     SubscribeToEvent("NewAchievement", URHO3D_HANDLER(Achievements, HandleNewAchievement));
-    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Achievements, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Achievements, HandleUpdate));
 }
 
 void Achievements::Dispose()
@@ -166,14 +169,14 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     for (auto it = _activeAchievements.Begin(); it != _activeAchievements.End(); ++it) {
-        if ((*it).Refs() == 0) {
-            _activeAchievements.Remove((*it));
+        if (!(*it)) {
+            _activeAchievements.Erase(it);
             return;
         }
         float lifetime = (*it)->GetVar("Lifetime").GetFloat();
         if (lifetime <= 0) {
             // (*it)->Remove();
-            _activeAchievements.Remove((*it));
+            _activeAchievements.Erase(it);
             return; 
         }
         lifetime -= timeStep;

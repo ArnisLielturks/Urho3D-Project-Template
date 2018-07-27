@@ -13,6 +13,7 @@ namespace Levels {
         Level(Context* context);
 
         virtual ~Level();
+        void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
         void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:

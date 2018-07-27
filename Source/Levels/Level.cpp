@@ -72,10 +72,13 @@ void Level::CreateScene()
 {
     scene_ = new Scene(context_);
     scene_->CreateComponent<Octree>(LOCAL);
-    scene_->CreateComponent<PhysicsWorld>(LOCAL);
     scene_->CreateComponent<DebugRenderer>(LOCAL);
     File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml", FILE_READ);
     scene_->LoadXML(loadFile);
+
+    if (!scene_->HasComponent<PhysicsWorld>()) {
+        scene_->CreateComponent<PhysicsWorld>(LOCAL);
+    }
 
     CreateCamera();
 }
@@ -97,6 +100,7 @@ void Level::CreateUI()
 
 void Level::SubscribeToEvents()
 {
+    SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Level, HandlePhysicsPrestep));
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Level, HandlePostUpdate));
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
@@ -104,19 +108,24 @@ void Level::SubscribeToEvents()
 
 void Level::UnsubscribeToEvents()
 {
+    UnsubscribeFromEvent(E_PHYSICSPRESTEP);
     UnsubscribeFromEvent(E_POSTUPDATE);
     UnsubscribeFromEvent(E_KEYDOWN);
     UnsubscribeFromEvent(E_KEYUP);
 }
 
-void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
+void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 {
-    if (!scene_->IsUpdateEnabled()) {
+    if (GetSubsystem<WindowManager>()->IsConsoleVisible()) {
         return;
     }
 
-    float timeStep = eventData["TimeStep"].GetFloat();
-    //cameraNode_->Yaw(timeStep * 50);
+    if (!scene_->IsUpdateEnabled()) {
+        return;
+    }
+    
+    using namespace PhysicsPreStep;
+    float timeStep = eventData[P_TIMESTEP].GetFloat();
 
     if (_showWeaponChoice) {
         return;
@@ -137,8 +146,25 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
     if (controls.IsDown(CTRL_UP))
         cameraNode_->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+}
 
-    // Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
+void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
+{
+    if (GetSubsystem<WindowManager>()->IsConsoleVisible()) {
+        return;
+    }
+
+    if (!scene_->IsUpdateEnabled()) {
+        return;
+    }
+
+    if (_showWeaponChoice) {
+        return;
+    }
+
+    using namespace PostUpdate;
+    float timeStep = eventData[P_TIMESTEP].GetFloat();
+    Controls controls = GetSubsystem<ControllerInput>()->GetControls();
     cameraNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
 }
 

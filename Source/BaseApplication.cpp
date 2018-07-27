@@ -42,6 +42,12 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
+    /*DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
+
+    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+    debugHud->SetDefaultStyle(xmlFile);
+    debugHud->ToggleAll();*/
+
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before
     // Note that the engine can not be reconfigured at this point; only the script name can be specified
@@ -59,17 +65,19 @@ void BaseApplication::Start()
     auto nuklear = new NuklearUI(context_);
     context_->RegisterSubsystem(nuklear);
     // Initialize default font of your choice or use default one.
-    nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_default(nuklear->GetFontAtlas(), 13.f, 0);
+    //nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_default(nuklear->GetFontAtlas(), 13.f, 0);
+    String fontPath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Fonts/Anonymous Pro.ttf";
+    nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_from_file(nuklear->GetFontAtlas(), fontPath.CString(), 16.0f, NULL);
 
     // Additional font initialization here. See https://github.com/vurtun/nuklear/blob/master/demo/sdl_opengl3/main.c
     nuklear->FinalizeFonts();
 
     context_->RegisterSubsystem<LevelManager>();
-    _alertMessage = context_->CreateObject<Message>();
-    _notifications = context_->CreateObject<Notifications>();
-    _achievements = context_->CreateObject<Achievements>();
-	context_->RegisterSubsystem<ModLoader>();
     context_->RegisterSubsystem<WindowManager>();
+    context_->RegisterSubsystem<Message>();
+    context_->RegisterSubsystem<Notifications>();
+    context_->RegisterSubsystem<Achievements>();
+	context_->RegisterSubsystem<ModLoader>();
 
     context_->RegisterSubsystem<AudioManager>();
     // Allow multiple music tracks to play at the same time
@@ -82,7 +90,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(false);
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Level";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

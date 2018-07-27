@@ -27,7 +27,6 @@ void ScoreboardWindow::Create()
 
 void ScoreboardWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ScoreboardWindow, HandleUpdate));
 }
 
 

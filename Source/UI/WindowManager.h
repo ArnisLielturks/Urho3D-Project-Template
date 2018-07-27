@@ -18,6 +18,7 @@ public:
     void Dispose();
 
     bool IsWindowOpen(String windowName);
+    bool IsConsoleVisible();
 
 private:
 
@@ -29,7 +30,10 @@ private:
     void HandleCloseWindow(StringHash eventType, VariantMap& eventData);
     void HandleCloseAllWindows(StringHash eventType, VariantMap& eventData);
 
-    Vector<SharedPtr<Object>> _windowList;
+    List<SharedPtr<Object>> _windowList;
 
     HashMap<String, bool> _persistentWindows;
+    List<String> _openedWindows;
+
+    bool _consoleVisible;
 };

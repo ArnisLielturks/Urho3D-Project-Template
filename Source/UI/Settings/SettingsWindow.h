@@ -67,7 +67,7 @@ private:
 
     void SaveVideoSettings();
 
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+	void HandleUpdate(StringHash eventType, VariantMap& eventData) override;
 	void DrawWindow();
 	void DrawControlsSettings();
 	void DrawVideoSettings();

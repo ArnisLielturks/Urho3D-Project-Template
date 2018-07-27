@@ -47,9 +47,6 @@ private:
 
     void HandleExit(StringHash eventType, VariantMap& eventData);
 
-    SharedPtr<Message> _alertMessage;
-    SharedPtr<Notifications> _notifications;
-    SharedPtr<Achievements> _achievements;
     VariantMap _globalSettings;
 
     /**

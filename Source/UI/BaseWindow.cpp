@@ -21,6 +21,12 @@ void BaseWindow::Init()
 
 void BaseWindow::SetActive(bool active)
 {
+    if (active) {
+        SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(BaseWindow, HandleUpdate));
+    }
+    else {
+        UnsubscribeFromEvent(E_UPDATE);
+    }
     _active = active;
 }
 

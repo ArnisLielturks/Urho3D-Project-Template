@@ -33,7 +33,6 @@ void PauseWindow::Create()
 
 void PauseWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(PauseWindow, HandleUpdate));
 }
 
 void PauseWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)

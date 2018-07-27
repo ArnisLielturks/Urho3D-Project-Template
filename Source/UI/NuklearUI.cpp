@@ -249,6 +249,7 @@ void NuklearUI::OnInputEnd(StringHash, VariantMap&)
 
 void NuklearUI::OnEndRendering(StringHash, VariantMap&)
 {
+    URHO3D_PROFILE(NuklearUIRendering);
     // Engine does not render when window is closed or device is lost
     assert(_graphics && _graphics->IsInitialized() && !_graphics->IsDeviceLost());
 

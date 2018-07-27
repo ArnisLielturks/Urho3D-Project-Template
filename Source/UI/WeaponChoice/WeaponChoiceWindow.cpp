@@ -63,7 +63,6 @@ void WeaponChoiceWindow::Create()
 
 void WeaponChoiceWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WeaponChoiceWindow, HandleUpdate));
 }
 
 void WeaponChoiceWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)

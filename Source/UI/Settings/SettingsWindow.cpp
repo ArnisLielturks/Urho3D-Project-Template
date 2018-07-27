@@ -17,10 +17,9 @@ SettingsWindow::SettingsWindow(Context* context) :
 
 SettingsWindow::~SettingsWindow()
 {
-    //for (int i = 0; i < _resoulutionVector.Size(); i++) {
-    //    delete _supportedResolutions[i];
-    //}
-    delete _supportedResolutions;
+    if (_supportedResolutions) {
+        delete[] _supportedResolutions;
+    }
 }
 
 void SettingsWindow::Init()
@@ -37,7 +36,6 @@ void SettingsWindow::Create()
 void SettingsWindow::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
-	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(SettingsWindow, HandleUpdate));
 }
 
 void SettingsWindow::SaveVideoSettings()
@@ -218,6 +216,8 @@ void SettingsWindow::DrawWindow()
 		VariantMap data = GetEventDataMap();
 		data["Name"] = "SettingsWindow";
 		SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+
+        UnsubscribeFromAllEvents();
     }
 }
 

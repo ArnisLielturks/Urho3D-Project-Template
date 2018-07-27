@@ -10,7 +10,8 @@
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
-    Object(context)
+    Object(context),
+    _consoleVisible(false)
 {
     SubscribeToEvents();
     RegisterAllFactories();
@@ -21,10 +22,11 @@ WindowManager::WindowManager(Context* context) :
         StringHash type = StringHash((*it).first_);
         SharedPtr<Object> newWindow;
         newWindow = context_->CreateObject(type);
-        _windowList.Push(newWindow);
 
-        BaseWindow* window = _windowList.At(_windowList.Size() - 1)->Cast<BaseWindow>();
+        BaseWindow* window = newWindow->Cast<BaseWindow>();
         window->SetActive(false);
+
+        _windowList.Push(newWindow);
     }
 }
 
@@ -60,11 +62,14 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
             if (!(*it).Refs()) {
-                _windowList.Remove(*it);
+                _windowList.Erase(it);
             } else {
                 URHO3D_LOGERROR("Window '" + windowName + "' already opened!");
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
                 window->SetActive(true);
+                if (windowName == "ConsoleWindow") {
+                    _consoleVisible = true;
+                }
                 return;
             }
         }
@@ -73,7 +78,11 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
     URHO3D_LOGINFO("Opening window: " + windowName);
     SharedPtr<Object> newWindow;
     newWindow = context_->CreateObject(StringHash(windowName));
+    BaseWindow* window = newWindow->Cast<BaseWindow>();
+    window->SetActive(true);
     _windowList.Push(newWindow);
+
+    _openedWindows.Push(windowName);
 }
 
 void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventData)
@@ -82,16 +91,20 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
 
     URHO3D_LOGINFO("Closing window: " + windowName);
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
-        if ((*it)->GetType() == StringHash(windowName)) {
+        if ((*it) && (*it)->GetType() == StringHash(windowName)) {
 
             if (_persistentWindows.Contains(windowName)) {
                 URHO3D_LOGINFO("Cannot destroy persistent window " + windowName);
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
                 window->SetActive(false);
+
+                if (windowName == "ConsoleWindow") {
+                    _consoleVisible = false;
+                }
                 return;
             }
 
-            _windowList.Remove(*it);
+            _windowList.Erase(it);
             SendEvent(MyEvents::E_WINDOW_CLOSED, eventData);
             return;
         }
@@ -101,7 +114,15 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
 void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& eventData)
 {
     URHO3D_LOGINFO("Closing all windows");
-    for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
+    for (auto it = _openedWindows.Begin(); it != _openedWindows.End(); ++it) {
+        using namespace MyEvents::WindowClosed;
+        VariantMap data;
+        data[P_NAME] = (*it);
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        /*if (!(*it)) {
+            _windowList.Erase(it);
+            continue;
+        }
         StringHash type = (*it)->GetType();
         bool persistent = false;
         for (auto it2 = _persistentWindows.Begin(); it2 != _persistentWindows.End(); ++it2) {
@@ -111,8 +132,10 @@ void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& even
         }
         if (!persistent) {
             _windowList.Erase(it);
-        }
+        }*/
     }
+
+    _openedWindows.Clear();
 }
 
 bool WindowManager::IsWindowOpen(String windowName)
@@ -129,4 +152,9 @@ bool WindowManager::IsWindowOpen(String windowName)
 
     URHO3D_LOGINFO(" WINDOW " + windowName + " NOT ACTIVE");
     return false;
+}
+
+bool WindowManager::IsConsoleVisible()
+{
+    return _consoleVisible;
 }

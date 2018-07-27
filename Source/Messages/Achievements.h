@@ -66,5 +66,5 @@ private:
 
     void SubscribeToEvents();
 
-    Vector<SharedPtr<SingleAchievement>> _activeAchievements;
+    List<SharedPtr<SingleAchievement>> _activeAchievements;
 };

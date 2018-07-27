@@ -22,10 +22,11 @@
 #pragma once
 
 #define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
+//#define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_STANDARD_IO
 
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Graphics/VertexBuffer.h>
@@ -55,8 +56,11 @@ protected:
     static void ClipboardCopy(nk_handle usr, const char* text, int len);
     static void ClipboardPaste(nk_handle usr, struct nk_text_edit *edit);
 
-    const int MAX_VERTEX_MEMORY = 2048 * 1024;
-    const int MAX_ELEMENT_MEMORY = 512 * 1024;
+    /*const int MAX_VERTEX_MEMORY = 2048 * 1024;
+    const int MAX_ELEMENT_MEMORY = 512 * 1024;*/
+
+    const int MAX_VERTEX_MEMORY = 2048 * 512;
+    const int MAX_ELEMENT_MEMORY = 512 * 512;
 
     Urho3D::Graphics* _graphics = 0;
     nk_context _nk_ctx;

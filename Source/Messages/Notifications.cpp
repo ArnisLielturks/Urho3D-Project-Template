@@ -28,7 +28,7 @@ void Notifications::Create()
 void Notifications::SubscribeToEvents()
 {
     SubscribeToEvent("ShowNotification", URHO3D_HANDLER(Notifications, HandleNewNotification));
-    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
     SubscribeToEvent(StringHash("ClientGameRoundEnd"), URHO3D_HANDLER(Notifications, HandleGameEnd));
 }
 
@@ -86,14 +86,14 @@ void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     for (auto it = _messages.Begin(); it != _messages.End(); ++it) {
-        if ((*it).Refs() == 0) {
-            _messages.Remove((*it));
+        if (!(*it)) {
+            _messages.Erase(it);
             return;
         }
         float lifetime = (*it)->GetVar("Lifetime").GetFloat();
         if (lifetime <= 0) {
             (*it)->Remove();
-            _messages.Remove((*it));
+            _messages.Erase(it);
             return; 
         }
         lifetime -= timeStep;

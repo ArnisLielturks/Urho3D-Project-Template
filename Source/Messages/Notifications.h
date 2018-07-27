@@ -33,5 +33,5 @@ private:
 
     UIElement* _baseElement;
 
-    Vector<WeakPtr<Text>> _messages;
+    List<WeakPtr<Text>> _messages;
 };

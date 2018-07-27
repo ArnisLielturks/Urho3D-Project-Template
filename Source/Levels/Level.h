@@ -36,6 +36,9 @@ namespace Levels {
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
         void HandleWindowClosed(StringHash eventType, VariantMap& eventData);
 
+        void HandleControllerConnected(StringHash eventType, VariantMap& eventData);
+        void HandleControllerDisconnected(StringHash eventType, VariantMap& eventData);
+
         bool shouldReturn;
         String returnMessage;
 
@@ -43,5 +46,10 @@ namespace Levels {
 
         bool _showScoreboard;
         bool _showWeaponChoice;
+
+        /**
+        * Player variables
+        */
+        HashMap<int, SharedPtr<Node>> _players;
     };
 }

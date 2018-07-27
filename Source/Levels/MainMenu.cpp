@@ -75,6 +75,9 @@ void MainMenu::draw()
     auto graphics = GetSubsystem<Graphics>();
     auto nuklear = GetSubsystem<NuklearUI>();
     auto ctx = nuklear->GetNkContext();
+
+    nk_style_default(ctx);
+
     ctx->style.window.background = nk_rgba(0,0,0,0);
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0,0,0,0));
     ctx->style.window.border_color = nk_rgb(255,165,0);

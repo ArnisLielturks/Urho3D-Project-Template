@@ -80,6 +80,8 @@ public:
 	 */
 	bool IsMappingInProgress();
 
+    void SetJoystickAsFirstController(bool enabled);
+
 protected:
     virtual void Init();
 

@@ -6,7 +6,8 @@
 
 /// Construct.
 JoystickInput::JoystickInput(Context* context) :
-	BaseInput(context)
+	BaseInput(context),
+    _joystickAsFirstController(true)
 {
 	Init();
 	auto* input = GetSubsystem<Input>();
@@ -36,11 +37,19 @@ void JoystickInput::SubscribeToEvents()
 	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(JoystickInput, HandleUpdate));
 }
 
+void JoystickInput::SetJoystickAsFirstController(bool enabled)
+{
+    _joystickAsFirstController = enabled;
+}
+
 void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
 	using namespace JoystickButtonDown;
 	int key = eventData[P_BUTTON].GetInt();
 	int joystick = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        joystick++;
+    }
 	auto* input = GetSubsystem<Input>();
 	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(key) + " => " + String(key));
 
@@ -62,6 +71,9 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 	using namespace JoystickButtonDown;
 	int key = eventData[P_BUTTON].GetInt();
 	int joystick = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        joystick++;
+    }
 	auto* input = GetSubsystem<Input>();
 	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(key) + " => " + String(key));
 
@@ -82,6 +94,9 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 	URHO3D_PARAM(P_AXIS, Button);                  // int
 	URHO3D_PARAM(P_POSITION, Position);
 	int joystick = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        joystick++;
+    }
 	int buttonId = eventData[P_AXIS].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
 
@@ -89,7 +104,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
 		position = 0.0f;
 	}
-	//URHO3D_LOGINFO("Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
+	//URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == 1) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		if (position < 0) {
@@ -132,6 +147,9 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 {
 	using namespace JoystickHatMove;
 	int joystick = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        joystick++;
+    }
 	int buttonId = eventData[P_HAT].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
@@ -175,6 +193,9 @@ void JoystickInput::HandleJoystickConnected(StringHash eventType, VariantMap& ev
 {
 	using namespace JoystickConnected;
 	int id = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        id++;
+    }
 	URHO3D_LOGINFO("Joystick connected : " + String(id));
 	_axisPosition[id] = Vector2::ZERO;
 	auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -185,6 +206,9 @@ void JoystickInput::HandleJoystickDisconnected(StringHash eventType, VariantMap&
 {
 	using namespace JoystickDisconnected;
 	int id = eventData[P_JOYSTICKID].GetInt();
+    if (!_joystickAsFirstController) {
+        id++;
+    }
 	URHO3D_LOGINFO("Joystick disconnected : " + String(id));
 	_axisPosition.Erase(id);
 	auto* controllerInput = GetSubsystem<ControllerInput>();

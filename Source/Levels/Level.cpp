@@ -42,6 +42,13 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    InitViewports(controlIndexes);
+    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
+        _players[(*it)] = new Node(context_);
+    }
+
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
@@ -102,6 +109,35 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Level, HandlePostUpdate));
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
+
+    SubscribeToEvent(MyEvents::E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
+    SubscribeToEvent(MyEvents::E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
+}
+
+void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::ControllerAdded;
+    int controllerIndex = eventData[P_INDEX].GetInt();
+
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    InitViewports(controlIndexes);
+
+    _players[controllerIndex] = new Node(context_);
+}
+
+void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::ControllerRemoved;
+    int controllerIndex = eventData[P_INDEX].GetInt();
+
+    if (controllerIndex > 0) {
+        _players.Erase(controllerIndex);
+    }
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    InitViewports(controlIndexes);
+
 }
 
 void Level::UnsubscribeToEvents()
@@ -129,21 +165,26 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         return;
     }
 
-    // Movement speed as world units per second
-    float MOVE_SPEED = 2.0f;
-    Controls controls = GetSubsystem<ControllerInput>()->GetControls();
-    if (controls.IsDown(CTRL_SPRINT))
-        MOVE_SPEED = 10.0f;
-    if (controls.IsDown(CTRL_FORWARD))
-        cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-    if (controls.IsDown(CTRL_BACK))
-        cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-    if (controls.IsDown(CTRL_LEFT))
-        cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-    if (controls.IsDown(CTRL_RIGHT))
-        cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
-    if (controls.IsDown(CTRL_UP))
-        cameraNode_->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    for (auto it = _players.Begin(); it != _players.End(); ++it) {
+        int playerId = (*it).first_;
+
+        // Movement speed as world units per second
+        float MOVE_SPEED = 2.0f;
+        Controls controls = GetSubsystem<ControllerInput>()->GetControls(playerId);
+        if (controls.IsDown(CTRL_SPRINT))
+            MOVE_SPEED = 10.0f;
+        if (controls.IsDown(CTRL_FORWARD))
+            _cameras[playerId]->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_BACK))
+            _cameras[playerId]->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_LEFT))
+            _cameras[playerId]->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_RIGHT))
+            _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_UP))
+            _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+    }
 }
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -162,8 +203,16 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 
     using namespace PostUpdate;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    Controls controls = GetSubsystem<ControllerInput>()->GetControls();
-    cameraNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    for (auto it = _players.Begin(); it != _players.End(); ++it) {
+        int playerId = (*it).first_;
+        Node* playerNode = (*it).second_;
+        Controls controls = controllerInput->GetControls((*it).first_);
+        if (_cameras[playerId]) {
+            //_cameras[playerId]->SetWorldPosition(playerNode->GetWorldPosition() + Vector3::UP * 0.1);
+            _cameras[playerId]->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+        }
+    }
 }
 
 void Level::OnLoaded()

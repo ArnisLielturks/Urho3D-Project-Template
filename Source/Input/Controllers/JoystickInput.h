@@ -15,6 +15,8 @@ public:
     virtual ~JoystickInput();
 	virtual String GetActionKeyName(int action);
 
+    void SetJoystickAsFirstController(bool enabled);
+
 protected:
     virtual void Init();
 
@@ -31,4 +33,6 @@ private:
 	void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
 	HashMap<int, Vector2> _axisPosition;
+
+    bool _joystickAsFirstController;
 };

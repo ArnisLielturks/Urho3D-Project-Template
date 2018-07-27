@@ -317,3 +317,12 @@ bool ControllerInput::IsMappingInProgress()
 {
 	return _activeAction >= 0;
 }
+
+void ControllerInput::SetJoystickAsFirstController(bool enabled)
+{
+    BaseInput* input = _inputHandlers[ControllerType::JOYSTICK];
+    JoystickInput* joystickInput = input->Cast<JoystickInput>();
+    if (joystickInput) {
+        joystickInput->SetJoystickAsFirstController(enabled);
+    }
+}

@@ -87,7 +87,8 @@ void BaseApplication::Start()
 
 	context_->RegisterSubsystem<ControllerInput>();
     // Single player mode, all the input is handled by single Controls object
-    context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(false);
+    context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
+    context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
 
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "Splash";

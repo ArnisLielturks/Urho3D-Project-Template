@@ -11,6 +11,10 @@ void Start()
 
     log.Info("Achievements.as loaded");
     SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
+
+    VariantMap data;
+    data["Message"] = "Initialized achievements.as";
+    SendEvent("NewAchievement", data);
 }
 
 void Stop()
@@ -27,7 +31,7 @@ void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
     String levelName = eventData["To"].GetString();
     if (levelName == "Level") {
         VariantMap data;
-        data["Message"] = "Achievement called from\nMods/Achievements.as!";
+        data["Message"] = "Achievement called from Mods/Achievements.as!";
         SendEvent("NewAchievement", data);
     }
 }

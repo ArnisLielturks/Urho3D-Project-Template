@@ -27,6 +27,11 @@ void SingleAchievement::SetImage(String image)
     }
 }
 
+void SingleAchievement::SetMessage(String message)
+{
+    _message = message;
+}
+
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
     auto graphics = GetSubsystem<Graphics>();
@@ -34,16 +39,23 @@ void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& event
     auto ctx = nuklear->GetNkContext();
     nk_style_default(ctx);
 
-    if (nk_begin(nuklear->GetNkContext(), "SingleAchievement", nk_rect((int)_size, graphics->GetHeight() - 100, 200, 80), NK_WINDOW_NO_SCROLLBAR)) {
+    if (nk_begin(nuklear->GetNkContext(), _message.CString(), nk_rect((int)_size, graphics->GetHeight() - 110, 300, 100), NK_WINDOW_NO_SCROLLBAR)) {
 
-        nk_layout_row_dynamic(ctx, 70, 2);
-        if (_image.handle.ptr == NULL)
+        nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 90, 3);
         {
+            if (_image.handle.ptr == NULL)
+            {
+            }
+            else {
+                nk_layout_row_push(nuklear->GetNkContext(), 0.35);
+                nk_button_image_label(nuklear->GetNkContext(), _image, "logo", NK_TEXT_CENTERED);
+            }
+            nk_layout_row_push(nuklear->GetNkContext(), 0.05);
+            nk_spacing(nuklear->GetNkContext(), 1);
+            nk_layout_row_push(nuklear->GetNkContext(), 0.6);
+            nk_label_wrap(nuklear->GetNkContext(), _message.CString());
         }
-        else {
-            nk_button_image_label(nuklear->GetNkContext(), _image, "logo", NK_TEXT_CENTERED);
-        }
-        nk_label_wrap(nuklear->GetNkContext(), "This is your achievement text that hopefylly dalksjdlkdjad sahdjkahdaskjd");
+        nk_layout_row_end(nuklear->GetNkContext());
     }
     nk_end(ctx);
 
@@ -114,6 +126,7 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     
     SharedPtr<SingleAchievement> singleAchievement = context_->CreateObject<SingleAchievement>();
     singleAchievement->SetImage("Textures/UrhoIcon.png");
+    singleAchievement->SetMessage(message);
     // Create light animation
     SharedPtr<ObjectAnimation> objAnimation(new ObjectAnimation(context_));
 
@@ -123,10 +136,10 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     positionAnimation2->SetInterpolationMethod(IM_LINEAR);
     // Set spline tension
     //positionAnimation2->SetSplineTension(0.7f);
-    positionAnimation2->SetKeyFrame(0.0f, -200.0f);
+    positionAnimation2->SetKeyFrame(0.0f, -300.0f);
     positionAnimation2->SetKeyFrame(1.0f, 10.0f);
     positionAnimation2->SetKeyFrame(5.0f, 10.0f);
-    positionAnimation2->SetKeyFrame(6.0f, -200.0f);
+    positionAnimation2->SetKeyFrame(6.0f, -300.0f);
     positionAnimation2->SetKeyFrame(10.0f, -400.0f);
     objAnimation->AddAttributeAnimation("Size", positionAnimation2);
 

@@ -17,6 +17,7 @@ public:
     static void RegisterObject(Context* context);
 
     void SetImage(String image);
+    void SetMessage(String message);
 
     void SetVar(StringHash key, const Variant& value);
     const Variant& GetVar(const StringHash& key) const;
@@ -28,6 +29,7 @@ private:
     void OnAttributeAnimationRemoved() override;
 
     float _size;
+    String _message;
     SharedPtr<Texture2D> _imageTexture;
     struct nk_image _image{};
     VariantMap vars_;

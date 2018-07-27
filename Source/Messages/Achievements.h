@@ -19,6 +19,8 @@ public:
     void SetImage(String image);
     void SetMessage(String message);
 
+    String GetMessage();
+
     void SetVar(StringHash key, const Variant& value);
     const Variant& GetVar(const StringHash& key) const;
 private:

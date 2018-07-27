@@ -114,6 +114,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     if (!scene_->IsUpdateEnabled()) {
         return;
     }
+
     float timeStep = eventData["TimeStep"].GetFloat();
     //cameraNode_->Yaw(timeStep * 50);
 
@@ -196,19 +197,6 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
             }
 
             _showWeaponChoice = true;
-        }
-    }
-
-    if (key == KEY_F4) {
-        WindowManager* windowManager = GetSubsystem<WindowManager>();
-        if (!windowManager->IsWindowOpen("ConsoleWindow")) {
-            VariantMap data = GetEventDataMap();
-            data["Name"] = "ConsoleWindow";
-            SendEvent(MyEvents::E_OPEN_WINDOW, data);
-        } else {
-            VariantMap data = GetEventDataMap();
-            data["Name"] = "ConsoleWindow";
-            SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         }
     }
 }

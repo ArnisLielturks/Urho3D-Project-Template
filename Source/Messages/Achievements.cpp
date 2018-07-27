@@ -32,6 +32,11 @@ void SingleAchievement::SetMessage(String message)
     _message = message;
 }
 
+String SingleAchievement::GetMessage()
+{
+    return _message;
+}
+
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
     auto graphics = GetSubsystem<Graphics>();
@@ -124,6 +129,13 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     String message = eventData["Message"].GetString();
     URHO3D_LOGINFO("New achievement: " + message);
     
+    for (auto it = _activeAchievements.Begin(); it != _activeAchievements.End(); ++it) {
+        if ((*it)->GetMessage() == message) {
+            URHO3D_LOGINFO("Achievement already visible!");
+            return;
+        }
+    }
+
     SharedPtr<SingleAchievement> singleAchievement = context_->CreateObject<SingleAchievement>();
     singleAchievement->SetImage("Textures/UrhoIcon.png");
     singleAchievement->SetMessage(message);

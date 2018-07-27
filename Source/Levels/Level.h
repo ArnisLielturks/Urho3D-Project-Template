@@ -35,9 +35,6 @@ namespace Levels {
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
         void HandleWindowClosed(StringHash eventType, VariantMap& eventData);
 
-        SharedPtr<Node> _controlledNode;
-        unsigned int _id;
-
         bool shouldReturn;
         String returnMessage;
 

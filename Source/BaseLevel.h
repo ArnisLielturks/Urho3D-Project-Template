@@ -8,13 +8,25 @@ class BaseLevel : public Object
     URHO3D_OBJECT(BaseLevel, Object);
 public:
     BaseLevel(Context* context) :
-        Object(context) {
+        Object(context),
+        _expired(false)
+    {
         SubscribeToBaseEvents();
     }
 
     virtual ~BaseLevel()
     {
         Dispose();
+    }
+
+    void SetExpired()
+    {
+        _expired = true;
+    }
+
+    bool GetExpired()
+    {
+        return _expired;
     }
 
 private:
@@ -115,4 +127,6 @@ protected:
     SharedPtr<Scene> scene_;
     SharedPtr<Node> cameraNode_;
     VariantMap data_;
+
+    bool _expired;
 };

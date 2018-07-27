@@ -29,4 +29,5 @@ private:
 
     String _title;
     String _message;
+    float _messageTime;
 };

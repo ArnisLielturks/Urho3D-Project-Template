@@ -30,6 +30,7 @@ WindowManager::WindowManager(Context* context) :
 
 WindowManager::~WindowManager()
 {
+    _windowList.Clear();
 }
 
 void WindowManager::RegisterAllFactories()

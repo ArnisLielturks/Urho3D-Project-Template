@@ -3,6 +3,7 @@
 #include "../../MyEvents.h"
 #include "../../UI/NuklearUI.h"
 #include "../../Audio/AudioManagerDefs.h"
+#include "../WindowManager.h"
 
 static struct nk_rect _rect;
 static struct nk_scroll _scroll = {0, 200};
@@ -70,12 +71,26 @@ void ConsoleWindow::AddContent(String message)
 
 void ConsoleWindow::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
+    using namespace KeyDown;
+    int key = eventData[P_KEY].GetInt();
+    if (key == KEY_F4) {
+        WindowManager* windowManager = GetSubsystem<WindowManager>();
+        if (!windowManager->IsWindowOpen("ConsoleWindow")) {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "ConsoleWindow";
+            SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        }
+        else {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "ConsoleWindow";
+            SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        }
+    }
+
     if (!_active) {
         return;
     }
 
-    using namespace KeyDown;
-    int key = eventData[P_KEY].GetInt();
     if (key == KEY_RETURN) {
         if (!String(_consoleInput).Empty()) {
             AddContent(String(_consoleInput));

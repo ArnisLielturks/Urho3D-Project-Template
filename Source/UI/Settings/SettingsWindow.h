@@ -14,7 +14,9 @@ enum SettingsButtonType {
 enum SettingsViewType {
     CONTROLS_VIEW,
     AUDIO_VIEW,
-    VIDEO_VIEW
+    VIDEO_VIEW,
+    MOUSE_VIEW,
+    JOYSTICK_VIEW
 };
 
 struct GraphicsSettings {
@@ -72,6 +74,8 @@ private:
 	void DrawControlsSettings();
 	void DrawVideoSettings();
 	void DrawAudioSettings();
+    void DrawMouseSettings();
+    void DrawJoystickSettings();
 
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
 

@@ -82,6 +82,18 @@ public:
 
     void SetJoystickAsFirstController(bool enabled);
 
+    void SetInvertX(bool enabled, int controller);
+
+    bool GetInvertX(int controller);
+
+    void SetInvertY(bool enabled, int controller);
+
+    bool GetInvertY(int controller);
+
+    void SetSensitivity(float value, int controller);
+
+    float GetSensitivity(int controller);
+
 protected:
     virtual void Init();
 

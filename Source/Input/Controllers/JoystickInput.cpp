@@ -9,6 +9,8 @@ JoystickInput::JoystickInput(Context* context) :
 	BaseInput(context),
     _joystickAsFirstController(true)
 {
+    SetMinSensitivity(1.0f);
+
 	Init();
 	auto* input = GetSubsystem<Input>();
 	for (int i = 0; i < input->GetNumJoysticks(); i++) {
@@ -136,9 +138,15 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 		}
 	}
 	if (buttonId == 3) {
+        if (_invertX) {
+            position *= -1.0f;
+        }
 		_axisPosition[joystick].x_ = position;
 	}
 	if (buttonId == 4) {
+        if (_invertY) {
+            position *= -1.0f;
+        }
 		_axisPosition[joystick].y_ = position;
 	}
 }
@@ -155,12 +163,18 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
 	//URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == 0) {
+        if (_invertX) {
+            position *= -1.0f;
+        }
 		_axisPosition[joystick].x_ = position;
 		if (Abs(_axisPosition[joystick].x_) < JOYSTICK_MOVEMENT_THRESHOLD) {
 			_axisPosition[joystick].x_ = 0;
 		}
 	}
 	if (buttonId == 1) {
+        if (_invertY) {
+            position *= -1.0f;
+        }
 		_axisPosition[joystick].y_ = position;
 		if (Abs(_axisPosition[joystick].y_) < JOYSTICK_MOVEMENT_THRESHOLD) {
 			_axisPosition[joystick].y_ = 0;
@@ -172,10 +186,9 @@ void JoystickInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
 	auto* controllerInput = GetSubsystem<ControllerInput>();
 	auto* input = GetSubsystem<Input>();
-	const float JOYSTICK_AXIS_SENSITIVITY = 20.0f;
 	for (auto it = _axisPosition.Begin(); it != _axisPosition.End(); ++it) {
-		controllerInput->UpdateYaw((*it).second_.x_ * JOYSTICK_AXIS_SENSITIVITY, (*it).first_);
-		controllerInput->UpdatePitch((*it).second_.y_ * JOYSTICK_AXIS_SENSITIVITY, (*it).first_);
+		controllerInput->UpdateYaw((*it).second_.x_ * _sensitivity, (*it).first_);
+		controllerInput->UpdatePitch((*it).second_.y_ * _sensitivity, (*it).first_);
 	}
 }
 

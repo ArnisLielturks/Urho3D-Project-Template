@@ -326,3 +326,79 @@ void ControllerInput::SetJoystickAsFirstController(bool enabled)
         joystickInput->SetJoystickAsFirstController(enabled);
     }
 }
+
+void ControllerInput::SetInvertX(bool enabled, int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        _inputHandlers[ControllerType::MOUSE]->SetInvertX(enabled);
+        break;
+    case ControllerType::JOYSTICK:
+        _inputHandlers[ControllerType::JOYSTICK]->SetInvertX(enabled);
+        break;
+    }
+
+
+}
+
+bool ControllerInput::GetInvertX(int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        return _inputHandlers[ControllerType::MOUSE]->GetInvertX();
+        break;
+    case ControllerType::JOYSTICK:
+        return _inputHandlers[ControllerType::JOYSTICK]->GetInvertX();
+        break;
+    }
+    return false;
+}
+
+void ControllerInput::SetInvertY(bool enabled, int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        _inputHandlers[ControllerType::MOUSE]->SetInvertY(enabled);
+        break;
+    case ControllerType::JOYSTICK:
+        _inputHandlers[ControllerType::JOYSTICK]->SetInvertY(enabled);
+        break;
+    }
+}
+
+bool ControllerInput::GetInvertY(int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        return _inputHandlers[ControllerType::MOUSE]->GetInvertY();
+        break;
+    case ControllerType::JOYSTICK:
+        return _inputHandlers[ControllerType::JOYSTICK]->GetInvertY();
+        break;
+    }
+    return false;
+}
+
+void ControllerInput::SetSensitivity(float value, int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        _inputHandlers[ControllerType::MOUSE]->SetSensitivity(value);
+        break;
+    case ControllerType::JOYSTICK:
+        _inputHandlers[ControllerType::JOYSTICK]->SetSensitivity(value);
+        break;
+    }
+}
+
+float ControllerInput::GetSensitivity(int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        return _inputHandlers[ControllerType::MOUSE]->GetSensitivity();
+        break;
+    case ControllerType::JOYSTICK:
+        return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivity();
+        break;
+    }
+}

@@ -5,12 +5,22 @@
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../UI/NuklearUI.h"
 
+static struct nk_rect _rect;
+
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
     BaseWindow(context),
 	_openedView(SettingsViewType::CONTROLS_VIEW)
 {
 	_supportedResolutions = new char*[100];
+
+    auto graphics = GetSubsystem<Graphics>();
+    int width = graphics->GetWidth() - 100;
+    int height = graphics->GetHeight() - 200;
+    _rect.x = graphics->GetWidth() / 2 - width / 2;
+    _rect.w = width;
+    _rect.y = graphics->GetHeight() / 2 - height / 2;
+    _rect.h = height;
 
     Init();
 	InitAudioSettings();
@@ -166,7 +176,7 @@ void SettingsWindow::DrawWindow()
 
     nk_style_default(ctx);
 
-    if (nk_begin(ctx, "Settings", nk_rect(10, 10, 500, 500), NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_MOVABLE)) {
+    if (nk_begin(ctx, "Settings", _rect, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR)) {
 		/* menubar */
 		enum menu_states {MENU_DEFAULT, MENU_WINDOWS};
 		static nk_size mprog = 60;
@@ -174,10 +184,14 @@ void SettingsWindow::DrawWindow()
 		static int mcheck = nk_true;
 		nk_menubar_begin(ctx);
 
-		int sections = 3;
-		const float singleButtonWidth = 1.0f / (float) sections;
+        ctx->style.button.rounding = 0;
+        ctx->style.button.border_color = { 200, 200, 50, 255 };
+
+		int sections = 5;
+		const float singleButtonWidth = 0.99f / (float) sections;
 		/* menu #1 */
 		nk_layout_row_begin(ctx, NK_DYNAMIC, 30, 3);
+        nk_layout_row_end(ctx);
 
 		nk_layout_row_push(ctx, singleButtonWidth);
 		if (nk_button_label(ctx, "Controls")) {
@@ -196,7 +210,25 @@ void SettingsWindow::DrawWindow()
             _openedView = SettingsViewType::VIDEO_VIEW;
         }
 		nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
+
+        nk_layout_row_push(ctx, singleButtonWidth);
+        if (nk_button_label(ctx, "Mouse")) {
+            _openedView = SettingsViewType::MOUSE_VIEW;
+        }
+        nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
+
+        nk_layout_row_push(ctx, singleButtonWidth);
+        if (nk_button_label(ctx, "Joystick")) {
+            _openedView = SettingsViewType::JOYSTICK_VIEW;
+        }
+        nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
+
 		nk_menubar_end(ctx);
+
+        nk_style_default(ctx);
+
+        nk_layout_row_begin(ctx, NK_DYNAMIC, 20, 3);
+        nk_layout_row_end(ctx);
 
 		if (_openedView == SettingsViewType::AUDIO_VIEW) {
 			DrawAudioSettings();
@@ -207,6 +239,12 @@ void SettingsWindow::DrawWindow()
 		else if (_openedView == SettingsViewType::CONTROLS_VIEW) {
 			DrawControlsSettings();
 		}
+        else if (_openedView == SettingsViewType::MOUSE_VIEW) {
+            DrawMouseSettings();
+        }
+        else if (_openedView == SettingsViewType::JOYSTICK_VIEW) {
+            DrawJoystickSettings();
+        }
     }
 
     nk_end(nuklear->GetNkContext());
@@ -477,4 +515,94 @@ void SettingsWindow::ApplyAudioSettings()
 	}
 
 	SetGlobalVar("Sound", _audioSettings.enabled);
+}
+
+void SettingsWindow::DrawMouseSettings()
+{
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto controllerInput = GetSubsystem<ControllerInput>();
+
+    float sensitivity = controllerInput->GetSensitivity(ControllerType::MOUSE);
+    int invertX = controllerInput->GetInvertX(ControllerType::MOUSE);
+    int invertY = controllerInput->GetInvertY(ControllerType::MOUSE);
+
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
+        // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
+        // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &invertX);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
+        // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
+        // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &invertY);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    /* custom widget pixel width */
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 3);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_label(nuklear->GetNkContext(), "Sensitivity", NK_TEXT_LEFT);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.4f);
+        nk_slider_float(nuklear->GetNkContext(), 0, &sensitivity, 10.0f, 0.01f);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.1f);
+        nk_label(nuklear->GetNkContext(), String(sensitivity).CString(), NK_TEXT_LEFT);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    controllerInput->SetSensitivity(sensitivity, ControllerType::MOUSE);
+    controllerInput->SetInvertX(invertX, ControllerType::MOUSE);
+    controllerInput->SetInvertY(invertY, ControllerType::MOUSE);
+}
+
+void SettingsWindow::DrawJoystickSettings()
+{
+    auto nuklear = GetSubsystem<NuklearUI>();
+    auto controllerInput = GetSubsystem<ControllerInput>();
+
+    float sensitivity = controllerInput->GetSensitivity(ControllerType::JOYSTICK);
+    int invertX = controllerInput->GetInvertX(ControllerType::JOYSTICK);
+    int invertY = controllerInput->GetInvertY(ControllerType::JOYSTICK);
+
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
+        // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
+        // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &invertX);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
+        // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
+        // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &invertY);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    /* custom widget pixel width */
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 3);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_label(nuklear->GetNkContext(), "Sensitivity", NK_TEXT_LEFT);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.4f);
+        nk_slider_float(nuklear->GetNkContext(), 0, &sensitivity, 50.0f, 0.01f);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.1f);
+        nk_label(nuklear->GetNkContext(), String(sensitivity).CString(), NK_TEXT_LEFT);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    URHO3D_LOGINFO("JOY ivertX " + String(invertX));
+    URHO3D_LOGINFO("JOY ivertY " + String(invertY));
+    controllerInput->SetSensitivity(sensitivity, ControllerType::JOYSTICK);
+    controllerInput->SetInvertX(invertX, ControllerType::JOYSTICK);
+    controllerInput->SetInvertY(invertY, ControllerType::JOYSTICK);
 }

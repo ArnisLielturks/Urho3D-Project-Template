@@ -104,7 +104,42 @@ public:
 		}
 	}
 
+    void SetInvertX(bool enabled)
+    {
+        _invertX = enabled;
+    }
+
+    bool GetInvertX()
+    {
+        return _invertX;
+    }
+
+    void SetInvertY(bool enabled)
+    {
+        _invertY = enabled;
+    }
+
+    bool GetInvertY()
+    {
+        return _invertY;
+    }
+
+    void SetSensitivity(float value)
+    {
+        _sensitivity = value + _minSensitivity;
+    }
+
+    float GetSensitivity()
+    {
+        return _sensitivity - _minSensitivity;
+    }
 protected:
+
+    void SetMinSensitivity(float value)
+    {
+        _minSensitivity = value;
+    }
+
 	// Control against key map
 	HashMap<int, int> _mappedControlToKey;
 	// key against control map
@@ -113,4 +148,9 @@ protected:
 	int _activeAction;
 
 	Timer _timer;
+
+    bool _invertX;
+    bool _invertY;
+    float _sensitivity;
+    float _minSensitivity;
 };

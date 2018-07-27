@@ -8,6 +8,7 @@
 MouseInput::MouseInput(Context* context) :
     BaseInput(context)
 {
+    SetMinSensitivity(0.1f);
 	Init();
 }
 
@@ -64,8 +65,14 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 {
 	using namespace MouseMove;
-	float dx = eventData[P_DX].GetInt();
-	float dy = eventData[P_DY].GetInt();
+	float dx = eventData[P_DX].GetInt() * _sensitivity;
+	float dy = eventData[P_DY].GetInt() * _sensitivity;
+    if (_invertX) {
+        dx *= -1.0f;
+    }
+    if (_invertY) {
+        dy *= -1.0f;
+    }
 	ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
 	controllerInput->UpdateYaw(dx);
 	controllerInput->UpdatePitch(dy);

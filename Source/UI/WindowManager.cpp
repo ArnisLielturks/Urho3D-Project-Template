@@ -91,7 +91,7 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
 
     URHO3D_LOGINFO("Closing window: " + windowName);
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
-        if ((*it) && (*it)->GetType() == StringHash(windowName)) {
+        if ((*it)->GetType() == StringHash(windowName)) {
 
             if (_persistentWindows.Contains(windowName)) {
                 URHO3D_LOGINFO("Cannot destroy persistent window " + windowName);

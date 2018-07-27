@@ -149,10 +149,10 @@ void HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
 void HandleConsoleCommand(StringHash eventType, VariantMap& eventData)
 {
     // Safe guard to allow only Script events
-    if (eventData["Id"].GetString() == "ScriptEventInvoker") {
+    // if (eventData["Id"].GetString() == "ScriptEventInvoker") {
         String inputValue = eventData["Command"].GetString();
         ParseCommand(inputValue);
-    }
+    // }
 }
 
 /**

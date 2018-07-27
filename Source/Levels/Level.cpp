@@ -4,6 +4,7 @@
 #include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Input/ControllerInput.h"
+#include "../UI/WindowManager.h"
 
 using namespace Levels;
 
@@ -11,8 +12,13 @@ using namespace Levels;
 Level::Level(Context* context) :
     BaseLevel(context),
     shouldReturn(false),
-    _showScoreboard(false)
+    _showScoreboard(false),
+    _showWeaponChoice(false)
 {
+    Input* input = GetSubsystem<Input>();
+    if (input->IsMouseVisible()) {
+        input->SetMouseVisible(false);
+    }
 }
 
 Level::~Level()
@@ -110,9 +116,9 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     }
     float timeStep = eventData["TimeStep"].GetFloat();
     //cameraNode_->Yaw(timeStep * 50);
-    Input* input = GetSubsystem<Input>();
-    if (input->IsMouseVisible()) {
-        input->SetMouseVisible(false);
+
+    if (_showWeaponChoice) {
+        return;
     }
 
     // Movement speed as world units per second
@@ -164,6 +170,46 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
         Pause();
+    }
+
+    if (key == KEY_F2) {
+        WindowManager* windowManager = GetSubsystem<WindowManager>();
+        if (windowManager->IsWindowOpen("WeaponChoiceWindow")) {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "WeaponChoiceWindow";
+            SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+
+            Input* input = GetSubsystem<Input>();
+            if (input->IsMouseVisible()) {
+                input->SetMouseVisible(false);
+            }
+
+            _showWeaponChoice = false;
+        } else {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "WeaponChoiceWindow";
+            SendEvent(MyEvents::E_OPEN_WINDOW, data);
+
+            Input* input = GetSubsystem<Input>();
+            if (!input->IsMouseVisible()) {
+                input->SetMouseVisible(true);
+            }
+
+            _showWeaponChoice = true;
+        }
+    }
+
+    if (key == KEY_F4) {
+        WindowManager* windowManager = GetSubsystem<WindowManager>();
+        if (!windowManager->IsWindowOpen("ConsoleWindow")) {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "ConsoleWindow";
+            SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        } else {
+            VariantMap data = GetEventDataMap();
+            data["Name"] = "ConsoleWindow";
+            SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        }
     }
 }
 

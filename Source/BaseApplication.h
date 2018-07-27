@@ -50,7 +50,6 @@ private:
     SharedPtr<Message> _alertMessage;
     SharedPtr<Notifications> _notifications;
     SharedPtr<Achievements> _achievements;
-    SharedPtr<WindowManager> _windowManager;
     VariantMap _globalSettings;
 
     /**

@@ -17,6 +17,8 @@ public:
 
     void Dispose();
 
+    bool IsWindowOpen(String windowName);
+
 private:
 
     void RegisterAllFactories();
@@ -29,4 +31,5 @@ private:
 
     Vector<SharedPtr<Object>> _windowList;
 
+    HashMap<String, bool> _persistentWindows;
 };

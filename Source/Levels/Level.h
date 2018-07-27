@@ -44,5 +44,6 @@ namespace Levels {
         WeakPtr<Node> _characterCameraNode;
 
         bool _showScoreboard;
+        bool _showWeaponChoice;
     };
 }

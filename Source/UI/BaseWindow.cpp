@@ -3,7 +3,8 @@
 
 /// Construct.
 BaseWindow::BaseWindow(Context* context):
-    Object(context)
+    Object(context),
+    _active(true)
 {
     SubscribeToBaseEvents();
     Init();
@@ -16,4 +17,14 @@ BaseWindow::~BaseWindow()
 
 void BaseWindow::Init()
 {
+}
+
+void BaseWindow::SetActive(bool active)
+{
+    _active = active;
+}
+
+bool BaseWindow::IsActive()
+{
+    return _active;
 }

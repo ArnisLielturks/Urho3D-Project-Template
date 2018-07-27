@@ -12,6 +12,10 @@ public:
 
     virtual void Init();
 
+    void SetActive(bool active);
+
+    bool IsActive();
+
 private:
     void SubscribeToBaseEvents()
     {
@@ -24,4 +28,6 @@ protected:
     virtual void Dispose()
     {
     }
+
+    bool _active;
 };

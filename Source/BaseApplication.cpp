@@ -69,7 +69,7 @@ void BaseApplication::Start()
     _notifications = context_->CreateObject<Notifications>();
     _achievements = context_->CreateObject<Achievements>();
 	context_->RegisterSubsystem<ModLoader>();
-    _windowManager = context_->CreateObject<WindowManager>();
+    context_->RegisterSubsystem<WindowManager>();
 
     context_->RegisterSubsystem<AudioManager>();
     // Allow multiple music tracks to play at the same time
@@ -82,7 +82,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(false);
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
+    eventData["Name"] = "Level";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

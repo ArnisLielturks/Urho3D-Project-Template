@@ -7,12 +7,12 @@
 #define CONSOLE_CONTENT_LENGTH 1024 * 10
 #endif
 
-static struct SingleLine {
+struct SingleLine {
     String content;
     int logLevel;
 };
 
-static struct SingleConsoleCommand {
+struct SingleConsoleCommand {
     String command;
     String eventToCall;
     String description;

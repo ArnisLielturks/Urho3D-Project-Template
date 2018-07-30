@@ -42,11 +42,11 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
-    /*DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
+    DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
 
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
-    debugHud->ToggleAll();*/
+    debugHud->ToggleAll();
 
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before

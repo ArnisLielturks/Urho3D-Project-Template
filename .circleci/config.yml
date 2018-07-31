@@ -7,7 +7,6 @@ jobs:
     working_directory: ~/Urho3D-Empty-Project
     steps:
       - checkout
-      - run: bash build-skip.sh
       - run: apt update
       - run: apt-get install -y python-setuptools curl zip
       - restore_cache:

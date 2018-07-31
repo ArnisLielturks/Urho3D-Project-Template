@@ -108,6 +108,13 @@ void SettingsWindow::SaveVideoSettings()
     GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode + 1);
     GetSubsystem<ConfigManager>()->Set("engine", "Multisample", _graphicsSettingsNew.multisample + 1);
     GetSubsystem<ConfigManager>()->Save(true);
+
+    int width = graphics->GetWidth() - 100;
+    int height = graphics->GetHeight() - 200;
+    _rect.x = graphics->GetWidth() / 2 - width / 2;
+    _rect.w = width;
+    _rect.y = graphics->GetHeight() / 2 - height / 2;
+    _rect.h = height;
 }
 
 void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)
@@ -156,6 +163,9 @@ void SettingsWindow::InitGraphicsSettings()
 	URHO3D_LOGINFO("Active resolution " + activeResolution);
 	PODVector<IntVector3> resolutions = graphics->GetResolutions(0);
 	for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
+        if ((*it).x_ < 800 || (*it).y_ < 720) {
+            continue;
+        }
 	    String resolution = String((*it).x_) + "x" + String((*it).y_);
 	    if (_resoulutionVector.Find(resolution) == _resoulutionVector.End()) {
             _resoulutionVector.Push(resolution);

@@ -11,7 +11,7 @@ jobs:
       - run: apt-get install -y python-setuptools curl zip
       - restore_cache:
           keys:
-            - build-v1-{{ checksum "Source/CMakeLists.txt" }}
+            - build-v1-{{ checksum "CMakeLists.txt" }}
             - build-v1-
       - run: bash cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build || true
       - run: bash cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib || true
@@ -22,6 +22,6 @@ jobs:
       - run: cd build && make -j 2
       - run: cd ..
       - save_cache:
-          key: build-v1-{{ checksum "Source/CMakeLists.txt" }}
+          key: build-v1-{{ checksum "CMakeLists.txt" }}
           paths:
             - build

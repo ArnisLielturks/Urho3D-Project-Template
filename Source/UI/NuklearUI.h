@@ -27,6 +27,7 @@
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_STANDARD_VARARGS
 #define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_FIXED_TYPES
 
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Graphics/VertexBuffer.h>

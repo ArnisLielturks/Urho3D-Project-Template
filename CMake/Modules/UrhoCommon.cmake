@@ -141,7 +141,7 @@ option (URHO3D_IK "Enable inverse kinematics support" TRUE)
 option (URHO3D_LUA "Enable additional Lua scripting support" TRUE)
 option (URHO3D_NAVIGATION "Enable navigation support" TRUE)
 # Urho's Network subsystem depends on kNet library which uses C++ exceptions feature
-cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB AND EXCEPTIONS" FALSE)
+cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB" FALSE)
 option (URHO3D_PHYSICS "Enable physics support" TRUE)
 option (URHO3D_URHO2D "Enable 2D graphics and physics support" TRUE)
 option (URHO3D_WEBP "Enable WebP support" TRUE)
@@ -185,6 +185,7 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
         # It is not possible to turn SSE off on 64-bit MSVC and it appears it is also not able to do so safely on 64-bit GCC
         cmake_dependent_option (URHO3D_SSE "Enable SIMD instruction set (32-bit Web and Intel platforms only, including Android on Intel Atom); default to true on Intel and false on Web platform; the effective SSE level could be higher, see also URHO3D_DEPLOYMENT_TARGET and CMAKE_OSX_DEPLOYMENT_TARGET build options" "${URHO3D_DEFAULT_SIMD}" "NOT URHO3D_64BIT" TRUE)
     endif ()
+    cmake_dependent_option (URHO3D_HASH_DEBUG "Enable StringHash reversing and hash collision detection at the expense of memory and performance penalty" FALSE "NOT CMAKE_BUILD_TYPE STREQUAL Release" FALSE)
     cmake_dependent_option (URHO3D_3DNOW "Enable 3DNow! instruction set (Linux platform only); should only be used for older CPU with (legacy) 3DNow! support" "${HAVE_3DNOW}" "X86 AND CMAKE_SYSTEM_NAME STREQUAL Linux AND NOT URHO3D_SSE" FALSE)
     cmake_dependent_option (URHO3D_MMX "Enable MMX instruction set (32-bit Linux platform only); the MMX is effectively enabled when 3DNow! or SSE is enabled; should only be used for older CPU with MMX support" "${HAVE_MMX}" "X86 AND CMAKE_SYSTEM_NAME STREQUAL Linux AND NOT URHO3D_64BIT AND NOT URHO3D_SSE AND NOT URHO3D_3DNOW" FALSE)
     # For completeness sake - this option is intentionally not documented as we do not officially support PowerPC (yet)
@@ -228,7 +229,7 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
 else ()
     set (URHO3D_LIB_TYPE "" CACHE STRING "Specify Urho3D library type, possible values are STATIC (default), SHARED, and MODULE; the last value is available for Emscripten only")
     set (URHO3D_HOME "" CACHE PATH "Path to Urho3D build tree or SDK installation location (downstream project only)")
-    if (URHO3D_PCH OR URHO3D_UPDATE_SOURCE_TREE OR URHO3D_TOOLS)
+    if (URHO3D_PCH OR URHO3D_UPDATE_SOURCE_TREE OR URHO3D_SAMPLES OR URHO3D_TOOLS)
         # Just reference it to suppress "unused variable" CMake warning on downstream projects using this CMake module
     endif ()
     if (CMAKE_PROJECT_NAME MATCHES ^Urho3D-ExternalProject-)
@@ -332,7 +333,8 @@ if (EMSCRIPTEN)     # CMAKE_CROSSCOMPILING is always true for Emscripten
     set (MODULE MODULE)
     set (EMSCRIPTEN_ROOT_PATH "" CACHE PATH "Root path to Emscripten cross-compiler tools (Emscripten only)")
     set (EMSCRIPTEN_SYSROOT "" CACHE PATH "Path to Emscripten system root (Emscripten only)")
-    cmake_dependent_option (EMSCRIPTEN_WASM "Enable Binaryen support to generate output to WASM (WebAssembly) format (Emscripten only)" FALSE "NOT EMSCRIPTEN_EMCC_VERSION VERSION_LESS 1.37.3" FALSE)
+    option (EMSCRIPTEN_AUTO_SHELL "Auto adding a default HTML shell-file when it is not explicitly specified (Emscripten only)" TRUE)
+    cmake_dependent_option (EMSCRIPTEN_WASM "Enable Binaryen support to generate output to WASM (WebAssembly) format (Emscripten only)" TRUE "NOT EMSCRIPTEN_EMCC_VERSION VERSION_LESS 1.37.3" FALSE)
     # Currently Emscripten does not support memory growth with MODULE library type
     if (URHO3D_LIB_TYPE STREQUAL MODULE)
         set (DEFAULT_MEMORY_GROWTH FALSE)
@@ -539,7 +541,7 @@ if (APPLE)
 endif ()
 if (MSVC)
     # VS-specific setup
-    add_definitions (-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions (-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
     if (URHO3D_STATIC_RUNTIME)
         set (RELEASE_RUNTIME /MT)
         set (DEBUG_RUNTIME /MTd)
@@ -618,8 +620,6 @@ else ()
                     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=${URHO3D_DEPLOYMENT_TARGET}")
                 endif ()
             endif ()
-            set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math")
-            set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
             # We don't add these flags directly here for Xcode because we support Mach-O universal binary build
             # The compiler flags will be added later conditionally when the effective arch is i386 during build time (using XCODE_ATTRIBUTE target property)
             if (NOT XCODE)
@@ -682,6 +682,12 @@ else ()
                 if (NOT EMSCRIPTEN_EMCC_VERSION VERSION_LESS 1.37.25)
                     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['Pointer_stringify']\"")
                     set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['Pointer_stringify']\"")
+                endif ()
+                # Since version 1.37.28 emcc reduces default runtime exports, but we need "FS" so it needs to be explicitly requested now
+                # (See https://github.com/kripken/emscripten/commit/f2191c1223e8261bf45f4e27d2ba4d2e9d8b3341 for more detail)
+                if (NOT EMSCRIPTEN_EMCC_VERSION VERSION_LESS 1.37.28)
+                    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s FORCE_FILESYSTEM=1")
+                    set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -s FORCE_FILESYSTEM=1")
                 endif ()
                 set (CMAKE_C_FLAGS_RELEASE "-Oz -DNDEBUG")
                 set (CMAKE_CXX_FLAGS_RELEASE "-Oz -DNDEBUG")
@@ -859,10 +865,17 @@ macro (define_dependency_libs TARGET)
         endif ()
     endif ()
 
-    # ThirdParty/kNet & ThirdParty/Civetweb external dependency
-    if (${TARGET} MATCHES Civetweb|kNet|Urho3D)
+    # ThirdParty/Civetweb external dependency
+    if (${TARGET} MATCHES Civetweb|Urho3D)
         if (WIN32)
             list (APPEND LIBS ws2_32)
+        endif ()
+    endif ()
+
+    # ThirdParty/SLikeNet external dependency
+    if (${TARGET} MATCHES SLikeNet|Urho3D)
+        if (WIN32)
+            list (APPEND LIBS iphlpapi)
         endif ()
     endif ()
 
@@ -1096,7 +1109,7 @@ macro (define_resource_dirs)
     list (APPEND SOURCE_FILES ${RESOURCE_DIRS} ${RESOURCE_PAKS} ${RESOURCE_FILES})
 endmacro()
 
-# Macro fo adding a HTML shell-file when targeting Web platform
+# Macro for adding a HTML shell-file when targeting Web platform
 macro (add_html_shell)
     check_source_files ("Could not call add_html_shell() macro before define_source_files() macro.")
     if (EMSCRIPTEN)
@@ -1126,7 +1139,7 @@ macro (enable_pch HEADER_PATHNAME)
     # No op when PCH support is not enabled
     if (URHO3D_PCH)
         # Get the optional LANG parameter to indicate whether the header should be treated as C or C++ header, default to C++
-        if ("${ARGN}" STREQUAL C)   # Stringify as the LANG paramater could be empty
+        if ("${ARGN}" STREQUAL C) # Stringify as the LANG paramater could be empty
             set (EXT c)
             set (LANG C)
             set (LANG_H c-header)
@@ -1656,9 +1669,9 @@ macro (setup_main_executable)
                         break ()
                     endif ()
                 endforeach ()
-                if (URHO3D_TESTING)
-                    # Auto adding the HTML shell-file during testing with emrun, if it has not been added yet
-                    if (NOT EMCC_OPTION STREQUAL shell-file)
+                # Auto adding the HTML shell-file if necessary
+                if (NOT EMCC_OPTION STREQUAL shell-file)
+                    if (URHO3D_TESTING OR EMSCRIPTEN_AUTO_SHELL)
                         add_html_shell ()
                         list (APPEND TARGET_PROPERTIES SUFFIX .html)
                         set (SELF_EXECUTABLE_SHELL 1)
@@ -1794,6 +1807,10 @@ macro (_setup_target)
             list (APPEND LINK_FLAGS "-s NO_EXIT_RUNTIME=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1")
             if (EMSCRIPTEN_WASM)
                 list (APPEND LINK_FLAGS "-s WASM=1")
+            elseif (NOT EMSCRIPTEN_EMCC_VERSION VERSION_LESS 1.38.1)
+                # Since version 1.38.1 emcc emits WASM by default, so we need to explicitily turn it off to emits asm.js
+                # (See https://github.com/kripken/emscripten/commit/6e5818017d1b2e09e9f7ad22a32e9a191f6f9a3b for more detail)
+                list (APPEND LINK_FLAGS "-s WASM=0")
             endif ()
         endif ()
         # Pass EMCC-specifc setting to differentiate between main and side modules

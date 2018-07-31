@@ -1,0 +1,28 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: arnislielturks/urho3d:5
+    working_directory: ~/Urho3D-Empty-Project
+    steps:
+      - checkout
+      - run: bash build-skip.sh
+      - run: apt update
+      - run: apt-get install -y python-setuptools curl zip
+      - restore_cache:
+          keys:
+            - build-v1-{{ checksum "Source/CMakeLists.txt" }}
+            - build-v1-
+      - run: bash cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build
+      - run: bash cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib
+      # Fix Urho3D code style issues
+      # - run: cp Fixes/UISelectable.h /Urho3D/Source/Urho3D/UI/UISelectable.h
+      - run: cd build-windows && make -j 1
+      - run: cd ..
+      - run: cd build && make -j 1
+      - run: cd ..
+      - save_cache:
+          key: build-v1-{{ checksum "Source/CMakeLists.txt" }}
+          paths:
+            - build

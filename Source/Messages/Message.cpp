@@ -68,7 +68,6 @@ void Message::HandleUpdate(StringHash eventType, VariantMap& eventData)
         nk_style_default(ctx);
 
         int alpha = Sin(_messageTime) * 50 + 150;
-        URHO3D_LOGINFO("Alpha " + String(alpha));
         ctx->style.window.background = nk_rgba(100, 50, 50, alpha);
         ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(100, 50, 50, alpha));
         ctx->style.window.border_color = nk_rgb(255, 165, 0);

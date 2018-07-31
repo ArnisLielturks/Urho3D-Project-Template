@@ -42,9 +42,9 @@ void MainMenu::Init()
     data["Message"] = "Entered menu!";
     SendEvent("NewAchievement", data);
 
-    data["Title"] = "Hey!";
+  /*  data["Title"] = "Hey!";
     data["Message"] = "Seems like everything is ok!";
-    SendEvent("ShowAlertMessage", data);
+    SendEvent("ShowAlertMessage", data);*/
 }
 
 void MainMenu::CreateScene()

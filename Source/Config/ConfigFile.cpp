@@ -72,6 +72,8 @@ bool ConfigFile::BeginLoad(Deserializer& source) {
 bool ConfigFile::Save(Serializer& dest) const {
   dest.WriteLine("# AUTO-GENERATED");
 
+  HashMap<String, String> processedConfig;
+
   // Iterate over all sections, printing out the header followed by the properties.
   for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
     if (itr->Begin() == itr->End()) {
@@ -97,7 +99,13 @@ bool ConfigFile::Save(Serializer& dest) const {
 
       ParseProperty(line, property, value);
 
+      if (processedConfig.Contains(property)) {
+          continue;
+      }
+      processedConfig[property] = value;
+
       if (property != String::EMPTY && value != String::EMPTY) {
+          URHO3D_LOGINFO(property + " ========>>>>>>>>>>. " + value);
         dest.WriteLine(property + "=" + value);
       }
     }
@@ -113,6 +121,7 @@ bool ConfigFile::Save(Serializer& dest, bool smartSave) const {
     return Save(dest);
   }
 
+  HashMap<String, bool> wroteLine;
   // Iterate over all sections, printing out the header followed by the properties.
   for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
     if (itr->Begin() == itr->End()) {
@@ -121,6 +130,12 @@ bool ConfigFile::Save(Serializer& dest, bool smartSave) const {
 
     for (Vector<String>::ConstIterator section_itr(itr->Begin()); section_itr != itr->End(); ++section_itr) {
       const String line(*section_itr);
+
+      if (wroteLine.Contains(line)) {
+          continue;
+      }
+
+      wroteLine[line] = true;
 
       if (section_itr == itr->Begin()) {
         dest.WriteLine("[" + line + "]");

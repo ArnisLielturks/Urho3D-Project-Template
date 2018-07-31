@@ -80,6 +80,11 @@ public:
 	 */
 	bool IsMappingInProgress();
 
+    /**
+    * Load INI configuration file
+    */
+    void LoadConfig();
+
     void SetJoystickAsFirstController(bool enabled);
 
     void SetInvertX(bool enabled, int controller);
@@ -90,9 +95,11 @@ public:
 
     bool GetInvertY(int controller);
 
-    void SetSensitivity(float value, int controller);
+    void SetSensitivityX(float value, int controller);
+    void SetSensitivityY(float value, int controller);
 
-    float GetSensitivity(int controller);
+    float GetSensitivityX(int controller);
+    float GetSensitivityY(int controller);
 
 protected:
     virtual void Init();
@@ -101,11 +108,6 @@ private:
     void SubscribeToEvents();
 	void UnsubscribeToEvents();
 	void RegisterConsoleCommands();
-
-	/**
-	 * Load INI configuration file
-	 */
-	void LoadConfig();
 
 	/**
 	 * Save INIT configuration file
@@ -126,11 +128,6 @@ private:
 	 * Action key to string map
 	 */
 	HashMap<int, String> _controlMapNames;
-
-	/**
-	 * Loaded configuration file
-	 */
-	SharedPtr<ConfigManager> _configManager;
 
 	/**
 	 * Active controls

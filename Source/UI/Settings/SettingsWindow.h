@@ -47,6 +47,13 @@ struct AudioSettings{
 	float musicVolume;
 };
 
+struct ControllerSettings {
+    int invertX;
+    int invertY;
+    float sensitivityX;
+    float sensitivityY;
+};
+
 class SettingsWindow : public BaseWindow
 {
     URHO3D_OBJECT(SettingsWindow, BaseWindow);
@@ -81,6 +88,9 @@ private:
 
 	void InitGraphicsSettings();
 	void InitAudioSettings();
+    void InitMouseSettings();
+    void InitJoystickSettings();
+    void ApplyControllerSettings();
 	void ApplyAudioSettings();
 
     HashMap<int, SharedPtr<Button>> _buttons;
@@ -94,6 +104,9 @@ private:
 
 	AudioSettings _audioSettings;
 	AudioSettings _audioSettingsNew;
+
+    ControllerSettings _controllerSettings;
+    ControllerSettings _controllerSettingsNew;
 
 	char **_supportedResolutions;
     StringVector _resoulutionVector;

@@ -31,8 +31,6 @@ ControllerInput::ControllerInput(Context* context) :
 	_controlMapNames[CTRL_SPRINT] = "Sprint";
 	_controlMapNames[CTRL_UP] = "Move up";
 
-	_configManager = new ConfigManager(context);
-
 	_configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/controls.cfg";
 	Init();
 }
@@ -45,36 +43,34 @@ void ControllerInput::Init()
 {
     // Subscribe to global events for camera movement
     SubscribeToEvents();
-
-	LoadConfig();
 }
 
 void ControllerInput::LoadConfig()
 {
 	auto* cache = GetSubsystem<ResourceCache>();
-	bool loaded = _configManager->Load(_configurationFile, true);
-	if (!loaded) {
-		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
-		return;
-	}
+    GetSubsystem<ConfigManager>();
 
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
-		if (_configManager->GetInt("keyboard", controlName, -1) != -1) {
-			int key = _configManager->GetInt("keyboard", controlName, 0);
+		if (GetSubsystem<ConfigManager>()->GetInt("keyboard", controlName, -1) != -1) {
+			int key = GetSubsystem<ConfigManager>()->GetInt("keyboard", controlName, 0);
 			_inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(key, controlCode);
 		}
-		if (_configManager->GetInt("mouse", controlName, -1) != -1) {
-			int key = _configManager->GetInt("mouse", controlName, 0);
+		if (GetSubsystem<ConfigManager>()->GetInt("mouse", controlName, -1) != -1) {
+			int key = GetSubsystem<ConfigManager>()->GetInt("mouse", controlName, 0);
 			_inputHandlers[ControllerType::MOUSE]->SetKeyToAction(key, controlCode);
 		}
-		if (_configManager->GetInt("joystick", controlName, -1) != -1) {
-			int key = _configManager->GetInt("joystick", controlName, 0);
+		if (GetSubsystem<ConfigManager>()->GetInt("joystick", controlName, -1) != -1) {
+			int key = GetSubsystem<ConfigManager>()->GetInt("joystick", controlName, 0);
 			_inputHandlers[ControllerType::JOYSTICK]->SetKeyToAction(key, controlCode);
 		}
 	}
+
+    for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+        (*it).second_->LoadConfig();
+    }
 }
 
 void ControllerInput::SaveConfig()
@@ -83,9 +79,9 @@ void ControllerInput::SaveConfig()
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");
 		int controlCode = (*it).first_;
-		_configManager->Set("keyboard", controlName, "-1");
-		_configManager->Set("mouse", controlName, "-1");
-		_configManager->Set("joystick", controlName, "-1");
+        GetSubsystem<ConfigManager>()->Set("keyboard", controlName, "-1");
+        GetSubsystem<ConfigManager>()->Set("mouse", controlName, "-1");
+        GetSubsystem<ConfigManager>()->Set("joystick", controlName, "-1");
 	}
 
 	for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
@@ -104,12 +100,12 @@ void ControllerInput::SaveConfig()
 				String controlName = _controlMapNames[controlCode];
 				controlName.Replace(" ", "_");
 				String value = String(keyCode);
-				_configManager->Set(map[type], controlName, value);
+                GetSubsystem<ConfigManager>()->Set(map[type], controlName, value);
 			}
 		}
 	}
 
-	_configManager->Save(_configurationFile, true);
+    GetSubsystem<ConfigManager>()->Save(true);
 }
 
 void ControllerInput::SubscribeToEvents()
@@ -379,26 +375,50 @@ bool ControllerInput::GetInvertY(int controller)
     return false;
 }
 
-void ControllerInput::SetSensitivity(float value, int controller)
+void ControllerInput::SetSensitivityX(float value, int controller)
 {
     switch (controller) {
     case ControllerType::MOUSE:
-        _inputHandlers[ControllerType::MOUSE]->SetSensitivity(value);
+        _inputHandlers[ControllerType::MOUSE]->SetSensitivityX(value);
         break;
     case ControllerType::JOYSTICK:
-        _inputHandlers[ControllerType::JOYSTICK]->SetSensitivity(value);
+        _inputHandlers[ControllerType::JOYSTICK]->SetSensitivityX(value);
         break;
     }
 }
 
-float ControllerInput::GetSensitivity(int controller)
+void ControllerInput::SetSensitivityY(float value, int controller)
 {
     switch (controller) {
     case ControllerType::MOUSE:
-        return _inputHandlers[ControllerType::MOUSE]->GetSensitivity();
+        _inputHandlers[ControllerType::MOUSE]->SetSensitivityY(value);
         break;
     case ControllerType::JOYSTICK:
-        return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivity();
+        _inputHandlers[ControllerType::JOYSTICK]->SetSensitivityY(value);
+        break;
+    }
+}
+
+float ControllerInput::GetSensitivityX(int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        return _inputHandlers[ControllerType::MOUSE]->GetSensitivityX();
+        break;
+    case ControllerType::JOYSTICK:
+        return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivityX();
+        break;
+    }
+}
+
+float ControllerInput::GetSensitivityY(int controller)
+{
+    switch (controller) {
+    case ControllerType::MOUSE:
+        return _inputHandlers[ControllerType::MOUSE]->GetSensitivityY();
+        break;
+    case ControllerType::JOYSTICK:
+        return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivityY();
         break;
     }
 }

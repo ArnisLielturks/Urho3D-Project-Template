@@ -23,16 +23,16 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
 
-    _configManager = new ConfigManager(context);
-
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
+
+    ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
+    context_->RegisterSubsystem(configManager);
 }
 
 void BaseApplication::Setup()
 {
     //LoadConfig("Data/Config/Config.json", "", true);
     LoadINIConfig(_configurationFile);
-
 }
 
 void BaseApplication::Start()
@@ -89,9 +89,10 @@ void BaseApplication::Start()
     // Single player mode, all the input is handled by single Controls object
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
     context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
+    context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
@@ -306,33 +307,33 @@ void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, Va
 
 void BaseApplication::LoadINIConfig(String filename)
 {
-	bool loaded = _configManager->Load(filename, true);
+	bool loaded = GetSubsystem<ConfigManager>()->Load(filename, true);
 	if (!loaded) {
 		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
 		return;
 	}
 
-    SetEngineParameter(EP_FULL_SCREEN, _configManager->GetBool("engine", "FullScreen", false));
-    SetEngineParameter(EP_WINDOW_WIDTH, _configManager->GetInt("engine", "WindowWidth", 800));
-    SetEngineParameter(EP_WINDOW_HEIGHT, _configManager->GetInt("engine", "WindowHeight", 600));
-    SetEngineParameter(EP_BORDERLESS, _configManager->GetBool("engine", "Borderless", false));
-    SetEngineParameter(EP_FRAME_LIMITER, _configManager->GetBool("engine", "FrameLimiter", true));
+    SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
+    SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowWidth", 800));
+    SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowHeight", 600));
+    SetEngineParameter(EP_BORDERLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Borderless", false));
+    SetEngineParameter(EP_FRAME_LIMITER, GetSubsystem<ConfigManager>()->GetBool("engine", "FrameLimiter", true));
     SetEngineParameter(EP_WINDOW_TITLE, "EmptyProject");
     SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
 
     // Logs
-    SetEngineParameter(EP_LOG_NAME, _configManager->GetString("engine", "LogName", "EmptyProject.log"));
-    SetEngineParameter(EP_LOG_LEVEL, _configManager->GetInt("engine", "LogLevel", LOG_INFO));
-    SetEngineParameter(EP_LOG_QUIET, _configManager->GetBool("engine", "LogQuiet", false));
+    SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "EmptyProject.log"));
+    SetEngineParameter(EP_LOG_LEVEL, GetSubsystem<ConfigManager>()->GetInt("engine", "LogLevel", LOG_INFO));
+    SetEngineParameter(EP_LOG_QUIET, GetSubsystem<ConfigManager>()->GetBool("engine", "LogQuiet", false));
 
     // Graphics
-    SetEngineParameter(EP_LOW_QUALITY_SHADOWS, _configManager->GetBool("engine", "LowQualityShadows", false));
-    SetEngineParameter(EP_MATERIAL_QUALITY, _configManager->GetInt("engine", "MaterialQuality", 15));
-    SetEngineParameter(EP_MONITOR, _configManager->GetInt("engine", "Monitor", 0));
-    SetEngineParameter(EP_MULTI_SAMPLE, _configManager->GetInt("engine", "MultiSample", 1));
-    SetEngineParameter(EP_SHADOWS, _configManager->GetBool("engine", "Shadows", true));
-    SetEngineParameter(EP_TEXTURE_ANISOTROPY, _configManager->GetInt("engine", "TextureAnisotropy", 16));
-    SetEngineParameter(EP_TEXTURE_FILTER_MODE, _configManager->GetInt("engine", "TextureFilterMode", 5));
+    SetEngineParameter(EP_LOW_QUALITY_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "LowQualityShadows", false));
+    SetEngineParameter(EP_MATERIAL_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "MaterialQuality", 15));
+    SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
+    SetEngineParameter(EP_MULTI_SAMPLE, GetSubsystem<ConfigManager>()->GetInt("engine", "MultiSample", 1));
+    SetEngineParameter(EP_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "Shadows", true));
+    SetEngineParameter(EP_TEXTURE_ANISOTROPY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureAnisotropy", 16));
+    SetEngineParameter(EP_TEXTURE_FILTER_MODE, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureFilterMode", 5));
     /*
     FILTER_NEAREST = 0,
     FILTER_BILINEAR = 1,
@@ -342,33 +343,33 @@ void BaseApplication::LoadINIConfig(String filename)
     FILTER_DEFAULT = 5,
     MAX_FILTERMODES = 6
     */
-    SetEngineParameter(EP_TEXTURE_QUALITY, _configManager->GetInt("engine", "TextureQuality", 2));
-    SetEngineParameter(EP_TRIPLE_BUFFER, _configManager->GetBool("engine", "TripleBuffer", true));
-    SetEngineParameter(EP_VSYNC, _configManager->GetBool("engine", "VSync", true));
+    SetEngineParameter(EP_TEXTURE_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureQuality", 2));
+    SetEngineParameter(EP_TRIPLE_BUFFER, GetSubsystem<ConfigManager>()->GetBool("engine", "TripleBuffer", true));
+    SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("engine", "VSync", true));
 
     // SetEngineParameter(EP_PACKAGE_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
     // SetEngineParameter(EP_RENDER_PATH, engine_->GetGlobalVar("FrameLimiter").GetBool());
     // SetEngineParameter(EP_RESOURCE_PACKAGES, engine_->GetGlobalVar("FrameLimiter").GetBool());
-    SetEngineParameter(EP_RESOURCE_PATHS, _configManager->GetString("engine", "ResourcePaths", "Data;CoreData"));
+    SetEngineParameter(EP_RESOURCE_PATHS, GetSubsystem<ConfigManager>()->GetString("engine", "ResourcePaths", "Data;CoreData"));
     // SetEngineParameter(EP_RESOURCE_PREFIX_PATHS, engine_->GetGlobalVar("FrameLimiter").GetBool());
     // SetEngineParameter(EP_SHADER_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
 
     // Sound
-    SetEngineParameter(EP_SOUND, _configManager->GetBool("engine", "Sound", true));
-    SetEngineParameter(EP_SOUND_BUFFER, _configManager->GetInt("engine", "SoundBuffer", 100));
-    SetEngineParameter(EP_SOUND_INTERPOLATION, _configManager->GetBool("engine", "SoundInterpolation", true));
-    SetEngineParameter(EP_SOUND_MIX_RATE, _configManager->GetInt("engine", "SoundMixRate", 44100));
-    SetEngineParameter(EP_SOUND_STEREO, _configManager->GetBool("engine", "SoundStereo", true));
+    SetEngineParameter(EP_SOUND, GetSubsystem<ConfigManager>()->GetBool("audio", "Sound", true));
+    SetEngineParameter(EP_SOUND_BUFFER, GetSubsystem<ConfigManager>()->GetInt("audio", "SoundBuffer", 100));
+    SetEngineParameter(EP_SOUND_INTERPOLATION, GetSubsystem<ConfigManager>()->GetBool("audio", "SoundInterpolation", true));
+    SetEngineParameter(EP_SOUND_MIX_RATE, GetSubsystem<ConfigManager>()->GetInt("audio", "SoundMixRate", 44100));
+    SetEngineParameter(EP_SOUND_STEREO, GetSubsystem<ConfigManager>()->GetBool("audio", "SoundStereo", true));
 
-    SetEngineParameter(EP_FLUSH_GPU, _configManager->GetBool("engine", "FlushGPU", true));
-    SetEngineParameter(EP_WORKER_THREADS, _configManager->GetBool("engine", "WorkerThreads ", true));
+    SetEngineParameter(EP_FLUSH_GPU, GetSubsystem<ConfigManager>()->GetBool("engine", "FlushGPU", true));
+    SetEngineParameter(EP_WORKER_THREADS, GetSubsystem<ConfigManager>()->GetBool("engine", "WorkerThreads ", true));
+    engine_->SetGlobalVar("ShadowQuality", GetSubsystem<ConfigManager>()->GetInt("engine", "ShadowQuality", 5));
 
-	engine_->SetGlobalVar("SoundMasterVolume" , _configManager->GetFloat("engine", "SoundMasterVolume", 1.0));
-	engine_->SetGlobalVar("SoundEffectsVolume", _configManager->GetFloat("engine", "SoundEffectsVolume", 1.0));
-	engine_->SetGlobalVar("SoundAmbientVolume", _configManager->GetFloat("engine", "SoundAmbientVolume", 1.0));
-	engine_->SetGlobalVar("SoundVoiceVolume", _configManager->GetFloat("engine", "SoundVoiceVolume", 1.0));
-	engine_->SetGlobalVar("SoundMusicVolume", _configManager->GetFloat("engine", "SoundMusicVolume", 1.0));
-    engine_->SetGlobalVar("ShadowQuality", _configManager->GetInt("engine", "ShadowQuality", 5));
+	engine_->SetGlobalVar("SoundMasterVolume" , GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundMasterVolume", 1.0));
+	engine_->SetGlobalVar("SoundEffectsVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundEffectsVolume", 1.0));
+	engine_->SetGlobalVar("SoundAmbientVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundAmbientVolume", 1.0));
+	engine_->SetGlobalVar("SoundVoiceVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundVoiceVolume", 1.0));
+	engine_->SetGlobalVar("SoundMusicVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundMusicVolume", 1.0));
 
     Audio* audio = GetSubsystem<Audio>();
 	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("SoundMasterVolume").GetFloat());

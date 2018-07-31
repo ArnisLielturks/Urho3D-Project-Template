@@ -187,8 +187,8 @@ void JoystickInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 	auto* controllerInput = GetSubsystem<ControllerInput>();
 	auto* input = GetSubsystem<Input>();
 	for (auto it = _axisPosition.Begin(); it != _axisPosition.End(); ++it) {
-		controllerInput->UpdateYaw((*it).second_.x_ * _sensitivity, (*it).first_);
-		controllerInput->UpdatePitch((*it).second_.y_ * _sensitivity, (*it).first_);
+		controllerInput->UpdateYaw((*it).second_.x_ * _sensitivityX, (*it).first_);
+		controllerInput->UpdatePitch((*it).second_.y_ * _sensitivityX, (*it).first_);
 	}
 }
 
@@ -226,4 +226,15 @@ void JoystickInput::HandleJoystickDisconnected(StringHash eventType, VariantMap&
 	_axisPosition.Erase(id);
 	auto* controllerInput = GetSubsystem<ControllerInput>();
 	controllerInput->DestroyController(id);
+}
+
+void JoystickInput::LoadConfig()
+{
+    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX");
+    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
+    _invertX = GetSubsystem<ConfigManager>()->Get("joystick", "InvertX").GetBool();
+    _invertY = GetSubsystem<ConfigManager>()->Get("joystick", "InvertY").GetBool();
+
+    URHO3D_LOGINFO("Loading joystick config x " + String(_sensitivityX) + " =>>>> " + String(GetSubsystem<ConfigManager>()->Get("joystick", "SensitivityX").GetFloat()));
+    URHO3D_LOGINFO("Loading joystick config y " + String(_sensitivityY));
 }

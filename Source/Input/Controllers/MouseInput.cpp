@@ -9,7 +9,7 @@ MouseInput::MouseInput(Context* context) :
     BaseInput(context)
 {
     SetMinSensitivity(0.1f);
-	Init();
+    Init();
 }
 
 MouseInput::~MouseInput()
@@ -65,8 +65,8 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 {
 	using namespace MouseMove;
-	float dx = eventData[P_DX].GetInt() * _sensitivity;
-	float dy = eventData[P_DY].GetInt() * _sensitivity;
+	float dx = eventData[P_DX].GetInt() * _sensitivityX;
+	float dy = eventData[P_DY].GetInt() * _sensitivityY;
     if (_invertX) {
         dx *= -1.0f;
     }
@@ -95,4 +95,12 @@ String MouseInput::GetActionKeyName(int action)
 	}
 
 	return String::EMPTY;
+}
+
+void MouseInput::LoadConfig()
+{
+    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX");
+    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
+    _invertX = GetSubsystem<ConfigManager>()->Get("joystick", "InvertX").GetBool();
+    _invertY = GetSubsystem<ConfigManager>()->Get("joystick", "InvertY").GetBool();
 }

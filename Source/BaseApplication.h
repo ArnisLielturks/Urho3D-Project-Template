@@ -49,10 +49,5 @@ private:
 
     VariantMap _globalSettings;
 
-    /**
-	 * Loaded configuration file
-	 */
-	SharedPtr<ConfigManager> _configManager;
-
     String _configurationFile;
 };

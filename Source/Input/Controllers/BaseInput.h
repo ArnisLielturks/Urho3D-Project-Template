@@ -11,10 +11,17 @@ public:
     /// Construct.
     BaseInput(Context* context):
 		Object(context),
-		_activeAction(0) {
+		_activeAction(0),
+        _sensitivityX(0.1f),
+        _sensitivityY(0.1f),
+        _invertX(false),
+        _invertY(false)
+    {
 	}
 
     virtual ~BaseInput() {};
+
+    virtual void LoadConfig() {};
 
 	/**
 	 * Get name of the key which uses specific action
@@ -124,14 +131,30 @@ public:
         return _invertY;
     }
 
-    void SetSensitivity(float value)
+    void SetSensitivityX(float value)
     {
-        _sensitivity = value + _minSensitivity;
+        if (value < _minSensitivity) {
+            value = _minSensitivity;
+        }
+        _sensitivityX = value;
     }
 
-    float GetSensitivity()
+    float GetSensitivityX()
     {
-        return _sensitivity - _minSensitivity;
+        return _sensitivityX;
+    }
+
+    void SetSensitivityY(float value)
+    {
+        if (value < _minSensitivity) {
+            value = _minSensitivity;
+        }
+        _sensitivityY = value;
+    }
+
+    float GetSensitivityY()
+    {
+        return _sensitivityY;
     }
 protected:
 
@@ -151,6 +174,7 @@ protected:
 
     bool _invertX;
     bool _invertY;
-    float _sensitivity;
+    float _sensitivityX;
+    float _sensitivityY;
     float _minSensitivity;
 };

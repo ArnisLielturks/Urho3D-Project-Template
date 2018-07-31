@@ -17,6 +17,8 @@ public:
 
     void SetJoystickAsFirstController(bool enabled);
 
+    void LoadConfig();
+
 protected:
     virtual void Init();
 

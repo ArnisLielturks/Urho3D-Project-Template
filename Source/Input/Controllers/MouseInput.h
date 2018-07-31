@@ -15,6 +15,8 @@ public:
     virtual ~MouseInput();
 	virtual String GetActionKeyName(int action);
 
+    virtual void LoadConfig();
+
 protected:
     virtual void Init();
 

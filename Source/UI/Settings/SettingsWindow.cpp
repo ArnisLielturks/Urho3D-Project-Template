@@ -91,11 +91,23 @@ void SettingsWindow::SaveVideoSettings()
 	renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
 	renderer->SetDrawShadows(_graphicsSettings.shadows);
 
-	//SendEvent(MyEvents::E_SAVE_CONFIG);
-	//VariantMap data = GetEventDataMap();
-	//data["Title"] = "Settings saved!";
-	//data["Message"] = "You must restart the game for\nthe changes to take effect";
-	//SendEvent("ShowAlertMessage", data);
+    GetSubsystem<ConfigManager>()->Set("engine", "WindowWidth", _graphicsSettingsNew.width);
+    GetSubsystem<ConfigManager>()->Set("engine", "WindowHeight", _graphicsSettingsNew.height);
+    GetSubsystem<ConfigManager>()->Set("engine", "VSync", (bool)_graphicsSettingsNew.vsync);
+    GetSubsystem<ConfigManager>()->Set("engine", "Fullscreen", (bool)_graphicsSettingsNew.fullscreen);
+    GetSubsystem<ConfigManager>()->Set("engine", "TripleBuffer", (bool)_graphicsSettingsNew.tripleBuffer);
+    GetSubsystem<ConfigManager>()->Set("engine", "Shadows", (bool)_graphicsSettingsNew.shadows);
+
+    if (_graphicsSettingsNew.textureQuality >= 3) {
+        _graphicsSettingsNew.textureQuality = 15;
+    }
+
+    GetSubsystem<ConfigManager>()->Set("engine", "ShadowQuality", _graphicsSettingsNew.shadowQuality + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureQuality", _graphicsSettingsNew.textureQuality + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureAnisotropy", _graphicsSettingsNew.textureAnistropy + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "Multisample", _graphicsSettingsNew.multisample + 1);
+    GetSubsystem<ConfigManager>()->Save(true);
 }
 
 void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)
@@ -214,12 +226,14 @@ void SettingsWindow::DrawWindow()
         nk_layout_row_push(ctx, singleButtonWidth);
         if (nk_button_label(ctx, "Mouse")) {
             _openedView = SettingsViewType::MOUSE_VIEW;
+            InitMouseSettings();
         }
         nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
 
         nk_layout_row_push(ctx, singleButtonWidth);
         if (nk_button_label(ctx, "Joystick")) {
             _openedView = SettingsViewType::JOYSTICK_VIEW;
+            InitJoystickSettings();
         }
         nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);
 
@@ -379,8 +393,11 @@ void SettingsWindow::DrawVideoSettings()
     nk_label(nuklear->GetNkContext(), "Multisample", NK_TEXT_LEFT);
     _graphicsSettingsNew.multisample = nk_combo(nuklear->GetNkContext(), multisampleLevel, NK_LEN(multisampleLevel), _graphicsSettingsNew.multisample, 25, nk_vec2(180, 200));
 
+    nk_layout_row_dynamic(nuklear->GetNkContext(), 50, 1);
+    nk_spacing(nuklear->GetNkContext(), 1);
 
     nk_layout_row_dynamic(nuklear->GetNkContext(), 25, 2);
+    nk_spacing(nuklear->GetNkContext(), 1);
     if (nk_button_label(nuklear->GetNkContext(), "Save")) {
         SaveVideoSettings();
     }
@@ -461,38 +478,48 @@ void SettingsWindow::DrawAudioSettings()
 void SettingsWindow::ApplyAudioSettings()
 {
 	Audio* audio = GetSubsystem<Audio>();
-
+    bool shouldSave = false;
 	if (_audioSettingsNew.masterVolume != _audioSettings.masterVolume) {
 		_audioSettings.masterVolume = _audioSettingsNew.masterVolume;
 		audio->SetMasterGain(SOUND_MASTER, _audioSettings.masterVolume);
 		SetGlobalVar("SoundMasterVolume", _audioSettings.masterVolume);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundMasterVolume", _audioSettings.masterVolume);
 		URHO3D_LOGINFO("Applying master volume");
+        shouldSave = true;
 	}
 
 	if (_audioSettingsNew.effectsVolume != _audioSettings.effectsVolume) {
 		_audioSettings.effectsVolume = _audioSettingsNew.effectsVolume;
 		audio->SetMasterGain(SOUND_EFFECT, _audioSettings.effectsVolume);
 		SetGlobalVar("SoundEffectsVolume", _audioSettings.effectsVolume);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundEffectsVolume", _audioSettings.effectsVolume);
 		URHO3D_LOGINFO("Applying effects volume");
+        shouldSave = true;
 	}
 
 	if (_audioSettingsNew.ambientVolume != _audioSettings.ambientVolume) {
 		_audioSettings.ambientVolume = _audioSettingsNew.ambientVolume;
 		audio->SetMasterGain(SOUND_AMBIENT, _audioSettings.ambientVolume);
 		SetGlobalVar("SoundAmbientVolume", _audioSettings.ambientVolume);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundAmbientVolume", _audioSettings.ambientVolume);
 		URHO3D_LOGINFO("Applying ambient volume");
+        shouldSave = true;
 	}
 	if (_audioSettingsNew.voiceVolume != _audioSettings.voiceVolume) {
 		_audioSettings.voiceVolume = _audioSettingsNew.voiceVolume;
 		audio->SetMasterGain(SOUND_VOICE, _audioSettings.voiceVolume);
 		SetGlobalVar("SoundVoiceVolume", _audioSettings.voiceVolume);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundVoiceVolume", _audioSettings.voiceVolume);
 		URHO3D_LOGINFO("Applying voice volume");
+        shouldSave = true;
 	}
 	if (_audioSettingsNew.musicVolume != _audioSettings.musicVolume) {
 		_audioSettings.musicVolume = _audioSettingsNew.musicVolume;
 		audio->SetMasterGain(SOUND_MUSIC, _audioSettings.musicVolume);
 		SetGlobalVar("SoundMusicVolume", _audioSettings.musicVolume);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundMusicVolume", _audioSettings.musicVolume);
 		URHO3D_LOGINFO("Applying music volume");
+        shouldSave = true;
 	}
 	if (_audioSettingsNew.soundBuffer != _audioSettings.soundBuffer ||
 		_audioSettingsNew.mixRate != _audioSettings.mixRate ||
@@ -511,8 +538,18 @@ void SettingsWindow::ApplyAudioSettings()
 		SetGlobalVar("SoundMixRate", _audioSettings.mixRate);
 		SetGlobalVar("SoundBuffer", _audioSettings.soundBuffer);
 
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundStereo", (bool)_audioSettings.stereo);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundInterpolation", (bool)_audioSettings.soundInterpolation);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundMixRate", _audioSettings.mixRate);
+        GetSubsystem<ConfigManager>()->Set("audio", "SoundBuffer", _audioSettings.soundBuffer);
+
 		URHO3D_LOGINFO("Applying audio other");
+        shouldSave = true;
 	}
+
+    if (shouldSave) {
+        GetSubsystem<ConfigManager>()->Save(true);
+    }
 
 	SetGlobalVar("Sound", _audioSettings.enabled);
 }
@@ -520,18 +557,13 @@ void SettingsWindow::ApplyAudioSettings()
 void SettingsWindow::DrawMouseSettings()
 {
     auto nuklear = GetSubsystem<NuklearUI>();
-    auto controllerInput = GetSubsystem<ControllerInput>();
-
-    float sensitivity = controllerInput->GetSensitivity(ControllerType::MOUSE);
-    int invertX = controllerInput->GetInvertX(ControllerType::MOUSE);
-    int invertY = controllerInput->GetInvertY(ControllerType::MOUSE);
 
     nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
     {
         nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
         // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
         // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &invertX);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &_controllerSettingsNew.invertX);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
@@ -540,7 +572,7 @@ void SettingsWindow::DrawMouseSettings()
         nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
         // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
         // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &invertY);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &_controllerSettingsNew.invertY);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
@@ -550,32 +582,25 @@ void SettingsWindow::DrawMouseSettings()
         nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
         nk_label(nuklear->GetNkContext(), "Sensitivity", NK_TEXT_LEFT);
         nk_layout_row_push(nuklear->GetNkContext(), 0.4f);
-        nk_slider_float(nuklear->GetNkContext(), 0, &sensitivity, 10.0f, 0.01f);
+        nk_slider_float(nuklear->GetNkContext(), 0, &_controllerSettingsNew.sensitivityX, 10.0f, 0.01f);
         nk_layout_row_push(nuklear->GetNkContext(), 0.1f);
-        nk_label(nuklear->GetNkContext(), String(sensitivity).CString(), NK_TEXT_LEFT);
+        nk_label(nuklear->GetNkContext(), String(_controllerSettingsNew.sensitivityX).CString(), NK_TEXT_LEFT);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
-    controllerInput->SetSensitivity(sensitivity, ControllerType::MOUSE);
-    controllerInput->SetInvertX(invertX, ControllerType::MOUSE);
-    controllerInput->SetInvertY(invertY, ControllerType::MOUSE);
+    ApplyControllerSettings();
 }
 
 void SettingsWindow::DrawJoystickSettings()
 {
     auto nuklear = GetSubsystem<NuklearUI>();
-    auto controllerInput = GetSubsystem<ControllerInput>();
-
-    float sensitivity = controllerInput->GetSensitivity(ControllerType::JOYSTICK);
-    int invertX = controllerInput->GetInvertX(ControllerType::JOYSTICK);
-    int invertY = controllerInput->GetInvertY(ControllerType::JOYSTICK);
 
     nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 1);
     {
         nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
         // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
         // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &invertX);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert X axis", &_controllerSettingsNew.invertX);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
@@ -584,7 +609,7 @@ void SettingsWindow::DrawJoystickSettings()
         nk_layout_row_push(nuklear->GetNkContext(), 1.0f);
         // nk_label(nuklear->GetNkContext(), "Stereo", NK_TEXT_LEFT);
         // nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &invertY);
+        nk_checkbox_label(nuklear->GetNkContext(), "Invert Y axis", &_controllerSettingsNew.invertY);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
@@ -592,17 +617,86 @@ void SettingsWindow::DrawJoystickSettings()
     nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 3);
     {
         nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
-        nk_label(nuklear->GetNkContext(), "Sensitivity", NK_TEXT_LEFT);
+        nk_label(nuklear->GetNkContext(), "Sensitivity X", NK_TEXT_LEFT);
         nk_layout_row_push(nuklear->GetNkContext(), 0.4f);
-        nk_slider_float(nuklear->GetNkContext(), 0, &sensitivity, 50.0f, 0.01f);
+        nk_slider_float(nuklear->GetNkContext(), 0, &_controllerSettingsNew.sensitivityX, 50.0f, 0.01f);
         nk_layout_row_push(nuklear->GetNkContext(), 0.1f);
-        nk_label(nuklear->GetNkContext(), String(sensitivity).CString(), NK_TEXT_LEFT);
+        nk_label(nuklear->GetNkContext(), String(_controllerSettingsNew.sensitivityX).CString(), NK_TEXT_LEFT);
     }
     nk_layout_row_end(nuklear->GetNkContext());
 
-    URHO3D_LOGINFO("JOY ivertX " + String(invertX));
-    URHO3D_LOGINFO("JOY ivertY " + String(invertY));
-    controllerInput->SetSensitivity(sensitivity, ControllerType::JOYSTICK);
-    controllerInput->SetInvertX(invertX, ControllerType::JOYSTICK);
-    controllerInput->SetInvertY(invertY, ControllerType::JOYSTICK);
+    nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 30, 3);
+    {
+        nk_layout_row_push(nuklear->GetNkContext(), 0.5f);
+        nk_label(nuklear->GetNkContext(), "Sensitivity Y", NK_TEXT_LEFT);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.4f);
+        nk_slider_float(nuklear->GetNkContext(), 0, &_controllerSettingsNew.sensitivityY, 50.0f, 0.01f);
+        nk_layout_row_push(nuklear->GetNkContext(), 0.1f);
+        nk_label(nuklear->GetNkContext(), String(_controllerSettingsNew.sensitivityY).CString(), NK_TEXT_LEFT);
+    }
+    nk_layout_row_end(nuklear->GetNkContext());
+
+    ApplyControllerSettings();
+}
+
+void SettingsWindow::InitMouseSettings()
+{
+    auto controllerInput = GetSubsystem<ControllerInput>();
+    _controllerSettings.sensitivityX = controllerInput->GetSensitivityX(ControllerType::MOUSE);
+    _controllerSettings.sensitivityY = controllerInput->GetSensitivityY(ControllerType::MOUSE);
+    _controllerSettings.invertX = controllerInput->GetInvertX(ControllerType::MOUSE);
+    _controllerSettings.invertY = controllerInput->GetInvertY(ControllerType::MOUSE);
+    _controllerSettingsNew = _controllerSettings;
+}
+
+void SettingsWindow::InitJoystickSettings()
+{
+    auto controllerInput = GetSubsystem<ControllerInput>();
+    _controllerSettings.sensitivityX = controllerInput->GetSensitivityX(ControllerType::JOYSTICK);
+    _controllerSettings.sensitivityY = controllerInput->GetSensitivityY(ControllerType::JOYSTICK);
+    _controllerSettings.invertX = controllerInput->GetInvertX(ControllerType::JOYSTICK);
+    _controllerSettings.invertY = controllerInput->GetInvertY(ControllerType::JOYSTICK);
+    _controllerSettingsNew = _controllerSettings;
+}
+
+void SettingsWindow::ApplyControllerSettings()
+{
+    if (_controllerSettings.invertX == _controllerSettingsNew.invertX &&
+        _controllerSettings.invertY == _controllerSettingsNew.invertY &&
+        _controllerSettings.sensitivityX == _controllerSettingsNew.sensitivityX &&
+        _controllerSettings.sensitivityY == _controllerSettingsNew.sensitivityY) {
+        return;
+    }
+
+    _controllerSettings = _controllerSettingsNew;
+
+    URHO3D_LOGINFO("Saving controller settings " + String((int)_openedView));
+    URHO3D_LOGINFO("====== " + String(_controllerSettings.sensitivityX));
+    if (_openedView == SettingsViewType::MOUSE_VIEW) {
+        auto controllerInput = GetSubsystem<ControllerInput>();
+        controllerInput->SetSensitivityX(_controllerSettings.sensitivityX, ControllerType::MOUSE);
+        controllerInput->SetSensitivityY(_controllerSettings.sensitivityX, ControllerType::MOUSE);
+        controllerInput->SetInvertX(_controllerSettings.invertX, ControllerType::MOUSE);
+        controllerInput->SetInvertY(_controllerSettings.invertY, ControllerType::MOUSE);
+
+
+        GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", _controllerSettings.sensitivityX);
+        GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", (bool)_controllerSettings.invertX);
+        GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", (bool)_controllerSettings.invertY);
+        GetSubsystem<ConfigManager>()->Save(true);
+    }
+    else {
+        auto controllerInput = GetSubsystem<ControllerInput>();
+        controllerInput->SetSensitivityX(_controllerSettings.sensitivityX, ControllerType::JOYSTICK);
+        controllerInput->SetSensitivityY(_controllerSettings.sensitivityY, ControllerType::JOYSTICK);
+        controllerInput->SetInvertX(_controllerSettings.invertX, ControllerType::JOYSTICK);
+        controllerInput->SetInvertY(_controllerSettings.invertY, ControllerType::JOYSTICK);
+
+        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", _controllerSettings.sensitivityX);
+        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", _controllerSettings.sensitivityY);
+        GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", (bool)_controllerSettings.invertX);
+        GetSubsystem<ConfigManager>()->Set("joystick", "InvertY", (bool)_controllerSettings.invertY);
+        GetSubsystem<ConfigManager>()->Save(true);
+    }
+
 }

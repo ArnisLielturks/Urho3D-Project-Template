@@ -64,7 +64,7 @@ String KeyboardInput::GetActionKeyName(int action)
 {
 	if (_mappedControlToKey.Contains(action)) {
 		auto* input = GetSubsystem<Input>();
-		return input->GetKeyName(_mappedControlToKey[action]);
+		return input->GetKeyName(static_cast<Key>(_mappedControlToKey[action]));
 	}
 
 	return String::EMPTY;

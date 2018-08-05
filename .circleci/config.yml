@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: arnislielturks/urho3d:6
+      - image: arnislielturks/urho3d:7
     working_directory: ~/Urho3D-Empty-Project
     steps:
       - checkout

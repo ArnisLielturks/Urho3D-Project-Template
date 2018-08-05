@@ -53,7 +53,7 @@ void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         joystick++;
     }
 	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(key) + " => " + String(key));
+	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
 	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -77,7 +77,7 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         joystick++;
     }
 	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(key) + " => " + String(key));
+	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
 	if (_activeAction > 0) {
 		return;

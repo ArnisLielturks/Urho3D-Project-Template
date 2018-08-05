@@ -87,7 +87,7 @@ void SettingsWindow::SaveVideoSettings()
 	auto* renderer = GetSubsystem<Renderer>();
 	renderer->SetTextureFilterMode(TextureFilterMode(_graphicsSettings.textureFilterMode));
 	renderer->SetTextureAnisotropy(_graphicsSettings.textureAnistropy);
-	renderer->SetTextureQuality(_graphicsSettings.textureQuality);
+	renderer->SetTextureQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
 	renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
 	renderer->SetDrawShadows(_graphicsSettings.shadows);
 

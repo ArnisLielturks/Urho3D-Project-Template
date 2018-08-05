@@ -153,7 +153,7 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 	data[P_CONTROL_ACTION] = action;
 	data[P_ACTION_NAME] = _controlMapNames[action];
 	data[P_KEY] = key;
-	data[P_KEY_NAME] = input->GetKeyName(key);
+	data[P_KEY_NAME] = input->GetKeyName(static_cast<Key>(key));
 	SendEvent(MyEvents::E_INPUT_MAPPING_FINISHED, data);
 
 	SaveConfig();

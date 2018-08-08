@@ -198,7 +198,7 @@ void ConsoleWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     if (_timer.GetMSec(false) > 1000) {
         _timer.Reset();
-        URHO3D_LOGINFOF("FPS: %d => %d", (int)(1.0f / timeStep), GetSubsystem<Engine>()->GetMaxFps());
+        //URHO3D_LOGINFOF("FPS: %d => %d", (int)(1.0f / timeStep), GetSubsystem<Engine>()->GetMaxFps());
     }
 }
 

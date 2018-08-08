@@ -203,6 +203,15 @@ void BaseApplication::RegisterConsoleCommands()
 		SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 	}
 
+    // How to use lambda (anonymous) functions
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "lambda_test", MyEvents::ConsoleCommandAdd::P_EVENT, "#lambda_test", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Test the console lambda function");
+    SubscribeToEvent("#lambda_test", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        for (int i = 0; i < params.Size(); i++) {
+            URHO3D_LOGINFO("Lambda test param[" + String(i) + "]: " + params.At(i));
+        }
+    });
+
 	SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(BaseApplication, HandleConsoleGlobalVariableChange));
 }
 

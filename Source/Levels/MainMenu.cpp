@@ -158,10 +158,17 @@ void MainMenu::draw()
                     data[P_TYPE] = SOUND_EFFECT;
                     SendEvent(MyEvents::E_PLAY_SOUND, data);
                 }
-                VariantMap& levelEventData = GetEventDataMap();
+                /*VariantMap& levelEventData = GetEventDataMap();
                 levelEventData["Name"] = "ExitGame";
-                SendEvent(MyEvents::E_SET_LEVEL, levelEventData);
-                _active = false;
+                SendEvent(MyEvents::E_SET_LEVEL, levelEventData);*/
+
+                VariantMap data = GetEventDataMap();
+
+                /*data["Name"] = "ExitGame";
+                SendEvent(MyEvents::E_SET_LEVEL, data);*/
+                data["Name"] = "QuitConfirmationWindow";
+                SendEvent(MyEvents::E_OPEN_WINDOW, data);
+                //_active = false;
             }
         }
         nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);

@@ -7,6 +7,7 @@
 #include "Pause/PauseWindow.h"
 #include "WeaponChoice/WeaponChoiceWindow.h"
 #include "Console/ConsoleWindow.h"
+#include "QuitConfirmation/QuitConfirmationWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -43,6 +44,7 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<PauseWindow>();
     context_->RegisterFactory<WeaponChoiceWindow>();
     context_->RegisterFactory<ConsoleWindow>();
+    context_->RegisterFactory<QuitConfirmationWindow>();
 }
 
 void WindowManager::SubscribeToEvents()
@@ -178,5 +180,6 @@ void WindowManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     for (auto it = _closeQueue.Begin(); it != _closeQueue.End(); ++it) {
         CloseWindow((*it));
     }
+    _closeQueue.Clear();
     UnsubscribeFromEvent(E_UPDATE);
 }

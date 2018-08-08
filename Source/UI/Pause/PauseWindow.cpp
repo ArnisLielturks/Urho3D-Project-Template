@@ -101,8 +101,10 @@ void PauseWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
                 }
                 VariantMap data = GetEventDataMap();
 
-                data["Name"] = "ExitGame";
-                SendEvent(MyEvents::E_SET_LEVEL, data);
+                /*data["Name"] = "ExitGame";
+                SendEvent(MyEvents::E_SET_LEVEL, data);*/
+                data["Name"] = "QuitConfirmationWindow";
+                SendEvent(MyEvents::E_OPEN_WINDOW, data);
 
                 data["Name"] = "PauseWindow";
                 SendEvent(MyEvents::E_CLOSE_WINDOW, data);

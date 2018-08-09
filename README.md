@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
+
 # Urho3D-Empty-Project
 A basic app skeleton which uses global notifications and level management with fade-in/fade-out effects. Project uses code samples from the community.
 

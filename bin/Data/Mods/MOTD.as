@@ -45,7 +45,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     // Create HTTP request
     if (httpRequest is null)
-        httpRequest = network.MakeHttpRequest("http://frameskippers.com/motd.php");
+        httpRequest = network.MakeHttpRequest("http://178.62.212.92/motd.php");
     else
     {
         // Initializing HTTP request

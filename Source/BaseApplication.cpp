@@ -42,11 +42,6 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
-    DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
-
-    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-    debugHud->SetDefaultStyle(xmlFile);
-    debugHud->ToggleAll();
 
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before
@@ -204,11 +199,22 @@ void BaseApplication::RegisterConsoleCommands()
 	}
 
     // How to use lambda (anonymous) functions
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "lambda_test", MyEvents::ConsoleCommandAdd::P_EVENT, "#lambda_test", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Test the console lambda function");
-    SubscribeToEvent("#lambda_test", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
+    SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
+        /*StringVector params = eventData["Parameters"].GetStringVector();
         for (int i = 0; i < params.Size(); i++) {
             URHO3D_LOGINFO("Lambda test param[" + String(i) + "]: " + params.At(i));
+        }*/
+        if (!GetSubsystem<DebugHud>()) {
+            DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
+
+            auto* cache = GetSubsystem<ResourceCache>();
+            XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+            debugHud->SetDefaultStyle(xmlFile);
+            debugHud->ToggleAll();
+        }
+        else {
+            GetSubsystem<DebugHud>()->ToggleAll();
         }
     });
 

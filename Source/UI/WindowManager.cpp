@@ -8,6 +8,7 @@
 #include "WeaponChoice/WeaponChoiceWindow.h"
 #include "Console/ConsoleWindow.h"
 #include "QuitConfirmation/QuitConfirmationWindow.h"
+#include "NewGameSettings/NewGameSettingsWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -45,6 +46,7 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<WeaponChoiceWindow>();
     context_->RegisterFactory<ConsoleWindow>();
     context_->RegisterFactory<QuitConfirmationWindow>();
+    context_->RegisterFactory<NewGameSettingsWindow>();
 }
 
 void WindowManager::SubscribeToEvents()

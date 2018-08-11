@@ -102,10 +102,13 @@ void MainMenu::draw()
                     data[P_TYPE] = SOUND_EFFECT;
                     SendEvent(MyEvents::E_PLAY_SOUND, data);
                 }
-                VariantMap& levelEventData = GetEventDataMap();
-                levelEventData["Name"] = "Loading";
+                using namespace MyEvents::OpenWindow;
+                VariantMap& data = GetEventDataMap();
+                data[P_NAME] = "NewGameSettingsWindow";
+                SendEvent(MyEvents::E_OPEN_WINDOW, data);
+                /*levelEventData["Name"] = "Loading";
                 SendEvent(MyEvents::E_SET_LEVEL, levelEventData);
-                _active = false;
+                _active = false;*/
             }
         }
         nk_button_set_behavior(nuklear->GetNkContext(), NK_BUTTON_DEFAULT);

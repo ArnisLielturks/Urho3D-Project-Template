@@ -1,10 +1,8 @@
 #include <Urho3D/Urho3DAll.h>
 #include "NewGameSettingsWindow.h"
 #include "../../MyEvents.h"
-#include "../../UI/NuklearUI.h"
 #include "../../Audio/AudioManagerDefs.h"
 
-static struct nk_rect _rect;
 /// Construct.
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
     BaseWindow(context),

@@ -2,6 +2,7 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "MyEvents.h"
+#include "UI/NuklearUI.h"
 
 class LevelManager : public Object
 {
@@ -28,4 +29,6 @@ private:
     const float MAX_FADE_TIME = 1.0f;
     String currentLevel_;
     String previousLevel_;
+
+    struct nk_rect _outerRect;
 };

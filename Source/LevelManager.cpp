@@ -1,5 +1,3 @@
-#pragma once
-
 #include "LevelManager.h"
 #include "Levels/Splash.h"
 #include "Levels/MainMenu.h"
@@ -7,9 +5,6 @@
 #include "Levels/ExitGame.h"
 #include "Levels/Loading.h"
 #include "Levels/Credits.h"
-#include "UI/NuklearUI.h"
-
-static struct nk_rect _outerRect;
 
 LevelManager::LevelManager(Context* context) :
     Object(context)

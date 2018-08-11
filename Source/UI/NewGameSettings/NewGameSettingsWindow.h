@@ -27,4 +27,6 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData) override;
 
     bool _active;
+
+    struct nk_rect _rect;
 };

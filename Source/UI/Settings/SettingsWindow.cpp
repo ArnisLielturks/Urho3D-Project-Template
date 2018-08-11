@@ -3,9 +3,6 @@
 #include "../../MyEvents.h"
 #include "../../Input/ControllerInput.h"
 #include "../../Audio/AudioManagerDefs.h"
-#include "../../UI/NuklearUI.h"
-
-static struct nk_rect _rect;
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :

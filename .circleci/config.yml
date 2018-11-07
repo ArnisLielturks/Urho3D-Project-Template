@@ -3,7 +3,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: arnislielturks/urho3d:9
+      - image: arnislielturks/urho3d:10
     working_directory: ~/Urho3D-Empty-Project
     steps:
       - checkout
@@ -15,7 +15,7 @@ jobs:
             - build-v1-{{ checksum "CMakeLists.txt" }}
             - build-v1-
       - run: bash cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build || true
-      - run: bash cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib -DCPU_DISPATCH= || true
+      - run: bash cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib || true
       # Fix Urho3D code style issues
       # - run: cp Fixes/UISelectable.h /Urho3D/Source/Urho3D/UI/UISelectable.h
       - run: cd build-windows && make -j 2

@@ -9,6 +9,7 @@ jobs:
       - checkout
       - run: apt update
       - run: apt-get install -y python-setuptools curl zip
+      - run: /usr/bin/x86_64-w64-mingw32-g++ --version
       - restore_cache:
           keys:
             - build-v1-{{ checksum "CMakeLists.txt" }}

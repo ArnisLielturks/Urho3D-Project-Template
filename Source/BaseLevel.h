@@ -135,6 +135,9 @@ protected:
     {
     }
 
+    /**
+     * Define rects for splitscreen mode
+     */
     Vector<IntRect> InitRects(int count)
     {
         auto* graphics = GetSubsystem<Graphics>();
@@ -162,6 +165,9 @@ protected:
         return rects;
     }
 
+    /**
+     * Create viewports based on controller count
+     */
     void InitViewports(Vector<int> playerIndexes)
     {
         auto* graphics = GetSubsystem<Graphics>();

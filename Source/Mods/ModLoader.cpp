@@ -61,10 +61,12 @@ void ModLoader::Reload()
 {
 	//_mods.Clear();
 	for (auto it = _mods.Begin(); it != _mods.End(); ++it) {
-		(*it)->RemoveEventHandlers();
-		(*it)->Execute("void Stop()");
-		(*it)->Execute("void Start()");
+	    if ((*it)) {
+            (*it)->Execute("void Stop()");
+            (*it)->Execute("void Start()");
+        }
 	}
+    CheckAllMods();
 }
 
 void ModLoader::SubscribeConsoleCommands()

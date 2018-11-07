@@ -176,7 +176,7 @@ void CreateScriptName(String name, int index)
     helloText.text = name;
 
     // Set font and text color
-    helloText.SetFont(cache.GetResource("Font", "Fonts/Anonymous Pro.ttf"), fontSize);
+    helloText.SetFont(cache.GetResource("Font", "Fonts/ABeeZee-Regular.ttf"), fontSize);
     helloText.color = Color(0.0f, 0.8f, 0.0f);
 
     // Align Text center-screen

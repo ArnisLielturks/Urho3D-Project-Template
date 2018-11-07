@@ -15,6 +15,9 @@ public:
     virtual ~MouseInput();
 	virtual String GetActionKeyName(int action);
 
+	/**
+	 * Load mouse config from config.cfg file [mouse] block
+	 */
     virtual void LoadConfig();
 
 protected:

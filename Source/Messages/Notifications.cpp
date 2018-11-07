@@ -17,23 +17,11 @@ void Notifications::Init()
     SubscribeToEvents();
 }
 
-void Notifications::Create()
-{
-    UI* ui = GetSubsystem<UI>();
-
-    _baseElement = ui->GetRoot()->CreateChild("Menu");
-    SubscribeToEvents();
-}
-
 void Notifications::SubscribeToEvents()
 {
     SubscribeToEvent("ShowNotification", URHO3D_HANDLER(Notifications, HandleNewNotification));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
     SubscribeToEvent(StringHash("ClientGameRoundEnd"), URHO3D_HANDLER(Notifications, HandleGameEnd));
-}
-
-void Notifications::Dispose()
-{
 }
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)

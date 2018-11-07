@@ -56,6 +56,7 @@ void ConfigManager::Set(const String& section, const String& parameter, const Va
   SettingsMap* sectionMap(GetSection(section, true));
 
   sectionMap->operator[](parameter) = value;
+  SetGlobalVar(parameter, value);
 }
 
 // Get value.

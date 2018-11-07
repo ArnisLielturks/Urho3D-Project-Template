@@ -14,7 +14,6 @@ namespace Levels {
         Credits(Context* context);
 
         virtual ~Credits();
-        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
         void Init () override;
@@ -30,6 +29,8 @@ namespace Levels {
         void HandleEndCredits();
 
 		void CreateSingleLine(String content, int fontSize);
+
+		void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
         Timer _timer;
 

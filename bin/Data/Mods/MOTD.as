@@ -30,7 +30,7 @@ void CreateUI()
     text = Text();
 
     // Set font and text color
-    text.SetFont(cache.GetResource("Font", "Fonts/Anonymous Pro.ttf"), 15);
+    text.SetFont(cache.GetResource("Font", "Fonts/ABeeZee-Regular.ttf"), 15);
     text.color = Color(1.0f, 1.0f, 0.0f);
 
     // Align Text center-screen

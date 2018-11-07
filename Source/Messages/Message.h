@@ -14,20 +14,35 @@ public:
 
     virtual ~Message();
 
-    bool Create();
-
-    void HandleShowMessage(StringHash eventType, VariantMap& eventData);
-
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
-
 protected:
     virtual void Init();
+
+    /**
+     * Handle ShowMessage event
+     */
+    void HandleShowMessage(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Display message with animation effects
+     */
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
 private:
 
     void SubscribeToEvents();
 
+    /**
+     * Message title
+     */
     String _title;
+
+    /**
+     * Message content
+     */
     String _message;
+
+    /**
+     * Timestep for message animation
+     */
     float _messageTime;
 };

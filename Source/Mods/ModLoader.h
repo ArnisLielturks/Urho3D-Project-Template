@@ -14,23 +14,42 @@ public:
 
     virtual ~ModLoader();
 
-    void Create();
-
-    void Dispose();
-
-	void Reload();
-
 protected:
     virtual void Init();
 
 private:
 
+	/**
+    * Load and create all scripts
+    */
+	void Create();
+
+	/**
+	 * Destroy all created scripts
+	 */
+	void Dispose();
+
+	/**
+	 * Reload changed scripts
+	 */
+	void Reload();
+
     void SubscribeToEvents();
 	void SubscribeConsoleCommands();
+
+	/**
+	 * Handle script reload command
+	 */
 	void HandleReload(StringHash eventType, VariantMap& eventData);
 
+	/**
+	 * Handle single script reload
+	 */
     void HandleReloadScript(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Generate list of mods, sent out events
+     */
     void CheckAllMods();
 
     /**
@@ -38,5 +57,8 @@ private:
      */
     Vector<SharedPtr<ScriptFile>> _mods;
 
+    /**
+     * Script location, script object map
+     */
     HashMap<String, SharedPtr<ScriptFile>> _scriptMap;
 };

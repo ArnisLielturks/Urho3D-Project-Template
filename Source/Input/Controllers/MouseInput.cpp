@@ -99,8 +99,8 @@ String MouseInput::GetActionKeyName(int action)
 
 void MouseInput::LoadConfig()
 {
-    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX");
-    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
-    _invertX = GetSubsystem<ConfigManager>()->Get("joystick", "InvertX").GetBool();
-    _invertY = GetSubsystem<ConfigManager>()->Get("joystick", "InvertY").GetBool();
+    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
+    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
+    _invertX = GetSubsystem<ConfigManager>()->Get("mouse", "InvertX").GetBool();
+    _invertY = GetSubsystem<ConfigManager>()->Get("mouse", "InvertY").GetBool();
 }

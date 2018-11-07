@@ -13,7 +13,7 @@ SettingsWindow::SettingsWindow(Context* context) :
 
     auto graphics = GetSubsystem<Graphics>();
     int width = graphics->GetWidth() - 100;
-    int height = graphics->GetHeight() - 200;
+    int height = graphics->GetHeight() - 100;
     _rect.x = graphics->GetWidth() / 2 - width / 2;
     _rect.w = width;
     _rect.y = graphics->GetHeight() / 2 - height / 2;

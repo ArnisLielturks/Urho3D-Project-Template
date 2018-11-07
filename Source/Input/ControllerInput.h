@@ -52,10 +52,25 @@ public:
 	 */
 	void SetActionState(int action, bool active, int index = 0);
 
+	/**
+	 * Update Yaw value for specific controller
+	 */
 	void UpdateYaw(float yaw, int index = 0);
+
+    /**
+     * Update Pitch value for specific controller
+     */
 	void UpdatePitch(float pitch, int index = 0);
 
+	/**
+	 * Create new controls for specific controller
+	 * This allows multiple `Controls` objects to be created for each controller
+	 */
 	void CreateController(int controllerIndex);
+
+	/**
+	 * Destroy created controller slot
+	 */
 	void DestroyController(int controllerIndex);
 
 	/**
@@ -81,24 +96,55 @@ public:
 	bool IsMappingInProgress();
 
     /**
-    * Load INI configuration file
+    * Load INI configuration file from config.cfg
     */
     void LoadConfig();
 
+    /**
+     * Set joystick as first controller
+     * This means that 1st joystick and keyboard/mouse shares the same controlled entity
+     * Ignored if `SetMultipleControllerSupport` is set as `false`
+     */
     void SetJoystickAsFirstController(bool enabled);
 
+    /**
+     * Set inverted X axis for specific controller
+     */
     void SetInvertX(bool enabled, int controller);
 
+    /**
+     * Get inverted X axis value for specific controller
+     */
     bool GetInvertX(int controller);
 
+    /**
+     * Set inverted Y axis for specific controller
+     */
     void SetInvertY(bool enabled, int controller);
 
+    /**
+     * Get inverted Y axis value for specific controller
+     */
     bool GetInvertY(int controller);
 
+    /**
+     * Set X axis sensitivity for specific controller
+     */
     void SetSensitivityX(float value, int controller);
+
+    /**
+     * Set Y axis sensitivity for specific controller
+     */
     void SetSensitivityY(float value, int controller);
 
+    /**
+     * Get X axis sensitivity for specific controller
+     */
     float GetSensitivityX(int controller);
+
+    /**
+     * Get Y axis sensitivity for specific controller
+     */
     float GetSensitivityY(int controller);
 
 protected:

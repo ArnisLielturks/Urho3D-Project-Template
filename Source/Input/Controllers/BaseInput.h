@@ -3,6 +3,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "../../Config/ConfigFile.h"
 
+
 class BaseInput : public Object
 {
     URHO3D_OBJECT(BaseInput, Object);

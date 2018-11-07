@@ -61,7 +61,7 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(nuklear);
     // Initialize default font of your choice or use default one.
     //nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_default(nuklear->GetFontAtlas(), 13.f, 0);
-    String fontPath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Fonts/Anonymous Pro.ttf";
+    String fontPath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Fonts/ABeeZee-Regular.ttf";
     nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_from_file(nuklear->GetFontAtlas(), fontPath.CString(), 16.0f, NULL);
 
     // Additional font initialization here. See https://github.com/vurtun/nuklear/blob/master/demo/sdl_opengl3/main.c
@@ -83,11 +83,13 @@ void BaseApplication::Start()
 	context_->RegisterSubsystem<ControllerInput>();
     // Single player mode, all the input is handled by single Controls object
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
+    // Keyboard/mouse - 1st player, all the connected joysticks control new players
+    // This will have no effect if `SetMultipleControllerSupport` is set to `false`
     context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();

@@ -36,12 +36,6 @@ void Message::Init()
     SubscribeToEvents();
 }
 
-bool Message::Create()
-{
-    SubscribeToEvents();
-    return true;
-}
-
 void Message::SubscribeToEvents()
 {
     SubscribeToEvent("ShowAlertMessage", URHO3D_HANDLER(Message, HandleShowMessage));

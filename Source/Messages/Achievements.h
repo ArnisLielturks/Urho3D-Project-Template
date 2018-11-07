@@ -16,9 +16,19 @@ public:
 
     static void RegisterObject(Context* context);
 
+    /**
+     * Set achievement image
+     */
     void SetImage(String image);
+
+    /**
+     * Set achievement message
+     */
     void SetMessage(String message);
 
+    /**
+     * Get achievement message
+     */
     String GetMessage();
 
     void SetVar(StringHash key, const Variant& value);

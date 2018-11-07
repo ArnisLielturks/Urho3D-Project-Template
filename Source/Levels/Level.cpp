@@ -123,6 +123,10 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
 
+    VariantMap data = GetEventDataMap();
+    data["Message"] = "New controller connected!";
+    SendEvent("ShowNotification", data);
+
     _players[controllerIndex] = new Node(context_);
 }
 
@@ -137,6 +141,10 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
     auto* controllerInput = GetSubsystem<ControllerInput>();
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
+
+    VariantMap data = GetEventDataMap();
+    data["Message"] = "Controller disconnected!";
+    SendEvent("ShowNotification", data);
 
 }
 

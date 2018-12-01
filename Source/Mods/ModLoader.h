@@ -34,6 +34,8 @@ private:
 	 */
 	void Reload();
 
+    void LoadASMods();
+    void LoadLuaMods();
     void SubscribeToEvents();
 	void SubscribeConsoleCommands();
 
@@ -55,10 +57,10 @@ private:
     /**
      * List of all the loaded mods
      */
-    Vector<SharedPtr<ScriptFile>> _mods;
+    Vector<SharedPtr<ScriptFile>> _asMods;
 
     /**
      * Script location, script object map
      */
-    HashMap<String, SharedPtr<ScriptFile>> _scriptMap;
+    HashMap<String, SharedPtr<ScriptFile>> _asScriptMap;
 };

@@ -103,7 +103,7 @@ void SettingsWindow::SaveVideoSettings()
     GetSubsystem<ConfigManager>()->Set("engine", "TextureQuality", _graphicsSettingsNew.textureQuality + 1);
     GetSubsystem<ConfigManager>()->Set("engine", "TextureAnisotropy", _graphicsSettingsNew.textureAnistropy + 1);
     GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode + 1);
-    GetSubsystem<ConfigManager>()->Set("engine", "Multisample", _graphicsSettingsNew.multisample + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "MultiSample", _graphicsSettingsNew.multisample + 1);
     GetSubsystem<ConfigManager>()->Save(true);
 
     int width = graphics->GetWidth() - 100;
@@ -152,7 +152,7 @@ void SettingsWindow::InitGraphicsSettings()
 	_graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt() - 1;
 	_graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt() - 1;
 	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt() - 1 ;
-	_graphicsSettings.multisample = GetGlobalVar("Multisample").GetInt() - 1;
+	_graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt() - 1, 0);
 
 	String activeResolution = String(_graphicsSettings.width) + "x" + String(_graphicsSettings.height);
     auto graphics = GetSubsystem<Graphics>();

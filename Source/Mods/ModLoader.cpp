@@ -15,8 +15,12 @@ ModLoader::~ModLoader()
 
 void ModLoader::Init()
 {
-    context_->RegisterSubsystem(new Script(context_));
-    context_->RegisterSubsystem(new LuaScript(context_));
+    auto asScript = new Script(context_);
+    context_->RegisterSubsystem(asScript);
+    asScript->SetExecuteConsoleCommands(false);
+    auto luaScript = new LuaScript(context_);
+    context_->RegisterSubsystem(luaScript);
+    luaScript->SetExecuteConsoleCommands(false);
     Create();
     SubscribeToEvents();
 }

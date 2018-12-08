@@ -2,7 +2,6 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseWindow.h"
-#include "../NuklearUI.h"
 
 enum SettingsButtonType {
     CLOSE,
@@ -111,6 +110,4 @@ private:
 
 	char **_supportedResolutions;
     StringVector _resoulutionVector;
-
-    struct nk_rect _rect;
 };

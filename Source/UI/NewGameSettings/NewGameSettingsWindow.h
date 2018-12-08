@@ -2,7 +2,6 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseWindow.h"
-#include "../NuklearUI.h"
 
 class NewGameSettingsWindow : public BaseWindow
 {
@@ -27,6 +26,4 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData) override;
 
     bool _active;
-
-    struct nk_rect _rect;
 };

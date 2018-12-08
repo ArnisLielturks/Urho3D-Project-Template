@@ -5,31 +5,15 @@
 #include "Settings/SettingsWindow.h"
 #include "Scoreboard/ScoreboardWindow.h"
 #include "Pause/PauseWindow.h"
-#include "WeaponChoice/WeaponChoiceWindow.h"
-#include "Console/ConsoleWindow.h"
 #include "QuitConfirmation/QuitConfirmationWindow.h"
 #include "NewGameSettings/NewGameSettingsWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
-    Object(context),
-    _consoleVisible(false)
+    Object(context)
 {
     SubscribeToEvents();
     RegisterAllFactories();
-
-    _persistentWindows["ConsoleWindow"] = true;
-
-    for (auto it = _persistentWindows.Begin(); it != _persistentWindows.End(); ++it) {
-        StringHash type = StringHash((*it).first_);
-        SharedPtr<Object> newWindow;
-        newWindow = context_->CreateObject(type);
-
-        BaseWindow* window = newWindow->Cast<BaseWindow>();
-        window->SetActive(false);
-
-        _windowList.Push(newWindow);
-    }
 }
 
 WindowManager::~WindowManager()
@@ -40,11 +24,10 @@ WindowManager::~WindowManager()
 void WindowManager::RegisterAllFactories()
 {
     // Register classes
+    context_->RegisterFactory<BaseWindow>();
     context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();
     context_->RegisterFactory<PauseWindow>();
-    context_->RegisterFactory<WeaponChoiceWindow>();
-    context_->RegisterFactory<ConsoleWindow>();
     context_->RegisterFactory<QuitConfirmationWindow>();
     context_->RegisterFactory<NewGameSettingsWindow>();
 }
@@ -71,9 +54,6 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
                 URHO3D_LOGERROR("Window '" + windowName + "' already opened!");
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
                 window->SetActive(true);
-                if (windowName == "ConsoleWindow") {
-                    _consoleVisible = true;
-                }
                 return;
             }
         }
@@ -142,31 +122,12 @@ bool WindowManager::IsWindowOpen(String windowName)
     return false;
 }
 
-bool WindowManager::IsConsoleVisible()
-{
-    return _consoleVisible;
-}
-
 void WindowManager::CloseWindow(String windowName)
 {
     using namespace MyEvents::CloseWindow;
     URHO3D_LOGINFO("Closing window: " + windowName);
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
-
-            if (_persistentWindows.Contains(windowName)) {
-                URHO3D_LOGINFO("Cannot destroy persistent window " + windowName);
-                BaseWindow* window = (*it)->Cast<BaseWindow>();
-                window->SetActive(false);
-
-                if (windowName == "ConsoleWindow") {
-                    _consoleVisible = false;
-                    VariantMap data;
-                    data[P_NAME] = windowName;
-                    SendEvent(MyEvents::E_WINDOW_CLOSED, data);
-                }
-                return;
-            }
 
             _windowList.Erase(it);
             VariantMap data;

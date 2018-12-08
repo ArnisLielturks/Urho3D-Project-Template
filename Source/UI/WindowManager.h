@@ -18,7 +18,6 @@ public:
     void Dispose();
 
     bool IsWindowOpen(String windowName);
-    bool IsConsoleVisible();
 
 private:
 
@@ -35,9 +34,7 @@ private:
 
     List<SharedPtr<Object>> _windowList;
 
-    HashMap<String, bool> _persistentWindows;
     List<String> _openedWindows;
 
-    bool _consoleVisible;
     List<String> _closeQueue;
 };

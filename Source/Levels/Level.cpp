@@ -158,10 +158,6 @@ void Level::UnsubscribeToEvents()
 
 void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 {
-    if (GetSubsystem<WindowManager>()->IsConsoleVisible()) {
-        return;
-    }
-
     if (!scene_->IsUpdateEnabled()) {
         return;
     }
@@ -197,9 +193,6 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (GetSubsystem<WindowManager>()->IsConsoleVisible()) {
-        return;
-    }
 
     if (!scene_->IsUpdateEnabled()) {
         return;

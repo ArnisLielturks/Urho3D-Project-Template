@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
-#include "../UI/NuklearUI.h"
 
 using namespace Urho3D;
 
@@ -43,7 +42,6 @@ private:
     float _size;
     String _message;
     SharedPtr<Texture2D> _imageTexture;
-    struct nk_image _image{};
     VariantMap vars_;
 };
 

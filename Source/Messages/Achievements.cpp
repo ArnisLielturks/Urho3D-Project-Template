@@ -23,9 +23,6 @@ void SingleAchievement::SetImage(String image)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     _imageTexture = cache->GetResource<Texture2D>(image);
-    if (_imageTexture) {
-        _image = nk_image_ptr((void*)_imageTexture.Get());
-    }
 }
 
 void SingleAchievement::SetMessage(String message)
@@ -41,29 +38,6 @@ String SingleAchievement::GetMessage()
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
     auto graphics = GetSubsystem<Graphics>();
-    auto nuklear = GetSubsystem<NuklearUI>();
-    auto ctx = nuklear->GetNkContext();
-    nk_style_default(ctx);
-
-    if (nk_begin(nuklear->GetNkContext(), _message.CString(), nk_rect((int)_size, graphics->GetHeight() - 110, 300, 100), NK_WINDOW_NO_SCROLLBAR)) {
-
-        nk_layout_row_begin(nuklear->GetNkContext(), NK_DYNAMIC, 90, 3);
-        {
-            if (_image.handle.ptr == NULL)
-            {
-            }
-            else {
-                nk_layout_row_push(nuklear->GetNkContext(), 0.35);
-                nk_button_image_label(nuklear->GetNkContext(), _image, "logo", NK_TEXT_CENTERED);
-            }
-            nk_layout_row_push(nuklear->GetNkContext(), 0.05);
-            nk_spacing(nuklear->GetNkContext(), 1);
-            nk_layout_row_push(nuklear->GetNkContext(), 0.6);
-            nk_label_wrap(nuklear->GetNkContext(), _message.CString());
-        }
-        nk_layout_row_end(nuklear->GetNkContext());
-    }
-    nk_end(ctx);
 
     using namespace PostUpdate;
 

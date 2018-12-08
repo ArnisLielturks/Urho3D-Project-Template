@@ -25,7 +25,7 @@ private:
 
 protected:
 
-    virtual void HandleUpdate(StringHash eventType, VariantMap& eventData) = 0;
+    virtual void HandleUpdate(StringHash eventType, VariantMap& eventData) {};
 
     virtual void Dispose()
     {

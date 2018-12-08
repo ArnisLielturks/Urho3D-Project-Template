@@ -2,7 +2,7 @@
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
 #include "Audio/AudioManager.h"
-#include "UI/NuklearUI.h"
+#include "Console/ConsoleWindow.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
@@ -12,7 +12,6 @@ BaseApplication::BaseApplication(Context* context) :
 	ConfigFile::RegisterObject(context);
     ConfigManager::RegisterObject(context);
 
-    context_->RegisterFactory<NuklearUI>();
     context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
     context_->RegisterFactory<Message>();
@@ -22,6 +21,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<ModLoader>();
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
+    context_->RegisterFactory<ConsoleWindow>();
 
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
 
@@ -42,6 +42,7 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
+    context_->RegisterSubsystem(new ConsoleWindow(context_));
 
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before
@@ -57,15 +58,7 @@ void BaseApplication::Start()
 
     SubscribeToEvents();
 
-    auto nuklear = new NuklearUI(context_);
-    context_->RegisterSubsystem(nuklear);
-    // Initialize default font of your choice or use default one.
-    //nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_default(nuklear->GetFontAtlas(), 13.f, 0);
-    String fontPath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Fonts/ABeeZee-Regular.ttf";
-    nuklear->GetFontAtlas()->default_font = nk_font_atlas_add_from_file(nuklear->GetFontAtlas(), fontPath.CString(), 16.0f, NULL);
-
-    // Additional font initialization here. See https://github.com/vurtun/nuklear/blob/master/demo/sdl_opengl3/main.c
-    nuklear->FinalizeFonts();
+    GetSubsystem<FileSystem>()->SetExecuteConsoleCommands(false);
 
     context_->RegisterSubsystem<LevelManager>();
     context_->RegisterSubsystem<WindowManager>();

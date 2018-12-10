@@ -27,8 +27,6 @@ void SettingsWindow::Init()
 
 void SettingsWindow::Create()
 {
-	URHO3D_LOGINFO("Settings Window created");
-
 	_baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
 	_baseWindow->SetStyleAuto();
 	_baseWindow->SetAlignment(HA_CENTER, VA_CENTER);

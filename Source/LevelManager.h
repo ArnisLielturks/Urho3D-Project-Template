@@ -67,6 +67,12 @@ private:
 
         // Prepare to fade out
         if (fade_status_ == 0) {
+            using namespace MyEvents::LevelChangingStarted;
+            VariantMap data = GetEventDataMap();
+            data[P_FROM] = currentLevel_;
+            data[P_TO] = level_queue_.Front();
+            SendEvent(MyEvents::E_LEVEL_CHANGING_STARTED, data);
+
             // No old level
             if (!level_) {
                 fade_status_++;
@@ -117,6 +123,10 @@ private:
             // Create new level
             level_ = context_->CreateObject(StringHash(level_queue_.Front()));
             level_->SendEvent("LevelStart", data_);
+
+            previousLevel_ = currentLevel_;
+            currentLevel_ = level_queue_.Front();
+
             // Remove the old fade layer
             if (fade_window_) {
                 fade_window_->Remove();
@@ -147,6 +157,14 @@ private:
             fade_window_ = SharedPtr<Window>();
             // Unsubscribe update event
             UnsubscribeFromEvent(E_UPDATE);
+
+            {
+                using namespace MyEvents::LevelChangingFinished;
+                VariantMap data = GetEventDataMap();
+                data[P_FROM] = previousLevel_;
+                data[P_TO] = level_queue_.Front();
+                SendEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, data);
+            }
 
             VariantMap data = GetEventDataMap();
             data["Name"] = level_queue_.Front();
@@ -195,4 +213,7 @@ private:
     float fade_time_;
     int fade_status_;
     const float MAX_FADE_TIME = 1.0f;
+
+    String currentLevel_;
+    String previousLevel_;
 };

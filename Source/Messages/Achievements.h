@@ -30,6 +30,8 @@ public:
      */
     String GetMessage();
 
+    void SetVerticalPosition(int position);
+
     void SetVar(StringHash key, const Variant& value);
     const Variant& GetVar(const StringHash& key) const;
 private:
@@ -39,10 +41,14 @@ private:
     /// Handle attribute animation removed.
     void OnAttributeAnimationRemoved() override;
 
-    float _size;
+    float _offset;
     String _message;
-    SharedPtr<Texture2D> _imageTexture;
     VariantMap vars_;
+    int _verticalPos;
+
+    SharedPtr<Window> _baseWindow;
+    SharedPtr<Sprite> _sprite;
+    SharedPtr<Text> _title;
 };
 
 class Achievements : public Object

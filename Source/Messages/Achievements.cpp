@@ -4,7 +4,7 @@
 void SingleAchievement::RegisterObject(Context* context)
 {
     context->RegisterFactory<SingleAchievement>();
-    URHO3D_ATTRIBUTE("Size", float, _size, 1, AM_FILE);
+    URHO3D_ATTRIBUTE("Offset", float, _offset, 1, AM_FILE);
 }
 
 /// Construct.
@@ -12,27 +12,52 @@ SingleAchievement::SingleAchievement(Context* context) :
     Animatable(context)
 {
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
+
+    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    _baseWindow->SetStyleAuto();
+    _baseWindow->SetAlignment(HA_LEFT, VA_BOTTOM);
+    _baseWindow->SetSize(300, 100);
+    _baseWindow->BringToFront();
+
+    _sprite = _baseWindow->CreateChild<Sprite>();
+    _sprite->SetSize(80, 80);
+    _sprite->SetAlignment(HA_LEFT, VA_TOP);
+    _sprite->SetPosition(10, 10);
+
+    auto *cache = GetSubsystem<ResourceCache>();
+    auto *font = cache->GetResource<Font>("Fonts/ABeeZee-Regular.ttf");
+    _title = _baseWindow->CreateChild<Text>();
+    _title->SetFont(font, 10);
+    _title->SetAlignment(HA_LEFT, VA_CENTER);
+    _title->SetPosition(100, 0);
 }
 
 SingleAchievement::~SingleAchievement()
 {
+    _baseWindow->Remove();
     UnsubscribeFromEvent(E_POSTUPDATE);
 }
 
 void SingleAchievement::SetImage(String image)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    _imageTexture = cache->GetResource<Texture2D>(image);
+    _sprite->SetTexture(cache->GetResource<Texture2D>(image));
 }
 
 void SingleAchievement::SetMessage(String message)
 {
     _message = message;
+    _title->SetText(message);
 }
 
 String SingleAchievement::GetMessage()
 {
     return _message;
+}
+
+void SingleAchievement::SetVerticalPosition(int position)
+{
+    _verticalPos = position;
 }
 
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -42,6 +67,8 @@ void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& event
     using namespace PostUpdate;
 
     UpdateAttributeAnimations(eventData[P_TIMESTEP].GetFloat());
+
+    _baseWindow->SetPosition(_offset, _verticalPos);
 }
 
 void SingleAchievement::OnAttributeAnimationAdded()
@@ -130,10 +157,11 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     positionAnimation2->SetKeyFrame(5.0f, 10.0f);
     positionAnimation2->SetKeyFrame(6.0f, -300.0f);
     positionAnimation2->SetKeyFrame(10.0f, -400.0f);
-    objAnimation->AddAttributeAnimation("Size", positionAnimation2);
+    objAnimation->AddAttributeAnimation("Offset", positionAnimation2);
 
     singleAchievement->SetObjectAnimation(objAnimation);
     singleAchievement->SetVar("Lifetime", 8.0f);
+    singleAchievement->SetVerticalPosition(-_activeAchievements.Size() * 110 - 10);
     _activeAchievements.Push(singleAchievement);
 }
 

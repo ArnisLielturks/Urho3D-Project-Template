@@ -127,6 +127,6 @@ void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
 	UnsubscribeFromEvent(E_UPDATE);
 	VariantMap data = GetEventDataMap();
-	data["Name"] = "Loading";
+	data["Name"] = "Level";
     SendEvent(MyEvents::E_SET_LEVEL, data);
 }

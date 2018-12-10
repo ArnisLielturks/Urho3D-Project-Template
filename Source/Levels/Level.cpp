@@ -12,8 +12,7 @@ using namespace Levels;
 Level::Level(Context* context) :
     BaseLevel(context),
     shouldReturn(false),
-    _showScoreboard(false),
-    _showWeaponChoice(false)
+    _showScoreboard(false)
 {
 }
 
@@ -165,9 +164,6 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
-    if (_showWeaponChoice) {
-        return;
-    }
 
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
@@ -195,10 +191,6 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
 
     if (!scene_->IsUpdateEnabled()) {
-        return;
-    }
-
-    if (_showWeaponChoice) {
         return;
     }
 
@@ -245,33 +237,6 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
         Pause();
-    }
-
-    if (key == KEY_F2) {
-        WindowManager* windowManager = GetSubsystem<WindowManager>();
-        if (windowManager->IsWindowOpen("WeaponChoiceWindow")) {
-            VariantMap data = GetEventDataMap();
-            data["Name"] = "WeaponChoiceWindow";
-            SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-
-            Input* input = GetSubsystem<Input>();
-            if (input->IsMouseVisible()) {
-                input->SetMouseVisible(false);
-            }
-
-            _showWeaponChoice = false;
-        } else {
-            VariantMap data = GetEventDataMap();
-            data["Name"] = "WeaponChoiceWindow";
-            SendEvent(MyEvents::E_OPEN_WINDOW, data);
-
-            Input* input = GetSubsystem<Input>();
-            if (!input->IsMouseVisible()) {
-                input->SetMouseVisible(true);
-            }
-
-            _showWeaponChoice = true;
-        }
     }
 }
 

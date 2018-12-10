@@ -22,4 +22,11 @@ protected:
 private:
 
     void SubscribeToEvents();
+
+    SharedPtr<Button> _continueButton;
+    SharedPtr<Button> _mainMenuButton;
+    SharedPtr<Button> _exitButton;
+    SharedPtr<Window> _baseWindow;
+
+    Button* CreateButton(const String& text, int width, IntVector2 position);
 };

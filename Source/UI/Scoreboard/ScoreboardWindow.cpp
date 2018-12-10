@@ -11,6 +11,7 @@ ScoreboardWindow::ScoreboardWindow(Context* context) :
 
 ScoreboardWindow::~ScoreboardWindow()
 {
+    _baseWindow->Remove();
 }
 
 void ScoreboardWindow::Init()
@@ -22,6 +23,11 @@ void ScoreboardWindow::Init()
 
 void ScoreboardWindow::Create()
 {
+    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    _baseWindow->SetStyleAuto();
+    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
+    _baseWindow->SetSize(300, 300);
+    _baseWindow->BringToFront();
 }
 
 void ScoreboardWindow::SubscribeToEvents()

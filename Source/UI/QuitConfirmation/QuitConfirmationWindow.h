@@ -23,5 +23,9 @@ private:
 
     void SubscribeToEvents();
 
-    bool _active;
+    SharedPtr<Button> _yesButton;
+    SharedPtr<Button> _noButton;
+    SharedPtr<Window> _baseWindow;
+
+    Button* CreateButton(const String& text, int width, IntVector2 position);
 };

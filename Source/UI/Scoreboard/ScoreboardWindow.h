@@ -22,4 +22,6 @@ protected:
 private:
 
     void SubscribeToEvents();
+
+    SharedPtr<Window> _baseWindow;
 };

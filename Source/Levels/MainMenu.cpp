@@ -62,8 +62,8 @@ void MainMenu::CreateUI()
 
     SubscribeToEvent(_newGameButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
-        data["Name"] = "Loading";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        data["Name"] = "NewGameSettingsWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
     marginBottom += 40;
@@ -89,8 +89,8 @@ void MainMenu::CreateUI()
     _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_exitButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
-        data["Name"] = "ExitGame";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        data["Name"] = "QuitConfirmationWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 }
 

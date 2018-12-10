@@ -36,456 +36,465 @@ SOFTWARE.
 using namespace Urho3D;
 
 ConfigFile::ConfigFile(Context* context, bool caseSensitive) :
-  Resource(context)
-  , caseSensitive_(caseSensitive)
+        Resource(context)
+        , caseSensitive_(caseSensitive)
 {
 }
 
 void ConfigFile::RegisterObject(Context* context) {
-  context->RegisterFactory<ConfigFile>();
+    context->RegisterFactory<ConfigFile>();
 }
 
 bool ConfigFile::BeginLoad(Deserializer& source) {
-  unsigned dataSize(source.GetSize());
-  if (!dataSize && !source.GetName().Empty()) {
-    URHO3D_LOGERROR("Zero sized data in " + source.GetName());
-    return false;
-  }
-
-  configMap_.Push(ConfigSection());
-  ConfigSection* configSection(&configMap_.Back());
-  while (!source.IsEof()) {
-    String line(source.ReadLine());
-
-    // Parse headers.
-    if (line.StartsWith("[") && line.EndsWith("]")) {
-      configMap_.Push(ConfigSection());
-      configSection = &configMap_.Back();
+    unsigned dataSize(source.GetSize());
+    if (!dataSize && !source.GetName().Empty()) {
+        URHO3D_LOGERROR("Zero sized data in " + source.GetName());
+        return false;
     }
 
-    configSection->Push(line);
-  }
+    configMap_.Push(ConfigSection());
+    ConfigSection* configSection(&configMap_.Back());
+    while (!source.IsEof()) {
+        String line(source.ReadLine());
 
-  return true;
+        // Parse headers.
+        if (line.StartsWith("[") && line.EndsWith("]")) {
+            configMap_.Push(ConfigSection());
+            configSection = &configMap_.Back();
+        }
+
+        configSection->Push(line);
+    }
+
+    return true;
 }
 
 bool ConfigFile::Save(Serializer& dest) const {
-  dest.WriteLine("# AUTO-GENERATED");
+    dest.WriteLine("# AUTO-GENERATED");
 
-  HashMap<String, String> processedConfig;
+    HashMap<String, String> processedConfig;
 
-  // Iterate over all sections, printing out the header followed by the properties.
-  for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
-    if (itr->Begin() == itr->End()) {
-      continue;
+    // Iterate over all sections, printing out the header followed by the properties.
+    for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
+        if (itr->Begin() == itr->End()) {
+            continue;
+        }
+
+        // Don't print section if there's nothing to print.
+        Vector<String>::ConstIterator section_itr(itr->Begin());
+        String header(ParseHeader(*section_itr));
+
+
+        // Don't print header if it's empty.
+        if (header != String::EMPTY) {
+            dest.WriteLine("");
+            dest.WriteLine("[" + header + "]");
+        }
+
+        dest.WriteLine("");
+
+        for (; section_itr != itr->End(); ++section_itr) {
+            const String line(ParseComments(*section_itr));
+
+            String property;
+            String value;
+
+            ParseProperty(line, property, value);
+
+            if (processedConfig.Contains(property)) {
+                continue;
+            }
+            processedConfig[property] = value;
+
+            if (property != String::EMPTY && value != String::EMPTY) {
+                dest.WriteLine(property + "=" + value);
+            }
+        }
+
+        dest.WriteLine("");
     }
 
-    // Don't print section if there's nothing to print.
-    Vector<String>::ConstIterator section_itr(itr->Begin());
-    String header(ParseHeader(*section_itr));
-
-    // Don't print header if it's empty.
-    if (header != String::EMPTY) {
-      dest.WriteLine("[" + header + "]");
-    }
-
-    dest.WriteLine("");
-
-    for (; section_itr != itr->End(); ++section_itr) {
-      const String line(ParseComments(*section_itr));
-
-      String property;
-      String value;
-
-      ParseProperty(line, property, value);
-
-      if (processedConfig.Contains(property)) {
-          continue;
-      }
-      processedConfig[property] = value;
-
-      if (property != String::EMPTY && value != String::EMPTY) {
-          URHO3D_LOGINFO(property + " ========>>>>>>>>>>. " + value);
-        dest.WriteLine(property + "=" + value);
-      }
-    }
-
-    dest.WriteLine("");
-  }
-
-  return true;
+    return true;
 }
 
 bool ConfigFile::Save(Serializer& dest, bool smartSave) const {
-  if (!smartSave) {
-    return Save(dest);
-  }
-
-  HashMap<String, bool> wroteLine;
-  // Iterate over all sections, printing out the header followed by the properties.
-  for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
-    if (itr->Begin() == itr->End()) {
-      continue;
+    if (!smartSave) {
+        return Save(dest);
     }
 
-    for (Vector<String>::ConstIterator section_itr(itr->Begin()); section_itr != itr->End(); ++section_itr) {
-      const String line(*section_itr);
+    HashMap<String, bool> wroteLine;
+    String activeSection;
 
-      if (wroteLine.Contains(line)) {
-          continue;
-      }
+    // Iterate over all sections, printing out the header followed by the properties.
+    for (Vector<ConfigSection>::ConstIterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
+        if (itr->Begin() == itr->End()) {
+            continue;
+        }
 
-      wroteLine[line] = true;
+        for (Vector<String>::ConstIterator section_itr(itr->Begin()); section_itr != itr->End(); ++section_itr) {
+            const String line(*section_itr);
 
-      if (section_itr == itr->Begin()) {
-        dest.WriteLine("[" + line + "]");
-      } else {
-        dest.WriteLine(line);
-      }
+            if (wroteLine.Contains(activeSection + line)) {
+                continue;
+            }
+
+            wroteLine[activeSection + line] = true;
+
+            if (line.Empty()) {
+                continue;
+            }
+
+            if (section_itr == itr->Begin()) {
+                dest.WriteLine("");
+                dest.WriteLine("[" + line + "]");
+                activeSection = line;
+            } else {
+                dest.WriteLine(line);
+            }
+        }
     }
-  }
 
-  return true;
+    return true;
 }
 
 bool ConfigFile::FromString(const String& source) {
-  if (source.Empty()) {
-    return false;
-  }
+    if (source.Empty()) {
+        return false;
+    }
 
-  MemoryBuffer buffer(source.CString(), source.Length());
-  return Load(buffer);
+    MemoryBuffer buffer(source.CString(), source.Length());
+    return Load(buffer);
 }
 
 bool ConfigFile::Has(const String& section, const String& parameter) {
-  return GetString(section, parameter) != String::EMPTY;
+    return GetString(section, parameter) != String::EMPTY;
 }
 
 const String ConfigFile::GetString(const String& section, const String& parameter, const String& defaultValue) {
-  // Find the correct section.
-  ConfigSection* configSection(nullptr);
-  for (Vector<ConfigSection>::Iterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
-    if (itr->Begin() == itr->End()) {
-      continue;
+    // Find the correct section.
+    ConfigSection* configSection(nullptr);
+    for (Vector<ConfigSection>::Iterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
+        if (itr->Begin() == itr->End()) {
+            continue;
+        }
+
+        String& header(*(itr->Begin()));
+        header = ParseHeader(header);
+
+        if (caseSensitive_) {
+            if (section == header) {
+                configSection = &(*itr);
+            }
+        } else {
+            if (section.ToLower() == header.ToLower()) {
+                configSection = &(*itr);
+            }
+        }
     }
 
-    String& header(*(itr->Begin()));
-    header = ParseHeader(header);
-
-    if (caseSensitive_) {
-      if (section == header) {
-        configSection = &(*itr);
-      }
-    } else {
-      if (section.ToLower() == header.ToLower()) {
-        configSection = &(*itr);
-      }
+    // Section doesn't exist.
+    if (!configSection) {
+        return defaultValue;
     }
-  }
 
-  // Section doesn't exist.
-  if (!configSection) {
+    for (Vector<String>::ConstIterator itr(configSection->Begin()); itr != configSection->End(); ++itr) {
+        String property;
+        String value;
+        ParseProperty(*itr, property, value);
+
+        if (property == String::EMPTY || value == String::EMPTY) {
+            continue;
+        }
+
+        if (caseSensitive_) {
+            if (parameter == property) {
+                return value;
+            }
+        } else {
+            if (parameter.ToLower() == property.ToLower()) {
+                return value;
+            }
+        }
+    }
+
     return defaultValue;
-  }
-
-  for (Vector<String>::ConstIterator itr(configSection->Begin()); itr != configSection->End(); ++itr) {
-    String property;
-    String value;
-    ParseProperty(*itr, property, value);
-
-    if (property == String::EMPTY || value == String::EMPTY) {
-      continue;
-    }
-
-    if (caseSensitive_) {
-      if (parameter == property) {
-        return value;
-      }
-    } else {
-      if (parameter.ToLower() == property.ToLower()) {
-        return value;
-      }
-    }
-  }
-
-  return defaultValue;
 }
 
 const int ConfigFile::GetInt(const String& section, const String& parameter, const int defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToInt(property);
+    return ToInt(property);
 }
 
 const bool ConfigFile::GetBool(const String& section, const String& parameter, const bool defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToBool(property);
+    return ToBool(property);
 }
 
 const float ConfigFile::GetFloat(const String& section, const String& parameter, const float defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToFloat(property);
+    return ToFloat(property);
 }
 
 const Vector2 ConfigFile::GetVector2(const String& section, const String& parameter, const Vector2& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToVector2(property);
+    return ToVector2(property);
 }
 
 const Vector3 ConfigFile::GetVector3(const String& section, const String& parameter, const Vector3& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToVector3(property);
+    return ToVector3(property);
 }
 
 const Vector4 ConfigFile::GetVector4(const String& section, const String& parameter, const Vector4& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToVector4(property);
+    return ToVector4(property);
 }
 
 const Quaternion ConfigFile::GetQuaternion(const String& section, const String& parameter, const Quaternion& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToQuaternion(property);
+    return ToQuaternion(property);
 }
 
 const Color ConfigFile::GetColor(const String& section, const String& parameter, const Color& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToColor(property);
+    return ToColor(property);
 }
 
 const IntRect ConfigFile::GetIntRect(const String& section, const String& parameter, const IntRect& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToIntRect(property);
+    return ToIntRect(property);
 }
 
 const IntVector2 ConfigFile::GetIntVector2(const String& section, const String& parameter, const IntVector2& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToIntVector2(property);
+    return ToIntVector2(property);
 }
 
 const Matrix3 ConfigFile::GetMatrix3(const String& section, const String& parameter, const Matrix3& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToMatrix3(property);
+    return ToMatrix3(property);
 }
 
 const Matrix3x4 ConfigFile::GetMatrix3x4(const String& section, const String& parameter, const Matrix3x4& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToMatrix3x4(property);
+    return ToMatrix3x4(property);
 }
 
 const Matrix4 ConfigFile::GetMatrix4(const String& section, const String& parameter, const Matrix4& defaultValue) {
-  String property(GetString(section, parameter));
+    String property(GetString(section, parameter));
 
-  if (property == String::EMPTY) {
-    return defaultValue;
-  }
+    if (property == String::EMPTY) {
+        return defaultValue;
+    }
 
-  return ToMatrix4(property);
+    return ToMatrix4(property);
 }
 
 void ConfigFile::Set(const String& section, const String& parameter, const String& value) {
-  // Find the correct section.
-  ConfigSection* configSection(nullptr);
-  for (Vector<ConfigSection>::Iterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
-    if (itr->Begin() == itr->End()) {
-      continue;
+    // Find the correct section.
+    ConfigSection* configSection(nullptr);
+    for (Vector<ConfigSection>::Iterator itr(configMap_.Begin()); itr != configMap_.End(); ++itr) {
+        if (itr->Begin() == itr->End()) {
+            continue;
+        }
+
+        String& header(*(itr->Begin()));
+        header = ParseHeader(header);
+
+        if (caseSensitive_) {
+            if (section == header) {
+                configSection = &(*itr);
+            }
+        } else {
+            if (section.ToLower() == header.ToLower()) {
+                configSection = &(*itr);
+            }
+        }
     }
 
-    String& header(*(itr->Begin()));
-    header = ParseHeader(header);
-
-    if (caseSensitive_) {
-      if (section == header) {
-        configSection = &(*itr);
-      }
-    } else {
-      if (section.ToLower() == header.ToLower()) {
-        configSection = &(*itr);
-      }
-    }
-  }
-
-  if (section == String::EMPTY) {
-    configSection = &(*configMap_.Begin());
-  }
-
-  // Section doesn't exist.
-  if (!configSection) {
-    String sectionName(section);
-
-    // Format header.
-    if (ConfigFile::ParseHeader(sectionName) == sectionName) {
-      sectionName = "[" + sectionName + "]";
+    if (section == String::EMPTY) {
+        configSection = &(*configMap_.Begin());
     }
 
-    // Create section.
-    configMap_.Push(ConfigSection());
-    configSection = &configMap_.Back();
+    // Section doesn't exist.
+    if (!configSection) {
+        String sectionName(section);
 
-    // Add header and blank line.
-    configSection->Push(sectionName);
-    configSection->Push("");
-  }
+        // Format header.
+        if (ConfigFile::ParseHeader(sectionName) == sectionName) {
+            sectionName = "[" + sectionName + "]";
+        }
 
-  String* line(nullptr);
-  unsigned separatorPos(0);
-  for (Vector<String>::Iterator itr(configSection->Begin()); itr != configSection->End(); ++itr) {
-    // Find property separator.
-    separatorPos = itr->Find("=");
-    if (separatorPos == String::NPOS) {
-      separatorPos = itr->Find(":");
+        // Create section.
+        configMap_.Push(ConfigSection());
+        configSection = &configMap_.Back();
+
+        // Add header and blank line.
+        configSection->Push(sectionName);
+        configSection->Push("");
     }
 
-    // Not a property.
-    if (separatorPos == String::NPOS) {
-      continue;
+    String* line(nullptr);
+    unsigned separatorPos(0);
+    for (Vector<String>::Iterator itr(configSection->Begin()); itr != configSection->End(); ++itr) {
+        // Find property separator.
+        separatorPos = itr->Find("=");
+        if (separatorPos == String::NPOS) {
+            separatorPos = itr->Find(":");
+        }
+
+        // Not a property.
+        if (separatorPos == String::NPOS) {
+            continue;
+        }
+
+        String workingLine = ParseComments(*itr);
+
+        String oldParameter(workingLine.Substring(0, separatorPos).Trimmed());
+        String oldValue(workingLine.Substring(separatorPos + 1).Trimmed());
+
+        // Not the correct parameter.
+        if (caseSensitive_ ? (oldParameter == parameter) : (oldParameter.ToLower() == parameter.ToLower())) {
+            // Replace the value.
+            itr->Replace(itr->Find(oldValue, separatorPos), oldValue.Length(), value);
+            return;
+        }
     }
 
-    String workingLine = ParseComments(*itr);
-
-    String oldParameter(workingLine.Substring(0, separatorPos).Trimmed());
-    String oldValue(workingLine.Substring(separatorPos + 1).Trimmed());
-
-    // Not the correct parameter.
-    if (caseSensitive_ ? (oldParameter == parameter) : (oldParameter.ToLower() == parameter.ToLower())) {
-      // Replace the value.
-      itr->Replace(itr->Find(oldValue, separatorPos), oldValue.Length(), value);
-      return;
+    // Parameter doesn't exist yet.
+    // Find a good place to insert the parameter, avoiding lines which are entirely comments or whitespacing.
+    int index(configSection->Size() - 1);
+    for (int i(index); i >= 0; i--) {
+        if (ParseComments((*configSection)[i]) != String::EMPTY) {
+            index = i + 1;
+            break;
+        }
     }
-  }
-
-  // Parameter doesn't exist yet.
-  // Find a good place to insert the parameter, avoiding lines which are entirely comments or whitespacing.
-  int index(configSection->Size() - 1);
-  for (int i(index); i >= 0; i--) {
-    if (ParseComments((*configSection)[i]) != String::EMPTY) {
-      index = i + 1;
-      break;
-    }
-  }
-  configSection->Insert(index, parameter + "=" + value);
+    configSection->Insert(index, parameter + "=" + value);
 }
 
 // Returns header name without bracket.
 const String ConfigFile::ParseHeader(String line) {
-  // Only parse comments outside of headers.
-  unsigned commentPos(0);
+    // Only parse comments outside of headers.
+    unsigned commentPos(0);
 
-  while (commentPos != String::NPOS) {
-    // Find next comment.
-    unsigned lastCommentPos(commentPos);
-    unsigned commaPos(line.Find("//", commentPos));
-    unsigned hashPos(line.Find("#", commentPos));
-    commentPos = (commaPos < hashPos) ? commaPos : hashPos;
+    while (commentPos != String::NPOS) {
+        // Find next comment.
+        unsigned lastCommentPos(commentPos);
+        unsigned commaPos(line.Find("//", commentPos));
+        unsigned hashPos(line.Find("#", commentPos));
+        commentPos = (commaPos < hashPos) ? commaPos : hashPos;
 
-    // Header is behind a comment.
-    if (line.Find("[", lastCommentPos) > commentPos) {
-      // Stop parsing this line.
-      break;
+        // Header is behind a comment.
+        if (line.Find("[", lastCommentPos) > commentPos) {
+            // Stop parsing this line.
+            break;
+        }
+
+        // Header is before a comment.
+        if (line.Find("[") < commentPos) {
+            unsigned startPos(line.Find("[") + 1);
+            unsigned l1(line.Find("]"));
+            unsigned length(l1 - startPos);
+            line = line.Substring(startPos, length);
+            break;
+        }
     }
 
-    // Header is before a comment.
-    if (line.Find("[") < commentPos) {
-      unsigned startPos(line.Find("[") + 1);
-      unsigned l1(line.Find("]"));
-      unsigned length(l1 - startPos);
-      line = line.Substring(startPos, length);
-      break;
-    }
-  }
+    line = line.Trimmed();
 
-  line = line.Trimmed();
-
-  return line;
+    return line;
 }
 
 const void ConfigFile::ParseProperty(String line, String& property, String& value) {
-  line = ParseComments(line);
+    line = ParseComments(line);
 
-  // Find property separator.
-  unsigned separatorPos(line.Find("="));
-  if (separatorPos == String::NPOS) {
-    separatorPos = line.Find(":");
-  }
+    // Find property separator.
+    unsigned separatorPos(line.Find("="));
+    if (separatorPos == String::NPOS) {
+        separatorPos = line.Find(":");
+    }
 
-  // Not a property.
-  if (separatorPos == String::NPOS) {
-    property = String::EMPTY;
-    value = String::EMPTY;
-    return;
-  }
+    // Not a property.
+    if (separatorPos == String::NPOS) {
+        property = String::EMPTY;
+        value = String::EMPTY;
+        return;
+    }
 
-  property = line.Substring(0, separatorPos).Trimmed();
-  value = line.Substring(separatorPos + 1).Trimmed();
+    property = line.Substring(0, separatorPos).Trimmed();
+    value = line.Substring(separatorPos + 1).Trimmed();
 }
 
 const String ConfigFile::ParseComments(String line) {
-  // Normalize comment tokens.
-  line.Replace("//", "#");
+    // Normalize comment tokens.
+    line.Replace("//", "#");
 
-  // Strip comments.
-  unsigned commentPos(line.Find("#"));
-  if (commentPos != String::NPOS) {
-    line = line.Substring(0, commentPos);
-  }
+    // Strip comments.
+    unsigned commentPos(line.Find("#"));
+    if (commentPos != String::NPOS) {
+        line = line.Substring(0, commentPos);
+    }
 
-  return line;
+    return line;
 }

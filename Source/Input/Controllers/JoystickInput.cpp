@@ -232,9 +232,6 @@ void JoystickInput::LoadConfig()
 {
     _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX");
     _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
-    _invertX = GetSubsystem<ConfigManager>()->Get("joystick", "InvertX").GetBool();
-    _invertY = GetSubsystem<ConfigManager>()->Get("joystick", "InvertY").GetBool();
-
-    URHO3D_LOGINFO("Loading joystick config x " + String(_sensitivityX) + " =>>>> " + String(GetSubsystem<ConfigManager>()->Get("joystick", "SensitivityX").GetFloat()));
-    URHO3D_LOGINFO("Loading joystick config y " + String(_sensitivityY));
+    _invertX = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX");
+    _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY");
 }

@@ -6,13 +6,12 @@
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
-    BaseWindow(context),
-	_openedView(SettingsViewType::CONTROLS_VIEW)
+    BaseWindow(context)
 {
 
     Init();
-	InitAudioSettings();
-	InitGraphicsSettings();
+//	InitAudioSettings();
+//	InitGraphicsSettings();
 }
 
 SettingsWindow::~SettingsWindow()
@@ -29,11 +28,273 @@ void SettingsWindow::Init()
 void SettingsWindow::Create()
 {
 	URHO3D_LOGINFO("Settings Window created");
+
+	_baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+	_baseWindow->SetStyleAuto();
+	_baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
+	_baseWindow->SetSize(400, 400);
+	_baseWindow->BringToFront();
+
+	_tabView = _baseWindow->CreateChild<UIElement>();
+	_tabView->SetAlignment(HA_LEFT, VA_TOP);
+	_tabView->SetPosition(0, 40);
+	_tabView->SetWidth(_baseWindow->GetWidth());
+	_tabView->SetHeight(_baseWindow->GetHeight());
+
+	_tabs[CONTROLS] = CreateTabButton("Controls");
+	SubscribeToEvent(_tabs[CONTROLS], "Released", [&](StringHash eventType, VariantMap& eventData) {
+		ChangeTab(CONTROLS);
+	});
+	_tabs[CONTROLLERS] = CreateTabButton("Controllers");
+	SubscribeToEvent(_tabs[CONTROLLERS], "Released", [&](StringHash eventType, VariantMap& eventData) {
+		ChangeTab(CONTROLLERS);
+	});
+	_tabs[AUDIO] = CreateTabButton("Audio");
+	SubscribeToEvent(_tabs[AUDIO], "Released", [&](StringHash eventType, VariantMap& eventData) {
+		ChangeTab(AUDIO);
+	});
+	_tabs[VIDEO] = CreateTabButton("Video");
+	SubscribeToEvent(_tabs[VIDEO], "Released", [&](StringHash eventType, VariantMap& eventData) {
+		ChangeTab(VIDEO);
+	});
+
+	ChangeTab(CONTROLS);
 }
 
 void SettingsWindow::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
+}
+
+void SettingsWindow::ChangeTab(SettingTabs tab)
+{
+	_activeTab = tab;
+	_tabView->RemoveAllChildren();
+	_tabElementCount = 0;
+
+	switch (_activeTab) {
+		case CONTROLS:
+			CreateControlsTab();
+			break;
+		case CONTROLLERS:
+			CreateControllersTab();
+			break;
+		case AUDIO:
+			CreateAudioTab();
+			break;
+		case VIDEO:
+			CreateVideoTab();
+			break;
+	}
+}
+
+void SettingsWindow::CreateControlsTab()
+{
+	auto controllerInput = GetSubsystem<ControllerInput>();
+	auto names = controllerInput->GetControlNames();
+
+	// Loop trough all of the controls
+	for (auto it = names.Begin(); it != names.End(); ++it) {
+		CreateSingleLine();
+		CreateLabel((*it).second_);
+		Button* button = CreateButton(controllerInput->GetActionKeyName((*it).first_));
+		button->SetVar("Action", (*it).first_);
+
+		// Detect button press events
+		SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+			// Start mapping input
+			using namespace Released;
+			Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
+			int action = button->GetVar("Action").GetInt();
+
+			using namespace MyEvents::StartInputMapping;
+			VariantMap& data = GetEventDataMap();
+			data[P_CONTROL_ACTION] = action;
+			SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+
+			auto buttonLabel = button->GetChildStaticCast<Text>("Label", false);
+			buttonLabel->SetText("...");
+
+			Input* input = GetSubsystem<Input>();
+			if (input->IsMouseVisible()) {
+				input->SetMouseVisible(false);
+			}
+		});
+	}
+}
+
+void SettingsWindow::CreateControllersTab()
+{
+    auto controllerInput = GetSubsystem<ControllerInput>();
+	{
+		CreateSingleLine();
+		CreateLabel("Mouse");
+
+		// Invert X
+		CreateSingleLine();
+		auto mouseInvertX = CreateCheckbox("Invert X axis");
+		mouseInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::MOUSE));
+		URHO3D_LOGINFO("Set mouse invert x " + String(mouseInvertX->IsChecked()));
+		SubscribeToEvent(mouseInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+			using namespace Toggled;
+			bool enabled = eventData[P_STATE].GetBool();
+
+			URHO3D_LOGINFO("Set mouse invert x " + String(enabled));
+
+			auto controllerInput = GetSubsystem<ControllerInput>();
+			controllerInput->SetInvertX(enabled, ControllerType::MOUSE);
+	        GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", enabled);
+
+			GetSubsystem<ConfigManager>()->Save(true);
+		});
+
+		// Invert Y
+		CreateSingleLine();
+		auto mouseInvertY = CreateCheckbox("Invert Y axis");
+		mouseInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::MOUSE));
+		SubscribeToEvent(mouseInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+			using namespace Toggled;
+			bool enabled = eventData[P_STATE].GetBool();
+
+			auto controllerInput = GetSubsystem<ControllerInput>();
+			controllerInput->SetInvertY(enabled, ControllerType::MOUSE);
+	        GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", enabled);
+
+			GetSubsystem<ConfigManager>()->Save(true);
+		});
+
+		// Sensitivity
+		CreateSingleLine();
+		auto slider = CreateSlider("Sensitivity");
+		slider->SetRange(10);
+        slider->SetValue(controllerInput->GetSensitivityX(ControllerType::MOUSE));
+		// Detect button press events
+		SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+			using namespace SliderChanged;
+			float newValue = eventData[P_VALUE].GetFloat();
+			auto controllerInput = GetSubsystem<ControllerInput>();
+			controllerInput->SetSensitivityX(newValue, ControllerType::MOUSE);
+			controllerInput->SetSensitivityY(newValue, ControllerType::MOUSE);
+			GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", newValue);
+
+			GetSubsystem<ConfigManager>()->Save(true);
+		});
+	}
+
+	// Joystick
+    {
+        CreateSingleLine();
+        CreateSingleLine();
+        CreateLabel("Joystick");
+
+        // Invert X
+        CreateSingleLine();
+        auto joystickInvertX = CreateCheckbox("Invert X axis");
+        joystickInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::JOYSTICK));
+        SubscribeToEvent(joystickInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
+
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetInvertX(enabled, ControllerType::JOYSTICK);
+            GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", enabled);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
+        // Invert Y
+        CreateSingleLine();
+        auto joystickInvertY = CreateCheckbox("Invert X axis");
+        joystickInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::JOYSTICK));
+        SubscribeToEvent(joystickInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
+
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetInvertY(enabled, ControllerType::JOYSTICK);
+            GetSubsystem<ConfigManager>()->Set("joystick", "InvertY", enabled);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
+        // Sensitivity X
+        CreateSingleLine();
+        auto sensitivityX = CreateSlider("Sensitivity X axis");
+        sensitivityX->SetRange(10);
+        sensitivityX->SetValue(controllerInput->GetSensitivityX(ControllerType::JOYSTICK));
+        // Detect button press events
+        SubscribeToEvent(sensitivityX, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+            using namespace SliderChanged;
+            float newValue = eventData[P_VALUE].GetFloat();
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetSensitivityX(newValue, ControllerType::JOYSTICK);
+            GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", newValue);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
+        // Sensitivity Y
+        CreateSingleLine();
+        auto sensitivityY = CreateSlider("Sensitivity Y axis");
+        sensitivityY->SetRange(10);
+        sensitivityY->SetValue(controllerInput->GetSensitivityY(ControllerType::JOYSTICK));
+        // Detect button press events
+        SubscribeToEvent(sensitivityY, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+            using namespace SliderChanged;
+            float newValue = eventData[P_VALUE].GetFloat();
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetSensitivityY(newValue, ControllerType::JOYSTICK);
+            GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", newValue);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+    }
+}
+
+void SettingsWindow::CreateAudioTab()
+{
+	String volumeControls[] = {
+			SOUND_MASTER,
+			SOUND_EFFECT,
+			SOUND_AMBIENT,
+			SOUND_VOICE,
+			SOUND_MUSIC
+	};
+	for (int i = 0; i < 5; i++) {
+		// Master volume slider
+		CreateSingleLine();
+		auto slider = CreateSlider(volumeControls[i] + " volume");
+		slider->SetValue(GetSubsystem<Audio>()->GetMasterGain(volumeControls[i]));
+		slider->SetVar("SoundType", volumeControls[i]);
+
+		// Detect button press events
+		SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+			using namespace SliderChanged;
+			float newVolume = eventData[P_VALUE].GetFloat();
+			Slider* slider = static_cast<Slider*>(eventData[P_ELEMENT].GetPtr());
+			String soundType = slider->GetVar("SoundType").GetString();
+
+			GetSubsystem<Audio>()->SetMasterGain(soundType, newVolume);
+
+			SetGlobalVar(soundType, newVolume);
+			GetSubsystem<ConfigManager>()->Set("audio", soundType, newVolume);
+
+			GetSubsystem<ConfigManager>()->Save(true);
+
+			URHO3D_LOGINFO("Volume changed " + soundType + " => " + String(newVolume));
+		});
+	}
+}
+void SettingsWindow::CreateVideoTab()
+{
+	CreateSingleLine();
+	CreateCheckbox("Fullscreen");
+	CreateSingleLine();
+	CreateCheckbox("Enable shadows");
 }
 
 void SettingsWindow::SaveVideoSettings()
@@ -104,24 +365,8 @@ void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eve
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
     }
-}
 
-void SettingsWindow::InitAudioSettings()
-{
-	_audioSettings.enabled = GetGlobalVar("Sound").GetBool();
-	_audioSettings.stereo = GetGlobalVar("SoundStereo").GetBool() ? 1 : 0;
-	_audioSettings.soundInterpolation = GetGlobalVar("SoundInterpolation").GetBool() ? 1 : 0;
-	_audioSettings.mixRate = GetGlobalVar("SoundMixRate").GetFloat();
-	_audioSettings.soundBuffer = GetGlobalVar("SoundBuffer").GetFloat();
-
-	URHO3D_LOGINFOF("Audio %d", _audioSettings.stereo);
-	_audioSettings.masterVolume = GetGlobalVar("SoundMasterVolume").GetFloat();
-	_audioSettings.effectsVolume = GetGlobalVar("SoundEffectsVolume").GetFloat();
-	_audioSettings.ambientVolume = GetGlobalVar("SoundAmbientVolume").GetFloat();
-	_audioSettings.voiceVolume = GetGlobalVar("SoundVoiceVolume").GetFloat();
-	_audioSettings.musicVolume = GetGlobalVar("SoundMusicVolume").GetFloat();
-
-	_audioSettingsNew = _audioSettings;
+    ChangeTab(CONTROLS);
 }
 
 void SettingsWindow::InitGraphicsSettings()
@@ -160,166 +405,131 @@ void SettingsWindow::InitGraphicsSettings()
     _graphicsSettingsNew = _graphicsSettings;
 }
 
-void SettingsWindow::DrawControlsSettings()
+Button* SettingsWindow::CreateTabButton(const String& text)
 {
-    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
-    HashMap<int, String> controlNames = controllerInput->GetControlNames();
+	const int width = 120;
+	const int border = 10;
 
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+
+	auto* button = _baseWindow->CreateChild<Button>();
+	button->SetStyleAuto();
+	button->SetFixedWidth(width);
+	button->SetFixedHeight(30);
+	button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 10));
+	button->SetAlignment(HA_LEFT, VA_TOP);
+
+	auto* buttonText = button->CreateChild<Text>();
+	buttonText->SetFont(font, 12);
+	buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+	buttonText->SetText(text);
+
+	_baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + 10);
+
+	return button;
 }
 
-void SettingsWindow::DrawVideoSettings()
+Button* SettingsWindow::CreateButton(const String& text)
 {
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+
+	auto* button = _activeLine->CreateChild<Button>();
+	button->SetStyleAuto();
+	button->SetFixedWidth(200);
+	button->SetFixedHeight(30);
+
+	auto* buttonText = button->CreateChild<Text>("Label");
+	buttonText->SetFont(font, 12);
+	buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+	buttonText->SetText(text);
+
+	return button;
 }
 
-void SettingsWindow::DrawAudioSettings()
+CheckBox* SettingsWindow::CreateCheckbox(const String& label)
 {
-}
-
-void SettingsWindow::ApplyAudioSettings()
-{
-	Audio* audio = GetSubsystem<Audio>();
-    bool shouldSave = false;
-	if (_audioSettingsNew.masterVolume != _audioSettings.masterVolume) {
-		_audioSettings.masterVolume = _audioSettingsNew.masterVolume;
-		audio->SetMasterGain(SOUND_MASTER, _audioSettings.masterVolume);
-		SetGlobalVar("SoundMasterVolume", _audioSettings.masterVolume);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundMasterVolume", _audioSettings.masterVolume);
-		URHO3D_LOGINFO("Applying master volume");
-        shouldSave = true;
+	if (!_activeLine) {
+		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+		return nullptr;
 	}
 
-	if (_audioSettingsNew.effectsVolume != _audioSettings.effectsVolume) {
-		_audioSettings.effectsVolume = _audioSettingsNew.effectsVolume;
-		audio->SetMasterGain(SOUND_EFFECT, _audioSettings.effectsVolume);
-		SetGlobalVar("SoundEffectsVolume", _audioSettings.effectsVolume);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundEffectsVolume", _audioSettings.effectsVolume);
-		URHO3D_LOGINFO("Applying effects volume");
-        shouldSave = true;
-	}
+    SharedPtr<Text> text(new Text(context_));
+	_activeLine->AddChild(text);
+    text->SetText(label);
+    text->SetStyleAuto();
+    text->SetFixedWidth(200);
 
-	if (_audioSettingsNew.ambientVolume != _audioSettings.ambientVolume) {
-		_audioSettings.ambientVolume = _audioSettingsNew.ambientVolume;
-		audio->SetMasterGain(SOUND_AMBIENT, _audioSettings.ambientVolume);
-		SetGlobalVar("SoundAmbientVolume", _audioSettings.ambientVolume);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundAmbientVolume", _audioSettings.ambientVolume);
-		URHO3D_LOGINFO("Applying ambient volume");
-        shouldSave = true;
-	}
-	if (_audioSettingsNew.voiceVolume != _audioSettings.voiceVolume) {
-		_audioSettings.voiceVolume = _audioSettingsNew.voiceVolume;
-		audio->SetMasterGain(SOUND_VOICE, _audioSettings.voiceVolume);
-		SetGlobalVar("SoundVoiceVolume", _audioSettings.voiceVolume);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundVoiceVolume", _audioSettings.voiceVolume);
-		URHO3D_LOGINFO("Applying voice volume");
-        shouldSave = true;
-	}
-	if (_audioSettingsNew.musicVolume != _audioSettings.musicVolume) {
-		_audioSettings.musicVolume = _audioSettingsNew.musicVolume;
-		audio->SetMasterGain(SOUND_MUSIC, _audioSettings.musicVolume);
-		SetGlobalVar("SoundMusicVolume", _audioSettings.musicVolume);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundMusicVolume", _audioSettings.musicVolume);
-		URHO3D_LOGINFO("Applying music volume");
-        shouldSave = true;
-	}
-	if (_audioSettingsNew.soundBuffer != _audioSettings.soundBuffer ||
-		_audioSettingsNew.mixRate != _audioSettings.mixRate ||
-		_audioSettingsNew.stereo != _audioSettings.stereo ||
-		_audioSettingsNew.soundInterpolation != _audioSettings.soundInterpolation) {
+	SharedPtr<CheckBox> box(new CheckBox(context_));
+	_activeLine->AddChild(box);
+	box->SetStyleAuto();
 
-		_audioSettings.soundBuffer = _audioSettingsNew.soundBuffer;
-		_audioSettings.mixRate = _audioSettingsNew.mixRate;
-		_audioSettings.stereo = _audioSettingsNew.stereo;
-		_audioSettings.soundInterpolation = _audioSettingsNew.soundInterpolation;
-
-		audio->SetMode(_audioSettings.soundBuffer, _audioSettings.mixRate, _audioSettings.stereo, _audioSettings.soundInterpolation);
-
-		SetGlobalVar("SoundStereo", _audioSettings.stereo);
-		SetGlobalVar("SoundInterpolation", _audioSettings.soundInterpolation);
-		SetGlobalVar("SoundMixRate", _audioSettings.mixRate);
-		SetGlobalVar("SoundBuffer", _audioSettings.soundBuffer);
-
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundStereo", (bool)_audioSettings.stereo);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundInterpolation", (bool)_audioSettings.soundInterpolation);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundMixRate", _audioSettings.mixRate);
-        GetSubsystem<ConfigManager>()->Set("audio", "SoundBuffer", _audioSettings.soundBuffer);
-
-		URHO3D_LOGINFO("Applying audio other");
-        shouldSave = true;
-	}
-
-    if (shouldSave) {
-        GetSubsystem<ConfigManager>()->Save(true);
-    }
-
-	SetGlobalVar("Sound", _audioSettings.enabled);
+    return box;
 }
 
-void SettingsWindow::DrawMouseSettings()
+
+Text* SettingsWindow::CreateLabel(const String& text)
 {
+	if (!_activeLine) {
+		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+		return nullptr;
+	}
+
+	auto *cache = GetSubsystem<ResourceCache>();
+	// Create log element to view latest logs from the system
+	auto *font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+	auto *label = _activeLine->CreateChild<Text>();
+	label->SetFont(font, 12);
+	label->SetPosition(10, 30 + _tabElementCount * 30);
+	label->SetText(text);
+	label->SetFixedWidth(200);
+
+	return label;
 }
 
-void SettingsWindow::DrawJoystickSettings()
+Slider* SettingsWindow::CreateSlider(const String& text)
 {
+	if (!_activeLine) {
+		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+		return nullptr;
+	}
+
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+
+	// Create text and slider below it
+	auto* sliderText = _activeLine->CreateChild<Text>();
+	sliderText->SetPosition(0, 0);
+	sliderText->SetWidth(50);
+	sliderText->SetFont(font, 12);
+	sliderText->SetText(text);
+	sliderText->SetFixedWidth(200);
+
+	auto* slider = _activeLine->CreateChild<Slider>();
+	slider->SetStyleAuto();
+	slider->SetPosition(0, 0);
+	slider->SetSize(300, 30);
+	slider->SetFixedWidth(200);
+	// Use 0-1 range for controlling sound/music master volume
+	slider->SetRange(1.0f);
+	slider->SetRepeatRate(0.2);
+
+	return slider;
 }
 
-void SettingsWindow::InitMouseSettings()
+UIElement* SettingsWindow::CreateSingleLine()
 {
-    auto controllerInput = GetSubsystem<ControllerInput>();
-    _controllerSettings.sensitivityX = controllerInput->GetSensitivityX(ControllerType::MOUSE);
-    _controllerSettings.sensitivityY = controllerInput->GetSensitivityY(ControllerType::MOUSE);
-    _controllerSettings.invertX = controllerInput->GetInvertX(ControllerType::MOUSE);
-    _controllerSettings.invertY = controllerInput->GetInvertY(ControllerType::MOUSE);
-    _controllerSettingsNew = _controllerSettings;
-}
+	SharedPtr<UIElement> container(new UIElement(context_));
+	container->SetAlignment(HA_LEFT, VA_TOP);
+	container->SetLayout(LM_HORIZONTAL, 20);
+	container->SetPosition(10, 30 + _tabElementCount * 30);
+	container->SetWidth(_tabView->GetWidth());
+	_tabView->AddChild(container);
 
-void SettingsWindow::InitJoystickSettings()
-{
-    auto controllerInput = GetSubsystem<ControllerInput>();
-    _controllerSettings.sensitivityX = controllerInput->GetSensitivityX(ControllerType::JOYSTICK);
-    _controllerSettings.sensitivityY = controllerInput->GetSensitivityY(ControllerType::JOYSTICK);
-    _controllerSettings.invertX = controllerInput->GetInvertX(ControllerType::JOYSTICK);
-    _controllerSettings.invertY = controllerInput->GetInvertY(ControllerType::JOYSTICK);
-    _controllerSettingsNew = _controllerSettings;
-}
+	_activeLine = container;
 
-void SettingsWindow::ApplyControllerSettings()
-{
-    if (_controllerSettings.invertX == _controllerSettingsNew.invertX &&
-        _controllerSettings.invertY == _controllerSettingsNew.invertY &&
-        _controllerSettings.sensitivityX == _controllerSettingsNew.sensitivityX &&
-        _controllerSettings.sensitivityY == _controllerSettingsNew.sensitivityY) {
-        return;
-    }
+	_tabElementCount++;
 
-    _controllerSettings = _controllerSettingsNew;
-
-    URHO3D_LOGINFO("Saving controller settings " + String((int)_openedView));
-    URHO3D_LOGINFO("====== " + String(_controllerSettings.sensitivityX));
-    if (_openedView == SettingsViewType::MOUSE_VIEW) {
-        auto controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetSensitivityX(_controllerSettings.sensitivityX, ControllerType::MOUSE);
-        controllerInput->SetSensitivityY(_controllerSettings.sensitivityX, ControllerType::MOUSE);
-        controllerInput->SetInvertX(_controllerSettings.invertX, ControllerType::MOUSE);
-        controllerInput->SetInvertY(_controllerSettings.invertY, ControllerType::MOUSE);
-
-
-        GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", _controllerSettings.sensitivityX);
-        GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", (bool)_controllerSettings.invertX);
-        GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", (bool)_controllerSettings.invertY);
-        GetSubsystem<ConfigManager>()->Save(true);
-    }
-    else {
-        auto controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetSensitivityX(_controllerSettings.sensitivityX, ControllerType::JOYSTICK);
-        controllerInput->SetSensitivityY(_controllerSettings.sensitivityY, ControllerType::JOYSTICK);
-        controllerInput->SetInvertX(_controllerSettings.invertX, ControllerType::JOYSTICK);
-        controllerInput->SetInvertY(_controllerSettings.invertY, ControllerType::JOYSTICK);
-
-        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", _controllerSettings.sensitivityX);
-        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", _controllerSettings.sensitivityY);
-        GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", (bool)_controllerSettings.invertX);
-        GetSubsystem<ConfigManager>()->Set("joystick", "InvertY", (bool)_controllerSettings.invertY);
-        GetSubsystem<ConfigManager>()->Save(true);
-    }
-
+	return _activeLine;
 }

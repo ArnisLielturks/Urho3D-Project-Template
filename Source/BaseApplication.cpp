@@ -375,18 +375,18 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_WORKER_THREADS, GetSubsystem<ConfigManager>()->GetBool("engine", "WorkerThreads ", true));
     engine_->SetGlobalVar("ShadowQuality", GetSubsystem<ConfigManager>()->GetInt("engine", "ShadowQuality", 5));
 
-	engine_->SetGlobalVar("SoundMasterVolume" , GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundMasterVolume", 1.0));
-	engine_->SetGlobalVar("SoundEffectsVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundEffectsVolume", 1.0));
-	engine_->SetGlobalVar("SoundAmbientVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundAmbientVolume", 1.0));
-	engine_->SetGlobalVar("SoundVoiceVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundVoiceVolume", 1.0));
-	engine_->SetGlobalVar("SoundMusicVolume", GetSubsystem<ConfigManager>()->GetFloat("audio", "SoundMusicVolume", 1.0));
+	engine_->SetGlobalVar("Master" , GetSubsystem<ConfigManager>()->GetFloat("audio", "Master", 1.0));
+	engine_->SetGlobalVar("Effect", GetSubsystem<ConfigManager>()->GetFloat("audio", "Effect", 1.0));
+	engine_->SetGlobalVar("Ambient", GetSubsystem<ConfigManager>()->GetFloat("audio", "Ambient", 1.0));
+	engine_->SetGlobalVar("Voice", GetSubsystem<ConfigManager>()->GetFloat("audio", "Voice", 1.0));
+	engine_->SetGlobalVar("Music", GetSubsystem<ConfigManager>()->GetFloat("audio", "Music", 1.0));
 
     Audio* audio = GetSubsystem<Audio>();
-	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("SoundMasterVolume").GetFloat());
-	audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("SoundEffectsVolume").GetFloat());
-	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("SoundAmbientVolume").GetFloat());
-	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("SoundVoiceVolume").GetFloat());
-	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("SoundMusicVolume").GetFloat());
+	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());
+	audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("Effect").GetFloat());
+	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
+	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
+	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
 }
 
 void BaseApplication::ApplyGraphicsSettings()

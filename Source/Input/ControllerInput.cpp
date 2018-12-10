@@ -409,6 +409,8 @@ float ControllerInput::GetSensitivityX(int controller)
         return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivityX();
         break;
     }
+
+    return 0.0f;
 }
 
 float ControllerInput::GetSensitivityY(int controller)
@@ -421,4 +423,6 @@ float ControllerInput::GetSensitivityY(int controller)
         return _inputHandlers[ControllerType::JOYSTICK]->GetSensitivityY();
         break;
     }
+
+    return 0.0f;
 }

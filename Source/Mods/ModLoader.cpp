@@ -147,6 +147,9 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
 {
     using namespace FileChanged;
     String filename = eventData[P_RESOURCENAME].GetString();
+    if (!filename.Contains(".as") && !filename.Contains(".lua")) {
+        return;
+    }
     if (_asScriptMap.Contains(filename)) {
         URHO3D_LOGINFO("Reloading mod " + filename);
         if (_asScriptMap[filename]->GetFunction("void Stop()")) {

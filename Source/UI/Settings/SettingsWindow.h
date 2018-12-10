@@ -3,60 +3,31 @@
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseWindow.h"
 
-enum SettingsButtonType {
-    CLOSE,
-    SAVE,
-    CONTROLS,
+enum SettingTabs {
+    VIDEO,
     AUDIO,
-    VIDEO
-};
-
-enum SettingsViewType {
-    CONTROLS_VIEW,
-    AUDIO_VIEW,
-    VIDEO_VIEW,
-    MOUSE_VIEW,
-    JOYSTICK_VIEW
+    CONTROLS,
+    CONTROLLERS
 };
 
 struct GraphicsSettings {
-	int width;
-	int height;
-	int fullscreen;
-	int vsync;
-	int tripleBuffer;
-	int shadows;
-	int shadowQuality;
-	int textureQuality;
-	int textureAnistropy;
-	int textureFilterMode;
-	int multisample;
+    int width;
+    int height;
+    int fullscreen;
+    int vsync;
+    int tripleBuffer;
+    int shadows;
+    int shadowQuality;
+    int textureQuality;
+    int textureAnistropy;
+    int textureFilterMode;
+    int multisample;
     int activeResolution;
-};
-
-struct AudioSettings{
-	bool enabled;
-	int stereo;
-	int soundInterpolation;
-	int soundBuffer;
-	int mixRate;
-	float masterVolume;
-	float effectsVolume;
-	float ambientVolume;
-	float voiceVolume;
-	float musicVolume;
-};
-
-struct ControllerSettings {
-    int invertX;
-    int invertY;
-    float sensitivityX;
-    float sensitivityY;
 };
 
 class SettingsWindow : public BaseWindow
 {
-    URHO3D_OBJECT(SettingsWindow, BaseWindow);
+URHO3D_OBJECT(SettingsWindow, BaseWindow);
 
 public:
     /// Construct.
@@ -76,33 +47,34 @@ private:
 
     void SaveVideoSettings();
 
-	void DrawControlsSettings();
-	void DrawVideoSettings();
-	void DrawAudioSettings();
-    void DrawMouseSettings();
-    void DrawJoystickSettings();
-
     void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
 
-	void InitGraphicsSettings();
-	void InitAudioSettings();
-    void InitMouseSettings();
-    void InitJoystickSettings();
-    void ApplyControllerSettings();
-	void ApplyAudioSettings();
+    void ChangeTab(SettingTabs tab);
 
-    HashMap<int, SharedPtr<Button>> _buttons;
+    void CreateControlsTab();
+    void CreateControllersTab();
+    void CreateAudioTab();
+    void CreateVideoTab();
 
-    SettingsViewType _openedView;
+    void InitGraphicsSettings();
+    HashMap<int, SharedPtr<Button>> _tabs;
 
-    Vector<SharedPtr<UIElement>> _activeSettingElements;
+    SettingTabs _activeTab;
+    int _tabElementCount;
+    SharedPtr<UIElement> _activeLine;
 
-	GraphicsSettings _graphicsSettings;
-	GraphicsSettings _graphicsSettingsNew;
+    GraphicsSettings _graphicsSettings;
+    GraphicsSettings _graphicsSettingsNew;
 
-	AudioSettings _audioSettings;
-	AudioSettings _audioSettingsNew;
+    SharedPtr<Window> _baseWindow;
+    SharedPtr<UIElement> _tabView;
 
-    ControllerSettings _controllerSettings;
-    ControllerSettings _controllerSettingsNew;
+    Button* CreateTabButton(const String& text);
+
+    Button* CreateButton(const String& text);
+    CheckBox* CreateCheckbox(const String& label);
+    Text* CreateLabel(const String& text);
+    Slider* CreateSlider(const String& text);
+
+    UIElement* CreateSingleLine();
 };

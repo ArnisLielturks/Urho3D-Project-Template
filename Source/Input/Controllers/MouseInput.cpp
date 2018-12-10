@@ -101,6 +101,6 @@ void MouseInput::LoadConfig()
 {
     _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
     _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
-    _invertX = GetSubsystem<ConfigManager>()->Get("mouse", "InvertX").GetBool();
-    _invertY = GetSubsystem<ConfigManager>()->Get("mouse", "InvertY").GetBool();
+    _invertX = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX");
+    _invertY = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY");
 }

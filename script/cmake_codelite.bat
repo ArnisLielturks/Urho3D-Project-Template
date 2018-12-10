@@ -20,4 +20,4 @@
 :: THE SOFTWARE.
 ::
 
-@"%~dp0cmake_generic.bat" %* -DANDROID=1
+@"%~dp0cmake_generic.bat" %* -G "CodeLite - MinGW Makefiles"

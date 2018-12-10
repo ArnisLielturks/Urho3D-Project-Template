@@ -82,7 +82,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
@@ -323,6 +323,7 @@ void BaseApplication::LoadINIConfig(String filename)
 		return;
 	}
 
+    SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
     SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
     SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowWidth", 800));
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowHeight", 600));
@@ -339,7 +340,6 @@ void BaseApplication::LoadINIConfig(String filename)
     // Graphics
     SetEngineParameter(EP_LOW_QUALITY_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "LowQualityShadows", false));
     SetEngineParameter(EP_MATERIAL_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "MaterialQuality", 15));
-    SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
     SetEngineParameter(EP_MULTI_SAMPLE, GetSubsystem<ConfigManager>()->GetInt("engine", "MultiSample", 1));
     SetEngineParameter(EP_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "Shadows", true));
     SetEngineParameter(EP_TEXTURE_ANISOTROPY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureAnisotropy", 16));

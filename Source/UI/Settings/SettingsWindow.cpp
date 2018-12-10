@@ -9,7 +9,6 @@ SettingsWindow::SettingsWindow(Context* context) :
     BaseWindow(context),
 	_openedView(SettingsViewType::CONTROLS_VIEW)
 {
-	_supportedResolutions = new char*[100];
 
     Init();
 	InitAudioSettings();
@@ -18,7 +17,6 @@ SettingsWindow::SettingsWindow(Context* context) :
 
 SettingsWindow::~SettingsWindow()
 {
-    delete _supportedResolutions;
 }
 
 void SettingsWindow::Init()
@@ -30,6 +28,7 @@ void SettingsWindow::Init()
 
 void SettingsWindow::Create()
 {
+	URHO3D_LOGINFO("Settings Window created");
 }
 
 void SettingsWindow::SubscribeToEvents()
@@ -39,15 +38,15 @@ void SettingsWindow::SubscribeToEvents()
 
 void SettingsWindow::SaveVideoSettings()
 {
-    String resolution = _resoulutionVector.At(_graphicsSettingsNew.activeResolution);
-    StringVector dimensions = resolution.Split('x', false);
-    if (dimensions.Size() == 2) {
-        int width = ToInt(dimensions[0]);
-        _graphicsSettingsNew.width = width;
-
-        int height = ToInt(dimensions[1]);
-        _graphicsSettingsNew.height = height;
-    }
+//    String resolution = _resoulutionVector.At(_graphicsSettingsNew.activeResolution);
+//    StringVector dimensions = resolution.Split('x', false);
+//    if (dimensions.Size() == 2) {
+//        int width = ToInt(dimensions[0]);
+//        _graphicsSettingsNew.width = width;
+//
+//        int height = ToInt(dimensions[1]);
+//        _graphicsSettingsNew.height = height;
+//    }
 
     _graphicsSettings = _graphicsSettingsNew;
 	{
@@ -149,32 +148,16 @@ void SettingsWindow::InitGraphicsSettings()
             continue;
         }
 	    String resolution = String((*it).x_) + "x" + String((*it).y_);
-	    if (_resoulutionVector.Find(resolution) == _resoulutionVector.End()) {
-            _resoulutionVector.Push(resolution);
-
-            if (resolution == activeResolution) {
-                _graphicsSettings.activeResolution = _resoulutionVector.Size() - 1;
-            }
-	    }
+//	    if (_resoulutionVector.Find(resolution) == _resoulutionVector.End()) {
+//            _resoulutionVector.Push(resolution);
+//
+//            if (resolution == activeResolution) {
+//                _graphicsSettings.activeResolution = _resoulutionVector.Size() - 1;
+//            }
+//	    }
 	}
 
-    for (int i = 0; i < _resoulutionVector.Size(); i++) {
-
-        _supportedResolutions[i] = new char[_resoulutionVector.At(i).Length()];
-        _supportedResolutions[i] = const_cast<char*>(_resoulutionVector.At(i).CString());
-        //strncpy(_supportedResolutions[i], _resoulutionVector.At(i).CString(), _resoulutionVector.At(i).CStringLength(_resoulutionVector.At(i).CString()));
-    }
-
     _graphicsSettingsNew = _graphicsSettings;
-}
-
-void SettingsWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-	DrawWindow();
-}
-
-void SettingsWindow::DrawWindow()
-{
 }
 
 void SettingsWindow::DrawControlsSettings()

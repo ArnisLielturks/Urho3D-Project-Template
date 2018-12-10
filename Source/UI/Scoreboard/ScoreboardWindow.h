@@ -22,6 +22,4 @@ protected:
 private:
 
     void SubscribeToEvents();
-
-    void HandleUpdate(StringHash eventType, VariantMap& eventData) override;
 };

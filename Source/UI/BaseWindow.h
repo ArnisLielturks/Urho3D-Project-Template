@@ -12,10 +12,6 @@ public:
 
     virtual void Init();
 
-    void SetActive(bool active);
-
-    bool IsActive();
-
 private:
     void SubscribeToBaseEvents()
     {
@@ -25,11 +21,7 @@ private:
 
 protected:
 
-    virtual void HandleUpdate(StringHash eventType, VariantMap& eventData) {};
-
     virtual void Dispose()
     {
     }
-
-    bool _active;
 };

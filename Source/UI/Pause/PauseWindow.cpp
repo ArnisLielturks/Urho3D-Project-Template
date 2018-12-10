@@ -5,8 +5,7 @@
 
 /// Construct.
 PauseWindow::PauseWindow(Context* context) :
-    BaseWindow(context),
-    _active(true)
+    BaseWindow(context)
 {
     Init();
 }
@@ -31,9 +30,5 @@ void PauseWindow::Create()
 }
 
 void PauseWindow::SubscribeToEvents()
-{
-}
-
-void PauseWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
 }

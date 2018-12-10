@@ -3,8 +3,7 @@
 
 /// Construct.
 BaseWindow::BaseWindow(Context* context):
-    Object(context),
-    _active(true)
+    Object(context)
 {
     SubscribeToBaseEvents();
     Init();
@@ -17,20 +16,4 @@ BaseWindow::~BaseWindow()
 
 void BaseWindow::Init()
 {
-}
-
-void BaseWindow::SetActive(bool active)
-{
-    if (active) {
-        SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(BaseWindow, HandleUpdate));
-    }
-    else {
-        UnsubscribeFromEvent(E_UPDATE);
-    }
-    _active = active;
-}
-
-bool BaseWindow::IsActive()
-{
-    return _active;
 }

@@ -33,11 +33,3 @@ void QuitConfirmationWindow::Create()
 void QuitConfirmationWindow::SubscribeToEvents()
 {
 }
-
-void QuitConfirmationWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-    Input* input = GetSubsystem<Input>();
-    if (!input->IsMouseVisible()) {
-        input->SetMouseVisible(true);
-    }
-}

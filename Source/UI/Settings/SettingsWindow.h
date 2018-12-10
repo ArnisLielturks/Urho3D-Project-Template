@@ -76,8 +76,6 @@ private:
 
     void SaveVideoSettings();
 
-	void HandleUpdate(StringHash eventType, VariantMap& eventData) override;
-	void DrawWindow();
 	void DrawControlsSettings();
 	void DrawVideoSettings();
 	void DrawAudioSettings();
@@ -107,7 +105,4 @@ private:
 
     ControllerSettings _controllerSettings;
     ControllerSettings _controllerSettingsNew;
-
-	char **_supportedResolutions;
-    StringVector _resoulutionVector;
 };

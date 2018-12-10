@@ -53,7 +53,6 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
             } else {
                 URHO3D_LOGERROR("Window '" + windowName + "' already opened!");
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
-                window->SetActive(true);
                 return;
             }
         }
@@ -62,11 +61,12 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
     URHO3D_LOGINFO("Opening window: " + windowName);
     SharedPtr<Object> newWindow;
     newWindow = context_->CreateObject(StringHash(windowName));
-    BaseWindow* window = newWindow->Cast<BaseWindow>();
-    window->SetActive(true);
-    _windowList.Push(newWindow);
+    if (newWindow) {
+        BaseWindow *window = newWindow->Cast<BaseWindow>();
+        _windowList.Push(newWindow);
 
-    _openedWindows.Push(windowName);
+        _openedWindows.Push(windowName);
+    }
 }
 
 void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventData)
@@ -111,7 +111,7 @@ bool WindowManager::IsWindowOpen(String windowName)
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
             BaseWindow* window = (*it)->Cast<BaseWindow>();
-            if ((*it).Refs() && window->IsActive()) {
+            if ((*it).Refs()) {
                 URHO3D_LOGINFO(" WINDOW " + windowName + " IS ACTIVE");
                 return true;
             }

@@ -5,8 +5,7 @@
 
 /// Construct.
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
-    BaseWindow(context),
-    _active(true)
+    BaseWindow(context)
 {
     Init();
 }
@@ -31,9 +30,5 @@ void NewGameSettingsWindow::Create()
 }
 
 void NewGameSettingsWindow::SubscribeToEvents()
-{
-}
-
-void NewGameSettingsWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
 }

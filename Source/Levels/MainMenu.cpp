@@ -35,8 +35,6 @@ void MainMenu::Init()
     // Create the UI content
     CreateUI();
 
-    // Subscribe to global events for camera movement
-    SubscribeToEvents();
     VariantMap data = GetEventDataMap();
     data["Message"] = "Entered menu!";
     SendEvent("NewAchievement", data);
@@ -57,19 +55,60 @@ void MainMenu::CreateUI()
     if (!input->IsMouseVisible()) {
         input->SetMouseVisible(true);
     }
+
+    int marginBottom = -140;
+    _newGameButton = CreateButton("New game", 150, IntVector2(-20, marginBottom));
+    _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+
+    SubscribeToEvent(_newGameButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "Loading";
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
+
+    marginBottom += 40;
+    _settingsButton = CreateButton("Settings", 150, IntVector2(-20, marginBottom));
+    _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    SubscribeToEvent(_settingsButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "SettingsWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    });
+
+    marginBottom += 40;
+    _creditsButton = CreateButton("Credits", 150, IntVector2(-20, marginBottom));
+    _creditsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    SubscribeToEvent(_creditsButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "Credits";
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
+
+    marginBottom += 40;
+    _exitButton = CreateButton("Exit", 150, IntVector2(-20, marginBottom));
+    _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    SubscribeToEvent(_exitButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "ExitGame";
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
 }
 
-void MainMenu::SubscribeToEvents()
+Button* MainMenu::CreateButton(const String& text, int width, IntVector2 position)
 {
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
-}
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
 
-void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-    draw();
-}
+    auto* button = GetSubsystem<UI>()->GetRoot()->CreateChild<Button>();
+    button->SetStyleAuto();
+    button->SetFixedWidth(width);
+    button->SetFixedHeight(30);
+    button->SetPosition(position);
 
-void MainMenu::draw()
-{
-    auto graphics = GetSubsystem<Graphics>();
+    auto* buttonText = button->CreateChild<Text>();
+    buttonText->SetFont(font, 12);
+    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+    buttonText->SetText(text);
+
+    return button;
 }

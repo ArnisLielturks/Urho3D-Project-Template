@@ -27,8 +27,3 @@ void ScoreboardWindow::Create()
 void ScoreboardWindow::SubscribeToEvents()
 {
 }
-
-
-void ScoreboardWindow::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-}

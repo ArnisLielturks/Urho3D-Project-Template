@@ -15,24 +15,23 @@ namespace Levels {
         MainMenu(Context* context);
 
         ~MainMenu();
-        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
         void Init () override;
 
     private:
-
-        void draw();
         void CreateScene();
 
         void CreateUI();
 
         void SubscribeToEvents();
 
-        SharedPtr<Button> _startButton;
+        SharedPtr<Button> _newGameButton;
         SharedPtr<Button> _settingsButton;
 		SharedPtr<Button> _creditsButton;
         SharedPtr<Button> _exitButton;
+
+        Button* CreateButton(const String& text, int width, IntVector2 position);
 
         bool _active;
 

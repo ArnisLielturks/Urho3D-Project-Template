@@ -13,7 +13,7 @@ void Start()
     SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
 
     VariantMap data;
-    data["Message"] = "Initialized achievements.as";
+    data["Message"] = "Initialized achievements.as script from the mods directory";
     SendEvent("NewAchievement", data);
 }
 

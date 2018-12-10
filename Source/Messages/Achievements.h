@@ -81,4 +81,5 @@ private:
     void SubscribeToEvents();
 
     List<SharedPtr<SingleAchievement>> _activeAchievements;
+
 };

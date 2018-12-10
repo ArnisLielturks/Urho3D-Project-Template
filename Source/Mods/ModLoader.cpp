@@ -52,8 +52,10 @@ void ModLoader::LoadASMods()
         /*if (scriptFile && scriptFile->Execute("void Start()")) {
             URHO3D_LOGINFO("Mod " + (*it) + " succesfully loaded!");
         }*/
-        _asMods.Push(scriptFile);
-        _asScriptMap["Mods/" + (*it)] = scriptFile;
+        if (scriptFile) {
+            _asMods.Push(scriptFile);
+            _asScriptMap["Mods/" + (*it)] = scriptFile;
+        }
     }
 
     URHO3D_LOGINFO("Initializing all loaded AS mods");

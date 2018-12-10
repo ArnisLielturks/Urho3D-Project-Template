@@ -46,8 +46,23 @@ void SingleAchievement::SetImage(String image)
 
 void SingleAchievement::SetMessage(String message)
 {
-    _message = message;
-    _title->SetText(message);
+    _message = "";
+
+    // Split longer messages into multiple lines
+    String line;
+    auto words = message.Split(' ', false);
+    for (auto it = words.Begin(); it != words.End(); ++it) {
+        if (line.Length() + (*it).Length() > 20) {
+            _message += line + "\n";
+            line = "";
+        }
+        line += (*it) + " ";
+    }
+    if (!line.Empty()) {
+        _message += line;
+    }
+
+    _title->SetText(_message);
 }
 
 String SingleAchievement::GetMessage()
@@ -161,7 +176,9 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
 
     singleAchievement->SetObjectAnimation(objAnimation);
     singleAchievement->SetVar("Lifetime", 8.0f);
-    singleAchievement->SetVerticalPosition(-_activeAchievements.Size() * 110 - 10);
+
+    int position = -_activeAchievements.Size() * 110 - 10;
+    singleAchievement->SetVerticalPosition(position);
     _activeAchievements.Push(singleAchievement);
 }
 

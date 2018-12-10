@@ -49,7 +49,6 @@ namespace Levels {
 		CreateSingleLine("Community", 30);
 		CreateSingleLine("INI file parser: @carnalis", 20);
 		CreateSingleLine("Level manager: @artgolf1000", 20);
-        CreateSingleLine("Nuklear UI implementation: @rokups", 20);
         CreateSingleLine("", 20);
 		CreateSingleLine("Special thanks to the creators of the Urho3D engine!", 30);
 

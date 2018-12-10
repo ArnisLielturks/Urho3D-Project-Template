@@ -14,6 +14,7 @@ struct GraphicsSettings {
     int width;
     int height;
     int fullscreen;
+    int monitor;
     int vsync;
     int tripleBuffer;
     int shadows;
@@ -66,6 +67,8 @@ private:
     GraphicsSettings _graphicsSettings;
     GraphicsSettings _graphicsSettingsNew;
 
+    Vector<String> _availableResolutionNames;
+
     SharedPtr<Window> _baseWindow;
     SharedPtr<UIElement> _tabView;
 
@@ -75,6 +78,7 @@ private:
     CheckBox* CreateCheckbox(const String& label);
     Text* CreateLabel(const String& text);
     Slider* CreateSlider(const String& text);
+    DropDownList* CreateMenu(const String& label, Vector<String>& items);
 
     UIElement* CreateSingleLine();
 };

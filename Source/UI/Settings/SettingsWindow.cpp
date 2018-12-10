@@ -291,23 +291,84 @@ void SettingsWindow::CreateAudioTab()
 }
 void SettingsWindow::CreateVideoTab()
 {
+    InitGraphicsSettings();
+
+    // Fullscreen
 	CreateSingleLine();
-	CreateCheckbox("Fullscreen");
+	auto fullscreenToggle = CreateCheckbox("Fullscreen");
+    fullscreenToggle->SetChecked(_graphicsSettings.fullscreen);
+    SubscribeToEvent(fullscreenToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+
+        _graphicsSettingsNew.fullscreen = enabled;
+    });
+
+    // Shadows
 	CreateSingleLine();
-	CreateCheckbox("Enable shadows");
+	auto shadowToggle = CreateCheckbox("Enable shadows");
+    shadowToggle->SetChecked(_graphicsSettings.shadows);
+    SubscribeToEvent(shadowToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+
+        _graphicsSettingsNew.shadows = enabled;
+    });
+
+    // VSync
+    CreateSingleLine();
+    auto vsyncToggle = CreateCheckbox("VSync");
+    vsyncToggle->SetChecked(_graphicsSettings.vsync);
+    SubscribeToEvent(vsyncToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+
+        _graphicsSettingsNew.vsync = enabled;
+    });
+
+    // Triple buffering
+    CreateSingleLine();
+    auto trippleBuffToggle = CreateCheckbox("Tripple buffering");
+    trippleBuffToggle->SetChecked(_graphicsSettings.tripleBuffer);
+    SubscribeToEvent(trippleBuffToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+
+        _graphicsSettingsNew.tripleBuffer = enabled;
+    });
+
+    CreateSingleLine();
+
+    auto resolutionMenu = CreateMenu("Resolution", _availableResolutionNames);
+    resolutionMenu->SetSelection(_graphicsSettings.activeResolution);
+    SubscribeToEvent(resolutionMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetFloat();
+        URHO3D_LOGINFO("Selection " + String(selection));
+
+        StringVector dimensions = _availableResolutionNames.At(selection).Split('x', false);
+        if (dimensions.Size() == 2) {
+            int width = ToInt(dimensions[0]);
+            _graphicsSettingsNew.width = width;
+
+            int height = ToInt(dimensions[1]);
+            _graphicsSettingsNew.height = height;
+
+            _graphicsSettingsNew.activeResolution = selection;
+        }
+    });
+
+    CreateSingleLine();
+    auto applyVideoSettings = CreateButton("Apply");
+
+    // Detect button press events
+    SubscribeToEvent(applyVideoSettings, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        SaveVideoSettings();
+    });
 }
 
 void SettingsWindow::SaveVideoSettings()
 {
-//    String resolution = _resoulutionVector.At(_graphicsSettingsNew.activeResolution);
-//    StringVector dimensions = resolution.Split('x', false);
-//    if (dimensions.Size() == 2) {
-//        int width = ToInt(dimensions[0]);
-//        _graphicsSettingsNew.width = width;
-//
-//        int height = ToInt(dimensions[1]);
-//        _graphicsSettingsNew.height = height;
-//    }
 
     _graphicsSettings = _graphicsSettingsNew;
 	{
@@ -329,7 +390,7 @@ void SettingsWindow::SaveVideoSettings()
 		_graphicsSettings.vsync,
 		_graphicsSettings.tripleBuffer,
 		_graphicsSettings.multisample,
-		0,
+		_graphicsSettings.monitor,
 		0
 	);
 		
@@ -346,6 +407,7 @@ void SettingsWindow::SaveVideoSettings()
     GetSubsystem<ConfigManager>()->Set("engine", "Fullscreen", (bool)_graphicsSettingsNew.fullscreen);
     GetSubsystem<ConfigManager>()->Set("engine", "TripleBuffer", (bool)_graphicsSettingsNew.tripleBuffer);
     GetSubsystem<ConfigManager>()->Set("engine", "Shadows", (bool)_graphicsSettingsNew.shadows);
+    GetSubsystem<ConfigManager>()->Set("engine", "Monitor", _graphicsSettingsNew.monitor);
 
     if (_graphicsSettingsNew.textureQuality >= 3) {
         _graphicsSettingsNew.textureQuality = 15;
@@ -374,6 +436,7 @@ void SettingsWindow::InitGraphicsSettings()
 	_graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
 	_graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
 	_graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool() ? 1 : 0;
+    _graphicsSettings.monitor = GetGlobalVar("Monitor").GetInt();
 	_graphicsSettings.vsync = GetGlobalVar("VSync").GetBool() ? 1 : 0;
 	_graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool() ? 1 : 0;
 	_graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool() ? 1 : 0;
@@ -383,23 +446,21 @@ void SettingsWindow::InitGraphicsSettings()
 	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt() - 1 ;
 	_graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt() - 1, 0);
 
-	String activeResolution = String(_graphicsSettings.width) + "x" + String(_graphicsSettings.height);
+	String activeResolution = String(_graphicsSettings.width) + " x " + String(_graphicsSettings.height);
     auto graphics = GetSubsystem<Graphics>();
 
-	URHO3D_LOGINFO("Active resolution " + activeResolution);
-	PODVector<IntVector3> resolutions = graphics->GetResolutions(0);
+	auto resolutions = graphics->GetResolutions(0);
 	for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
-        if ((*it).x_ < 800 || (*it).y_ < 720) {
+        if ((*it).x_ < 500 || (*it).y_ < 500) {
             continue;
         }
-	    String resolution = String((*it).x_) + "x" + String((*it).y_);
-//	    if (_resoulutionVector.Find(resolution) == _resoulutionVector.End()) {
-//            _resoulutionVector.Push(resolution);
-//
-//            if (resolution == activeResolution) {
-//                _graphicsSettings.activeResolution = _resoulutionVector.Size() - 1;
-//            }
-//	    }
+        String name = String((*it).x_) + " x " + String((*it).y_);
+        if (!_availableResolutionNames.Contains(name)) {
+            _availableResolutionNames.Push(name);
+            if (activeResolution == name) {
+                _graphicsSettings.activeResolution = _availableResolutionNames.Size() - 1;
+            }
+        }
 	}
 
     _graphicsSettingsNew = _graphicsSettings;
@@ -516,6 +577,31 @@ Slider* SettingsWindow::CreateSlider(const String& text)
 	slider->SetRepeatRate(0.2);
 
 	return slider;
+}
+
+DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& items)
+{
+    SharedPtr<Text> text(new Text(context_));
+    _activeLine->AddChild(text);
+    text->SetText(label);
+    text->SetStyleAuto();
+    text->SetFixedWidth(200);
+
+    SharedPtr<DropDownList> list(new DropDownList(context_));
+    _activeLine->AddChild(list);
+    list->SetStyleAuto();
+    list->SetFixedWidth(200);
+
+    for (auto it = items.Begin(); it != items.End(); ++it)
+    {
+        SharedPtr<Text> item(new Text(context_));
+        list->AddItem(item);
+        item->SetText((*it));
+        item->SetStyleAuto();
+        item->SetFixedWidth(200);
+    }
+
+    return list;
 }
 
 UIElement* SettingsWindow::CreateSingleLine()

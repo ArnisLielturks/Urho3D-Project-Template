@@ -59,17 +59,18 @@ void Loading::CreateUI()
 
     // Set random rotation in degrees and random scale
     sprite->SetRotation(Random() * 360.0f);
-    sprite->SetScale(Random(1.0f) + 0.5f);
 
     // Set random color and additive blending mode
     sprite->SetColor(Color(Random(0.5f) + 0.5f, Random(0.5f) + 0.5f, Random(0.5f) + 0.5f));
     sprite->SetBlendMode(BLEND_ADD);
+
 
     // Add as a child of the root UI element
     ui->GetRoot()->AddChild(sprite);
 
     SharedPtr<ObjectAnimation> logoAnimation(new ObjectAnimation(context_));
     SharedPtr<ValueAnimation> rotation(new ValueAnimation(context_));
+
     // Use spline interpolation method
     rotation->SetInterpolationMethod(IM_LINEAR);
     // Set spline tension
@@ -126,6 +127,6 @@ void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
 	UnsubscribeFromEvent(E_UPDATE);
 	VariantMap data = GetEventDataMap();
-	data["Name"] = "Level";
+	data["Name"] = "Loading";
     SendEvent(MyEvents::E_SET_LEVEL, data);
 }

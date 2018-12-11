@@ -78,6 +78,12 @@ namespace MyEvents
 		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // string or int - action name or ID
 	}
 
+	// Start mapping key to specific action
+	URHO3D_EVENT(E_STOP_INPUT_MAPPING, StopInputMapping)
+	{
+		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // string or int - action name or ID
+	}
+
     // When mapping was finished
     URHO3D_EVENT(E_INPUT_MAPPING_FINISHED, InputMappingFinished)
 	{

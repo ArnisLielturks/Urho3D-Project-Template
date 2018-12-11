@@ -147,6 +147,8 @@ public:
      */
     float GetSensitivityY(int controller);
 
+    void StopInputMapping();
+
 protected:
     virtual void Init();
 

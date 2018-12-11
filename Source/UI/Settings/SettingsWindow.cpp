@@ -16,6 +16,7 @@ SettingsWindow::SettingsWindow(Context* context) :
 
 SettingsWindow::~SettingsWindow()
 {
+    _baseWindow->Remove();
 }
 
 void SettingsWindow::Init()
@@ -32,6 +33,37 @@ void SettingsWindow::Create()
 	_baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
 	_baseWindow->SetSize(400, 400);
 	_baseWindow->BringToFront();
+
+    // Create Window 'titlebar' container
+    _titleBar =_baseWindow->CreateChild<UIElement>();
+    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
+    _titleBar->SetVerticalAlignment(VA_TOP);
+    _titleBar->SetLayoutMode(LM_HORIZONTAL);
+    _titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));
+
+    // Create the Window title Text
+    auto* windowTitle = new Text(context_);
+    windowTitle->SetName("WindowTitle");
+    windowTitle->SetText("Settings");
+
+    // Create the Window's close button
+    auto* buttonClose = new Button(context_);
+    buttonClose->SetName("CloseButton");
+    buttonClose->SetHorizontalAlignment(HA_RIGHT);
+
+    // Add the controls to the title bar
+    _titleBar->AddChild(windowTitle);
+    _titleBar->AddChild(buttonClose);
+
+    // Apply styles
+    windowTitle->SetStyleAuto();
+    buttonClose->SetStyle("CloseButton");
+
+    SubscribeToEvent(buttonClose, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "SettingsWindow";
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+    });
 
 	_tabView = _baseWindow->CreateChild<UIElement>();
 	_tabView->SetAlignment(HA_LEFT, VA_TOP);
@@ -62,6 +94,7 @@ void SettingsWindow::Create()
 void SettingsWindow::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
+    SubscribeToEvent(MyEvents::E_STOP_INPUT_MAPPING, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
 }
 
 void SettingsWindow::ChangeTab(SettingTabs tab)
@@ -467,7 +500,7 @@ void SettingsWindow::InitGraphicsSettings()
 Button* SettingsWindow::CreateTabButton(const String& text)
 {
 	const int width = 120;
-	const int border = 10;
+	const int border = 4;
 
 	auto* cache = GetSubsystem<ResourceCache>();
 	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
@@ -476,7 +509,7 @@ Button* SettingsWindow::CreateTabButton(const String& text)
 	button->SetStyleAuto();
 	button->SetFixedWidth(width);
 	button->SetFixedHeight(30);
-	button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 10));
+	button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 24));
 	button->SetAlignment(HA_LEFT, VA_TOP);
 
 	auto* buttonText = button->CreateChild<Text>();
@@ -484,7 +517,8 @@ Button* SettingsWindow::CreateTabButton(const String& text)
 	buttonText->SetAlignment(HA_CENTER, VA_CENTER);
 	buttonText->SetText(text);
 
-	_baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + 10);
+	_baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + border);
+    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
 
 	return button;
 }
@@ -579,6 +613,11 @@ Slider* SettingsWindow::CreateSlider(const String& text)
 
 DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& items)
 {
+    if (!_activeLine) {
+        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+        return nullptr;
+    }
+
     SharedPtr<Text> text(new Text(context_));
     _activeLine->AddChild(text);
     text->SetText(label);

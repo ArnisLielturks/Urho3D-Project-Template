@@ -159,6 +159,22 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 	SaveConfig();
 }
 
+void ControllerInput::StopInputMapping()
+{
+    using namespace MyEvents::StopInputMapping;
+    VariantMap data = GetEventDataMap();
+    data[P_CONTROL_ACTION] = _activeAction;
+
+    _activeAction = -1;
+    // Stop listening for keyboard key mapping
+    for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
+        (*it).second_->StopMappingAction();
+    }
+
+    SendEvent(MyEvents::E_STOP_INPUT_MAPPING, data);
+
+}
+
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
 {
 	using namespace MyEvents::StartInputMapping;

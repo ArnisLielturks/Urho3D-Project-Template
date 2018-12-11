@@ -32,6 +32,13 @@ void KeyboardInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 	using namespace KeyDown;
 	int key = eventData[P_KEY].GetInt();
 
+	if (key == KEY_ESCAPE) {
+		GetSubsystem<ControllerInput>()->StopInputMapping();
+		_activeAction = 0;
+		URHO3D_LOGINFO("Control mapping stopped");
+		return;
+	}
+
 	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetConfiguredKey(_activeAction, key, "keyboard");

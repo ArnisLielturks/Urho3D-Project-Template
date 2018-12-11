@@ -60,6 +60,7 @@ private:
     void InitGraphicsSettings();
     HashMap<int, SharedPtr<Button>> _tabs;
 
+    SharedPtr<UIElement> _titleBar;
     SettingTabs _activeTab;
     int _tabElementCount;
     SharedPtr<UIElement> _activeLine;

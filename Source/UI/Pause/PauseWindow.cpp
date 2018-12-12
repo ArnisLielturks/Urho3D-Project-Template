@@ -35,7 +35,7 @@ void PauseWindow::Create()
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(300, 150);
+    _baseWindow->SetSize(300, 190);
     _baseWindow->BringToFront();
 
     _continueButton = CreateButton("Continue", 200, IntVector2(0, 20));
@@ -59,7 +59,16 @@ void PauseWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _exitButton = CreateButton("Exit game", 200, IntVector2(0, 100));
+    _settingsButton = CreateButton("Settings", 200, IntVector2(0, 100));
+    _settingsButton->SetAlignment(HA_CENTER, VA_TOP);
+
+    SubscribeToEvent(_settingsButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "SettingsWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    });
+
+    _exitButton = CreateButton("Exit game", 200, IntVector2(0, 140));
     _exitButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_exitButton, "Released", [&](StringHash eventType, VariantMap& eventData) {

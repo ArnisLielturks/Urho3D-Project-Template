@@ -82,7 +82,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
@@ -342,27 +342,14 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_MATERIAL_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "MaterialQuality", 15));
     SetEngineParameter(EP_MULTI_SAMPLE, GetSubsystem<ConfigManager>()->GetInt("engine", "MultiSample", 1));
     SetEngineParameter(EP_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "Shadows", true));
-    SetEngineParameter(EP_TEXTURE_ANISOTROPY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureAnisotropy", 16));
+    SetEngineParameter(EP_TEXTURE_ANISOTROPY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureAnisotropy", 15));
     SetEngineParameter(EP_TEXTURE_FILTER_MODE, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureFilterMode", 5));
-    /*
-    FILTER_NEAREST = 0,
-    FILTER_BILINEAR = 1,
-    FILTER_TRILINEAR = 2,
-    FILTER_ANISOTROPIC = 3,
-    FILTER_NEAREST_ANISOTROPIC = 4,
-    FILTER_DEFAULT = 5,
-    MAX_FILTERMODES = 6
-    */
+
     SetEngineParameter(EP_TEXTURE_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureQuality", 2));
     SetEngineParameter(EP_TRIPLE_BUFFER, GetSubsystem<ConfigManager>()->GetBool("engine", "TripleBuffer", true));
     SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("engine", "VSync", true));
 
-    // SetEngineParameter(EP_PACKAGE_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
-    // SetEngineParameter(EP_RENDER_PATH, engine_->GetGlobalVar("FrameLimiter").GetBool());
-    // SetEngineParameter(EP_RESOURCE_PACKAGES, engine_->GetGlobalVar("FrameLimiter").GetBool());
     SetEngineParameter(EP_RESOURCE_PATHS, GetSubsystem<ConfigManager>()->GetString("engine", "ResourcePaths", "Data;CoreData"));
-    // SetEngineParameter(EP_RESOURCE_PREFIX_PATHS, engine_->GetGlobalVar("FrameLimiter").GetBool());
-    // SetEngineParameter(EP_SHADER_CACHE_DIR, engine_->GetGlobalVar("FrameLimiter").GetBool());
 
     // Sound
     SetEngineParameter(EP_SOUND, GetSubsystem<ConfigManager>()->GetBool("audio", "Sound", true));

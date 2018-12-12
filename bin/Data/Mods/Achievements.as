@@ -15,6 +15,17 @@ void Start()
     VariantMap data;
     data["Message"] = "Initialized achievements.as script from the mods directory";
     SendEvent("NewAchievement", data);
+
+    // DelayedExecute(2.0, false, "DisplayAchievement");
+}
+
+void DisplayAchievement()
+{
+    VariantMap data;
+    data["Message"] = "DisplayAchievement";
+    SendEvent("NewAchievement", data);
+
+    // DelayedExecute(2.0, false, "DisplayAchievement");
 }
 
 void Stop()

@@ -31,7 +31,7 @@ void SettingsWindow::Create()
 	_baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
 	_baseWindow->SetStyleAuto();
 	_baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-	_baseWindow->SetSize(400, 400);
+	_baseWindow->SetSize(400, 500);
 	_baseWindow->BringToFront();
 
     // Create Window 'titlebar' container
@@ -335,6 +335,17 @@ void SettingsWindow::CreateVideoTab()
         _graphicsSettingsNew.fullscreen = enabled;
     });
 
+    // Fullscreen
+    CreateSingleLine();
+    auto frameLimiterToggle = CreateCheckbox("Frame Limiter");
+    frameLimiterToggle->SetChecked(_graphicsSettings.frameLimiter);
+    SubscribeToEvent(frameLimiterToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+
+        _graphicsSettingsNew.frameLimiter = enabled;
+    });
+
     // Shadows
 	CreateSingleLine();
 	auto shadowToggle = CreateCheckbox("Enable shadows");
@@ -368,14 +379,13 @@ void SettingsWindow::CreateVideoTab()
         _graphicsSettingsNew.tripleBuffer = enabled;
     });
 
+    // Resolution
     CreateSingleLine();
-
     auto resolutionMenu = CreateMenu("Resolution", _availableResolutionNames);
     resolutionMenu->SetSelection(_graphicsSettings.activeResolution);
     SubscribeToEvent(resolutionMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetFloat();
-        URHO3D_LOGINFO("Selection " + String(selection));
+        int selection = eventData[P_SELECTION].GetInt();
 
         StringVector dimensions = _availableResolutionNames.At(selection).Split('x', false);
         if (dimensions.Size() == 2) {
@@ -387,6 +397,97 @@ void SettingsWindow::CreateVideoTab()
 
             _graphicsSettingsNew.activeResolution = selection;
         }
+    });
+
+    // Shadow quality
+    CreateSingleLine();
+    Vector<String> shadowQualityLevels;
+    shadowQualityLevels.Push("SHADOWQUALITY_SIMPLE_16BIT");
+    shadowQualityLevels.Push("SHADOWQUALITY_SIMPLE_24BIT");
+    shadowQualityLevels.Push("SHADOWQUALITY_PCF_16BIT");
+    shadowQualityLevels.Push("SHADOWQUALITY_PCF_24BIT");
+    shadowQualityLevels.Push("SHADOWQUALITY_VSM");
+    shadowQualityLevels.Push("SHADOWQUALITY_BLUR_VSM");
+
+    auto shadowQualityMenu = CreateMenu("Shadow quality", shadowQualityLevels);
+    shadowQualityMenu->SetSelection(_graphicsSettings.shadowQuality);
+    SubscribeToEvent(shadowQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        _graphicsSettingsNew.shadowQuality = selection;
+    });
+
+
+    // Texture filter mode
+    CreateSingleLine();
+    Vector<String> textureFilterModes;
+    textureFilterModes.Push("FILTER_NEAREST");
+    textureFilterModes.Push("FILTER_BILINEAR");
+    textureFilterModes.Push("FILTER_ANISOTROPIC");
+    textureFilterModes.Push("FILTER_NEAREST_ANISOTROPIC");
+    textureFilterModes.Push("FILTER_DEFAULT");
+    textureFilterModes.Push("MAX_FILTERMODES");
+
+    auto textureFilterModeMenu = CreateMenu("Texture filter mode", textureFilterModes);
+    textureFilterModeMenu->SetSelection(_graphicsSettings.textureFilterMode);
+    SubscribeToEvent(textureFilterModeMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        _graphicsSettingsNew.textureFilterMode = selection;
+    });
+
+
+    // Texture anistrophy
+    CreateSingleLine();
+    Vector<String> levels;
+    levels.Push("1");
+    levels.Push("2");
+    levels.Push("3");
+    levels.Push("4");
+    levels.Push("5");
+    levels.Push("6");
+    levels.Push("7");
+    levels.Push("8");
+    levels.Push("9");
+    levels.Push("10");
+    levels.Push("11");
+    levels.Push("12");
+    levels.Push("13");
+    levels.Push("14");
+    levels.Push("15");
+    levels.Push("16");
+
+    auto textureAnisotropyLevelMenu = CreateMenu("Texture anisotropy level", levels);
+    textureAnisotropyLevelMenu->SetSelection(_graphicsSettings.textureAnistropy);
+    SubscribeToEvent(textureAnisotropyLevelMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        _graphicsSettingsNew.textureAnistropy = selection;
+    });
+
+    // Texture quality
+    CreateSingleLine();
+    auto textureQualityMenu = CreateMenu("Texture quality", levels);
+    textureQualityMenu->SetSelection(_graphicsSettings.textureQuality);
+    SubscribeToEvent(textureQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        _graphicsSettingsNew.textureQuality = selection;
+    });
+
+    // Multisample
+    CreateSingleLine();
+    auto multisampleMenu = CreateMenu("Multisample", levels);
+    multisampleMenu->SetSelection(_graphicsSettings.multisample);
+    SubscribeToEvent(multisampleMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        _graphicsSettingsNew.multisample = selection;
     });
 
     CreateSingleLine();
@@ -432,23 +533,22 @@ void SettingsWindow::SaveVideoSettings()
 	renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
 	renderer->SetDrawShadows(_graphicsSettings.shadows);
 
+	GetSubsystem<Engine>()->SetMaxFps((_graphicsSettings.frameLimiter) ? 60 : 0);
+
     GetSubsystem<ConfigManager>()->Set("engine", "WindowWidth", _graphicsSettingsNew.width);
     GetSubsystem<ConfigManager>()->Set("engine", "WindowHeight", _graphicsSettingsNew.height);
     GetSubsystem<ConfigManager>()->Set("engine", "VSync", (bool)_graphicsSettingsNew.vsync);
     GetSubsystem<ConfigManager>()->Set("engine", "Fullscreen", (bool)_graphicsSettingsNew.fullscreen);
+    GetSubsystem<ConfigManager>()->Set("engine", "FrameLimiter", (bool)_graphicsSettingsNew.frameLimiter);
     GetSubsystem<ConfigManager>()->Set("engine", "TripleBuffer", (bool)_graphicsSettingsNew.tripleBuffer);
     GetSubsystem<ConfigManager>()->Set("engine", "Shadows", (bool)_graphicsSettingsNew.shadows);
     GetSubsystem<ConfigManager>()->Set("engine", "Monitor", _graphicsSettingsNew.monitor);
 
-    if (_graphicsSettingsNew.textureQuality >= 3) {
-        _graphicsSettingsNew.textureQuality = 15;
-    }
-
-    GetSubsystem<ConfigManager>()->Set("engine", "ShadowQuality", _graphicsSettingsNew.shadowQuality + 1);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureQuality", _graphicsSettingsNew.textureQuality + 1);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureAnisotropy", _graphicsSettingsNew.textureAnistropy + 1);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode + 1);
-    GetSubsystem<ConfigManager>()->Set("engine", "MultiSample", _graphicsSettingsNew.multisample + 1);
+    GetSubsystem<ConfigManager>()->Set("engine", "ShadowQuality", _graphicsSettingsNew.shadowQuality);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureQuality", _graphicsSettingsNew.textureQuality);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureAnisotropy", _graphicsSettingsNew.textureAnistropy);
+    GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode);
+    GetSubsystem<ConfigManager>()->Set("engine", "MultiSample", _graphicsSettingsNew.multisample);
     GetSubsystem<ConfigManager>()->Save(true);
 }
 
@@ -467,15 +567,16 @@ void SettingsWindow::InitGraphicsSettings()
 	_graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
 	_graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
 	_graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool() ? 1 : 0;
+    _graphicsSettings.frameLimiter = GetGlobalVar("FrameLimiter").GetBool() ? 1 : 0;
     _graphicsSettings.monitor = GetGlobalVar("Monitor").GetInt();
 	_graphicsSettings.vsync = GetGlobalVar("VSync").GetBool() ? 1 : 0;
 	_graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool() ? 1 : 0;
 	_graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool() ? 1 : 0;
-	_graphicsSettings.shadowQuality = GetGlobalVar("ShadowQuality").GetInt() - 1;
-	_graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt() - 1;
-	_graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt() - 1;
-	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt() - 1 ;
-	_graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt() - 1, 0);
+	_graphicsSettings.shadowQuality = GetGlobalVar("ShadowQuality").GetInt();
+	_graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt();
+	_graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt();
+	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt();
+	_graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt(), 0);
 
 	String activeResolution = String(_graphicsSettings.width) + " x " + String(_graphicsSettings.height);
     auto graphics = GetSubsystem<Graphics>();

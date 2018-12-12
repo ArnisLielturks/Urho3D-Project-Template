@@ -25,6 +25,7 @@ private:
 
     SharedPtr<Button> _continueButton;
     SharedPtr<Button> _mainMenuButton;
+    SharedPtr<Button> _settingsButton;
     SharedPtr<Button> _exitButton;
     SharedPtr<Window> _baseWindow;
 

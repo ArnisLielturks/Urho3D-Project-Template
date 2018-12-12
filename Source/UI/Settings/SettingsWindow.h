@@ -14,6 +14,7 @@ struct GraphicsSettings {
     int width;
     int height;
     int fullscreen;
+    int frameLimiter;
     int monitor;
     int vsync;
     int tripleBuffer;

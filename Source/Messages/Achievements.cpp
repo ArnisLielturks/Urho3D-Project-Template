@@ -19,6 +19,8 @@ SingleAchievement::SingleAchievement(Context* context) :
     _baseWindow->SetSize(300, 100);
     _baseWindow->BringToFront();
 
+    _baseWindow->SetBringToBack(true);
+
     _sprite = _baseWindow->CreateChild<Sprite>();
     _sprite->SetSize(80, 80);
     _sprite->SetAlignment(HA_LEFT, VA_TOP);
@@ -175,7 +177,7 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     objAnimation->AddAttributeAnimation("Offset", positionAnimation2);
 
     singleAchievement->SetObjectAnimation(objAnimation);
-    singleAchievement->SetVar("Lifetime", 8.0f);
+    singleAchievement->SetVar("Lifetime", 6.0f);
 
     int position = -_activeAchievements.Size() * 110 - 10;
     singleAchievement->SetVerticalPosition(position);

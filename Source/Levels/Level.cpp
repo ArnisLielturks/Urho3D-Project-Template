@@ -100,6 +100,7 @@ void Level::CreateUI()
     text->SetTextEffect(TextEffect::TE_STROKE);
     text->SetFontSize(16);
     text->SetColor(Color(0.8f, 0.8f, 0.2f));
+    text->SetBringToBack(true);
 }
 
 void Level::SubscribeToEvents()

@@ -28,6 +28,7 @@ void ScoreboardWindow::Create()
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(300, 300);
     _baseWindow->BringToFront();
+
 }
 
 void ScoreboardWindow::SubscribeToEvents()

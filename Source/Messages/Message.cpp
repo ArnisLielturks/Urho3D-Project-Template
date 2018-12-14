@@ -3,7 +3,10 @@
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
 
-/// Construct.
+#ifdef MessageBox
+#undef MessageBox
+#endif
+
 Message::Message(Context* context) :
     Object(context)
 {

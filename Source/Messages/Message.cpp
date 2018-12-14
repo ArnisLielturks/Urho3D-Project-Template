@@ -32,5 +32,5 @@ void Message::HandleShowMessage(StringHash eventType, VariantMap& eventData)
     String title = eventData["Title"].GetString();
     String message = eventData["Message"].GetString();
 
-    new Urho3D::MessageBox(context_, message, title);
+    //new Urho3D::MessageBox(context_, message, title);
 }

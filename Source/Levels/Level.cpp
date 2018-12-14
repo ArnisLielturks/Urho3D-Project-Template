@@ -5,13 +5,13 @@
 #include "../Audio/AudioManagerDefs.h"
 #include "../Input/ControllerInput.h"
 #include "../UI/WindowManager.h"
+#include "../Messages/Achievements.h"
 
 using namespace Levels;
 
     /// Construct.
 Level::Level(Context* context) :
     BaseLevel(context),
-    shouldReturn(false),
     _showScoreboard(false)
 {
 }
@@ -23,6 +23,9 @@ Level::~Level()
 
 void Level::Init()
 {
+    // Disable achievement showing for this level
+    GetSubsystem<Achievements>()->SetShowAchievements(true);
+
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetNumViewports(1);
 
@@ -83,8 +86,6 @@ void Level::CreateScene()
     if (!scene_->HasComponent<PhysicsWorld>()) {
         scene_->CreateComponent<PhysicsWorld>(LOCAL);
     }
-
-    CreateCamera();
 }
 
 void Level::CreateUI()
@@ -94,9 +95,10 @@ void Level::CreateUI()
 
     Text* text = ui->GetRoot()->CreateChild<Text>();
     text->SetHorizontalAlignment(HA_CENTER);
-    text->SetVerticalAlignment(VA_CENTER);
+    text->SetVerticalAlignment(VA_TOP);
+    text->SetPosition(0, 50);
     text->SetStyleAuto();
-    text->SetText("This is ingame text!\nPress ESC to pause game\nPress TAB to show ScoreboardWindow\nPress F1 to show/hide console");
+    text->SetText("ESC - pause game\nTAB - show ScoreboardWindow\nF2 - toggle console");
     text->SetTextEffect(TextEffect::TE_STROKE);
     text->SetFontSize(16);
     text->SetColor(Color(0.8f, 0.8f, 0.2f));
@@ -211,12 +213,6 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 
 void Level::OnLoaded()
 {
-    if (shouldReturn) {
-        VariantMap eventData = GetEventDataMap();;
-        eventData["Name"] = "MainMenu";
-        eventData["Message"] = returnMessage;
-        SendEvent(MyEvents::E_SET_LEVEL, eventData);
-    }
 }
 
 void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)

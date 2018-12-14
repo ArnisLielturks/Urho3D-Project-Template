@@ -1,5 +1,6 @@
 #include "Helpers/Helper.as"
 
+int index = 0;
 /**
  * Entry function for the mod
  */
@@ -13,19 +14,25 @@ void Start()
     SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
 
     VariantMap data;
-    data["Message"] = "Initialized achievements.as script from the mods directory";
-    SendEvent("NewAchievement", data);
 
-    // DelayedExecute(2.0, false, "DisplayAchievement");
+    data["Message"] = "Discovered this amazing Urho3D sample";
+    data["Image"] = "Textures/lunar-module.png";
+    SendEvent("NewAchievement", data);
+    //
+    // data["Title"] = "title";
+    // data["Message"] = "Message";
+    // SendEvent("ShowAlertMessage", data);
+
+    // DelayedExecute(1, true, "DisplayAchievement");
+    // DisplayAchievement();
 }
 
 void DisplayAchievement()
 {
     VariantMap data;
-    data["Message"] = "DisplayAchievement";
+    data["Message"] = "Initialized achievements.as script from the mods directory";
     SendEvent("NewAchievement", data);
-
-    // DelayedExecute(2.0, false, "DisplayAchievement");
+    index++;
 }
 
 void Stop()

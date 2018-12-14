@@ -5,8 +5,7 @@
 
 /// Construct.
 Message::Message(Context* context) :
-    Object(context),
-    _messageTime(0)
+    Object(context)
 {
     Init();
 }
@@ -27,15 +26,8 @@ void Message::SubscribeToEvents()
 
 void Message::HandleShowMessage(StringHash eventType, VariantMap& eventData)
 {
-    _title = eventData["Title"].GetString();
-    _message = eventData["Message"].GetString();
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Message, HandleUpdate));
-    _messageTime = 0.0f;
-}
+    String title = eventData["Title"].GetString();
+    String message = eventData["Message"].GetString();
 
-void Message::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-    using namespace Update;
-    float timeStep = eventData[P_TIMESTEP].GetFloat();
-    _messageTime += timeStep * 200;
+    new MessageBox(context_, message, title);
 }

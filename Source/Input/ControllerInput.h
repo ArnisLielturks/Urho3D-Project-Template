@@ -147,14 +147,23 @@ public:
      */
     float GetSensitivityY(int controller);
 
+    /**
+     * Stop input mapping process if it has been started
+     */
     void StopInputMapping();
 
 protected:
     virtual void Init();
 
 private:
+	/**
+	 * Subscribe for input mapping events
+	 */
     void SubscribeToEvents();
-	void UnsubscribeToEvents();
+
+	/**
+	 * Register input mapping via console
+	 */
 	void RegisterConsoleCommands();
 
 	/**

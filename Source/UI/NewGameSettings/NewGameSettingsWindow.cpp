@@ -2,6 +2,7 @@
 #include "NewGameSettingsWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"
+#include "../../Global.h"
 
 /// Construct.
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
@@ -35,7 +36,7 @@ void NewGameSettingsWindow::Create()
     _newGameButton = CreateButton("Start", 80, IntVector2(20, 0));
     _newGameButton->SetAlignment(HA_LEFT, VA_CENTER);
 
-    SubscribeToEvent(_newGameButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Loading";
         SendEvent(MyEvents::E_SET_LEVEL, data);
@@ -43,7 +44,7 @@ void NewGameSettingsWindow::Create()
 
     _exitWindow = CreateButton("Exit", 80, IntVector2(-20, 0));
     _exitWindow->SetAlignment(HA_RIGHT, VA_CENTER);
-    SubscribeToEvent(_exitWindow, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_exitWindow, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
@@ -58,7 +59,7 @@ void NewGameSettingsWindow::SubscribeToEvents()
 Button* NewGameSettingsWindow::CreateButton(const String& text, int width, IntVector2 position)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     auto* button = _baseWindow->CreateChild<Button>();
     button->SetStyleAuto();

@@ -1,8 +1,6 @@
 #pragma once
-
 #include <Urho3D/Urho3DAll.h>
 
-/// User defined event
 namespace MyEvents
 {
     // Start new level
@@ -53,11 +51,6 @@ namespace MyEvents
 		URHO3D_PARAM(P_NAME, GlobalVariableName); // string - global variable name
 		URHO3D_PARAM(P_VALUE, GlobalVariableValue); // string - new value
 	}
-
-    // Save configuration JSON file
-    URHO3D_EVENT(E_SAVE_CONFIG, SaveConfig)
-    {
-    }
 
     // Add new global variable which should be saved in the config files
     URHO3D_EVENT(E_ADD_CONFIG, AddConfig)
@@ -136,7 +129,14 @@ namespace MyEvents
     // Level changing finished
 	URHO3D_EVENT(E_LEVEL_CHANGING_FINISHED, LevelChangingFinished)
 	{
-        URHO3D_PARAM(P_FROM, From); // string
-        URHO3D_PARAM(P_TO, To); // string
+        URHO3D_PARAM(P_FROM, From); // string - previous level
+        URHO3D_PARAM(P_TO, To); // string - new level
+	}
+
+	// Level changing finished
+	URHO3D_EVENT(E_NEW_ACHIEVEMENT, NewAchievement)
+	{
+		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
+		URHO3D_PARAM(P_IMAGE, Image); // string - Texture to use for achievement
 	}
 }

@@ -3,15 +3,13 @@
 #include "../../MyEvents.h"
 #include "../../Input/ControllerInput.h"
 #include "../../Audio/AudioManagerDefs.h"
+#include "../../Global.h"
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
     BaseWindow(context)
 {
-
     Init();
-//	InitAudioSettings();
-//	InitGraphicsSettings();
 }
 
 SettingsWindow::~SettingsWindow()
@@ -41,10 +39,15 @@ void SettingsWindow::Create()
     _titleBar->SetLayoutMode(LM_HORIZONTAL);
     _titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));
 
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
     // Create the Window title Text
     auto* windowTitle = new Text(context_);
     windowTitle->SetName("WindowTitle");
     windowTitle->SetText("Settings");
+    windowTitle->SetFont(font, 14);
+
 
     // Create the Window's close button
     auto* buttonClose = new Button(context_);
@@ -59,7 +62,7 @@ void SettingsWindow::Create()
     windowTitle->SetStyleAuto();
     buttonClose->SetStyle("CloseButton");
 
-    SubscribeToEvent(buttonClose, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(buttonClose, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
@@ -72,19 +75,19 @@ void SettingsWindow::Create()
 	_tabView->SetHeight(_baseWindow->GetHeight());
 
 	_tabs[CONTROLS] = CreateTabButton("Controls");
-	SubscribeToEvent(_tabs[CONTROLS], "Released", [&](StringHash eventType, VariantMap& eventData) {
+	SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
 		ChangeTab(CONTROLS);
 	});
 	_tabs[CONTROLLERS] = CreateTabButton("Controllers");
-	SubscribeToEvent(_tabs[CONTROLLERS], "Released", [&](StringHash eventType, VariantMap& eventData) {
+	SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
 		ChangeTab(CONTROLLERS);
 	});
 	_tabs[AUDIO] = CreateTabButton("Audio");
-	SubscribeToEvent(_tabs[AUDIO], "Released", [&](StringHash eventType, VariantMap& eventData) {
+	SubscribeToEvent(_tabs[AUDIO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
 		ChangeTab(AUDIO);
 	});
 	_tabs[VIDEO] = CreateTabButton("Video");
-	SubscribeToEvent(_tabs[VIDEO], "Released", [&](StringHash eventType, VariantMap& eventData) {
+	SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
 		ChangeTab(VIDEO);
 	});
 
@@ -503,14 +506,7 @@ void SettingsWindow::SaveVideoSettings()
 {
 
     _graphicsSettings = _graphicsSettingsNew;
-	{
-		using namespace AudioDefs;
-		using namespace MyEvents::PlaySound;
-		VariantMap data = GetEventDataMap();
-		data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
-		data[P_TYPE] = SOUND_EFFECT;
-		SendEvent(MyEvents::E_PLAY_SOUND, data);
-	}
+
 	Graphics* graphics = GetSubsystem<Graphics>();
 	graphics->SetMode(
 		_graphicsSettings.width,
@@ -605,7 +601,7 @@ Button* SettingsWindow::CreateTabButton(const String& text)
 	const int border = 4;
 
 	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
 	auto* button = _baseWindow->CreateChild<Button>();
 	button->SetStyleAuto();
@@ -628,7 +624,7 @@ Button* SettingsWindow::CreateTabButton(const String& text)
 Button* SettingsWindow::CreateButton(const String& text)
 {
 	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
 	auto* button = _activeLine->CreateChild<Button>();
 	button->SetStyleAuto();
@@ -650,11 +646,15 @@ CheckBox* SettingsWindow::CreateCheckbox(const String& label)
 		return nullptr;
 	}
 
+	auto *cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
     SharedPtr<Text> text(new Text(context_));
 	_activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
     text->SetFixedWidth(200);
+    text->SetFont(font, 12);
 
 	SharedPtr<CheckBox> box(new CheckBox(context_));
 	_activeLine->AddChild(box);
@@ -672,8 +672,9 @@ Text* SettingsWindow::CreateLabel(const String& text)
 	}
 
 	auto *cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
 	// Create log element to view latest logs from the system
-	auto *font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
 	auto *label = _activeLine->CreateChild<Text>();
 	label->SetFont(font, 12);
 	label->SetPosition(10, 30 + _tabElementCount * 30);
@@ -691,7 +692,7 @@ Slider* SettingsWindow::CreateSlider(const String& text)
 	}
 
 	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
 	// Create text and slider below it
 	auto* sliderText = _activeLine->CreateChild<Text>();
@@ -720,11 +721,15 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
         return nullptr;
     }
 
+	auto* cache = GetSubsystem<ResourceCache>();
+	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
     SharedPtr<Text> text(new Text(context_));
     _activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
     text->SetFixedWidth(200);
+    text->SetFont(font, 12);
 
     SharedPtr<DropDownList> list(new DropDownList(context_));
     _activeLine->AddChild(list);
@@ -738,6 +743,7 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
         item->SetText((*it));
         item->SetStyleAuto();
         item->SetFixedWidth(200);
+		item->SetFont(font, 12);
     }
 
     return list;

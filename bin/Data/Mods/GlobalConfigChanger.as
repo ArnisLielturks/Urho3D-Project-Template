@@ -2,11 +2,6 @@ Window@ window = null;
 ListView@ list = null;
 
 /**
- * Key which will toggle the configuration window
- */
-int TOGGLE_KEY = KEY_F3;
-
-/**
  * List of all the configuration keys to check
  */
 Array<String> configList;
@@ -61,8 +56,8 @@ void Stop()
 void HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
     int key = eventData["Key"].GetInt();
-    if (key == TOGGLE_KEY) {
-        if (window != null) {
+    if (key == KEY_F3) {
+        if (window !is null) {
             DestroyMenu();
         } else {
             CreateMenu();

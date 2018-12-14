@@ -1,6 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Splash.h"
 #include "../MyEvents.h"
+#include "../Messages/Achievements.h"
 
 using namespace Levels;
 
@@ -71,6 +72,9 @@ Splash::~Splash()
 
 void Splash::Init()
 {
+    // Disable achievement showing for this level
+    GetSubsystem<Achievements>()->SetShowAchievements(false);
+
     BaseLevel::Init();
 
     // Create the scene content

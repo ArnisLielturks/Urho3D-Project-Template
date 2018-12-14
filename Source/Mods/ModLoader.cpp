@@ -140,6 +140,7 @@ void ModLoader::CheckAllMods()
     for (auto it = result.Begin(); it != result.End(); ++it) {
         modNames.Push((*it));
     }
+
     VariantMap data = GetEventDataMap();
     data["Mods"] = modNames;
     SendEvent("ModsLoaded", data);
@@ -150,8 +151,10 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
     using namespace FileChanged;
     String filename = eventData[P_RESOURCENAME].GetString();
     if (!filename.Contains(".as") && !filename.Contains(".lua")) {
+        // We don't care about resources other than .as and .lua
         return;
     }
+
     if (_asScriptMap.Contains(filename)) {
         URHO3D_LOGINFO("Reloading mod " + filename);
         if (_asScriptMap[filename]->GetFunction("void Stop()")) {

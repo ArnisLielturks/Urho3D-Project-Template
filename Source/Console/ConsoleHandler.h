@@ -2,30 +2,21 @@
 
 #include <Urho3D/Urho3DAll.h>
 
-#ifndef CONSOLE_CONTENT_LENGTH
-#define CONSOLE_CONTENT_LENGTH 1024 * 10
-#endif
-
-struct SingleLine {
-    String content;
-    int logLevel;
-};
-
 struct SingleConsoleCommand {
     String command;
     String eventToCall;
     String description;
 };
 
-class ConsoleWindow : public Object
+class ConsoleHandler : public Object
 {
-    URHO3D_OBJECT(ConsoleWindow, Object);
+    URHO3D_OBJECT(ConsoleHandler, Object);
 
 public:
     /// Construct.
-    ConsoleWindow(Context* context);
+    ConsoleHandler(Context* context);
 
-    virtual ~ConsoleWindow();
+    virtual ~ConsoleHandler();
 
     virtual void Init();
 
@@ -35,18 +26,43 @@ protected:
 
 private:
 
+    /**
+     * Subscribe console related events
+     */
     void SubscribeToEvents();
 
+    /**
+     * Toggle console
+     */
     void HandleKeyDown(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Add new console command
+     */
     void HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Process incomming console commands
+     */
     void HandleConsoleCommand(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Parse incomming command input
+     */
     void ParseCommand(String input);
 
+    /**
+     * Display help
+     */
     void HandleConsoleCommandHelp(StringHash eventType, VariantMap& eventData);
 
-    Timer _timer;
+    /**
+     * Registered console commands
+     */
     HashMap<String, SingleConsoleCommand> _registeredConsoleCommands;
 
+    /**
+     * Console handler in the engine
+     */
     Console* _console;
 };

@@ -1,6 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Loading.h"
 #include "../MyEvents.h"
+#include "../Messages/Achievements.h"
 
 using namespace Levels;
 
@@ -16,6 +17,9 @@ Loading::~Loading()
 
 void Loading::Init()
 {
+    // Disable achievement showing for this level
+    GetSubsystem<Achievements>()->SetShowAchievements(false);
+
     BaseLevel::Init();
 
     // Create the scene content

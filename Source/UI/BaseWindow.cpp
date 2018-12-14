@@ -5,15 +5,10 @@
 BaseWindow::BaseWindow(Context* context):
     Object(context)
 {
-    SubscribeToBaseEvents();
     Init();
 }
 
 BaseWindow::~BaseWindow()
 {
     Dispose();
-}
-
-void BaseWindow::Init()
-{
 }

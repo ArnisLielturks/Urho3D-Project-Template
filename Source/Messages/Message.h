@@ -14,8 +14,8 @@ public:
 
     virtual ~Message();
 
-protected:
-    virtual void Init();
+private:
+    void Init();
 
     /**
      * Handle ShowMessage event
@@ -23,26 +23,7 @@ protected:
     void HandleShowMessage(StringHash eventType, VariantMap& eventData);
 
     /**
-     * Display message with animation effects
+     * Subscribe to message events
      */
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
-
-private:
-
     void SubscribeToEvents();
-
-    /**
-     * Message title
-     */
-    String _title;
-
-    /**
-     * Message content
-     */
-    String _message;
-
-    /**
-     * Timestep for message animation
-     */
-    float _messageTime;
 };

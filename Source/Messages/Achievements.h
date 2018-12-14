@@ -1,55 +1,9 @@
 #pragma once
 
 #include <Urho3D/Urho3DAll.h>
+#include "SingleAchievement.h"
 
 using namespace Urho3D;
-
-class SingleAchievement : public Animatable
-{
-    URHO3D_OBJECT(SingleAchievement, Animatable);
-public:
-    /// Construct.
-    SingleAchievement(Context* context);
-
-    virtual ~SingleAchievement();
-
-    static void RegisterObject(Context* context);
-
-    /**
-     * Set achievement image
-     */
-    void SetImage(String image);
-
-    /**
-     * Set achievement message
-     */
-    void SetMessage(String message);
-
-    /**
-     * Get achievement message
-     */
-    String GetMessage();
-
-    void SetVerticalPosition(int position);
-
-    void SetVar(StringHash key, const Variant& value);
-    const Variant& GetVar(const StringHash& key) const;
-private:
-    void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
-    /// Handle attribute animation added.
-    void OnAttributeAnimationAdded() override;
-    /// Handle attribute animation removed.
-    void OnAttributeAnimationRemoved() override;
-
-    float _offset;
-    String _message;
-    VariantMap vars_;
-    int _verticalPos;
-
-    SharedPtr<Window> _baseWindow;
-    SharedPtr<Sprite> _sprite;
-    SharedPtr<Text> _title;
-};
 
 class Achievements : public Object
 {
@@ -61,25 +15,55 @@ public:
 
     virtual ~Achievements();
 
-    void Create();
-
-    void Dispose();
-
-    void HandleNewAchievement(StringHash eventType, VariantMap& eventData);
-
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
-
-    void HandleGameEnd(StringHash eventType, VariantMap& eventData);
-
-    void LoadAchievementList();
-
-protected:
-    virtual void Init();
+    /**
+     * Enable/Disable achievements from showing
+     * Achievements won't be lost but their displaying will be added
+     * to the queue when this is disabled
+     */
+    void SetShowAchievements(bool show);
 
 private:
+    /**
+     * Initialize achievements
+     */
+    void Init();
 
+    /**
+     * Subscribe to the notification events
+     */
     void SubscribeToEvents();
 
+    /**
+     * Create or add new event to the queue
+     */
+    void HandleNewAchievement(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Update SingleAchievement statuses
+     */
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Load achievements configuration
+     */
+    void LoadAchievementList();
+
+    /**
+     * Active achievement list
+     */
     List<SharedPtr<SingleAchievement>> _activeAchievements;
+
+    /**
+     * Only 1 achievement is allowed at a time,
+     * so all additional achievements are added to the queue
+     */
+    List<VariantMap> _achievementQueue;
+
+    /**
+     * Disable achievements from showing, all incoming achievements
+     * will be added to the queue. This might be useful to avoid showing achievements
+     * on Splash or Credits screens for example
+     */
+    bool _showAchievements;
 
 };

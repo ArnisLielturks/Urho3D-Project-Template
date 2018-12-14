@@ -2,6 +2,7 @@
 #include "PauseWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"
+#include "../../Global.h"
 
 /// Construct.
 PauseWindow::PauseWindow(Context* context) :
@@ -41,7 +42,7 @@ void PauseWindow::Create()
     _continueButton = CreateButton("Continue", 200, IntVector2(0, 20));
     _continueButton->SetAlignment(HA_CENTER, VA_TOP);
 
-    SubscribeToEvent(_continueButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_continueButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
@@ -50,7 +51,7 @@ void PauseWindow::Create()
     _mainMenuButton = CreateButton("Return to menu", 200, IntVector2(0, 60));
     _mainMenuButton->SetAlignment(HA_CENTER, VA_TOP);
 
-    SubscribeToEvent(_mainMenuButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_mainMenuButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
@@ -62,7 +63,7 @@ void PauseWindow::Create()
     _settingsButton = CreateButton("Settings", 200, IntVector2(0, 100));
     _settingsButton->SetAlignment(HA_CENTER, VA_TOP);
 
-    SubscribeToEvent(_settingsButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
@@ -71,11 +72,8 @@ void PauseWindow::Create()
     _exitButton = CreateButton("Exit game", 200, IntVector2(0, 140));
     _exitButton->SetAlignment(HA_CENTER, VA_TOP);
 
-    SubscribeToEvent(_exitButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
-        /*data["Name"] = "PauseWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-        */
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
@@ -89,7 +87,7 @@ void PauseWindow::SubscribeToEvents()
 Button* PauseWindow::CreateButton(const String& text, int width, IntVector2 position)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     auto* button = _baseWindow->CreateChild<Button>();
     button->SetStyleAuto();

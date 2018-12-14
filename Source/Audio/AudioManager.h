@@ -40,6 +40,11 @@ private:
     void SubscribeToEvents();
 	void SubscribeConsoleCommands();
 
+	/**
+	 * Listen for any button clicks
+	 */
+    void HandleButtonClick(StringHash eventType, VariantMap& eventData);
+
     /**
      * Handle E_PLAY_SOUND event
      */

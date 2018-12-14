@@ -14,11 +14,12 @@ public:
 
     virtual ~Notifications();
 
-protected:
+private:
     virtual void Init();
 
-private:
-
+    /**
+     * Subscribe to notification events
+     */
     void SubscribeToEvents();
 
     /**

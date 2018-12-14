@@ -1,26 +1,26 @@
 #include <Urho3D/Urho3DAll.h>
-#include "ConsoleWindow.h"
+#include "ConsoleHandler.h"
 #include "../MyEvents.h"
 
 /// Construct.
-ConsoleWindow::ConsoleWindow(Context* context) :
+ConsoleHandler::ConsoleHandler(Context* context) :
     Object(context)
 {
     Init();
 }
 
-ConsoleWindow::~ConsoleWindow()
+ConsoleHandler::~ConsoleHandler()
 {
 }
 
-void ConsoleWindow::Init()
+void ConsoleHandler::Init()
 {
     Create();
 
     SubscribeToEvents();
 }
 
-void ConsoleWindow::Create()
+void ConsoleHandler::Create()
 {
     Input* input = GetSubsystem<Input>();
     if (!input->IsMouseVisible()) {
@@ -38,22 +38,22 @@ void ConsoleWindow::Create()
     _console->SetNumBufferedRows(100);
 }
 
-void ConsoleWindow::SubscribeToEvents()
+void ConsoleHandler::SubscribeToEvents()
 {
-    SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleWindow, HandleKeyDown));
-    SubscribeToEvent(E_CONSOLECOMMAND, URHO3D_HANDLER(ConsoleWindow, HandleConsoleCommand));
-    SubscribeToEvent(MyEvents::E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleWindow, HandleConsoleCommandAdd));
+    SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleHandler, HandleKeyDown));
+    SubscribeToEvent(E_CONSOLECOMMAND, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommand));
+    SubscribeToEvent(MyEvents::E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandAdd));
 
     VariantMap data;
     data["ConsoleCommandName"] = "help";
     data["ConsoleCommandEvent"] = "ConsoleHelp";
     data["ConsoleCommandDescription"] = "Displays all available commands";
     SendEvent("ConsoleCommandAdd", data);
-    SubscribeToEvent("ConsoleHelp", URHO3D_HANDLER(ConsoleWindow, HandleConsoleCommandHelp));
+    SubscribeToEvent("ConsoleHelp", URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandHelp));
 
 }
 
-void ConsoleWindow::HandleKeyDown(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
     using namespace KeyDown;
     int key = eventData[P_KEY].GetInt();
@@ -63,14 +63,14 @@ void ConsoleWindow::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
 }
 
-void ConsoleWindow::HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
 {
     using namespace MyEvents::ConsoleCommandAdd;
     String command = eventData[P_NAME].GetString();
     String eventToCall = eventData[P_EVENT].GetString();
     String description = eventData[P_DESCRIPTION].GetString();
     if (_registeredConsoleCommands.Contains(command)) {
-        URHO3D_LOGERRORF("Console command '%s' already registered!", command.CString());
+        URHO3D_LOGWARNINGF("Console command '%s' already registered! Overwriting it!", command.CString());
     }
 
     // Register new console command
@@ -81,14 +81,14 @@ void ConsoleWindow::HandleConsoleCommandAdd(StringHash eventType, VariantMap& ev
     _registeredConsoleCommands[command] = singleConsoleCommand;
 }
 
-void ConsoleWindow::HandleConsoleCommand(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleConsoleCommand(StringHash eventType, VariantMap& eventData)
 {
     using namespace ConsoleCommand;
     String input = eventData[P_COMMAND].GetString();
     ParseCommand(input);
 }
 
-void ConsoleWindow::ParseCommand(String input)
+void ConsoleHandler::ParseCommand(String input)
 {
     if (input.Empty()) {
         return;
@@ -104,7 +104,7 @@ void ConsoleWindow::ParseCommand(String input)
     }
 }
 
-void ConsoleWindow::HandleConsoleCommandHelp(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleConsoleCommandHelp(StringHash eventType, VariantMap& eventData)
 {
     URHO3D_LOGINFO("");
     URHO3D_LOGINFO("###### All available (registered) commands ######");

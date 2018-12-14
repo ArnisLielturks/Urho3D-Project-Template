@@ -39,9 +39,6 @@ namespace Levels {
         void HandleControllerConnected(StringHash eventType, VariantMap& eventData);
         void HandleControllerDisconnected(StringHash eventType, VariantMap& eventData);
 
-        bool shouldReturn;
-        String returnMessage;
-
         WeakPtr<Node> _characterCameraNode;
 
         bool _showScoreboard;

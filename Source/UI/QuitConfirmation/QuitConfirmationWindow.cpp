@@ -2,6 +2,7 @@
 #include "QuitConfirmationWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"
+#include "../../Global.h"
 
 /// Construct.
 QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
@@ -40,11 +41,10 @@ void QuitConfirmationWindow::Create()
     _yesButton = CreateButton("Yes", 80, IntVector2(20, 0));
     _yesButton->SetAlignment(HA_LEFT, VA_CENTER);
 
-    SubscribeToEvent(_yesButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "QuitConfirmationWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+    SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
 
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "ExitGame";
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
@@ -52,7 +52,7 @@ void QuitConfirmationWindow::Create()
     _noButton = CreateButton("No", 80, IntVector2(-20, 0));
     _noButton->SetAlignment(HA_RIGHT, VA_CENTER);
 
-    SubscribeToEvent(_noButton, "Released", [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
@@ -66,7 +66,7 @@ void QuitConfirmationWindow::SubscribeToEvents()
 Button* QuitConfirmationWindow::CreateButton(const String& text, int width, IntVector2 position)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>("Fonts/Anonymous Pro.ttf");
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     auto* button = _baseWindow->CreateChild<Button>();
     button->SetStyleAuto();

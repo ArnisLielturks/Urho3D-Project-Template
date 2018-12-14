@@ -16,38 +16,82 @@ class BaseApplication : public Application
     URHO3D_OBJECT(BaseApplication, Application);
 
 public:
-    /// Construct.
     BaseApplication(Context* context);
 
-    /// Setup before engine initialization. Verify that a script file has been specified.
+    /**
+     * Setup before engine initialization
+     */
     virtual void Setup() override;
-    /// Setup after engine initialization. Load the script and execute its start function.
+    /**
+     * Setup after engine initialization
+     */
     virtual void Start() override;
-    /// Cleanup after the main loop. Run the script's stop function if it exists.
+
+    /**
+     * Cleanup after the main loop
+     */
     virtual void Stop() override;
 
 private:
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Apply specific graphics settings which are not configurable automatically
+     */
     void ApplyGraphicsSettings();
+
+    /**
+     * Load configuration files
+     */
 	void LoadINIConfig(String filename);
+
+	/**
+	 * Load custom configuration file
+	 */
     void LoadConfig(String filename, String prefix = "", bool isMain = false);
-    void SaveConfig();
+
+
+    /**
+     * Handle event for config loading
+     */
     void HandleLoadConfig(StringHash eventType, VariantMap& eventData);
-    void HandleSaveConfig(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Add global config
+     */
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Handle configuration change via console
+     */
 	void HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData);
 
+	/**
+	 * Subscribe to console commands
+	 */
     void RegisterConsoleCommands();
 
+    /**
+     * Subscribe to config events
+     */
     void SubscribeToEvents();
 
+    /**
+     * Set engine parameter and make it globally available
+     */
     void SetEngineParameter(String parameter, Variant value);
 
+    /**
+     * Handle exit via events
+     */
     void HandleExit(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Global configuration
+     */
     VariantMap _globalSettings;
 
+    /**
+     * Main configuration file
+     */
     String _configurationFile;
 };

@@ -2,7 +2,8 @@
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
 #include "Audio/AudioManager.h"
-#include "Console/ConsoleWindow.h"
+#include "Console/ConsoleHandler.h"
+#include "MyEvents.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
@@ -21,7 +22,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<ModLoader>();
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
-    context_->RegisterFactory<ConsoleWindow>();
+    context_->RegisterFactory<ConsoleHandler>();
 
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
 
@@ -42,7 +43,7 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
-    context_->RegisterSubsystem(new ConsoleWindow(context_));
+    context_->RegisterSubsystem(new ConsoleHandler(context_));
 
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before
@@ -94,10 +95,6 @@ void BaseApplication::Stop()
 {
 }
 
-void BaseApplication::HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-}
-
 void BaseApplication::LoadConfig(String filename, String prefix, bool isMain)
 {
     URHO3D_LOGINFO("Loading config file '" + filename + "' with '" + prefix + "' prefix");
@@ -133,32 +130,6 @@ void BaseApplication::LoadConfig(String filename, String prefix, bool isMain)
     }
 }
 
-void BaseApplication::SaveConfig()
-{
-    URHO3D_LOGINFO("Saving config");
-    JSONFile json(context_);
-    JSONValue& content = json.GetRoot();
-    for (auto it = _globalSettings.Begin(); it != _globalSettings.End(); ++it) {
-        const Variant value = engine_->GetGlobalVar((*it).first_);
-        if (value.GetType() == VAR_STRING) {
-            content.Set((*it).second_.GetString(), value.GetString());
-        }
-        if (value.GetType() == VAR_BOOL) {
-            content.Set((*it).second_.GetString(), value.GetBool());
-        }
-        if (value.GetType() == VAR_INT) {
-            content.Set((*it).second_.GetString(), value.GetInt());
-        }
-        if (value.GetType() == VAR_FLOAT) {
-            content.Set((*it).second_.GetString(), value.GetFloat());
-        }
-        if (value.GetType() == VAR_DOUBLE) {
-            content.Set((*it).second_.GetString(), value.GetFloat());
-        }
-    }
-    json.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Config.json");
-}
-
 void BaseApplication::HandleLoadConfig(StringHash eventType, VariantMap& eventData)
 {
     String filename = eventData["Filepath"].GetString();
@@ -166,11 +137,6 @@ void BaseApplication::HandleLoadConfig(StringHash eventType, VariantMap& eventDa
     if (!filename.Empty()) {
         LoadConfig(filename, prefix);
     }
-}
-
-void BaseApplication::HandleSaveConfig(StringHash eventType, VariantMap& eventData)
-{
-    SaveConfig();
 }
 
 void BaseApplication::RegisterConsoleCommands()
@@ -223,10 +189,8 @@ void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 
 void BaseApplication::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_SAVE_CONFIG, URHO3D_HANDLER(BaseApplication, HandleSaveConfig));
     SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
     SubscribeToEvent(MyEvents::E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(BaseApplication, HandleUpdate));
 }
 
 void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)

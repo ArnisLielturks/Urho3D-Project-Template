@@ -53,6 +53,7 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
             } else {
                 URHO3D_LOGERROR("Window '" + windowName + "' already opened!");
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
+                //TODO bring this window to the front
                 return;
             }
         }
@@ -81,24 +82,6 @@ void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& even
     URHO3D_LOGINFO("Closing all windows");
     for (auto it = _openedWindows.Begin(); it != _openedWindows.End(); ++it) {
         _closeQueue.Push((*it));
-        /*using namespace MyEvents::WindowClosed;
-        VariantMap data;
-        data[P_NAME] = (*it);
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);*/
-        /*if (!(*it)) {
-            _windowList.Erase(it);
-            continue;
-        }
-        StringHash type = (*it)->GetType();
-        bool persistent = false;
-        for (auto it2 = _persistentWindows.Begin(); it2 != _persistentWindows.End(); ++it2) {
-            if (StringHash((*it2).first_) == type) {
-                persistent = true;
-            }
-        }
-        if (!persistent) {
-            _windowList.Erase(it);
-        }*/
     }
 
     _openedWindows.Clear();

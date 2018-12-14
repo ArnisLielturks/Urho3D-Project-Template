@@ -4,7 +4,8 @@ namespace AudioDefs {
     enum SOUND_EFFECTS {
         HIT,
         THROW,
-        BUTTON_CLICK
+        BUTTON_CLICK,
+        ACHIEVEMENT
     };
 
     enum MUSIC {

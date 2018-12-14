@@ -22,6 +22,7 @@ void AudioManager::Init()
     _soundEffects[SOUND_EFFECTS::HIT] = "Sounds/PlayerFistHit.wav";
     _soundEffects[SOUND_EFFECTS::THROW] = "Sounds/NutThrow.wav";
     _soundEffects[SOUND_EFFECTS::BUTTON_CLICK] = "Sounds/click.wav";
+    _soundEffects[SOUND_EFFECTS::ACHIEVEMENT] = "Sounds/achievement.wav";
 
     _music[MUSIC::GAME] = "Sounds/music.wav";
     _music[MUSIC::MENU] = "Sounds/menu.wav";
@@ -41,6 +42,11 @@ void AudioManager::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_PLAY_SOUND, URHO3D_HANDLER(AudioManager, HandlePlaySound));
     SubscribeToEvent(MyEvents::E_STOP_SOUND, URHO3D_HANDLER(AudioManager, HandleStopSound));
     SubscribeToEvent(MyEvents::E_STOP_ALL_SOUNDS, URHO3D_HANDLER(AudioManager, HandleStopAllSounds));
+
+    SubscribeToEvent(E_RELEASED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
+    SubscribeToEvent(E_ITEMSELECTED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
+    SubscribeToEvent(E_TOGGLED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
+
     SubscribeToEvent("ConsolePlaySound", URHO3D_HANDLER(AudioManager, HandleConsolePlaySound));
 	SubscribeConsoleCommands();
 }
@@ -68,7 +74,6 @@ void AudioManager::HandlePlaySound(StringHash eventType, VariantMap& eventData)
         index = eventData[P_INDEX].GetInt();
     }
     String type = eventData[P_TYPE].GetString();
-    URHO3D_LOGINFO("Handle play sound");
 
     String filename;
     if (index >= 0) {
@@ -108,7 +113,7 @@ void AudioManager::HandleConsolePlaySound(StringHash eventType, VariantMap& even
 
 void AudioManager::PlaySound(String filename, String type, int index)
 {
-    URHO3D_LOGINFO("Playing sound: " + filename + "[" + type + "]");
+    URHO3D_LOGINFO("Playing sound: " + filename + " [" + type + "]");
      // Get the sound resource
     auto* cache = GetSubsystem<ResourceCache>();
     auto* sound = cache->GetResource<Sound>(filename);
@@ -199,4 +204,14 @@ void AudioManager::HandleStopAllSounds(StringHash eventType, VariantMap& eventDa
 {
     _musicNodes.Clear();
     _ambientNodes.Clear();
+}
+
+void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData)
+{
+    using namespace AudioDefs;
+    using namespace MyEvents::PlaySound;
+    VariantMap data = GetEventDataMap();
+    data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
+    data[P_TYPE] = SOUND_EFFECT;
+    SendEvent(MyEvents::E_PLAY_SOUND, data);
 }

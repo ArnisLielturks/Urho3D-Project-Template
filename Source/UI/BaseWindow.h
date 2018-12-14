@@ -10,18 +10,21 @@ public:
 
     virtual ~BaseWindow();
 
-    virtual void Init();
+    /**
+     * Initialize the view
+     */
+    virtual void Init() {}
 
 private:
-    void SubscribeToBaseEvents()
-    {
-    }
-
-    virtual void Create() {};
+    /**
+     * Create the UI
+     */
+    virtual void Create() {}
 
 protected:
 
-    virtual void Dispose()
-    {
-    }
+    /**
+     * Get rid of the window
+     */
+    virtual void Dispose() {}
 };

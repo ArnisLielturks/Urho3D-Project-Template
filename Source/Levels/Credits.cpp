@@ -1,6 +1,8 @@
 #include <Urho3D/Urho3DAll.h>
 #include "Credits.h"
 #include "../MyEvents.h"
+#include "../Global.h"
+#include "../Messages/Achievements.h"
 
 using namespace Levels;
 
@@ -19,6 +21,9 @@ namespace Levels {
 
 	void Credits::Init()
 	{
+        // Disable achievement showing for this level
+        GetSubsystem<Achievements>()->SetShowAchievements(false);
+
 		BaseLevel::Init();
 
 		// Create the scene content
@@ -49,6 +54,7 @@ namespace Levels {
 		CreateSingleLine("Community", 30);
 		CreateSingleLine("INI file parser: @carnalis", 20);
 		CreateSingleLine("Level manager: @artgolf1000", 20);
+        CreateSingleLine("Icons: https://game-icons.net", 20);
         CreateSingleLine("", 20);
 		CreateSingleLine("Special thanks to the creators", 30);
         CreateSingleLine("of the Urho3D engine!", 30);
@@ -103,14 +109,15 @@ namespace Levels {
 	void Credits::CreateSingleLine(String content, int fontSize)
 	{
 		_totalCreditsHeight += fontSize + 10;
-		UI* ui = GetSubsystem<UI>();
-		ResourceCache* cache = GetSubsystem<ResourceCache>();
+
+		auto cache = GetSubsystem<ResourceCache>();
+		auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
 		SharedPtr<Text> text(_creditsBase->CreateChild<Text>());
 		text->SetPosition(IntVector2(0, _totalCreditsHeight));
 		text->SetAlignment(HA_CENTER, VA_TOP);
 		text->SetStyleAuto();
-		text->SetFontSize(fontSize);
+		text->SetFont(font, fontSize);
 		text->SetText(content);
 		_credits.Push(text);
 		_totalCreditsHeight += 20;

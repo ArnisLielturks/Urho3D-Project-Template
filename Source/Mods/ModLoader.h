@@ -34,9 +34,22 @@ private:
 	 */
 	void Reload();
 
+	/**
+	 * Load all .as mods from Data/Mods directory
+	 */
     void LoadASMods();
+
+	/**
+     * Load all .lua mods from Data/Mods directory
+     */
     void LoadLuaMods();
+
+
     void SubscribeToEvents();
+
+    /**
+     * Subscribe for console commands to support script reloading
+     */
 	void SubscribeConsoleCommands();
 
 	/**

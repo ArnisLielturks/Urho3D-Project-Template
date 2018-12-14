@@ -43,42 +43,43 @@ void CreateUI()
 
 void HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    // Create HTTP request
-    if (httpRequest is null)
-        httpRequest = network.MakeHttpRequest("http://178.62.212.92/motd.php");
-    else
-    {
-        // Initializing HTTP request
-        if (httpRequest.state == HTTP_INITIALIZING)
-            return;
-        // An error has occurred
-        else if (httpRequest.state == HTTP_ERROR)
-        {
-            text.text = httpRequest.get_error();
-            UnsubscribeFromEvent("Update");
-        }
-        // Get message data
-        else
-        {
-            if (httpRequest.availableSize > 0)
-                message += httpRequest.ReadLine();
-            else
-            {
-                text.text = "Processing...";
 
-                JSONFile@ json = JSONFile();
-                json.FromString(message);
-
-                JSONValue quote = json.GetRoot().Get("quote");
-                JSONValue author = json.GetRoot().Get("author");
-
-                if (quote.isNull || author.isNull)
-                    text.text = "";
-                else
-                    text.text =  "Message of the day:\n" + quote.GetString() + "\n/ " + author.GetString();
-
-                UnsubscribeFromEvent("Update");
-            }
-        }
-    }
+    // // Create HTTP request
+    // if (httpRequest is null)
+    //     httpRequest = network.MakeHttpRequest("https://quotes.rest/qod");
+    // else
+    // {
+    //     // Initializing HTTP request
+    //     if (httpRequest.state == HTTP_INITIALIZING)
+    //         return;
+    //     // An error has occurred
+    //     else if (httpRequest.state == HTTP_ERROR)
+    //     {
+    //         text.text = httpRequest.get_error();
+    //         UnsubscribeFromEvent("Update");
+    //     }
+    //     // Get message data
+    //     else
+    //     {
+    //         if (httpRequest.availableSize > 0)
+    //             message += httpRequest.ReadLine();
+    //         else
+    //         {
+    //             text.text = "Processing...";
+    //
+    //             JSONFile@ json = JSONFile();
+    //             json.FromString(message);
+    //
+    //             JSONValue quotes = json.GetRoot().Get("contents");
+    //
+    //             if (quotes["quotes"].isArray) {
+    //                 text.text = quotes["quotes"][0].Get("quote").GetString();
+    //             }
+    //
+    //             log.Error("AAAA " + text.text);
+    //
+    //             UnsubscribeFromEvent("Update");
+    //         }
+    //     }
+    // }
 }

@@ -104,6 +104,8 @@ namespace Levels {
 		VariantMap data = GetEventDataMap();
 		data["Name"] = "MainMenu";
 		SendEvent(MyEvents::E_SET_LEVEL, data);
+
+		SendEvent("CreditsEnd");
 	}
 
 	void Credits::CreateSingleLine(String content, int fontSize)

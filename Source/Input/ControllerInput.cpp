@@ -43,6 +43,9 @@ void ControllerInput::Init()
 {
     // Subscribe to global events for camera movement
     SubscribeToEvents();
+
+    // there must be at least one controller available at start
+	_controls[0] = Controls();
 }
 
 void ControllerInput::LoadConfig()

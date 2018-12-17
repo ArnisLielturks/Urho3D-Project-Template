@@ -1,37 +1,38 @@
 [
 	{
-		"Event": "AchievementMap1Started",
-		"Image": "Textures/Achievements/cafeteria.png",
-		"Text": "School cafeteria",
-		"Type": "REPEAT",
-		"Threshold": 10
-	},
-	{
-		"Event": "AchievementMap2Started",
-		"Image": "Textures/Achievements/music-spell.png",
-		"Text": "School ball",
-		"Type": "REPEAT",
-		"Threshold": 10
-	},
-	{
-		"Event": "AchievementMap3Started",
-		"Image": "Textures/Achievements/tree-swing.png",
-		"Text": "Walk in the park",
-		"Type": "REPEAT",
-		"Threshold": 10
-	},
-	{
-		"Event": "AchievementHighestScore",
-		"Image": "Textures/Achievements/medallist.png",
-		"Text": "Winner!",
-		"Type": "REACH",
-		"Threshold": 10000
-	},
-	{
-		"Event": "AchievementFinishFirst",
-		"Image": "Textures/Achievements/medallist.png",
-		"Text": "Winner!",
-		"Type": "REPEAT",
+		"Event": "Released",
+		"Image": "Textures/UrhoDecalAlpha.dds",
+		"Message": "Press UI button 1 time",
 		"Threshold": 1
 	},
+	{
+		"Event": "Released",
+		"Image": "Textures/lunar-module.png",
+		"Message": "Press UI button 10 times",
+		"Threshold": 10
+	},
+	{
+		"Event": "InputMappingFinished",
+		"Image": "Textures/lunar-module.png",
+		"Message": "Change any of the controls",
+		"Threshold": 1
+	},
+	{
+		"Event": "ControllerAdded",
+		"Image": "Textures/lunar-module.png",
+		"Message": "Add joystick while the game is running",
+		"Threshold": 1
+	},
+	{
+		"Event": "CreditsEnd",
+		"Image": "Textures/lunar-module.png",
+		"Message": "Watch credits till the end",
+		"Threshold": 1
+	},
+	{
+		"Event": "AchievementUnlocked",
+		"Image": "Textures/lunar-module.png",
+		"Message": "Unlock 5 achievements",
+		"Threshold": 5
+	}
 ]

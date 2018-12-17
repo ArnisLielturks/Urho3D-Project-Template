@@ -4,6 +4,8 @@ BaseLevel::BaseLevel(Context* context) :
 Object(context)
 {
     SubscribeToBaseEvents();
+    scene_ = new Scene(context_);
+    GetSubsystem<Script>()->SetDefaultScene(scene_);
 }
 
 BaseLevel::~BaseLevel()
@@ -164,7 +166,7 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         // Light* light = cameraNode_->CreateComponent<Light>();
         // light->SetLightType(LightType::LIGHT_POINT);
         Camera* camera = cameraNode->CreateComponent<Camera>(LOCAL);
-        camera->SetFarClip(500.0f);
+        camera->SetFarClip(1000.0f);
         camera->SetNearClip(0.1f);
         camera->SetFov(60);
         cameraNode->CreateComponent<SoundListener>();
@@ -177,9 +179,12 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
         // Make the bloom mixing parameter more pronounced
         //effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 0.1);
-        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
-        effectRenderPath->SetEnabled("BloomHDR", GetGlobalVar("BloomHDR").GetBool());
-        effectRenderPath->SetEnabled("FXAA3", GetGlobalVar("FXAA3").GetBool());
+//        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
+//        effectRenderPath->SetEnabled("BloomHDR", GetGlobalVar("BloomHDR").GetBool());
+//        effectRenderPath->SetEnabled("FXAA3", GetGlobalVar("FXAA3").GetBool());
+        effectRenderPath->SetEnabled("AutoExposure", true);
+        effectRenderPath->SetEnabled("BloomHDR", true);
+        effectRenderPath->SetEnabled("FXAA3", true);
         viewport->SetRenderPath(effectRenderPath);
 
         Renderer* renderer = GetSubsystem<Renderer>();

@@ -83,7 +83,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     RegisterConsoleCommands();
@@ -126,7 +126,7 @@ void BaseApplication::LoadConfig(String filename, String prefix, bool isMain)
         }
     }
     else {
-        URHO3D_LOGERROR("Config file (Game.json) format not correct!");
+        URHO3D_LOGERROR("Config file " + filename + " format is not correct!");
     }
 }
 
@@ -197,7 +197,6 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
 {
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
-        URHO3D_LOGINFO("Adding new config value: " + paramName);
         _globalSettings[paramName] = paramName;
     }
 }
@@ -348,7 +347,6 @@ void BaseApplication::ApplyGraphicsSettings()
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)
 {
-    URHO3D_LOGINFO(".... Setting Engine parameter " + parameter);
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
 	_globalSettings[parameter] = parameter;

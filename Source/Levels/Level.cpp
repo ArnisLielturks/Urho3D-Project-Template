@@ -23,20 +23,11 @@ Level::~Level()
 
 void Level::Init()
 {
-    // Disable achievement showing for this level
+    // Enable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(true);
-
-    Renderer* renderer = GetSubsystem<Renderer>();
-    renderer->SetNumViewports(1);
 
     StopAllAudio();
     StartAudio();
-
-    Network* network = GetSubsystem<Network>();
-    network->RegisterRemoteEvent("SendPlayerNodeID");
-
-    URHO3D_LOGRAW("Starting level: Level");
-    BaseLevel::Init();
 
     // Create the scene content
     CreateScene();
@@ -77,9 +68,6 @@ void Level::StopAllAudio()
 
 void Level::CreateScene()
 {
-    scene_ = new Scene(context_);
-    scene_->CreateComponent<Octree>(LOCAL);
-    scene_->CreateComponent<DebugRenderer>(LOCAL);
     File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml", FILE_READ);
     scene_->LoadXML(loadFile);
 

@@ -5,6 +5,15 @@
 
 using namespace Urho3D;
 
+struct AchievementRule {
+    String eventName;
+    String image;
+    String message;
+    int threshold;
+    int current;
+    bool completed;
+};
+
 class Achievements : public Object
 {
     URHO3D_OBJECT(Achievements, Object);
@@ -43,6 +52,8 @@ private:
      */
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+    void HandleRegisteredEvent(StringHash eventType, VariantMap& eventData);
+
     /**
      * Load achievements configuration
      */
@@ -65,5 +76,7 @@ private:
      * on Splash or Credits screens for example
      */
     bool _showAchievements;
+
+    HashMap<StringHash, List<AchievementRule>> _registeredAchievements;
 
 };

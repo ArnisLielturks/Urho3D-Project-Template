@@ -17,7 +17,7 @@ namespace Levels {
         void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
-        void Init () override;
+        virtual void Init () override;
 
         void OnLoaded();
 

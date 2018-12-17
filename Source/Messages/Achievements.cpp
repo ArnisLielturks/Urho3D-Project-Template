@@ -131,23 +131,21 @@ void Achievements::LoadAchievementList()
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
     if (value.IsArray()) {
-        URHO3D_LOGINFOF("Achievements: %u", value.Size());
+        URHO3D_LOGINFOF("--------------- Achievements: %u", value.Size());
         for (int i = 0; i < value.Size(); i++) {
             JSONValue mapInfo = value[i];
             if (mapInfo.Contains("Event")
                 && mapInfo["Event"].IsString()
                 && mapInfo.Contains("Image")
                 && mapInfo["Image"].IsString()
-                && mapInfo.Contains("Text")
-                && mapInfo["Text"].IsString()
+                && mapInfo.Contains("Message")
+                && mapInfo["Message"].IsString()
                 && mapInfo.Contains("Threshold")
-                && mapInfo["Threshold"].IsNumber()
-                && mapInfo.Contains("Type")
-                && mapInfo["Type"].IsString()) {
+                && mapInfo["Threshold"].IsNumber()) {
 
-                String evt = mapInfo["Event"].GetString();
-                String img = mapInfo["Image"].GetString();
-                String txt = mapInfo["Text"].GetString();
+                String eventName = mapInfo["Event"].GetString();
+                String image = mapInfo["Image"].GetString();
+                String message = mapInfo["Message"].GetString();
                 String type = mapInfo["Type"].GetString();
                 int threshold = mapInfo["Threshold"].GetInt();
                 // URHO3D_LOGINFO("Achievement: '" + txt + "'");
@@ -156,6 +154,16 @@ void Achievements::LoadAchievementList()
                 // URHO3D_LOGINFO("Type: " + type);
                 // URHO3D_LOGINFOF("Threshold: %i", threshold);
 
+                AchievementRule rule;
+                rule.message = message;
+                rule.eventName = eventName;
+                rule.image = image;
+                rule.threshold = threshold;
+                rule.current = 0;
+                rule.completed = false;
+                _registeredAchievements[eventName].Push(rule);
+
+                SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
             }
             else {
                 URHO3D_LOGINFO("Achievement array element doesnt contain all needed info!");
@@ -164,5 +172,22 @@ void Achievements::LoadAchievementList()
     }
     else {
         URHO3D_LOGINFO("Map config json is not an array!");
+    }
+}
+
+void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& eventData)
+{
+    if (_registeredAchievements.Contains(eventType)) {
+        for (auto it = _registeredAchievements[eventType].Begin(); it != _registeredAchievements[eventType].End(); ++it) {
+            (*it).current++;
+            if ((*it).current >= (*it).threshold && !(*it).completed) {
+                (*it).completed = true;
+                VariantMap data = GetEventDataMap();
+                data["Message"] = (*it).message;
+                data["Image"] = (*it).image;
+                SendEvent(MyEvents::E_NEW_ACHIEVEMENT, data);
+                SendEvent("AchievementUnlocked");
+            }
+        }
     }
 }

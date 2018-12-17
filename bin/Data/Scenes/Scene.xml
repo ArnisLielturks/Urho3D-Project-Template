@@ -102,7 +102,7 @@
 	</node>
 	<node id="8">
 		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="" />
+		<attribute name="Name" value="Logo" />
 		<attribute name="Tags" />
 		<attribute name="Position" value="0.0482672 0.747751 -1.93713" />
 		<attribute name="Rotation" value="0.707107 -0.707107 0 0" />

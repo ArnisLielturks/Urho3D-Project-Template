@@ -50,7 +50,6 @@ void ControllerInput::Init()
 
 void ControllerInput::LoadConfig()
 {
-	auto* cache = GetSubsystem<ResourceCache>();
     GetSubsystem<ConfigManager>();
 
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {

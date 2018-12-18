@@ -52,6 +52,8 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
         }
     }
 
+    SendEvent("AchievementUnlocked");
+
     URHO3D_LOGINFO("New achievement: " + message);
 
     SharedPtr<SingleAchievement> singleAchievement = context_->CreateObject<SingleAchievement>();
@@ -131,7 +133,7 @@ void Achievements::LoadAchievementList()
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
     if (value.IsArray()) {
-        URHO3D_LOGINFOF("--------------- Achievements: %u", value.Size());
+        URHO3D_LOGINFOF("Loading achievements config: %u", value.Size());
         for (int i = 0; i < value.Size(); i++) {
             JSONValue mapInfo = value[i];
             if (mapInfo.Contains("Event")
@@ -148,11 +150,6 @@ void Achievements::LoadAchievementList()
                 String message = mapInfo["Message"].GetString();
                 String type = mapInfo["Type"].GetString();
                 int threshold = mapInfo["Threshold"].GetInt();
-                // URHO3D_LOGINFO("Achievement: '" + txt + "'");
-                // URHO3D_LOGINFO("Image: " + img);
-                // URHO3D_LOGINFO("Evt: " + evt);
-                // URHO3D_LOGINFO("Type: " + type);
-                // URHO3D_LOGINFOF("Threshold: %i", threshold);
 
                 AchievementRule rule;
                 rule.message = message;
@@ -166,12 +163,12 @@ void Achievements::LoadAchievementList()
                 SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
             }
             else {
-                URHO3D_LOGINFO("Achievement array element doesnt contain all needed info!");
+                URHO3D_LOGINFOF("Achievement array element doesnt contain all needed info! Index: %u", i);
             }
         }
     }
     else {
-        URHO3D_LOGINFO("Map config json is not an array!");
+        URHO3D_LOGERROR("Data/Config/Achievements.json must be an array");
     }
 }
 
@@ -186,7 +183,6 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
                 data["Message"] = (*it).message;
                 data["Image"] = (*it).image;
                 SendEvent(MyEvents::E_NEW_ACHIEVEMENT, data);
-                SendEvent("AchievementUnlocked");
             }
         }
     }

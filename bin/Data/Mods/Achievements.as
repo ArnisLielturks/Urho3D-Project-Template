@@ -16,7 +16,7 @@ void Start()
     VariantMap data;
 
     data["Message"] = "Discovered this amazing Urho3D sample";
-    data["Image"] = "Textures/lunar-module.png";
+    data["Image"] = "Textures/Achievements/lunar-module.png";
     SendEvent("NewAchievement", data);
     //
     // data["Title"] = "title";

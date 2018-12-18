@@ -158,7 +158,7 @@ void DrawModNames()
     textElements.Clear();
     CreateScriptName("Mods Loaded:", 0);
     for (uint i = 0; i < mods.length; i++) {
-        CreateScriptName(mods[i], i + 1);
+        CreateScriptName("    " + mods[i], i + 1);
     }
 }
 

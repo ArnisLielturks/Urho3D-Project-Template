@@ -52,8 +52,6 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
         }
     }
 
-    SendEvent("AchievementUnlocked");
-
     URHO3D_LOGINFO("New achievement: " + message);
 
     SharedPtr<SingleAchievement> singleAchievement = context_->CreateObject<SingleAchievement>();
@@ -93,6 +91,8 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     data[P_INDEX] = SOUND_EFFECTS::ACHIEVEMENT;
     data[P_TYPE] = SOUND_EFFECT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
+
+    SendEvent("AchievementUnlocked");
 }
 
 void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -177,6 +177,7 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
     if (_registeredAchievements.Contains(eventType)) {
         for (auto it = _registeredAchievements[eventType].Begin(); it != _registeredAchievements[eventType].End(); ++it) {
             (*it).current++;
+            URHO3D_LOGINFOF("Achievement progress %s => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
             if ((*it).current >= (*it).threshold && !(*it).completed) {
                 (*it).completed = true;
                 VariantMap data = GetEventDataMap();

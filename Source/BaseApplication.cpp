@@ -86,6 +86,8 @@ void BaseApplication::Start()
     eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
+    SendEvent("GameStarted");
+
     RegisterConsoleCommands();
 
     ApplyGraphicsSettings();

@@ -1,5 +1,19 @@
 [
 	{
+		"Event": "GameStarted",
+		"Image": "Textures/Achievements/lunar-module.png",
+		"Message": "Discovered this amazing Urho3D sample",
+		"Threshold": 1
+	},
+	{
+		"Event": "SetLevel",
+		"Image": "Textures/Achievements/exit-door.png",
+		"Message": "Go to main menu",
+		"Threshold": 1,
+		"ParameterName": "Name",
+		"Value": "MainMenu"
+	},
+	{
 		"Event": "Released",
 		"Image": "Textures/Achievements/button-finger.png",
 		"Message": "Press UI button 1 time",

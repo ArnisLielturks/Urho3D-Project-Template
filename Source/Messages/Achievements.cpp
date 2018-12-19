@@ -23,8 +23,8 @@ void Achievements::SetShowAchievements(bool show)
 
 void Achievements::Init()
 {
-    LoadAchievementList();
     SubscribeToEvents();
+    LoadAchievementList();
 }
 
 
@@ -92,12 +92,20 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     data[P_TYPE] = SOUND_EFFECT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
 
-    SendEvent("AchievementUnlocked");
+    using namespace MyEvents::AchievementUnlocked;
+    VariantMap achievementData = GetEventDataMap();
+    achievementData[MyEvents::AchievementUnlocked::P_MESSAGE] = message;
+    SendEvent(MyEvents::E_ACHIEVEMENT_UNLOCKED, achievementData);
 }
 
 void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
+
+    if (_activeAchievements.Empty() && !_achievementQueue.Empty() && _showAchievements) {
+        HandleNewAchievement("", _achievementQueue.Front());
+        _achievementQueue.PopFront();
+    }
 
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     for (auto it = _activeAchievements.Begin(); it != _activeAchievements.End(); ++it) {
@@ -158,6 +166,26 @@ void Achievements::LoadAchievementList()
                 rule.threshold = threshold;
                 rule.current = 0;
                 rule.completed = false;
+
+                if (mapInfo.Contains("ParameterName") && mapInfo["ParameterName"].IsString()
+                    && mapInfo.Contains("Value")) {
+                    rule.parameterName = mapInfo["ParameterName"].GetString();
+                    switch (mapInfo["Value"].GetValueType()) {
+                        case JSONValueType::JSON_BOOL:
+                            rule.parameterValue = mapInfo["Value"].GetBool();
+                            break;
+                        case JSONValueType::JSON_NUMBER:
+                            rule.parameterValue = mapInfo["Value"].GetInt();
+                            break;
+                        case JSONValueType::JSON_STRING:
+                            rule.parameterValue = mapInfo["Value"].GetString();
+                            break;
+                    }
+                    rule.deepCheck = true;
+                } else {
+                    rule.deepCheck = false;
+                }
+
                 _registeredAchievements[eventName].Push(rule);
 
                 SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
@@ -176,8 +204,16 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
 {
     if (_registeredAchievements.Contains(eventType)) {
         for (auto it = _registeredAchievements[eventType].Begin(); it != _registeredAchievements[eventType].End(); ++it) {
-            (*it).current++;
-            URHO3D_LOGINFOF("Achievement progress %s => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
+            if ((*it).deepCheck) {
+                // check if the event contains specified parameter and same value
+                if (eventData[(*it).parameterName] == (*it).parameterValue) {
+                    (*it).current++;
+                }
+            } else {
+                // No additional check needed, event was called, so we can increment our counter
+                (*it).current++;
+            }
+            URHO3D_LOGINFOF("Achievement progress: '%s' => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
             if ((*it).current >= (*it).threshold && !(*it).completed) {
                 (*it).completed = true;
                 VariantMap data = GetEventDataMap();
@@ -187,4 +223,16 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
             }
         }
     }
+}
+
+const List<AchievementRule> Achievements::GetAchievements() const
+{
+    List<AchievementRule> achievements;
+    for (auto it = _registeredAchievements.Begin(); it != _registeredAchievements.End(); ++it) {
+        for (auto it2 = (*it).second_.Begin(); it2 != (*it).second_.End(); ++it2) {
+            achievements.Push((*it2));
+        }
+    }
+
+    return achievements;
 }

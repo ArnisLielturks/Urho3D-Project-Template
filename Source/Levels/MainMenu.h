@@ -8,7 +8,7 @@ namespace Levels {
 
     class MainMenu : public BaseLevel
     {
-        URHO3D_OBJECT(MainMenu, BaseLevel);
+    URHO3D_OBJECT(MainMenu, BaseLevel);
 
     public:
         /// Construct.
@@ -28,7 +28,8 @@ namespace Levels {
 
         SharedPtr<Button> _newGameButton;
         SharedPtr<Button> _settingsButton;
-		SharedPtr<Button> _creditsButton;
+        SharedPtr<Button> _achievementsButton;
+        SharedPtr<Button> _creditsButton;
         SharedPtr<Button> _exitButton;
 
         Button* CreateButton(const String& text, int width, IntVector2 position);

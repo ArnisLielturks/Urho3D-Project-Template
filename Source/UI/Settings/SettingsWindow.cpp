@@ -7,7 +7,7 @@
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
-    BaseWindow(context)
+        BaseWindow(context)
 {
     Init();
 }
@@ -26,11 +26,11 @@ void SettingsWindow::Init()
 
 void SettingsWindow::Create()
 {
-	_baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
-	_baseWindow->SetStyleAuto();
-	_baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-	_baseWindow->SetSize(400, 500);
-	_baseWindow->BringToFront();
+    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    _baseWindow->SetStyleAuto();
+    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
+    _baseWindow->SetSize(400, 500);
+    _baseWindow->BringToFront();
 
     // Create Window 'titlebar' container
     _titleBar =_baseWindow->CreateChild<UIElement>();
@@ -68,30 +68,34 @@ void SettingsWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
-	_tabView = _baseWindow->CreateChild<UIElement>();
-	_tabView->SetAlignment(HA_LEFT, VA_TOP);
-	_tabView->SetPosition(0, 40);
-	_tabView->SetWidth(_baseWindow->GetWidth());
-	_tabView->SetHeight(_baseWindow->GetHeight());
+    _tabView = _baseWindow->CreateChild<UIElement>();
+    _tabView->SetAlignment(HA_LEFT, VA_TOP);
+    _tabView->SetPosition(0, 40);
+    _tabView->SetWidth(_baseWindow->GetWidth());
+    _tabView->SetHeight(_baseWindow->GetHeight());
 
-	_tabs[CONTROLS] = CreateTabButton("Controls");
-	SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-		ChangeTab(CONTROLS);
-	});
-	_tabs[CONTROLLERS] = CreateTabButton("Controllers");
-	SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-		ChangeTab(CONTROLLERS);
-	});
-	_tabs[AUDIO] = CreateTabButton("Audio");
-	SubscribeToEvent(_tabs[AUDIO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-		ChangeTab(AUDIO);
-	});
-	_tabs[VIDEO] = CreateTabButton("Video");
-	SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-		ChangeTab(VIDEO);
-	});
+    _tabs[CONTROLS] = CreateTabButton("Controls");
+    SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        ChangeTab(CONTROLS);
+    });
+    _tabs[CONTROLLERS] = CreateTabButton("Controllers");
+    SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        ChangeTab(CONTROLLERS);
+    });
+    _tabs[AUDIO] = CreateTabButton("Audio");
+    SubscribeToEvent(_tabs[AUDIO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        ChangeTab(AUDIO);
+    });
+    _tabs[VIDEO] = CreateTabButton("Video");
+    SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        ChangeTab(VIDEO);
+    });
+//	_tabs[MISC] = CreateTabButton("Misc");
+//	SubscribeToEvent(_tabs[MISC], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+//		ChangeTab(MISC);
+//	});
 
-	ChangeTab(CONTROLS);
+    ChangeTab(CONTROLS);
 }
 
 void SettingsWindow::SubscribeToEvents()
@@ -102,121 +106,124 @@ void SettingsWindow::SubscribeToEvents()
 
 void SettingsWindow::ChangeTab(SettingTabs tab)
 {
-	_activeTab = tab;
-	_tabView->RemoveAllChildren();
-	_tabElementCount = 0;
+    _activeTab = tab;
+    _tabView->RemoveAllChildren();
+    _tabElementCount = 0;
 
-	switch (_activeTab) {
-		case CONTROLS:
-			CreateControlsTab();
-			break;
-		case CONTROLLERS:
-			CreateControllersTab();
-			break;
-		case AUDIO:
-			CreateAudioTab();
-			break;
-		case VIDEO:
-			CreateVideoTab();
-			break;
-	}
+    switch (_activeTab) {
+        case CONTROLS:
+            CreateControlsTab();
+            break;
+        case CONTROLLERS:
+            CreateControllersTab();
+            break;
+        case AUDIO:
+            CreateAudioTab();
+            break;
+        case VIDEO:
+            CreateVideoTab();
+            break;
+        case MISC:
+            CreateMiscTab();
+            break;
+    }
 }
 
 void SettingsWindow::CreateControlsTab()
 {
-	auto controllerInput = GetSubsystem<ControllerInput>();
-	auto names = controllerInput->GetControlNames();
+    auto controllerInput = GetSubsystem<ControllerInput>();
+    auto names = controllerInput->GetControlNames();
 
-	// Loop trough all of the controls
-	for (auto it = names.Begin(); it != names.End(); ++it) {
-		CreateSingleLine();
-		CreateLabel((*it).second_);
-		Button* button = CreateButton(controllerInput->GetActionKeyName((*it).first_));
-		button->SetVar("Action", (*it).first_);
+    // Loop trough all of the controls
+    for (auto it = names.Begin(); it != names.End(); ++it) {
+        CreateSingleLine();
+        CreateLabel((*it).second_);
+        Button* button = CreateButton(controllerInput->GetActionKeyName((*it).first_));
+        button->SetVar("Action", (*it).first_);
 
-		// Detect button press events
-		SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-			// Start mapping input
-			using namespace Released;
-			Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
-			int action = button->GetVar("Action").GetInt();
+        // Detect button press events
+        SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+            // Start mapping input
+            using namespace Released;
+            Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
+            int action = button->GetVar("Action").GetInt();
 
-			using namespace MyEvents::StartInputMapping;
-			VariantMap& data = GetEventDataMap();
-			data[P_CONTROL_ACTION] = action;
-			SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+            using namespace MyEvents::StartInputMapping;
+            VariantMap& data = GetEventDataMap();
+            data[P_CONTROL_ACTION] = action;
+            SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
 
-			auto buttonLabel = button->GetChildStaticCast<Text>("Label", false);
-			buttonLabel->SetText("...");
+            auto buttonLabel = button->GetChildStaticCast<Text>("Label", false);
+            buttonLabel->SetText("...");
 
-			Input* input = GetSubsystem<Input>();
-			if (input->IsMouseVisible()) {
-				input->SetMouseVisible(false);
-			}
-		});
-	}
+            Input* input = GetSubsystem<Input>();
+            if (input->IsMouseVisible()) {
+                input->SetMouseVisible(false);
+            }
+        });
+    }
 }
 
 void SettingsWindow::CreateControllersTab()
 {
     auto controllerInput = GetSubsystem<ControllerInput>();
-	{
-		CreateSingleLine();
-		CreateLabel("Mouse");
+    {
+        CreateSingleLine();
+        CreateLabel("Mouse");
 
-		// Invert X
-		CreateSingleLine();
-		auto mouseInvertX = CreateCheckbox("Invert X axis");
-		mouseInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::MOUSE));
-		URHO3D_LOGINFO("Set mouse invert x " + String(mouseInvertX->IsChecked()));
-		SubscribeToEvent(mouseInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-			using namespace Toggled;
-			bool enabled = eventData[P_STATE].GetBool();
+        // Invert X
+        CreateSingleLine();
+        auto mouseInvertX = CreateCheckbox("Invert X axis");
+        mouseInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::MOUSE));
+        URHO3D_LOGINFO("Set mouse invert x " + String(mouseInvertX->IsChecked()));
+        SubscribeToEvent(mouseInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
 
-			URHO3D_LOGINFO("Set mouse invert x " + String(enabled));
+            URHO3D_LOGINFO("Set mouse invert x " + String(enabled));
 
-			auto controllerInput = GetSubsystem<ControllerInput>();
-			controllerInput->SetInvertX(enabled, ControllerType::MOUSE);
-	        GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", enabled);
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetInvertX(enabled, ControllerType::MOUSE);
+            GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", enabled);
 
-			GetSubsystem<ConfigManager>()->Save(true);
-		});
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
 
-		// Invert Y
-		CreateSingleLine();
-		auto mouseInvertY = CreateCheckbox("Invert Y axis");
-		mouseInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::MOUSE));
-		SubscribeToEvent(mouseInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-			using namespace Toggled;
-			bool enabled = eventData[P_STATE].GetBool();
+        // Invert Y
+        CreateSingleLine();
+        auto mouseInvertY = CreateCheckbox("Invert Y axis");
+        mouseInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::MOUSE));
+        SubscribeToEvent(mouseInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
 
-			auto controllerInput = GetSubsystem<ControllerInput>();
-			controllerInput->SetInvertY(enabled, ControllerType::MOUSE);
-	        GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", enabled);
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetInvertY(enabled, ControllerType::MOUSE);
+            GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", enabled);
 
-			GetSubsystem<ConfigManager>()->Save(true);
-		});
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
 
-		// Sensitivity
-		CreateSingleLine();
-		auto slider = CreateSlider("Sensitivity");
-		slider->SetRange(10);
+        // Sensitivity
+        CreateSingleLine();
+        auto slider = CreateSlider("Sensitivity");
+        slider->SetRange(10);
         slider->SetValue(controllerInput->GetSensitivityX(ControllerType::MOUSE));
-		// Detect button press events
-		SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+        // Detect button press events
+        SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
-			using namespace SliderChanged;
-			float newValue = eventData[P_VALUE].GetFloat();
-			auto controllerInput = GetSubsystem<ControllerInput>();
-			controllerInput->SetSensitivityX(newValue, ControllerType::MOUSE);
-			controllerInput->SetSensitivityY(newValue, ControllerType::MOUSE);
-			GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", newValue);
+            using namespace SliderChanged;
+            float newValue = eventData[P_VALUE].GetFloat();
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetSensitivityX(newValue, ControllerType::MOUSE);
+            controllerInput->SetSensitivityY(newValue, ControllerType::MOUSE);
+            GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", newValue);
 
-			GetSubsystem<ConfigManager>()->Save(true);
-		});
-	}
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+    }
 
-	// Joystick
+    // Joystick
     {
         CreateSingleLine();
         CreateSingleLine();
@@ -290,46 +297,46 @@ void SettingsWindow::CreateControllersTab()
 
 void SettingsWindow::CreateAudioTab()
 {
-	String volumeControls[] = {
-			SOUND_MASTER,
-			SOUND_EFFECT,
-			SOUND_AMBIENT,
-			SOUND_VOICE,
-			SOUND_MUSIC
-	};
-	for (int i = 0; i < 5; i++) {
-		// Master volume slider
-		CreateSingleLine();
-		auto slider = CreateSlider(volumeControls[i] + " volume");
-		slider->SetValue(GetSubsystem<Audio>()->GetMasterGain(volumeControls[i]));
-		slider->SetVar("SoundType", volumeControls[i]);
+    String volumeControls[] = {
+            SOUND_MASTER,
+            SOUND_EFFECT,
+            SOUND_AMBIENT,
+            SOUND_VOICE,
+            SOUND_MUSIC
+    };
+    for (int i = 0; i < 5; i++) {
+        // Master volume slider
+        CreateSingleLine();
+        auto slider = CreateSlider(volumeControls[i] + " volume");
+        slider->SetValue(GetSubsystem<Audio>()->GetMasterGain(volumeControls[i]));
+        slider->SetVar("SoundType", volumeControls[i]);
 
-		// Detect button press events
-		SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+        // Detect button press events
+        SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
-			using namespace SliderChanged;
-			float newVolume = eventData[P_VALUE].GetFloat();
-			Slider* slider = static_cast<Slider*>(eventData[P_ELEMENT].GetPtr());
-			String soundType = slider->GetVar("SoundType").GetString();
+            using namespace SliderChanged;
+            float newVolume = eventData[P_VALUE].GetFloat();
+            Slider* slider = static_cast<Slider*>(eventData[P_ELEMENT].GetPtr());
+            String soundType = slider->GetVar("SoundType").GetString();
 
-			GetSubsystem<Audio>()->SetMasterGain(soundType, newVolume);
+            GetSubsystem<Audio>()->SetMasterGain(soundType, newVolume);
 
-			SetGlobalVar(soundType, newVolume);
-			GetSubsystem<ConfigManager>()->Set("audio", soundType, newVolume);
+            SetGlobalVar(soundType, newVolume);
+            GetSubsystem<ConfigManager>()->Set("audio", soundType, newVolume);
 
-			GetSubsystem<ConfigManager>()->Save(true);
+            GetSubsystem<ConfigManager>()->Save(true);
 
-			URHO3D_LOGINFO("Volume changed " + soundType + " => " + String(newVolume));
-		});
-	}
+            URHO3D_LOGINFO("Volume changed " + soundType + " => " + String(newVolume));
+        });
+    }
 }
 void SettingsWindow::CreateVideoTab()
 {
     InitGraphicsSettings();
 
     // Fullscreen
-	CreateSingleLine();
-	auto fullscreenToggle = CreateCheckbox("Fullscreen");
+    CreateSingleLine();
+    auto fullscreenToggle = CreateCheckbox("Fullscreen");
     fullscreenToggle->SetChecked(_graphicsSettings.fullscreen);
     SubscribeToEvent(fullscreenToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -350,8 +357,8 @@ void SettingsWindow::CreateVideoTab()
     });
 
     // Shadows
-	CreateSingleLine();
-	auto shadowToggle = CreateCheckbox("Enable shadows");
+    CreateSingleLine();
+    auto shadowToggle = CreateCheckbox("Enable shadows");
     shadowToggle->SetChecked(_graphicsSettings.shadows);
     SubscribeToEvent(shadowToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -502,35 +509,47 @@ void SettingsWindow::CreateVideoTab()
     });
 }
 
+void SettingsWindow::CreateMiscTab()
+{
+    // Fullscreen
+    CreateSingleLine();
+    auto enableMods = CreateCheckbox("Enable mods");
+    enableMods->SetChecked(true);
+    SubscribeToEvent(enableMods, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+    });
+}
+
 void SettingsWindow::SaveVideoSettings()
 {
 
     _graphicsSettings = _graphicsSettingsNew;
 
-	Graphics* graphics = GetSubsystem<Graphics>();
-	graphics->SetMode(
-		_graphicsSettings.width,
-		_graphicsSettings.height,
-		_graphicsSettings.fullscreen,
-		false,
-		false,
-		false,
-		_graphicsSettings.vsync,
-		_graphicsSettings.tripleBuffer,
-		_graphicsSettings.multisample,
-		_graphicsSettings.monitor,
-		0
-	);
-		
-	auto* renderer = GetSubsystem<Renderer>();
-	renderer->SetTextureFilterMode(TextureFilterMode(_graphicsSettings.textureFilterMode));
-	renderer->SetTextureAnisotropy(_graphicsSettings.textureAnistropy);
-	renderer->SetTextureQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
-    renderer->SetMaterialQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
-	renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
-	renderer->SetDrawShadows(_graphicsSettings.shadows);
+    Graphics* graphics = GetSubsystem<Graphics>();
+    graphics->SetMode(
+            _graphicsSettings.width,
+            _graphicsSettings.height,
+            _graphicsSettings.fullscreen,
+            false,
+            false,
+            false,
+            _graphicsSettings.vsync,
+            _graphicsSettings.tripleBuffer,
+            _graphicsSettings.multisample,
+            _graphicsSettings.monitor,
+            0
+    );
 
-	GetSubsystem<Engine>()->SetMaxFps((_graphicsSettings.frameLimiter) ? 60 : 0);
+    auto* renderer = GetSubsystem<Renderer>();
+    renderer->SetTextureFilterMode(TextureFilterMode(_graphicsSettings.textureFilterMode));
+    renderer->SetTextureAnisotropy(_graphicsSettings.textureAnistropy);
+    renderer->SetTextureQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
+    renderer->SetMaterialQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
+    renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
+    renderer->SetDrawShadows(_graphicsSettings.shadows);
+
+    GetSubsystem<Engine>()->SetMaxFps((_graphicsSettings.frameLimiter) ? 60 : 0);
 
     GetSubsystem<ConfigManager>()->Set("engine", "WindowWidth", _graphicsSettingsNew.width);
     GetSubsystem<ConfigManager>()->Set("engine", "WindowHeight", _graphicsSettingsNew.height);
@@ -561,25 +580,25 @@ void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eve
 
 void SettingsWindow::InitGraphicsSettings()
 {
-	_graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
-	_graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
-	_graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool() ? 1 : 0;
+    _graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
+    _graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
+    _graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool() ? 1 : 0;
     _graphicsSettings.frameLimiter = GetGlobalVar("FrameLimiter").GetBool() ? 1 : 0;
     _graphicsSettings.monitor = GetGlobalVar("Monitor").GetInt();
-	_graphicsSettings.vsync = GetGlobalVar("VSync").GetBool() ? 1 : 0;
-	_graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool() ? 1 : 0;
-	_graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool() ? 1 : 0;
-	_graphicsSettings.shadowQuality = GetGlobalVar("ShadowQuality").GetInt();
-	_graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt();
-	_graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt();
-	_graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt();
-	_graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt(), 0);
+    _graphicsSettings.vsync = GetGlobalVar("VSync").GetBool() ? 1 : 0;
+    _graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool() ? 1 : 0;
+    _graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool() ? 1 : 0;
+    _graphicsSettings.shadowQuality = GetGlobalVar("ShadowQuality").GetInt();
+    _graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt();
+    _graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt();
+    _graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt();
+    _graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt(), 0);
 
-	String activeResolution = String(_graphicsSettings.width) + " x " + String(_graphicsSettings.height);
+    String activeResolution = String(_graphicsSettings.width) + " x " + String(_graphicsSettings.height);
     auto graphics = GetSubsystem<Graphics>();
 
-	auto resolutions = graphics->GetResolutions(0);
-	for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
+    auto resolutions = graphics->GetResolutions(0);
+    for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
         if ((*it).x_ < 500 || (*it).y_ < 500) {
             continue;
         }
@@ -590,75 +609,75 @@ void SettingsWindow::InitGraphicsSettings()
                 _graphicsSettings.activeResolution = _availableResolutionNames.Size() - 1;
             }
         }
-	}
+    }
 
     _graphicsSettingsNew = _graphicsSettings;
 }
 
 Button* SettingsWindow::CreateTabButton(const String& text)
 {
-	const int width = 120;
-	const int border = 4;
+    const int width = 120;
+    const int border = 4;
 
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-	auto* button = _baseWindow->CreateChild<Button>();
-	button->SetStyleAuto();
-	button->SetFixedWidth(width);
-	button->SetFixedHeight(30);
-	button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 24));
-	button->SetAlignment(HA_LEFT, VA_TOP);
+    auto* button = _baseWindow->CreateChild<Button>();
+    button->SetStyleAuto();
+    button->SetFixedWidth(width);
+    button->SetFixedHeight(30);
+    button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 24));
+    button->SetAlignment(HA_LEFT, VA_TOP);
 
-	auto* buttonText = button->CreateChild<Text>();
-	buttonText->SetFont(font, 12);
-	buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-	buttonText->SetText(text);
+    auto* buttonText = button->CreateChild<Text>();
+    buttonText->SetFont(font, 12);
+    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+    buttonText->SetText(text);
 
-	_baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + border);
+    _baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + border);
     _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
 
-	return button;
+    return button;
 }
 
 Button* SettingsWindow::CreateButton(const String& text)
 {
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-	auto* button = _activeLine->CreateChild<Button>();
-	button->SetStyleAuto();
-	button->SetFixedWidth(200);
-	button->SetFixedHeight(30);
+    auto* button = _activeLine->CreateChild<Button>();
+    button->SetStyleAuto();
+    button->SetFixedWidth(200);
+    button->SetFixedHeight(30);
 
-	auto* buttonText = button->CreateChild<Text>("Label");
-	buttonText->SetFont(font, 12);
-	buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-	buttonText->SetText(text);
+    auto* buttonText = button->CreateChild<Text>("Label");
+    buttonText->SetFont(font, 12);
+    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+    buttonText->SetText(text);
 
-	return button;
+    return button;
 }
 
 CheckBox* SettingsWindow::CreateCheckbox(const String& label)
 {
-	if (!_activeLine) {
-		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-		return nullptr;
-	}
+    if (!_activeLine) {
+        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+        return nullptr;
+    }
 
-	auto *cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto *cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     SharedPtr<Text> text(new Text(context_));
-	_activeLine->AddChild(text);
+    _activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
     text->SetFixedWidth(200);
     text->SetFont(font, 12);
 
-	SharedPtr<CheckBox> box(new CheckBox(context_));
-	_activeLine->AddChild(box);
-	box->SetStyleAuto();
+    SharedPtr<CheckBox> box(new CheckBox(context_));
+    _activeLine->AddChild(box);
+    box->SetStyleAuto();
 
     return box;
 }
@@ -666,52 +685,52 @@ CheckBox* SettingsWindow::CreateCheckbox(const String& label)
 
 Text* SettingsWindow::CreateLabel(const String& text)
 {
-	if (!_activeLine) {
-		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-		return nullptr;
-	}
+    if (!_activeLine) {
+        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+        return nullptr;
+    }
 
-	auto *cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto *cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-	// Create log element to view latest logs from the system
-	auto *label = _activeLine->CreateChild<Text>();
-	label->SetFont(font, 12);
-	label->SetPosition(10, 30 + _tabElementCount * 30);
-	label->SetText(text);
-	label->SetFixedWidth(200);
+    // Create log element to view latest logs from the system
+    auto *label = _activeLine->CreateChild<Text>();
+    label->SetFont(font, 12);
+    label->SetPosition(10, 30 + _tabElementCount * 30);
+    label->SetText(text);
+    label->SetFixedWidth(200);
 
-	return label;
+    return label;
 }
 
 Slider* SettingsWindow::CreateSlider(const String& text)
 {
-	if (!_activeLine) {
-		URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-		return nullptr;
-	}
+    if (!_activeLine) {
+        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
+        return nullptr;
+    }
 
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-	// Create text and slider below it
-	auto* sliderText = _activeLine->CreateChild<Text>();
-	sliderText->SetPosition(0, 0);
-	sliderText->SetWidth(50);
-	sliderText->SetFont(font, 12);
-	sliderText->SetText(text);
-	sliderText->SetFixedWidth(200);
+    // Create text and slider below it
+    auto* sliderText = _activeLine->CreateChild<Text>();
+    sliderText->SetPosition(0, 0);
+    sliderText->SetWidth(50);
+    sliderText->SetFont(font, 12);
+    sliderText->SetText(text);
+    sliderText->SetFixedWidth(200);
 
-	auto* slider = _activeLine->CreateChild<Slider>();
-	slider->SetStyleAuto();
-	slider->SetPosition(0, 0);
-	slider->SetSize(300, 30);
-	slider->SetFixedWidth(200);
-	// Use 0-1 range for controlling sound/music master volume
-	slider->SetRange(1.0f);
-	slider->SetRepeatRate(0.2);
+    auto* slider = _activeLine->CreateChild<Slider>();
+    slider->SetStyleAuto();
+    slider->SetPosition(0, 0);
+    slider->SetSize(300, 30);
+    slider->SetFixedWidth(200);
+    // Use 0-1 range for controlling sound/music master volume
+    slider->SetRange(1.0f);
+    slider->SetRepeatRate(0.2);
 
-	return slider;
+    return slider;
 }
 
 DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& items)
@@ -721,8 +740,8 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
         return nullptr;
     }
 
-	auto* cache = GetSubsystem<ResourceCache>();
-	auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     SharedPtr<Text> text(new Text(context_));
     _activeLine->AddChild(text);
@@ -743,7 +762,7 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
         item->SetText((*it));
         item->SetStyleAuto();
         item->SetFixedWidth(200);
-		item->SetFont(font, 12);
+        item->SetFont(font, 12);
     }
 
     return list;
@@ -751,16 +770,16 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
 
 UIElement* SettingsWindow::CreateSingleLine()
 {
-	SharedPtr<UIElement> container(new UIElement(context_));
-	container->SetAlignment(HA_LEFT, VA_TOP);
-	container->SetLayout(LM_HORIZONTAL, 20);
-	container->SetPosition(10, 30 + _tabElementCount * 30);
-	container->SetWidth(_tabView->GetWidth());
-	_tabView->AddChild(container);
+    SharedPtr<UIElement> container(new UIElement(context_));
+    container->SetAlignment(HA_LEFT, VA_TOP);
+    container->SetLayout(LM_HORIZONTAL, 20);
+    container->SetPosition(10, 30 + _tabElementCount * 30);
+    container->SetWidth(_tabView->GetWidth());
+    _tabView->AddChild(container);
 
-	_activeLine = container;
+    _activeLine = container;
 
-	_tabElementCount++;
+    _tabElementCount++;
 
-	return _activeLine;
+    return _activeLine;
 }

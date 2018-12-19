@@ -7,6 +7,7 @@
 #include "Pause/PauseWindow.h"
 #include "QuitConfirmation/QuitConfirmationWindow.h"
 #include "NewGameSettings/NewGameSettingsWindow.h"
+#include "Achievements/AchievementsWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -27,9 +28,10 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<BaseWindow>();
     context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();
-    context_->RegisterFactory<PauseWindow>();
+    context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<QuitConfirmationWindow>();
     context_->RegisterFactory<NewGameSettingsWindow>();
+    context_->RegisterFactory<AchievementsWindow>();
 }
 
 void WindowManager::SubscribeToEvents()

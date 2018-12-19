@@ -6,12 +6,44 @@
 using namespace Urho3D;
 
 struct AchievementRule {
+    /**
+     * Name of the event which should trigger achievement check
+     */
     String eventName;
+    /**
+     * Image path
+     */
     String image;
+    /**
+     * Message to display when this achievement is unlocked
+     */
     String message;
+    /**
+     * How many times the event should be called till the achievement can be marked as unlocked
+     */
     int threshold;
+    /**
+     * Counter how much times the event was called - when this is equal to threshold, achievement is unlocked
+     */
     int current;
+    /**
+     * Whether achievement was displayed or not
+     */
     bool completed;
+    /**
+     * Optional - event parameter to check and decide if the counter should be incremented or not
+     */
+    String parameterName;
+    /**
+     * Optional - event parameter value which value should match to allow counter incrementing
+     */
+    Variant parameterValue;
+    /**
+     * How to check if the achievement criteria was met
+     * false - check only incoming event
+     * true - check `eventData` object and compare `parameterName` and `parameterValue`
+     */
+    bool deepCheck;
 };
 
 class Achievements : public Object
@@ -30,6 +62,11 @@ public:
      * to the queue when this is disabled
      */
     void SetShowAchievements(bool show);
+
+    /**
+     * Get all registered achievements
+     */
+    const List<AchievementRule> GetAchievements() const;
 
 private:
     /**
@@ -52,6 +89,9 @@ private:
      */
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Handle registered event statuses
+     */
     void HandleRegisteredEvent(StringHash eventType, VariantMap& eventData);
 
     /**
@@ -77,6 +117,9 @@ private:
      */
     bool _showAchievements;
 
+    /**
+     * All registered achievements
+     */
     HashMap<StringHash, List<AchievementRule>> _registeredAchievements;
 
 };

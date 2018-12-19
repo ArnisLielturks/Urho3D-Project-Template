@@ -39,10 +39,6 @@ void MainMenu::Init()
     // Create the UI content
     CreateUI();
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "Entered menu!";
-    SendEvent("NewAchievement", data);
-
 //    data["Title"] = "Hey!";
 //    data["Message"] = "Seems like everything is ok!";
 //    SendEvent("ShowAlertMessage", data);
@@ -60,7 +56,7 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
-    int marginBottom = -140;
+    int marginBottom = -180;
     _newGameButton = CreateButton("New game", 150, IntVector2(-20, marginBottom));
     _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
 
@@ -77,6 +73,15 @@ void MainMenu::CreateUI()
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    });
+
+    marginBottom += 40;
+    _achievementsButton = CreateButton("Achievements", 150, IntVector2(-20, marginBottom));
+    _achievementsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "AchievementsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 

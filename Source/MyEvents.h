@@ -139,4 +139,10 @@ namespace MyEvents
 		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
 		URHO3D_PARAM(P_IMAGE, Image); // string - Texture to use for achievement
 	}
+
+	// Level changing finished
+	URHO3D_EVENT(E_ACHIEVEMENT_UNLOCKED, AchievementUnlocked)
+	{
+		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
+	}
 }

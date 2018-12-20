@@ -1,7 +1,15 @@
 [![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
 
-# Urho3D-Empty-Project
-A basic app skeleton which uses global notifications and level management with fade-in/fade-out effects. Project uses code samples from the community.
+# Urho3D-Project-Template
+App template with the following features:
+* Level management
+* UI Window management
+* LUA/AS mods with hot-reload
+* Sound management
+* Controll mapping and input management
+* Splitscreen support
+* Achievement logic
+* and many other features
 
 ## How to build
 Make sure that the URHO3D_HOME environment variable is set and points to the right directory. Build this the same way how you would build Urho3D engine itself

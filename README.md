@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
+[![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Project-Template/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
 
 # Urho3D-Project-Template
 App template with the following features:

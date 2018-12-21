@@ -20,8 +20,6 @@ public:
 
     virtual void Init();
 
-protected:
-
     virtual void Create();
 
 private:
@@ -55,6 +53,11 @@ private:
      * Display help
      */
     void HandleConsoleCommandHelp(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Handle configuration change via console
+     */
+    void HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData);
 
     /**
      * Registered console commands

@@ -32,6 +32,7 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<QuitConfirmationWindow>();
     context_->RegisterFactory<NewGameSettingsWindow>();
     context_->RegisterFactory<AchievementsWindow>();
+    context_->RegisterFactory<PauseWindow>();
 }
 
 void WindowManager::SubscribeToEvents()
@@ -69,6 +70,8 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
         _windowList.Push(newWindow);
 
         _openedWindows.Push(windowName);
+    } else {
+        URHO3D_LOGERROR("Failed to open window: " + windowName);
     }
 }
 

@@ -60,11 +60,6 @@ private:
      */
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 
-    /**
-     * Handle configuration change via console
-     */
-	void HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData);
-
 	/**
 	 * Subscribe to console commands
 	 */

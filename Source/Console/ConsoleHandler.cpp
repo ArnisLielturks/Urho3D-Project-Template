@@ -15,8 +15,6 @@ ConsoleHandler::~ConsoleHandler()
 
 void ConsoleHandler::Init()
 {
-    Create();
-
     SubscribeToEvents();
 }
 
@@ -43,6 +41,7 @@ void ConsoleHandler::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleHandler, HandleKeyDown));
     SubscribeToEvent(E_CONSOLECOMMAND, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommand));
     SubscribeToEvent(MyEvents::E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandAdd));
+    SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(ConsoleHandler, HandleConsoleGlobalVariableChange));
 
     VariantMap data;
     data["ConsoleCommandName"] = "help";
@@ -85,6 +84,7 @@ void ConsoleHandler::HandleConsoleCommand(StringHash eventType, VariantMap& even
 {
     using namespace ConsoleCommand;
     String input = eventData[P_COMMAND].GetString();
+    URHO3D_LOGINFO(input);
     ParseCommand(input);
 }
 
@@ -116,4 +116,81 @@ void ConsoleHandler::HandleConsoleCommandHelp(StringHash eventType, VariantMap& 
     URHO3D_LOGINFO("#");
     URHO3D_LOGINFO("#########################");
     URHO3D_LOGINFO("");
+}
+
+void ConsoleHandler::HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData)
+{
+    StringVector params = eventData["Parameters"].GetStringVector();
+
+    const Variant value = GetSubsystem<Engine>()->GetGlobalVar(params[0]);
+
+    // Only show variable
+    if (params.Size() == 1 && !value.IsEmpty()) {
+        String stringValue;
+        if (value.GetType() == VAR_STRING) {
+            stringValue = value.GetString();
+        }
+        if (value.GetType() == VAR_BOOL) {
+            stringValue = value.GetBool() ? "1" : "0";
+        }
+        if (value.GetType() == VAR_INT) {
+            stringValue = String(value.GetInt());
+        }
+        if (value.GetType() == VAR_FLOAT) {
+            stringValue = String(value.GetFloat());
+        }
+        if (value.GetType() == VAR_DOUBLE) {
+            stringValue = String(value.GetDouble());
+        }
+        URHO3D_LOGINFO("Global variable '" + params[0] + "' = " + stringValue);
+        return;
+    }
+
+    // Read console input parameters and change global variable
+    if (params.Size() == 2) {
+        String oldValue;
+        String newValue;
+        if (value.GetType() == VAR_STRING) {
+            oldValue = value.GetString();
+            SetGlobalVar(params[0], params[1]);
+            newValue = params[1];
+        }
+        if (value.GetType() == VAR_BOOL) {
+            oldValue = value.GetBool() ? "1" : "0";
+            if (params[1] == "1" || params[1] == "true") {
+                SetGlobalVar(params[0], true);
+                newValue = "1";
+            }
+            if (params[1] == "0" || params[1] == "false") {
+                SetGlobalVar(params[0], false);
+                newValue = "0";
+            }
+        }
+        if (value.GetType() == VAR_INT) {
+            oldValue = String(value.GetInt());
+            int newIntVal = ToInt(params[1].CString());
+            SetGlobalVar(params[0], newIntVal);
+            newValue = String(newIntVal);
+        }
+        if (value.GetType() == VAR_FLOAT) {
+            oldValue = String(value.GetFloat());
+            float newFloatVal = ToFloat(params[1].CString());
+            SetGlobalVar(params[0], newFloatVal);
+            newValue = String(newFloatVal);
+        }
+        if (value.GetType() == VAR_DOUBLE) {
+            oldValue = String(value.GetDouble());
+            float newFloatVal = ToFloat(params[1].CString());
+            SetGlobalVar(params[0],newFloatVal);
+            newValue = String(newFloatVal);
+        }
+        URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
+
+        // Let others know that configuration was updated, to allow game tweaking accordingly
+        using namespace MyEvents::ConsoleGlobalVariableChanged;
+        VariantMap data = GetEventDataMap();
+        data[P_NAME] = params[0];
+        data[P_VALUE] = newValue;
+        SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
+    }
 }

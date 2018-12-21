@@ -122,7 +122,7 @@ Button* AchievementsWindow::CreateItem(const String& image, const String& messag
         CreateSingleLine();
     }
 
-    if (_activeLine->GetChildren().Size() > 4) {
+    if (_activeLine->GetChildren().Size() >= 4) {
         CreateSingleLine();
     }
 

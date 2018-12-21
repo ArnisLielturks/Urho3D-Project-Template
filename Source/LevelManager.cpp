@@ -122,6 +122,8 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         previousLevel_ = currentLevel_;
         currentLevel_ = level_queue_.Front();
 
+        GetSubsystem<DebugHud>()->SetAppStats("Current level", currentLevel_);
+
         // Remove the old fade layer
         if (fade_window_) {
             fade_window_->Remove();

@@ -63,6 +63,8 @@ void ModLoader::LoadASMods()
         if ((*it)->Execute("void Start()")) {
         }
     }
+
+    GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", _asMods.Size());
 }
 
 void ModLoader::LoadLuaMods()
@@ -91,6 +93,8 @@ void ModLoader::LoadLuaMods()
         //_mods.Push(scriptFile);
         //_scriptMap["Mods/" + (*it)] = scriptFile;
     }
+
+    GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", result.Size());
 }
 
 void ModLoader::SubscribeToEvents()

@@ -32,6 +32,7 @@ BaseApplication::BaseApplication(Context* context) :
 
 void BaseApplication::Setup()
 {
+    context_->RegisterSubsystem(new ConsoleHandler(context_));
     //LoadConfig("Data/Config/Config.json", "", true);
     LoadINIConfig(_configurationFile);
 }
@@ -39,11 +40,15 @@ void BaseApplication::Setup()
 void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
+    GetSubsystem<ConsoleHandler>()->Create();
+
+    DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
     auto* cache = GetSubsystem<ResourceCache>();
+    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+    debugHud->SetDefaultStyle(xmlFile);
+
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
-
-    context_->RegisterSubsystem(new ConsoleHandler(context_));
 
     // Switch level
     // Reattempt reading the command line from the resource system now if not read before
@@ -151,37 +156,13 @@ void BaseApplication::RegisterConsoleCommands()
 
     SubscribeToEvent("HandleExit", URHO3D_HANDLER(BaseApplication, HandleExit));
 
-	// Register all global variables as a console commands
-	for (auto it = _globalSettings.Begin(); it != _globalSettings.End(); ++it) {
-		using namespace MyEvents::ConsoleCommandAdd;
-		VariantMap data = GetEventDataMap();
-		data[P_NAME] = (*it).second_;
-		data[P_EVENT] = "ConsoleGlobalVariableChange";
-		data[P_DESCRIPTION] = "Show/Change global variable value";
-		SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
-	}
-
     // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
-        /*StringVector params = eventData["Parameters"].GetStringVector();
-        for (int i = 0; i < params.Size(); i++) {
-            URHO3D_LOGINFO("Lambda test param[" + String(i) + "]: " + params.At(i));
-        }*/
-        if (!GetSubsystem<DebugHud>()) {
-            DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
-
-            auto* cache = GetSubsystem<ResourceCache>();
-            XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-            debugHud->SetDefaultStyle(xmlFile);
-            debugHud->ToggleAll();
-        }
-        else {
-            GetSubsystem<DebugHud>()->ToggleAll();
-        }
+        GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
+//        String stat = "ABCV";
+//        GetSubsystem<DebugHud>()->SetAppStats("Hahaha", stat);
     });
-
-	SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(BaseApplication, HandleConsoleGlobalVariableChange));
 }
 
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
@@ -200,84 +181,14 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
         _globalSettings[paramName] = paramName;
+
+        using namespace MyEvents::ConsoleCommandAdd;
+        VariantMap data = GetEventDataMap();
+        data[P_NAME] = paramName;
+        data[P_EVENT] = "ConsoleGlobalVariableChange";
+        data[P_DESCRIPTION] = "Show/Change global variable value";
+        SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
     }
-}
-
-void BaseApplication::HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData)
-{
-	StringVector params = eventData["Parameters"].GetStringVector();
-
-	const Variant value = engine_->GetGlobalVar(params[0]);
-
-	// Only show variable
-	if (params.Size() == 1 && !value.IsEmpty()) {
-		String stringValue;
-		if (value.GetType() == VAR_STRING) {
-			stringValue = value.GetString();
-		}
-		if (value.GetType() == VAR_BOOL) {
-			stringValue = value.GetBool() ? "1" : "0";
-		}
-		if (value.GetType() == VAR_INT) {
-			stringValue = String(value.GetInt());
-		}
-		if (value.GetType() == VAR_FLOAT) {
-			stringValue = String(value.GetFloat());
-		}
-		if (value.GetType() == VAR_DOUBLE) {
-			stringValue = String(value.GetDouble());
-		}
-		URHO3D_LOGINFO("Global variable '" + params[0] + "' = " + stringValue);
-		return;
-	}
-
-	// Read console input parameters and change global variable
-	if (params.Size() == 2) {
-		String oldValue;
-		String newValue;
-		if (value.GetType() == VAR_STRING) {
-			oldValue = value.GetString();
-			SetGlobalVar(params[0], params[1]);
-			newValue = params[1];
-		}
-		if (value.GetType() == VAR_BOOL) {
-			oldValue = value.GetBool() ? "1" : "0";
-			if (params[1] == "1" || params[1] == "true") {
-				SetGlobalVar(params[0], true);
-				newValue = "1";
-			}
-			if (params[1] == "0" || params[1] == "false") {
-				SetGlobalVar(params[0], false);
-				newValue = "0";
-			}
-		}
-		if (value.GetType() == VAR_INT) {
-			oldValue = String(value.GetInt());
-			int newIntVal = ToInt(params[1].CString());
-			SetGlobalVar(params[0], newIntVal);
-			newValue = String(newIntVal);
-		}
-		if (value.GetType() == VAR_FLOAT) {
-			oldValue = String(value.GetFloat());
-			float newFloatVal = ToFloat(params[1].CString());
-			SetGlobalVar(params[0], newFloatVal);
-			newValue = String(newFloatVal);
-		}
-		if (value.GetType() == VAR_DOUBLE) {
-			oldValue = String(value.GetDouble());
-			float newFloatVal = ToFloat(params[1].CString());
-			SetGlobalVar(params[0],newFloatVal);
-			newValue = String(newFloatVal);
-		}
-		URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
-
-		// Let others know that configuration was updated, to allow game tweaking accordingly
-		using namespace MyEvents::ConsoleGlobalVariableChanged;
-		VariantMap data = GetEventDataMap();
-		data[P_NAME] = params[0];
-		data[P_VALUE] = newValue;
-		SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
-	}
 }
 
 void BaseApplication::LoadINIConfig(String filename)
@@ -352,4 +263,11 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
 	_globalSettings[parameter] = parameter;
+
+    using namespace MyEvents::ConsoleCommandAdd;
+    VariantMap data = GetEventDataMap();
+    data[P_NAME] = parameter;
+    data[P_EVENT] = "ConsoleGlobalVariableChange";
+    data[P_DESCRIPTION] = "Show/Change global variable value";
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 }

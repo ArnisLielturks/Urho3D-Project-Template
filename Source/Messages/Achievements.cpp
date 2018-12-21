@@ -137,10 +137,12 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Achievements::LoadAchievementList()
 {
+    URHO3D_LOGINFO("################################");
     JSONFile configFile(context_);
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
     if (value.IsArray()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", value.Size());
         URHO3D_LOGINFOF("Loading achievements config: %u", value.Size());
         for (int i = 0; i < value.Size(); i++) {
             JSONValue mapInfo = value[i];

@@ -150,6 +150,8 @@ Button* AchievementsWindow::CreateItem(const String& image, const String& messag
     if (!completed) {
         sprite->SetColor(Color::GRAY);
     }
+
+    return nullptr;
 }
 
 void AchievementsWindow::HandleAchievementUnlocked(StringHash eventType, VariantMap& eventData)

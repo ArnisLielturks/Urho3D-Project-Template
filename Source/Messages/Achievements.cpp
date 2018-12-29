@@ -227,14 +227,14 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
     }
 }
 
-const List<AchievementRule> Achievements::GetAchievements() const
+List<AchievementRule> Achievements::GetAchievements()
 {
-    List<AchievementRule> achievements;
+    _achievements.Clear();
     for (auto it = _registeredAchievements.Begin(); it != _registeredAchievements.End(); ++it) {
         for (auto it2 = (*it).second_.Begin(); it2 != (*it).second_.End(); ++it2) {
-            achievements.Push((*it2));
+            _achievements.Push((*it2));
         }
     }
 
-    return achievements;
+    return _achievements;
 }

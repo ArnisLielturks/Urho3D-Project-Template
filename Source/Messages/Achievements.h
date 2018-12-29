@@ -66,7 +66,7 @@ public:
     /**
      * Get all registered achievements
      */
-    const List<AchievementRule> GetAchievements() const;
+    List<AchievementRule> GetAchievements();
 
 private:
     /**
@@ -121,5 +121,7 @@ private:
      * All registered achievements
      */
     HashMap<StringHash, List<AchievementRule>> _registeredAchievements;
+
+    List<AchievementRule> _achievements{};
 
 };

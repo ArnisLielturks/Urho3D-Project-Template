@@ -1,4 +1,5 @@
 #include "BaseLevel.h"
+#include "Input/ControllerInput.h"
 
 BaseLevel::BaseLevel(Context* context) :
 Object(context)
@@ -55,34 +56,40 @@ void BaseLevel::SubscribeToEvents()
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    SetGlobalVar("CameraFov", 80);
 }
 
 void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
 {
     StringVector params = eventData["Parameters"].GetStringVector();
 
-    if (!_cameras.Empty()) {
-        for (auto it = _cameras.Begin(); it != _cameras.End(); ++it) {
-            Node* cameraNode = (*it).second_;
-            if (params.Size() == 1) {
-                URHO3D_LOGINFOF("Current fov value: %f", cameraNode->GetComponent<Camera>()->GetFov());
-            }
-            else if (params.Size() == 2) {
-                float previousValue = cameraNode->GetComponent<Camera>()->GetFov();
-                float value = ToFloat(params.At(1));
+    if (params.Size() == 1) {
+        URHO3D_LOGINFOF("Current fov value: %f", GetGlobalVar("CameraFov").GetFloat());
+    }
+    else if (params.Size() == 2) {
+        float previousValue = GetGlobalVar("CameraFov").GetFloat();
+        float value = ToFloat(params.At(1));
+        if (!_cameras.Empty()) {
+            for (auto it = _cameras.Begin(); it != _cameras.End(); ++it) {
+                Node* cameraNode = (*it).second_;
                 if (value <= 0) {
                     value = 60;
                 }
+                if (value > 160) {
+                    value = 160;
+                }
                 cameraNode->GetComponent<Camera>()->SetFov(value);
-                URHO3D_LOGINFOF("Camera fov changed from '%f' to '%f'", previousValue, value);
+                SetGlobalVar("CameraFov", value);
             }
-            else {
-                URHO3D_LOGERROR("Invalid number of parameters!");
-            }
+            // We have to recreated the cameras
+            auto* controllerInput = GetSubsystem<ControllerInput>();
+            Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+            InitViewports(controlIndexes);
         }
+        URHO3D_LOGINFOF("Camera fov changed from '%f' to '%f'", previousValue, value);
     }
     else {
-        URHO3D_LOGERROR("No camera available!");
+        URHO3D_LOGERROR("Invalid number of parameters!");
     }
 }
 
@@ -168,7 +175,7 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         Camera* camera = cameraNode->CreateComponent<Camera>(LOCAL);
         camera->SetFarClip(1000.0f);
         camera->SetNearClip(0.1f);
-        camera->SetFov(60);
+        camera->SetFov(GetGlobalVar("CameraFov").GetFloat());
         cameraNode->CreateComponent<SoundListener>();
         GetSubsystem<Audio>()->SetListener(cameraNode->GetComponent<SoundListener>());
 

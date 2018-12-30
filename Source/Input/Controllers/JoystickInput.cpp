@@ -106,8 +106,8 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
 		position = 0.0f;
 	}
-	//URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
-	if (buttonId == 1) {
+	URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
+	if (buttonId == _joystickMapping.y_) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		if (position < 0) {
 			controllerInput->SetActionState(CTRL_FORWARD, true, joystick);
@@ -122,7 +122,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 			controllerInput->SetActionState(CTRL_BACK, false, joystick);
 		}
 	}
-	if (buttonId == 0) {
+	if (buttonId == _joystickMapping.x_) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		if (position < 0) {
 			controllerInput->SetActionState(CTRL_LEFT, true, joystick);
@@ -137,13 +137,13 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 			controllerInput->SetActionState(CTRL_RIGHT, false, joystick);
 		}
 	}
-	if (buttonId == 3) {
+	if (buttonId == _joystickMapping.z_) {
         if (_invertX) {
             position *= -1.0f;
         }
 		_axisPosition[joystick].x_ = position;
 	}
-	if (buttonId == 4) {
+	if (buttonId == _joystickMapping.w_) {
         if (_invertY) {
             position *= -1.0f;
         }
@@ -159,9 +159,10 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
         joystick++;
     }
 	int buttonId = eventData[P_HAT].GetInt();
+    int id = eventData[P_JOYSTICKID].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
-	//URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
+	URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == 0) {
         if (_invertX) {
             position *= -1.0f;
@@ -234,4 +235,10 @@ void JoystickInput::LoadConfig()
     _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
     _invertX = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX");
     _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY");
+
+    //TODO put these settings inside controllers tab
+    _joystickMapping.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis");
+    _joystickMapping.y_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveYAxis");
+    _joystickMapping.z_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateXAxis");
+    _joystickMapping.w_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateYAxis");
 }

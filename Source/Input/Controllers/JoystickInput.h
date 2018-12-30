@@ -40,4 +40,10 @@ private:
 	HashMap<int, Vector2> _axisPosition;
 
     bool _joystickAsFirstController;
+
+    // x - move left/right
+    // y - move forward/bacward
+    // z - rotate x 
+    // w - rotate y 
+    Vector4 _joystickMapping;
 };

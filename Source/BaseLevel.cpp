@@ -69,22 +69,18 @@ void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
     else if (params.Size() == 2) {
         float previousValue = GetGlobalVar("CameraFov").GetFloat();
         float value = ToFloat(params.At(1));
+        if (value < 60) {
+            value = 60;
+        }
+        if (value > 160) {
+            value = 160;
+        }
         if (!_cameras.Empty()) {
             for (auto it = _cameras.Begin(); it != _cameras.End(); ++it) {
                 Node* cameraNode = (*it).second_;
-                if (value <= 0) {
-                    value = 60;
-                }
-                if (value > 160) {
-                    value = 160;
-                }
                 cameraNode->GetComponent<Camera>()->SetFov(value);
                 SetGlobalVar("CameraFov", value);
             }
-            // We have to recreated the cameras
-            auto* controllerInput = GetSubsystem<ControllerInput>();
-            Vector<int> controlIndexes = controllerInput->GetControlIndexes();
-            InitViewports(controlIndexes);
         }
         URHO3D_LOGINFOF("Camera fov changed from '%f' to '%f'", previousValue, value);
     }

@@ -334,6 +334,25 @@ void SettingsWindow::CreateVideoTab()
 {
     InitGraphicsSettings();
 
+    // FOV
+    CreateSingleLine();
+    auto fovSlider = CreateSlider("Field of view");
+    fovSlider->SetRange(160);
+    fovSlider->SetValue(GetGlobalVar("CameraFov").GetFloat());
+    // Detect button press events
+    SubscribeToEvent(fovSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+        using namespace SliderChanged;
+        float newValue = eventData[P_VALUE].GetFloat();
+        VariantMap data = GetEventDataMap();
+        StringVector command;
+        command.Push("fov");
+        command.Push(String(newValue));
+        data["Parameters"] = command;
+        SendEvent("FovChange", data);
+        
+    });
+
     // Fullscreen
     CreateSingleLine();
     auto fullscreenToggle = CreateCheckbox("Fullscreen");

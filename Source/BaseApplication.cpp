@@ -87,15 +87,15 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
 
-    VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
-    SendEvent(MyEvents::E_SET_LEVEL, eventData);
-
     SendEvent("GameStarted");
 
     RegisterConsoleCommands();
 
     ApplyGraphicsSettings();
+
+    VariantMap& eventData = GetEventDataMap();
+    eventData["Name"] = "Level";
+    SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 
 void BaseApplication::Stop()

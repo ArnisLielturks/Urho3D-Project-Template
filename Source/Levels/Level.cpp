@@ -29,17 +29,18 @@ void Level::Init()
     StopAllAudio();
     StartAudio();
 
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    InitViewports(controlIndexes);
+
     // Create the scene content
     CreateScene();
 
     // Create the UI content
     CreateUI();
 
-    auto* controllerInput = GetSubsystem<ControllerInput>();
-    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
-    InitViewports(controlIndexes);
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        _players[(*it)] = new Node(context_);
+        _players[(*it)] = scene_->CreateChild();
     }
 
     // Subscribe to global events for camera movement

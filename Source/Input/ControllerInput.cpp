@@ -323,6 +323,10 @@ Vector<int> ControllerInput::GetControlIndexes()
 	for (auto it = _controls.Begin(); it != _controls.End(); ++it) {
 		indexes.Push((*it).first_);
 	}
+
+	if (indexes.Empty()) {
+		indexes.Push(0);
+	}
 	return indexes;
 }
 

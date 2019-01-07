@@ -337,13 +337,13 @@ void SettingsWindow::CreateVideoTab()
     // FOV
     CreateSingleLine();
     auto fovSlider = CreateSlider("Field of view");
-    fovSlider->SetRange(160);
-    fovSlider->SetValue(GetGlobalVar("CameraFov").GetFloat());
+    fovSlider->SetRange(100);
+    fovSlider->SetValue(GetGlobalVar("CameraFov").GetFloat() - 60.0f);
     // Detect button press events
     SubscribeToEvent(fovSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
         using namespace SliderChanged;
-        float newValue = eventData[P_VALUE].GetFloat();
+        float newValue = eventData[P_VALUE].GetFloat() + 60.0f;
         VariantMap data = GetEventDataMap();
         StringVector command;
         command.Push("fov");

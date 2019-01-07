@@ -7,6 +7,7 @@ Object(context)
     SubscribeToBaseEvents();
     scene_ = new Scene(context_);
     GetSubsystem<Script>()->SetDefaultScene(scene_);
+    SetGlobalVar("CameraFov", 80);
 }
 
 BaseLevel::~BaseLevel()
@@ -56,7 +57,6 @@ void BaseLevel::SubscribeToEvents()
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
-    SetGlobalVar("CameraFov", 80);
 }
 
 void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
@@ -156,9 +156,11 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     Vector<IntRect> rects = InitRects(playerIndexes.Size());
 
     Renderer* renderer = GetSubsystem<Renderer>();
-    renderer->SetNumViewports(0);
+    renderer->SetNumViewports(playerIndexes.Size());
     _viewports.Clear();
     _cameras.Clear();
+
+    URHO3D_LOGINFOF("Viewpors %i", playerIndexes.Size());
 
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
@@ -178,16 +180,16 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         SharedPtr<Viewport> viewport(new Viewport(context_, scene_, camera, rects[i]));
         SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
-        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/BloomHDR.xml"));
-        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA2.xml"));
         // Make the bloom mixing parameter more pronounced
         //effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 0.1);
 //        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
 //        effectRenderPath->SetEnabled("BloomHDR", GetGlobalVar("BloomHDR").GetBool());
 //        effectRenderPath->SetEnabled("FXAA3", GetGlobalVar("FXAA3").GetBool());
         effectRenderPath->SetEnabled("AutoExposure", true);
-        effectRenderPath->SetEnabled("BloomHDR", true);
-        effectRenderPath->SetEnabled("FXAA3", true);
+        effectRenderPath->SetEnabled("Bloom", true);
+        effectRenderPath->SetEnabled("FXAA2", true);
         viewport->SetRenderPath(effectRenderPath);
 
         Renderer* renderer = GetSubsystem<Renderer>();
@@ -196,4 +198,5 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         _viewports[playerIndexes[i]] = viewport;
         _cameras[playerIndexes[i]] = cameraNode;
     }
+
 }

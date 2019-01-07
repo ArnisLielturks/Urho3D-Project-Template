@@ -13,6 +13,9 @@ SingleAchievement::SingleAchievement(Context* context) :
 {
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(SingleAchievement, HandlePostUpdate));
 
+    auto *cache = GetSubsystem<ResourceCache>();
+    auto *font = cache->GetResource<Font>(APPLICATION_FONT);
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_LEFT, VA_BOTTOM);
@@ -22,12 +25,10 @@ SingleAchievement::SingleAchievement(Context* context) :
     _baseWindow->SetBringToBack(true);
 
     _sprite = _baseWindow->CreateChild<Sprite>();
+    _sprite->SetTexture(cache->GetResource<Texture2D>("Textures/UrhoIcon.png"));
     _sprite->SetSize(80, 80);
     _sprite->SetAlignment(HA_LEFT, VA_TOP);
     _sprite->SetPosition(10, 10);
-
-    auto *cache = GetSubsystem<ResourceCache>();
-    auto *font = cache->GetResource<Font>(APPLICATION_FONT);
 
     _title = _baseWindow->CreateChild<Text>();
     _title->SetFont(font, 10);

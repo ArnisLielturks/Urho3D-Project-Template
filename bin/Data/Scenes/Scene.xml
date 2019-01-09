@@ -36,7 +36,7 @@
 		<attribute name="Variables" />
 		<component type="StaticModel" id="4">
 			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Material" value="Material;Materials/StoneOutline.xml" />
 			<attribute name="Cast Shadows" value="true" />
 		</component>
 	</node>
@@ -50,7 +50,7 @@
 		<attribute name="Variables" />
 		<component type="StaticModel" id="5">
 			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Material" value="Material;Materials/StoneOutline.xml" />
 			<attribute name="Cast Shadows" value="true" />
 		</component>
 	</node>
@@ -80,7 +80,7 @@
 		<attribute name="Variables" />
 		<component type="StaticModel" id="7">
 			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Material" value="Material;Materials/StoneOutline.xml" />
 			<attribute name="Cast Shadows" value="true" />
 		</component>
 	</node>

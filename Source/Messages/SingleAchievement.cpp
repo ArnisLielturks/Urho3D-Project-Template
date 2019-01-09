@@ -25,7 +25,6 @@ SingleAchievement::SingleAchievement(Context* context) :
     _baseWindow->SetBringToBack(true);
 
     _sprite = _baseWindow->CreateChild<Sprite>();
-    _sprite->SetTexture(cache->GetResource<Texture2D>("Textures/UrhoIcon.png"));
     _sprite->SetSize(80, 80);
     _sprite->SetAlignment(HA_LEFT, VA_TOP);
     _sprite->SetPosition(10, 10);

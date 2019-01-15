@@ -69,9 +69,6 @@ void Level::StopAllAudio()
 
 void Level::CreateScene()
 {
-    File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml", FILE_READ);
-    scene_->LoadXML(loadFile);
-
     if (!scene_->HasComponent<PhysicsWorld>()) {
         scene_->CreateComponent<PhysicsWorld>(LOCAL);
     }

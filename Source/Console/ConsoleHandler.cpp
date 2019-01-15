@@ -34,6 +34,10 @@ void ConsoleHandler::Create()
     _console->GetBackground()->SetOpacity(0.8f);
     _console->SetNumHistoryRows(1000);
     _console->SetNumBufferedRows(100);
+
+    for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
+        _console->AddAutoComplete((*it).first_);
+    }
 }
 
 void ConsoleHandler::SubscribeToEvents()
@@ -70,6 +74,11 @@ void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& e
     String description = eventData[P_DESCRIPTION].GetString();
     if (_registeredConsoleCommands.Contains(command)) {
         URHO3D_LOGWARNINGF("Console command '%s' already registered! Overwriting it!", command.CString());
+    }
+
+    // Add to autocomplete
+    if (_console) {
+        _console->AddAutoComplete(command);
     }
 
     // Register new console command

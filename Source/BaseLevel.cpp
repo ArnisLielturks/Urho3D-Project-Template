@@ -1,11 +1,12 @@
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
+#include "SceneManager.h"
 
 BaseLevel::BaseLevel(Context* context) :
 Object(context)
 {
     SubscribeToBaseEvents();
-    scene_ = new Scene(context_);
+    scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
     GetSubsystem<Script>()->SetDefaultScene(scene_);
     SetGlobalVar("CameraFov", 80);
 }

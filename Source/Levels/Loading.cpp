@@ -2,6 +2,7 @@
 #include "Loading.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
+#include "../SceneManager.h"
 
 using namespace Levels;
 
@@ -30,6 +31,8 @@ void Loading::Init()
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
+
+    GetSubsystem<SceneManager>()->LoadScene(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml");
 }
 
 void Loading::CreateScene()
@@ -85,12 +88,17 @@ void Loading::CreateUI()
 
     sprite->SetObjectAnimation(logoAnimation);
 
-    /*Text* text = ui->GetRoot()->CreateChild<Text>();
-    text->SetHorizontalAlignment(HA_RIGHT);
-    text->SetPosition(IntVector2(-20, -20));
-    text->SetVerticalAlignment(VA_BOTTOM);
-    text->SetStyleAuto();
-    text->SetText("Loading...");
+    _status = ui->GetRoot()->CreateChild<Text>();
+    _status->SetHorizontalAlignment(HA_LEFT);
+    _status->SetVerticalAlignment(VA_BOTTOM);
+    _status->SetPosition(20, -20);
+    _status->SetStyleAuto();
+    _status->SetText("Progress: 0%");
+    _status->SetTextEffect(TextEffect::TE_STROKE);
+    _status->SetFontSize(16);
+    _status->SetColor(Color(0.8f, 0.8f, 0.2f));
+    _status->SetBringToBack(true);
+
 
     SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
@@ -98,14 +106,14 @@ void Loading::CreateUI()
     colorAnimation->SetInterpolationMethod(IM_SPLINE);
     // Set spline tension
     colorAnimation->SetSplineTension(0.7f);
-    colorAnimation->SetKeyFrame(0.0f, IntVector2(-20, -20));
-    colorAnimation->SetKeyFrame(1.0f, IntVector2(-20, -40));
-    colorAnimation->SetKeyFrame(2.0f, IntVector2(-40, -40));
-    colorAnimation->SetKeyFrame(3.0f, IntVector2(-40, -20));
-    colorAnimation->SetKeyFrame(4.0f, IntVector2(-20, -20));
-    animation->AddAttributeAnimation("Position", colorAnimation);
+    colorAnimation->SetKeyFrame(0.0f, Color::RED);
+    colorAnimation->SetKeyFrame(1.0f, Color::YELLOW);
+    colorAnimation->SetKeyFrame(2.0f, Color::GREEN);
+    colorAnimation->SetKeyFrame(3.0f, Color::GRAY);
+    colorAnimation->SetKeyFrame(4.0f, Color::BLUE);
+    animation->AddAttributeAnimation("Color", colorAnimation);
 
-    text->SetObjectAnimation(animation);*/
+    _status->SetObjectAnimation(animation);
 }
 
 void Loading::SubscribeToEvents()
@@ -121,7 +129,10 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
         input->SetMouseVisible(false);
     }
 
-    if (timer.GetMSec(false) > 3000) {
+    float progress = GetSubsystem<SceneManager>()->GetProgress();
+    _status->SetText("Progress: " + String((int)(progress * 100)) + "%");
+    //if (timer.GetMSec(false) > 3000) {
+    if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);
     }

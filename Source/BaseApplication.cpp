@@ -3,6 +3,7 @@
 #include "Input/ControllerInput.h"
 #include "Audio/AudioManager.h"
 #include "Console/ConsoleHandler.h"
+#include "SceneManager.h"
 #include "MyEvents.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -23,11 +24,13 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
     context_->RegisterFactory<ConsoleHandler>();
+    context_->RegisterFactory<SceneManager>();
 
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
 
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
+    context_->RegisterSubsystem(new SceneManager(context_));
 }
 
 void BaseApplication::Setup()
@@ -94,7 +97,7 @@ void BaseApplication::Start()
     ApplyGraphicsSettings();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Level";
+    eventData["Name"] = "Loading";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 

@@ -28,6 +28,7 @@ namespace Levels {
 
         void HandleEndLoading(StringHash eventType, VariantMap& eventData);
 
+        SharedPtr<Text> _status;
         Timer timer;
     };
 }

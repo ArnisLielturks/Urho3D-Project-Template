@@ -53,6 +53,8 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         return;
     }
 
+    return;
+
     // Create HTTP request
     if (httpRequest is null) {
         httpRequest = network.MakeHttpRequest("http://localhost:8000/mod.as");

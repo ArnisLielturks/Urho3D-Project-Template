@@ -72,11 +72,11 @@
 	</node>
 	<node id="6">
 		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="Box" />
+		<attribute name="Name" value="Radio" />
 		<attribute name="Tags" />
 		<attribute name="Position" value="1.42168 0.594299 0.625577" />
 		<attribute name="Rotation" value="0.999947 0 0.0103017 0" />
-		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Scale" value="1 2 1" />
 		<attribute name="Variables" />
 		<component type="StaticModel" id="7">
 			<attribute name="Model" value="Model;Models/Box.mdl" />

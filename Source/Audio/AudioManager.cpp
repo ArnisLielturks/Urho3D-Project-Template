@@ -215,3 +215,35 @@ void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData
     data[P_TYPE] = SOUND_EFFECT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
 }
+
+SoundSource3D* AudioManager::AddEffectToNode(Node* node, unsigned int index)
+{
+    return CreateNodeSound(node, _soundEffects[index], SOUND_EFFECT);
+}
+
+SoundSource3D* AudioManager::AddMusicToNode(Node* node, unsigned int index)
+{
+    return CreateNodeSound(node, _music[index], SOUND_MUSIC);
+}
+
+SoundSource3D* AudioManager::CreateNodeSound(Node* node, const String& filename, const String& type)
+{
+    if (filename.Empty()) {
+        return nullptr;
+    }
+    // Get the sound resource
+    auto* cache = GetSubsystem<ResourceCache>();
+    Sound* sound = cache->GetResource<Sound>(filename);
+
+    if (sound)
+    {
+        URHO3D_LOGINFOF("Adding sound [%s] to node [%i], type [%s]", filename.CString(), node->GetID(), type.CString());
+        auto* soundSource = node->CreateComponent<SoundSource3D>();
+        soundSource->SetSoundType(type);
+        soundSource->Play(sound);
+
+        return soundSource;
+    }
+
+    return nullptr;
+}

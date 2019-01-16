@@ -32,11 +32,22 @@ public:
      */
     void AllowMultipleAmbientTracks(bool enabled);
 
+    /**
+     * Add sound effect to specific node
+     */
+    SoundSource3D* AddEffectToNode(Node* node, unsigned int index);
+
+    /**
+     * Add music to specific node
+     */
+    SoundSource3D* AddMusicToNode(Node* node, unsigned int index);
+
 protected:
     virtual void Init();
 
 private:
 
+    SoundSource3D* CreateNodeSound(Node* node, const String& filename, const String& type);
     void SubscribeToEvents();
 	void SubscribeConsoleCommands();
 

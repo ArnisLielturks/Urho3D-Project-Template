@@ -3,6 +3,7 @@
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
+#include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
 #include "../UI/WindowManager.h"
 #include "../Messages/Achievements.h"
@@ -60,6 +61,13 @@ void Level::StartAudio()
     data[P_INDEX] = AMBIENT_SOUNDS::LEVEL;
     data[P_TYPE] = SOUND_AMBIENT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
+
+    auto node = scene_->GetChild("Radio", true);
+    if (node) {
+        auto soundSource = GetSubsystem<AudioManager>()->AddEffectToNode(node, SOUND_EFFECTS::HIT);
+        soundSource->SetFarDistance(10);
+        soundSource->GetSound()->SetLooped(true);
+    }
 }
 
 void Level::StopAllAudio()

@@ -67,5 +67,5 @@ private:
     /**
      * Console handler in the engine
      */
-    Console* _console;
+    SharedPtr<Console> _console;
 };

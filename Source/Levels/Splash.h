@@ -28,10 +28,26 @@ namespace Levels {
 
         void SubscribeToEvents();
 
+        /**
+         * Show next screen
+         */
         void HandleEndSplash();
 
 		void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
 
+		/**
+		 * Timer to check splash screen lifetime
+		 */
         Timer _timer;
+
+        /**
+         * Current logo index
+         */
+        int _logoIndex;
+
+        /**
+         * List of all the logos that splash screen should show
+         */
+        Vector<String> _logos;
     };
 }

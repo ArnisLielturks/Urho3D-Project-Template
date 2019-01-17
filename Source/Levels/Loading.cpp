@@ -103,7 +103,7 @@ void Loading::CreateUI()
     SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
     // Use spline interpolation method
-    colorAnimation->SetInterpolationMethod(IM_SPLINE);
+    colorAnimation->SetInterpolationMethod(IM_LINEAR);
     // Set spline tension
     colorAnimation->SetSplineTension(0.7f);
     colorAnimation->SetKeyFrame(0.0f, Color::RED);
@@ -111,6 +111,7 @@ void Loading::CreateUI()
     colorAnimation->SetKeyFrame(2.0f, Color::GREEN);
     colorAnimation->SetKeyFrame(3.0f, Color::GRAY);
     colorAnimation->SetKeyFrame(4.0f, Color::BLUE);
+    colorAnimation->SetKeyFrame(5.0f, Color::RED);
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _status->SetObjectAnimation(animation);
@@ -130,7 +131,7 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 
     float progress = GetSubsystem<SceneManager>()->GetProgress();
-    _status->SetText("Progress: " + String((int)(progress * 100)) + "%");
+    _status->SetText(String((int)(progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
     //if (timer.GetMSec(false) > 3000) {
     if (progress >= 1.0f) {
         SendEvent("EndLoading");

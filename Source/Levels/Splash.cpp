@@ -5,7 +5,7 @@
 
 using namespace Levels;
 
-static int SPLASH_TIME = 1000;
+static int SPLASH_TIME = 3000;
 
 namespace Levels {
     void CheckThreading(const WorkItem* item, unsigned threadIndex)
@@ -62,8 +62,14 @@ namespace Levels {
 
     /// Construct.
 Splash::Splash(Context* context) :
-    BaseLevel(context)
+    BaseLevel(context),
+    _logoIndex(0)
 {
+    // List of different logos that multiple splash screens will show
+    _logos.Reserve(3);
+    _logos.Push("Textures/UrhoIcon.png");
+    _logos.Push("Textures/Achievements/lunar-module.png");
+    _logos.Push("Textures/Achievements/retro-controller.png");
 }
 
 Splash::~Splash()
@@ -110,8 +116,11 @@ void Splash::CreateUI()
     UI* ui = GetSubsystem<UI>();
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
+    // Get the current logo index
+    _logoIndex = data_["LogoIndex"].GetInt();
+
     // Get the Urho3D fish texture
-    auto* decalTex = cache->GetResource<Texture2D>("Textures/UrhoIcon.png");
+    auto* decalTex = cache->GetResource<Texture2D>(_logos[_logoIndex]);
     // Create a new sprite, set it to use the texture
     SharedPtr<Sprite> sprite(new Sprite(context_));
     sprite->SetTexture(decalTex);
@@ -125,17 +134,16 @@ void Splash::CreateUI()
     // The UI root element is as big as the rendering window, set random position within it
     sprite->SetPosition(width / 2, height / 2);
 
-    // Set sprite size & hotspot in its center
-    sprite->SetSize(IntVector2(decalTex->GetWidth(), decalTex->GetHeight()));
-    sprite->SetHotSpot(IntVector2(decalTex->GetWidth() / 2, decalTex->GetHeight() / 2));
-
-    // Set random rotation in degrees and random scale
-    sprite->SetRotation(Random() * 360.0f);
-    sprite->SetScale(Random(1.0f) + 0.5f);
-
-    // Set random color and additive blending mode
-    sprite->SetColor(Color(Random(0.5f) + 0.5f, Random(0.5f) + 0.5f, Random(0.5f) + 0.5f));
-    sprite->SetBlendMode(BLEND_ADD);
+    // Avoid having too large logos
+    // We assume here that the logo image is a regular rectangle
+    if (decalTex->GetWidth() <= 256 && decalTex->GetHeight() <= 256) {
+        // Set sprite size & hotspot in its center
+        sprite->SetSize(IntVector2(decalTex->GetWidth(), decalTex->GetHeight()));
+        sprite->SetHotSpot(IntVector2(decalTex->GetWidth() / 2, decalTex->GetHeight() / 2));
+    } else {
+        sprite->SetSize(IntVector2(256, 256));
+        sprite->SetHotSpot(IntVector2(128, 128));
+    }
 
     // Add as a child of the root UI element
     ui->GetRoot()->AddChild(sprite);
@@ -146,34 +154,12 @@ void Splash::CreateUI()
     scale->SetInterpolationMethod(IM_SPLINE);
     // Set spline tension
     scale->SetKeyFrame(0.0f, Vector2(1, 1));
-    scale->SetKeyFrame(1.0f, Vector2(1.5, 1.5));
-    scale->SetKeyFrame(3.0f, Vector2(1, 1));
+    scale->SetKeyFrame(SPLASH_TIME / 1000 / 2, Vector2(1.5, 1.5));
+    scale->SetKeyFrame(SPLASH_TIME / 1000, Vector2(1, 1));
+    scale->SetKeyFrame(SPLASH_TIME / 1000 * 2, Vector2(1, 1));
     animation->AddAttributeAnimation("Scale", scale);
 
     sprite->SetObjectAnimation(animation);
-    
-    // Text* text = ui->GetRoot()->CreateChild<Text>();
-    // text->SetHorizontalAlignment(HA_RIGHT);
-    // text->SetPosition(IntVector2(-20, -20));
-    // text->SetVerticalAlignment(VA_BOTTOM);
-    // text->SetStyleAuto();
-    // text->SetText("Splash...");
-
-    /*SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
-    SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
-    // Use spline interpolation method
-    colorAnimation->SetInterpolationMethod(IM_SPLINE);
-    // Set spline tension
-    colorAnimation->SetSplineTension(0.7f);
-    colorAnimation->SetKeyFrame(0.0f, IntVector2(-20, -20));
-    colorAnimation->SetKeyFrame(1.0f, IntVector2(-20, -40));
-    colorAnimation->SetKeyFrame(2.0f, IntVector2(-40, -40));
-    colorAnimation->SetKeyFrame(3.0f, IntVector2(-40, -20));
-    colorAnimation->SetKeyFrame(4.0f, IntVector2(-20, -20));
-    animation->AddAttributeAnimation("Position", colorAnimation);
-
-    text->SetObjectAnimation(animation);
-    */
 }
 
 void Splash::SubscribeToEvents()
@@ -199,7 +185,14 @@ void Splash::HandleEndSplash()
 	//workQueue->Complete(100);
 	UnsubscribeFromEvent(E_UPDATE);
 	VariantMap data = GetEventDataMap();
-	data["Name"] = "MainMenu";
+    _logoIndex++;
+	if (_logoIndex >= _logos.Size()) {
+        data["Name"] = "MainMenu";
+    } else {
+	    // We still have logos to show, inform next Splash screen to use the next logo from the `_logos` vector
+        data["Name"] = "Splash";
+        data["LogoIndex"] = _logoIndex;
+	}
     SendEvent(MyEvents::E_SET_LEVEL, data);
 }
 

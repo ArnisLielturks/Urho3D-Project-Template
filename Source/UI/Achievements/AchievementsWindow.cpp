@@ -42,6 +42,8 @@ void AchievementsWindow::Create()
         input->SetMouseVisible(true);
     }
 
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
@@ -61,7 +63,7 @@ void AchievementsWindow::Create()
     // Create the Window title Text
     auto* windowTitle = new Text(context_);
     windowTitle->SetName("WindowTitle");
-    windowTitle->SetText("Achievements");
+    windowTitle->SetText(localization->Get("ACHIEVEMENTS"));
     windowTitle->SetFont(font, 14);
 
 

@@ -84,6 +84,7 @@ void Level::CreateScene()
 
 void Level::CreateUI()
 {
+    auto* localization = GetSubsystem<Localization>();
     UI* ui = GetSubsystem<UI>();
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
@@ -92,7 +93,7 @@ void Level::CreateUI()
     text->SetVerticalAlignment(VA_TOP);
     text->SetPosition(0, 50);
     text->SetStyleAuto();
-    text->SetText("ESC - pause game\nTAB - show ScoreboardWindow\nF2 - toggle console");
+    text->SetText(localization->Get("TUTORIAL"));
     text->SetTextEffect(TextEffect::TE_STROKE);
     text->SetFontSize(16);
     text->SetColor(Color(0.8f, 0.8f, 0.2f));

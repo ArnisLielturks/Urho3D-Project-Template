@@ -27,13 +27,15 @@ void NewGameSettingsWindow::Init()
 
 void NewGameSettingsWindow::Create()
 {
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(220, 80);
     _baseWindow->BringToFront();
 
-    _newGameButton = CreateButton("Start", 80, IntVector2(20, 0));
+    _newGameButton = CreateButton(localization->Get("START"), 80, IntVector2(20, 0));
     _newGameButton->SetAlignment(HA_LEFT, VA_CENTER);
 
     SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -42,7 +44,7 @@ void NewGameSettingsWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _exitWindow = CreateButton("Exit", 80, IntVector2(-20, 0));
+    _exitWindow = CreateButton(localization->Get("EXIT"), 80, IntVector2(-20, 0));
     _exitWindow->SetAlignment(HA_RIGHT, VA_CENTER);
     SubscribeToEvent(_exitWindow, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();

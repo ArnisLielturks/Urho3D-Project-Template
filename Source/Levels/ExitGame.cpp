@@ -40,6 +40,7 @@ void ExitGame::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void ExitGame::CreateUI()
 {
+    auto* localization = GetSubsystem<Localization>();
     UI* ui = GetSubsystem<UI>();
     auto *cache = GetSubsystem<ResourceCache>();
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
@@ -49,5 +50,5 @@ void ExitGame::CreateUI()
     text->SetVerticalAlignment(VA_CENTER);
     text->SetStyleAuto();
     text->SetFont(font, 16);
-    text->SetText("Exiting game...");
+    text->SetText(localization->Get("EXITING_GAME"));
 }

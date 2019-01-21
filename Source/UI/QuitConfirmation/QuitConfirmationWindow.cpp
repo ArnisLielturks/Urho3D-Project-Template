@@ -32,13 +32,15 @@ void QuitConfirmationWindow::Create()
         input->SetMouseVisible(true);
     }
 
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(220, 80);
     _baseWindow->BringToFront();
 
-    _yesButton = CreateButton("Yes", 80, IntVector2(20, 0));
+    _yesButton = CreateButton(localization->Get("YES"), 80, IntVector2(20, 0));
     _yesButton->SetAlignment(HA_LEFT, VA_CENTER);
 
     SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -49,7 +51,7 @@ void QuitConfirmationWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _noButton = CreateButton("No", 80, IntVector2(-20, 0));
+    _noButton = CreateButton(localization->Get("NO"), 80, IntVector2(-20, 0));
     _noButton->SetAlignment(HA_RIGHT, VA_CENTER);
 
     SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {

@@ -31,6 +31,10 @@ BaseApplication::BaseApplication(Context* context) :
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new SceneManager(context_));
+
+    auto* localization = GetSubsystem<Localization>();
+    localization->LoadJSONFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/EN.json");
+
 }
 
 void BaseApplication::Setup()
@@ -97,7 +101,7 @@ void BaseApplication::Start()
     ApplyGraphicsSettings();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 
@@ -253,6 +257,9 @@ void BaseApplication::LoadINIConfig(String filename)
 	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
 	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
 	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
+
+    auto* localization = GetSubsystem<Localization>();
+    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }
 
 void BaseApplication::ApplyGraphicsSettings()

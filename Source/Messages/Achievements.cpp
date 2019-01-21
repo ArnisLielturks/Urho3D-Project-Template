@@ -137,7 +137,6 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Achievements::LoadAchievementList()
 {
-    URHO3D_LOGINFO("################################");
     JSONFile configFile(context_);
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();

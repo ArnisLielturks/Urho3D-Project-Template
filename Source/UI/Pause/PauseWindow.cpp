@@ -33,13 +33,15 @@ void PauseWindow::Create()
         input->SetMouseVisible(true);
     }
 
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(300, 190);
     _baseWindow->BringToFront();
 
-    _continueButton = CreateButton("Continue", 200, IntVector2(0, 20));
+    _continueButton = CreateButton(localization->Get("CONTINUE"), 200, IntVector2(0, 20));
     _continueButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_continueButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -48,7 +50,7 @@ void PauseWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
-    _mainMenuButton = CreateButton("Return to menu", 200, IntVector2(0, 60));
+    _mainMenuButton = CreateButton(localization->Get("RETURN_TO_MENU"), 200, IntVector2(0, 60));
     _mainMenuButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_mainMenuButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -60,7 +62,7 @@ void PauseWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _settingsButton = CreateButton("Settings", 200, IntVector2(0, 100));
+    _settingsButton = CreateButton(localization->Get("SETTINGS"), 200, IntVector2(0, 100));
     _settingsButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -69,7 +71,7 @@ void PauseWindow::Create()
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    _exitButton = CreateButton("Exit game", 200, IntVector2(0, 140));
+    _exitButton = CreateButton(localization->Get("EXIT_GAME"), 200, IntVector2(0, 140));
     _exitButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {

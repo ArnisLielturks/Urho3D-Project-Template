@@ -26,6 +26,8 @@ void SettingsWindow::Init()
 
 void SettingsWindow::Create()
 {
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
@@ -45,7 +47,7 @@ void SettingsWindow::Create()
     // Create the Window title Text
     auto* windowTitle = new Text(context_);
     windowTitle->SetName("WindowTitle");
-    windowTitle->SetText("Settings");
+    windowTitle->SetText(localization->Get("SETTINGS"));
     windowTitle->SetFont(font, 14);
 
 
@@ -74,19 +76,19 @@ void SettingsWindow::Create()
     _tabView->SetWidth(_baseWindow->GetWidth());
     _tabView->SetHeight(_baseWindow->GetHeight());
 
-    _tabs[CONTROLS] = CreateTabButton("Controls");
+    _tabs[CONTROLS] = CreateTabButton(localization->Get("CONTROLS"));
     SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(CONTROLS);
     });
-    _tabs[CONTROLLERS] = CreateTabButton("Controllers");
+    _tabs[CONTROLLERS] = CreateTabButton(localization->Get("CONTROLLERS"));
     SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(CONTROLLERS);
     });
-    _tabs[AUDIO] = CreateTabButton("Audio");
+    _tabs[AUDIO] = CreateTabButton(localization->Get("AUDIO"));
     SubscribeToEvent(_tabs[AUDIO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(AUDIO);
     });
-    _tabs[VIDEO] = CreateTabButton("Video");
+    _tabs[VIDEO] = CreateTabButton(localization->Get("VIDEO"));
     SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(VIDEO);
     });
@@ -166,14 +168,16 @@ void SettingsWindow::CreateControlsTab()
 
 void SettingsWindow::CreateControllersTab()
 {
+    auto* localization = GetSubsystem<Localization>();
+
     auto controllerInput = GetSubsystem<ControllerInput>();
     {
         CreateSingleLine();
-        CreateLabel("Mouse");
+        CreateLabel(localization->Get("MOUSE"));
 
         // Invert X
         CreateSingleLine();
-        auto mouseInvertX = CreateCheckbox("Invert X axis");
+        auto mouseInvertX = CreateCheckbox(localization->Get("INVERT_X_AXIS"));
         mouseInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::MOUSE));
         URHO3D_LOGINFO("Set mouse invert x " + String(mouseInvertX->IsChecked()));
         SubscribeToEvent(mouseInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
@@ -191,7 +195,7 @@ void SettingsWindow::CreateControllersTab()
 
         // Invert Y
         CreateSingleLine();
-        auto mouseInvertY = CreateCheckbox("Invert Y axis");
+        auto mouseInvertY = CreateCheckbox(localization->Get("INVERT_Y_AXIS"));
         mouseInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::MOUSE));
         SubscribeToEvent(mouseInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
             using namespace Toggled;
@@ -206,7 +210,7 @@ void SettingsWindow::CreateControllersTab()
 
         // Sensitivity
         CreateSingleLine();
-        auto slider = CreateSlider("Sensitivity");
+        auto slider = CreateSlider(localization->Get("SENSITIVITY"));
         slider->SetRange(10);
         slider->SetValue(controllerInput->GetSensitivityX(ControllerType::MOUSE));
         // Detect button press events
@@ -227,11 +231,11 @@ void SettingsWindow::CreateControllersTab()
     {
         CreateSingleLine();
         CreateSingleLine();
-        CreateLabel("Joystick");
+        CreateLabel(localization->Get("JOYSTICK"));
 
         // Invert X
         CreateSingleLine();
-        auto joystickInvertX = CreateCheckbox("Invert X axis");
+        auto joystickInvertX = CreateCheckbox(localization->Get("INVERT_X_AXIS"));
         joystickInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::JOYSTICK));
         SubscribeToEvent(joystickInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
             using namespace Toggled;
@@ -246,7 +250,7 @@ void SettingsWindow::CreateControllersTab()
 
         // Invert Y
         CreateSingleLine();
-        auto joystickInvertY = CreateCheckbox("Invert X axis");
+        auto joystickInvertY = CreateCheckbox(localization->Get("INVERT_Y_AXIS"));
         joystickInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::JOYSTICK));
         SubscribeToEvent(joystickInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
             using namespace Toggled;
@@ -261,7 +265,7 @@ void SettingsWindow::CreateControllersTab()
 
         // Sensitivity X
         CreateSingleLine();
-        auto sensitivityX = CreateSlider("Sensitivity X axis");
+        auto sensitivityX = CreateSlider(localization->Get("SENSITIVITY_X_AXIS"));
         sensitivityX->SetRange(10);
         sensitivityX->SetValue(controllerInput->GetSensitivityX(ControllerType::JOYSTICK));
         // Detect button press events
@@ -278,7 +282,7 @@ void SettingsWindow::CreateControllersTab()
 
         // Sensitivity Y
         CreateSingleLine();
-        auto sensitivityY = CreateSlider("Sensitivity Y axis");
+        auto sensitivityY = CreateSlider(localization->Get("SENSITIVITY_Y_AXIS"));
         sensitivityY->SetRange(10);
         sensitivityY->SetValue(controllerInput->GetSensitivityY(ControllerType::JOYSTICK));
         // Detect button press events
@@ -297,6 +301,8 @@ void SettingsWindow::CreateControllersTab()
 
 void SettingsWindow::CreateAudioTab()
 {
+    auto* localization = GetSubsystem<Localization>();
+
     String volumeControls[] = {
             SOUND_MASTER,
             SOUND_EFFECT,
@@ -307,7 +313,7 @@ void SettingsWindow::CreateAudioTab()
     for (int i = 0; i < 5; i++) {
         // Master volume slider
         CreateSingleLine();
-        auto slider = CreateSlider(volumeControls[i] + " volume");
+        auto slider = CreateSlider(localization->Get(volumeControls[i].ToUpper() + "_VOLUME"));
         slider->SetValue(GetSubsystem<Audio>()->GetMasterGain(volumeControls[i]));
         slider->SetVar("SoundType", volumeControls[i]);
 
@@ -332,11 +338,12 @@ void SettingsWindow::CreateAudioTab()
 }
 void SettingsWindow::CreateVideoTab()
 {
+    auto* localization = GetSubsystem<Localization>();
     InitGraphicsSettings();
 
     // FOV
     CreateSingleLine();
-    auto fovSlider = CreateSlider("Field of view");
+    auto fovSlider = CreateSlider(localization->Get("FIELD_OF_VIEW"));
     fovSlider->SetRange(100);
     fovSlider->SetValue(GetGlobalVar("CameraFov").GetFloat() - 60.0f);
     // Detect button press events
@@ -355,7 +362,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Fullscreen
     CreateSingleLine();
-    auto fullscreenToggle = CreateCheckbox("Fullscreen");
+    auto fullscreenToggle = CreateCheckbox(localization->Get("FULLSCREEN"));
     fullscreenToggle->SetChecked(_graphicsSettings.fullscreen);
     SubscribeToEvent(fullscreenToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -366,7 +373,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Fullscreen
     CreateSingleLine();
-    auto frameLimiterToggle = CreateCheckbox("Frame Limiter");
+    auto frameLimiterToggle = CreateCheckbox(localization->Get("FRAME_LIMITER"));
     frameLimiterToggle->SetChecked(_graphicsSettings.frameLimiter);
     SubscribeToEvent(frameLimiterToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -377,7 +384,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Shadows
     CreateSingleLine();
-    auto shadowToggle = CreateCheckbox("Enable shadows");
+    auto shadowToggle = CreateCheckbox(localization->Get("ENABLE_SHADOWS"));
     shadowToggle->SetChecked(_graphicsSettings.shadows);
     SubscribeToEvent(shadowToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -388,7 +395,7 @@ void SettingsWindow::CreateVideoTab()
 
     // VSync
     CreateSingleLine();
-    auto vsyncToggle = CreateCheckbox("VSync");
+    auto vsyncToggle = CreateCheckbox(localization->Get("VERTICAL_SYNC"));
     vsyncToggle->SetChecked(_graphicsSettings.vsync);
     SubscribeToEvent(vsyncToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -399,7 +406,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Triple buffering
     CreateSingleLine();
-    auto trippleBuffToggle = CreateCheckbox("Tripple buffering");
+    auto trippleBuffToggle = CreateCheckbox(localization->Get("TRIPLE_BUFFERING"));
     trippleBuffToggle->SetChecked(_graphicsSettings.tripleBuffer);
     SubscribeToEvent(trippleBuffToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;
@@ -410,7 +417,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Resolution
     CreateSingleLine();
-    auto resolutionMenu = CreateMenu("Resolution", _availableResolutionNames);
+    auto resolutionMenu = CreateMenu(localization->Get("RESOLUTION"), _availableResolutionNames);
     resolutionMenu->SetSelection(_graphicsSettings.activeResolution);
     SubscribeToEvent(resolutionMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -438,7 +445,7 @@ void SettingsWindow::CreateVideoTab()
     shadowQualityLevels.Push("SHADOWQUALITY_VSM");
     shadowQualityLevels.Push("SHADOWQUALITY_BLUR_VSM");
 
-    auto shadowQualityMenu = CreateMenu("Shadow quality", shadowQualityLevels);
+    auto shadowQualityMenu = CreateMenu(localization->Get("SHADOW_QUALITY"), shadowQualityLevels);
     shadowQualityMenu->SetSelection(_graphicsSettings.shadowQuality);
     SubscribeToEvent(shadowQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -458,7 +465,7 @@ void SettingsWindow::CreateVideoTab()
     textureFilterModes.Push("FILTER_DEFAULT");
     textureFilterModes.Push("MAX_FILTERMODES");
 
-    auto textureFilterModeMenu = CreateMenu("Texture filter mode", textureFilterModes);
+    auto textureFilterModeMenu = CreateMenu(localization->Get("TEXTURE_FILTER_MODE"), textureFilterModes);
     textureFilterModeMenu->SetSelection(_graphicsSettings.textureFilterMode);
     SubscribeToEvent(textureFilterModeMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -488,7 +495,7 @@ void SettingsWindow::CreateVideoTab()
     levels.Push("15");
     levels.Push("16");
 
-    auto textureAnisotropyLevelMenu = CreateMenu("Texture anisotropy level", levels);
+    auto textureAnisotropyLevelMenu = CreateMenu(localization->Get("TEXTURE_ANISTROPY_LEVEL"), levels);
     textureAnisotropyLevelMenu->SetSelection(_graphicsSettings.textureAnistropy);
     SubscribeToEvent(textureAnisotropyLevelMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -499,7 +506,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Texture quality
     CreateSingleLine();
-    auto textureQualityMenu = CreateMenu("Texture quality", levels);
+    auto textureQualityMenu = CreateMenu(localization->Get("TEXTURE_QUALITY"), levels);
     textureQualityMenu->SetSelection(_graphicsSettings.textureQuality);
     SubscribeToEvent(textureQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -510,7 +517,7 @@ void SettingsWindow::CreateVideoTab()
 
     // Multisample
     CreateSingleLine();
-    auto multisampleMenu = CreateMenu("Multisample", levels);
+    auto multisampleMenu = CreateMenu(localization->Get("MULTISAMPLE"), levels);
     multisampleMenu->SetSelection(_graphicsSettings.multisample);
     SubscribeToEvent(multisampleMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace ItemSelected;
@@ -520,7 +527,7 @@ void SettingsWindow::CreateVideoTab()
     });
 
     CreateSingleLine();
-    auto applyVideoSettings = CreateButton("Apply");
+    auto applyVideoSettings = CreateButton(localization->Get("APPLY"));
 
     // Detect button press events
     SubscribeToEvent(applyVideoSettings, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -530,9 +537,10 @@ void SettingsWindow::CreateVideoTab()
 
 void SettingsWindow::CreateMiscTab()
 {
+    auto* localization = GetSubsystem<Localization>();
     // Fullscreen
     CreateSingleLine();
-    auto enableMods = CreateCheckbox("Enable mods");
+    auto enableMods = CreateCheckbox(localization->Get("ENABLE_MODS"));
     enableMods->SetChecked(true);
     SubscribeToEvent(enableMods, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
         using namespace Toggled;

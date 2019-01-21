@@ -56,10 +56,11 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
-    int marginBottom = -180;
-    _newGameButton = CreateButton("New game", 150, IntVector2(-20, marginBottom));
-    _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    auto* localization = GetSubsystem<Localization>();
 
+    int marginBottom = -180;
+    _newGameButton = CreateButton(localization->Get("NEW_GAME"), 150, IntVector2(-20, marginBottom));
+    _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
@@ -68,7 +69,7 @@ void MainMenu::CreateUI()
     });
 
     marginBottom += 40;
-    _settingsButton = CreateButton("Settings", 150, IntVector2(-20, marginBottom));
+    _settingsButton = CreateButton(localization->Get("SETTINGS"), 150, IntVector2(-20, marginBottom));
     _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -77,7 +78,7 @@ void MainMenu::CreateUI()
     });
 
     marginBottom += 40;
-    _achievementsButton = CreateButton("Achievements", 150, IntVector2(-20, marginBottom));
+    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"), 150, IntVector2(-20, marginBottom));
     _achievementsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -86,7 +87,7 @@ void MainMenu::CreateUI()
     });
 
     marginBottom += 40;
-    _creditsButton = CreateButton("Credits", 150, IntVector2(-20, marginBottom));
+    _creditsButton = CreateButton(localization->Get("CREDITS"), 150, IntVector2(-20, marginBottom));
     _creditsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_creditsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -95,7 +96,7 @@ void MainMenu::CreateUI()
     });
 
     marginBottom += 40;
-    _exitButton = CreateButton("Exit", 150, IntVector2(-20, marginBottom));
+    _exitButton = CreateButton(localization->Get("EXIT"), 150, IntVector2(-20, marginBottom));
     _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();

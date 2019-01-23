@@ -69,6 +69,8 @@ public:
     List<AchievementRule> GetAchievements();
 
 private:
+    friend void SaveProgressAsync(const WorkItem* item, unsigned threadIndex);
+
     /**
      * Initialize achievements
      */
@@ -100,6 +102,16 @@ private:
     void LoadAchievementList();
 
     /**
+     * Save achievement progress
+     */
+    void SaveProgress();
+
+    /**
+     * Load achievement progress
+     */
+    void LoadProgress();
+
+    /**
      * Active achievement list
      */
     List<SharedPtr<SingleAchievement>> _activeAchievements;
@@ -122,6 +134,14 @@ private:
      */
     HashMap<StringHash, List<AchievementRule>> _registeredAchievements;
 
+    /**
+     * All achievements
+     */
     List<AchievementRule> _achievements{};
+
+    /**
+     * Current achievement progress
+     */
+    HashMap<String, int> _progress;
 
 };

@@ -3,6 +3,12 @@
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
 
+void SaveProgressAsync(const WorkItem* item, unsigned threadIndex)
+{
+    Achievements* achievementHandler = reinterpret_cast<Achievements*>(item->aux_);
+    achievementHandler->SaveProgress();
+}
+
 /// Construct.
 Achievements::Achievements(Context* context) :
     Object(context),
@@ -137,6 +143,8 @@ void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Achievements::LoadAchievementList()
 {
+    LoadProgress();
+
     JSONFile configFile(context_);
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
@@ -167,6 +175,18 @@ void Achievements::LoadAchievementList()
                 rule.threshold = threshold;
                 rule.current = 0;
                 rule.completed = false;
+
+                // Check current achievement saved progress
+                StringHash id = rule.eventName + rule.message;
+                if (_progress.Contains(id.ToString())) {
+                    rule.current = _progress[id.ToString()];
+
+                    // Check if achievement was already unlocked
+                    if (rule.current >= rule.threshold) {
+                        rule.completed = true;
+                        URHO3D_LOGINFO("Achievement '" + rule.message + "' already unlocked!");
+                    }
+                }
 
                 if (mapInfo.Contains("ParameterName") && mapInfo["ParameterName"].IsString()
                     && mapInfo.Contains("Value")) {
@@ -203,17 +223,21 @@ void Achievements::LoadAchievementList()
 
 void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& eventData)
 {
+    bool processed = false;
     if (_registeredAchievements.Contains(eventType)) {
         for (auto it = _registeredAchievements[eventType].Begin(); it != _registeredAchievements[eventType].End(); ++it) {
             if ((*it).deepCheck) {
                 // check if the event contains specified parameter and same value
                 if (eventData[(*it).parameterName] == (*it).parameterValue) {
                     (*it).current++;
+                    processed = true;
                 }
             } else {
                 // No additional check needed, event was called, so we can increment our counter
                 (*it).current++;
+                processed = true;
             }
+
             URHO3D_LOGINFOF("Achievement progress: '%s' => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
             if ((*it).current >= (*it).threshold && !(*it).completed) {
                 (*it).completed = true;
@@ -223,6 +247,21 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
                 SendEvent(MyEvents::E_NEW_ACHIEVEMENT, data);
             }
         }
+    }
+
+    // If any of the achievements were updated, save progress
+    if (processed) {
+        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+        SharedPtr<WorkItem> item = workQueue->GetFreeItem();
+        item->priority_ = M_MAX_UNSIGNED;
+        item->workFunction_ = SaveProgressAsync;
+        item->aux_ = this;
+        // send E_WORKITEMCOMPLETED event after finishing WorkItem
+        item->sendEvent_ = true;
+
+        item->start_ = nullptr;
+        item->end_ = nullptr;
+        workQueue->AddWorkItem(item);
     }
 }
 
@@ -236,4 +275,30 @@ List<AchievementRule> Achievements::GetAchievements()
     }
 
     return _achievements;
+}
+
+void Achievements::SaveProgress()
+{
+    JSONFile file(context_);
+    for (auto it = _registeredAchievements.Begin(); it != _registeredAchievements.End(); ++it) {
+        for (auto achievement = (*it).second_.Begin(); achievement != (*it).second_.End(); ++achievement) {
+            StringHash id = (*achievement).eventName + (*achievement).message;
+            file.GetRoot()[id.ToString()] = (*achievement).current;
+        }
+    }
+    file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
+
+    URHO3D_LOGINFO("Achievement progress saving done!");
+}
+
+void Achievements::LoadProgress()
+{
+    JSONFile configFile(context_);
+    configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
+    JSONValue value = configFile.GetRoot();
+    if (value.IsObject()) {
+        for (auto it = value.Begin(); it != value.End(); ++it) {
+            _progress[(*it).first_] = (*it).second_.GetInt();
+        }
+    }
 }

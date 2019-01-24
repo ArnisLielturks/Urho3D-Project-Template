@@ -26,6 +26,7 @@ void Notifications::SubscribeToEvents()
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)
 {
+    float fontSize = 12.0f;
     auto* cache = GetSubsystem<ResourceCache>();
 
     String message = eventData["Message"].GetString();
@@ -33,12 +34,12 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
     // Set String to display
     messageElement->SetText(message);
-    messageElement->SetTextEffect(TextEffect::TE_SHADOW);
+    messageElement->SetTextEffect(TextEffect::TE_STROKE);
     messageElement->SetStyleAuto();
 
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
     messageElement->SetColor(Color(0.0f, 1.0f, 0.0f));
-    messageElement->SetFont(font, 12);
+    messageElement->SetFont(font, fontSize);
 
     // Align Text center-screen
     messageElement->SetHorizontalAlignment(HA_RIGHT);
@@ -57,13 +58,21 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     positionAnimation->SetKeyFrame(4.0f, IntVector2(-10, -500));
     notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
+    SharedPtr<ValueAnimation> opacityAnimation(new ValueAnimation(context_));
+    opacityAnimation->SetKeyFrame(0.0f, 0.0f);
+    opacityAnimation->SetKeyFrame(0.2f, 1.0f);
+    opacityAnimation->SetKeyFrame(3.0f, 1.0f);
+    opacityAnimation->SetKeyFrame(3.2f, 0.0f);
+    opacityAnimation->SetKeyFrame(10.0f, 0.0f);
+    notificationAnimation->AddAttributeAnimation("Opacity", opacityAnimation);
+
     SharedPtr<ValueAnimation> scaleAnimation(new ValueAnimation(context_));
     scaleAnimation->SetKeyFrame(0.0f, 0.0f);
-    scaleAnimation->SetKeyFrame(0.5f, 1.0f);
-    scaleAnimation->SetKeyFrame(3.0f, 1.0f);
-    scaleAnimation->SetKeyFrame(3.5f, 0.0f);
+    scaleAnimation->SetKeyFrame(0.2f, fontSize);
+    scaleAnimation->SetKeyFrame(3.0f, fontSize);
+    scaleAnimation->SetKeyFrame(3.2f, 0.0f);
     scaleAnimation->SetKeyFrame(10.0f, 0.0f);
-    notificationAnimation->AddAttributeAnimation("Opacity", scaleAnimation);
+    notificationAnimation->AddAttributeAnimation("Font Size", scaleAnimation);
 
     messageElement->SetObjectAnimation(notificationAnimation);
     messageElement->SetVar("Lifetime", 4.0f);

@@ -8,6 +8,7 @@ enum SettingTabs {
     AUDIO,
     CONTROLS,
     CONTROLLERS,
+    GAME,
     MISC
 };
 
@@ -91,6 +92,11 @@ private:
      * Create video settings view
      */
     void CreateVideoTab();
+
+    /**
+     * Create game settings tab
+     */
+    void CreateGameTab();
 
     /**
      * Create miscellaneous settings view

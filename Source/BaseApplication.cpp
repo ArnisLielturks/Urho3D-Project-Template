@@ -57,18 +57,6 @@ void BaseApplication::Start()
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
-    // Switch level
-    // Reattempt reading the command line from the resource system now if not read before
-    // Note that the engine can not be reconfigured at this point; only the script name can be specified
-    if (GetArguments().Empty()) {
-        SharedPtr<File> commandFile = GetSubsystem<ResourceCache>()->GetFile("CommandLine.txt", false);
-        if (commandFile) {
-            String commandLine = commandFile->ReadLine();
-            commandFile->Close();
-            ParseArguments(commandLine, false);
-        }
-    }
-
     SubscribeToEvents();
 
     GetSubsystem<FileSystem>()->SetExecuteConsoleCommands(false);

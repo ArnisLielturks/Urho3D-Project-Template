@@ -170,5 +170,21 @@
   "TUTORIAL":{
     "EN": "ESC - pause menu\nTAB - scoreboard\nF2 - toggle console",
     "LV": "ESC - pauzes menu\nTAB - rezultātu logs\nF2 - ieslēgt/izslēgt konsoles logu"
+  },
+  "CLEAR_ACHIEVEMENTS":{
+    "EN": "Clear achievements",
+    "LV": "Notīrīt sasniegumus"
+  },
+  "GAME":{
+    "EN": "Game",
+    "LV": "Spēle"
+  },
+  "MISC":{
+    "EN": "Misc",
+    "LV": "Dažādi"
+  },
+  "LANGUAGE":{
+    "EN": "Language",
+    "LV": "Valoda"
   }
 }

@@ -302,3 +302,15 @@ void Achievements::LoadProgress()
         }
     }
 }
+
+void Achievements::ClearAchievementsProgress()
+{
+    for (auto it = _registeredAchievements.Begin(); it != _registeredAchievements.End(); ++it) {
+        for (auto achievement = (*it).second_.Begin(); achievement != (*it).second_.End(); ++achievement) {
+            achievement->current = 0;
+            achievement->completed = false;
+        }
+    }
+
+    SaveProgress();
+}

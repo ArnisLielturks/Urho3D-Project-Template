@@ -10,4 +10,4 @@ static const unsigned CTRL_ACTION = 1 << 6;
 static const unsigned CTRL_SPRINT = 1 << 7;
 static const unsigned CTRL_UP = 1 << 8;
 
-static String APPLICATION_FONT = "Fonts/ABeeZee-Regular.ttf";
+static String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";

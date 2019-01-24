@@ -33,7 +33,7 @@ void Start()
 
     log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
 
-    // DelayedExecute(1.0, false, "void PlaySound()");
+    DelayedExecute(5.0, true, "void ShowNotitification()");
 }
 
 void HandleLevelChangingStarted(StringHash eventType, VariantMap& eventData)
@@ -47,24 +47,13 @@ void HandleLevelChangingFinished(StringHash eventType, VariantMap& eventData)
     String from = eventData["From"].GetString();
     String to = eventData["To"].GetString();
 }
-// void PlaySound()
-// {
-//     VariantMap data;
-//     // data["Index"] = 0;
-//     // data["Type"] = "Music";
-//     // SendEvent("PlaySound", data);
 
-//     data["Index"] = 1;
-//     data["Type"] = "Music";
-//     SendEvent("PlaySound", data);
-
-//     data["Index"] = 2;
-//     data["Type"] = "Effect";
-//     //data["SoundFile"] = "Sounds/PlayerFistHit.wav";
-//     SendEvent("PlaySound", data);
-
-//     // DelayedExecute(10.0, false, "void StopSound()");
-// }
+void ShowNotitification()
+{
+    VariantMap data;
+    data["Message"] = "Uptime seconds: " + String(time.elapsedTime);
+    SendEvent("ShowNotification", data);
+}
 
 // void StopSound()
 // {
@@ -176,7 +165,7 @@ void CreateScriptName(String name, int index)
     helloText.text = name;
 
     // Set font and text color
-    helloText.SetFont(cache.GetResource("Font", "Fonts/ABeeZee-Regular.ttf"), fontSize);
+    helloText.SetFont(cache.GetResource("Font", "Fonts/Muli-Regular.ttf"), fontSize);
     helloText.color = Color(0.0f, 0.8f, 0.0f);
 
     // Align Text center-screen

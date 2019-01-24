@@ -4,6 +4,7 @@
 #include "../../Input/ControllerInput.h"
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
+#include "../../Messages/Achievements.h"
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
@@ -92,10 +93,14 @@ void SettingsWindow::Create()
     SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(VIDEO);
     });
-//	_tabs[MISC] = CreateTabButton("Misc");
-//	SubscribeToEvent(_tabs[MISC], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-//		ChangeTab(MISC);
-//	});
+    _tabs[GAME] = CreateTabButton(localization->Get("GAME"));
+    SubscribeToEvent(_tabs[GAME], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        ChangeTab(GAME);
+    });
+	_tabs[MISC] = CreateTabButton(localization->Get("MISC"));
+	SubscribeToEvent(_tabs[MISC], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+		ChangeTab(MISC);
+	});
 
     ChangeTab(CONTROLS);
 }
@@ -124,6 +129,9 @@ void SettingsWindow::ChangeTab(SettingTabs tab)
             break;
         case VIDEO:
             CreateVideoTab();
+            break;
+        case GAME:
+            CreateGameTab();
             break;
         case MISC:
             CreateMiscTab();
@@ -535,16 +543,43 @@ void SettingsWindow::CreateVideoTab()
     });
 }
 
+void SettingsWindow::CreateGameTab()
+{
+    auto* localization = GetSubsystem<Localization>();
+
+    CreateSingleLine();
+    Vector<String> languages;
+    for (unsigned int i = 0; i < localization->GetNumLanguages(); i++) {
+        languages.Push(localization->GetLanguage(i));
+    }
+
+    auto languageMenu = CreateMenu(localization->Get("LANGUAGE"), languages);
+    languageMenu->SetSelection(languages.IndexOf(GetGlobalVar("Language").GetString()));
+    SubscribeToEvent(languageMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace ItemSelected;
+        int selection = eventData[P_SELECTION].GetInt();
+
+        auto* localization = GetSubsystem<Localization>();
+        Vector<String> languages;
+        for (unsigned int i = 0; i < localization->GetNumLanguages(); i++) {
+            languages.Push(localization->GetLanguage(i));
+        }
+
+        GetSubsystem<ConfigManager>()->Set("engine", "Language", languages.At(selection));
+        GetSubsystem<ConfigManager>()->Save(true);
+
+        //TODO - apply settings directly, reload view or just show the pop-up message?
+    });
+}
+
 void SettingsWindow::CreateMiscTab()
 {
     auto* localization = GetSubsystem<Localization>();
-    // Fullscreen
+
     CreateSingleLine();
-    auto enableMods = CreateCheckbox(localization->Get("ENABLE_MODS"));
-    enableMods->SetChecked(true);
-    SubscribeToEvent(enableMods, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
+    auto clearAchievementsButton = CreateButton(localization->Get("CLEAR_ACHIEVEMENTS"));
+    SubscribeToEvent(clearAchievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        GetSubsystem<Achievements>()->ClearAchievementsProgress();
     });
 }
 

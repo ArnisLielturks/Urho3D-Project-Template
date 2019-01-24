@@ -68,6 +68,11 @@ public:
      */
     List<AchievementRule> GetAchievements();
 
+    /**
+     * Clear current progress of achievements
+     */
+    void ClearAchievementsProgress();
+
 private:
     friend void SaveProgressAsync(const WorkItem* item, unsigned threadIndex);
 

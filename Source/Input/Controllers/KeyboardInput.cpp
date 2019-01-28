@@ -32,6 +32,15 @@ void KeyboardInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 	using namespace KeyDown;
 	int key = eventData[P_KEY].GetInt();
 
+    if (key == KEY_F9) {
+        Graphics* graphics = GetSubsystem<Graphics>();
+        Image screenshot(context_);
+        graphics->TakeScreenShot(screenshot);
+        // Here we save in the Data folder with date and time appended
+        screenshot.SavePNG(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Screenshot_" +
+        Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_') + ".png");
+        return;
+    }
 	if (key == KEY_ESCAPE && _activeAction > 0) {
 		GetSubsystem<ControllerInput>()->StopInputMapping();
 		_activeAction = 0;

@@ -50,7 +50,7 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     UnsubscribeFromEvent(E_ASYNCLOADFINISHED);
 
     auto* cache = GetSubsystem<ResourceCache>();
-    const unsigned NUM_OBJECTS = 10000;
+    const unsigned NUM_OBJECTS = 0;
     for (unsigned i = 0; i < NUM_OBJECTS; ++i)
     {
         Node* mushroomNode = _activeScene->CreateChild("Mushroom");

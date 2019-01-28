@@ -145,4 +145,9 @@ namespace MyEvents
 	{
 		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
 	}
+
+    // Video settings changed event
+    URHO3D_EVENT(E_VIDEO_SETTINGS_CHANGED, VideoSettingsChanged)
+    {
+    }
 }

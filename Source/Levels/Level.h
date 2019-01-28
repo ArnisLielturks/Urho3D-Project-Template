@@ -39,6 +39,8 @@ namespace Levels {
         void HandleControllerConnected(StringHash eventType, VariantMap& eventData);
         void HandleControllerDisconnected(StringHash eventType, VariantMap& eventData);
 
+        void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
+
         WeakPtr<Node> _characterCameraNode;
 
         bool _showScoreboard;
@@ -47,5 +49,7 @@ namespace Levels {
         * Player variables
         */
         HashMap<int, SharedPtr<Node>> _players;
+
+        SharedPtr<SplinePath> _path;
     };
 }

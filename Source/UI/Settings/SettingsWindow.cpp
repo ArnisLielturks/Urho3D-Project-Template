@@ -628,6 +628,8 @@ void SettingsWindow::SaveVideoSettings()
     GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode);
     GetSubsystem<ConfigManager>()->Set("engine", "MultiSample", _graphicsSettingsNew.multisample);
     GetSubsystem<ConfigManager>()->Save(true);
+
+    SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
 }
 
 void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)

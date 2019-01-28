@@ -40,5 +40,8 @@ private:
     /**
      * List of all active messages
      */
-    List<WeakPtr<Text>> _messages;
+    Vector<SharedPtr<Text>> _messages;
+    SharedPtr<ObjectAnimation> notificationAnimation;
+    SharedPtr<ValueAnimation> positionAnimation;
+    SharedPtr<ValueAnimation> opacityAnimation;
 };

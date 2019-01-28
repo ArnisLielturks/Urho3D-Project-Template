@@ -24,6 +24,14 @@ Level::~Level()
 
 void Level::Init()
 {
+    if (!scene_) {
+        // There is no scene, get back to the main menu
+        VariantMap& eventData = GetEventDataMap();
+        eventData["Name"] = "MainMenu";
+        SendEvent(MyEvents::E_SET_LEVEL, eventData);
+
+        return;
+    }
     // Enable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(true);
 
@@ -51,6 +59,9 @@ void Level::Init()
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
+
+    Node* movableNode = scene_->GetChild("PathNode");
+    _path = movableNode->GetComponent<SplinePath>();
 }
 
 void Level::StartAudio()
@@ -109,6 +120,8 @@ void Level::SubscribeToEvents()
 
     SubscribeToEvent(MyEvents::E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
     SubscribeToEvent(MyEvents::E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
+
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
 }
 
 void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
@@ -194,6 +207,9 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 
     using namespace PostUpdate;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
+    if (_path) {
+        _path->Move(timeStep);
+    }
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
         int playerId = (*it).first_;
@@ -258,4 +274,11 @@ void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
         }
         Run();
     }
+}
+
+void Level::HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData)
+{
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    InitViewports(controlIndexes);
 }

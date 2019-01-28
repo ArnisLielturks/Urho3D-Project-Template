@@ -182,15 +182,15 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
-        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA2.xml"));
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
         // Make the bloom mixing parameter more pronounced
         //effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 0.1);
 //        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
 //        effectRenderPath->SetEnabled("BloomHDR", GetGlobalVar("BloomHDR").GetBool());
 //        effectRenderPath->SetEnabled("FXAA3", GetGlobalVar("FXAA3").GetBool());
-        effectRenderPath->SetEnabled("AutoExposure", true);
-        effectRenderPath->SetEnabled("Bloom", true);
-        effectRenderPath->SetEnabled("FXAA2", true);
+        effectRenderPath->SetEnabled("AutoExposure", false);
+        effectRenderPath->SetEnabled("Bloom", false);
+        effectRenderPath->SetEnabled("FXAA3", true);
         viewport->SetRenderPath(effectRenderPath);
 
         Renderer* renderer = GetSubsystem<Renderer>();

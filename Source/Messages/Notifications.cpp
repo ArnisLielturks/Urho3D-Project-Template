@@ -15,6 +15,29 @@ Notifications::~Notifications()
 void Notifications::Init()
 {
     SubscribeToEvents();
+
+    float fontSize = 12.0f;
+
+    // Create light animation
+    notificationAnimation = new ObjectAnimation(context_);
+
+    // Create light position animation
+    positionAnimation = new ValueAnimation(context_);
+    // Use spline interpolation method
+    positionAnimation->SetInterpolationMethod(IM_SPLINE);
+    // Set spline tension
+    positionAnimation->SetSplineTension(0.7f);
+    positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
+    positionAnimation->SetKeyFrame(4.0f, IntVector2(-10, -500));
+    notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
+
+    opacityAnimation = new ValueAnimation(context_);
+    opacityAnimation->SetKeyFrame(0.0f, 0.0f);
+    opacityAnimation->SetKeyFrame(0.2f, 1.0f);
+    opacityAnimation->SetKeyFrame(3.0f, 1.0f);
+    opacityAnimation->SetKeyFrame(3.2f, 0.0f);
+    opacityAnimation->SetKeyFrame(10.0f, 0.0f);
+    notificationAnimation->AddAttributeAnimation("Opacity", opacityAnimation);
 }
 
 void Notifications::SubscribeToEvents()
@@ -31,7 +54,7 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
 
     String message = eventData["Message"].GetString();
     // Construct new Text object
-    WeakPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
+    SharedPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
     // Set String to display
     messageElement->SetText(message);
     messageElement->SetTextEffect(TextEffect::TE_STROKE);
@@ -44,35 +67,6 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     // Align Text center-screen
     messageElement->SetHorizontalAlignment(HA_RIGHT);
     messageElement->SetVerticalAlignment(VA_BOTTOM);
-
-    // Create light animation
-    SharedPtr<ObjectAnimation> notificationAnimation(new ObjectAnimation(context_));
-
-    // Create light position animation
-    SharedPtr<ValueAnimation> positionAnimation(new ValueAnimation(context_));
-    // Use spline interpolation method
-    positionAnimation->SetInterpolationMethod(IM_SPLINE);
-    // Set spline tension
-    positionAnimation->SetSplineTension(0.7f);
-    positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
-    positionAnimation->SetKeyFrame(4.0f, IntVector2(-10, -500));
-    notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
-
-    SharedPtr<ValueAnimation> opacityAnimation(new ValueAnimation(context_));
-    opacityAnimation->SetKeyFrame(0.0f, 0.0f);
-    opacityAnimation->SetKeyFrame(0.2f, 1.0f);
-    opacityAnimation->SetKeyFrame(3.0f, 1.0f);
-    opacityAnimation->SetKeyFrame(3.2f, 0.0f);
-    opacityAnimation->SetKeyFrame(10.0f, 0.0f);
-    notificationAnimation->AddAttributeAnimation("Opacity", opacityAnimation);
-
-    SharedPtr<ValueAnimation> scaleAnimation(new ValueAnimation(context_));
-    scaleAnimation->SetKeyFrame(0.0f, 0.0f);
-    scaleAnimation->SetKeyFrame(0.2f, fontSize);
-    scaleAnimation->SetKeyFrame(3.0f, fontSize);
-    scaleAnimation->SetKeyFrame(3.2f, 0.0f);
-    scaleAnimation->SetKeyFrame(10.0f, 0.0f);
-    notificationAnimation->AddAttributeAnimation("Font Size", scaleAnimation);
 
     messageElement->SetObjectAnimation(notificationAnimation);
     messageElement->SetVar("Lifetime", 4.0f);

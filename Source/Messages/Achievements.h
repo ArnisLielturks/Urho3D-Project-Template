@@ -91,6 +91,17 @@ private:
      */
     void HandleNewAchievement(StringHash eventType, VariantMap& eventData);
 
+    void HandleAddAchievement(StringHash eventType, VariantMap& eventData);
+
+    void AddAchievement(
+        String message, 
+        String eventName, 
+        String image, 
+        int threshold, 
+        String parameterName = String::EMPTY, 
+        Variant parameterValue = Variant::EMPTY
+    );
+
     /**
      * Update SingleAchievement statuses
      */

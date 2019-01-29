@@ -32,6 +32,9 @@ void Level::Init()
 
         return;
     }
+
+    auto listener = scene_->CreateComponent<SoundListener>();
+    GetSubsystem<Audio>()->SetListener(listener);
     // Enable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(true);
 
@@ -49,7 +52,7 @@ void Level::Init()
     CreateUI();
 
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        _players[(*it)] = scene_->CreateChild();
+        _players[(*it)] = CreateControllableObject();
     }
 
     // Subscribe to global events for camera movement
@@ -73,12 +76,12 @@ void Level::StartAudio()
     data[P_TYPE] = SOUND_AMBIENT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
 
-    auto node = scene_->GetChild("Radio", true);
+    /*auto node = scene_->GetChild("Radio", true);
     if (node) {
         auto soundSource = GetSubsystem<AudioManager>()->AddEffectToNode(node, SOUND_EFFECTS::HIT);
         soundSource->SetFarDistance(10);
         soundSource->GetSound()->SetLooped(true);
-    }
+    }*/
 }
 
 void Level::StopAllAudio()
@@ -137,7 +140,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     data["Message"] = "New controller connected!";
     SendEvent("ShowNotification", data);
 
-    _players[controllerIndex] = new Node(context_);
+    _players[controllerIndex] = CreateControllableObject();
 }
 
 void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& eventData)
@@ -146,6 +149,7 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
     int controllerIndex = eventData[P_INDEX].GetInt();
 
     if (controllerIndex > 0) {
+        _playerLabels.Erase(_players[controllerIndex]);
         _players.Erase(controllerIndex);
     }
     auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -179,22 +183,38 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
         int playerId = (*it).first_;
+        if (!_players.Contains(playerId)) {
+            continue;
+        }
 
         // Movement speed as world units per second
-        float MOVE_SPEED = 2.0f;
+        float MOVE_TORQUE = 20.0f;
         Controls controls = GetSubsystem<ControllerInput>()->GetControls(playerId);
-        if (controls.IsDown(CTRL_SPRINT))
-            MOVE_SPEED = 10.0f;
-        if (controls.IsDown(CTRL_FORWARD))
-            _cameras[playerId]->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_BACK))
-            _cameras[playerId]->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_LEFT))
-            _cameras[playerId]->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_RIGHT))
-            _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_UP))
-            _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_SPRINT)) {
+            MOVE_TORQUE = 40.0f;
+        }
+        auto* body = _players[playerId]->GetComponent<RigidBody>();
+        // Torque is relative to the forward vector
+        Quaternion rotation(0.0f, controls.yaw_, 0.0f);
+        if (controls.IsDown(CTRL_FORWARD)) {
+            body->ApplyTorque(rotation * Vector3::RIGHT * MOVE_TORQUE);
+         //   _cameras[playerId]->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+        }
+        if (controls.IsDown(CTRL_BACK)) {
+            body->ApplyTorque(rotation * Vector3::LEFT * MOVE_TORQUE);
+            //_cameras[playerId]->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+        }
+        if (controls.IsDown(CTRL_LEFT)) {
+            body->ApplyTorque(rotation * Vector3::FORWARD * MOVE_TORQUE);
+            //_cameras[playerId]->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+        }
+        if (controls.IsDown(CTRL_RIGHT)) {
+            body->ApplyTorque(rotation * Vector3::BACK * MOVE_TORQUE);
+           // _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+        }
+        if (controls.IsDown(CTRL_UP)) {
+           // _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+        }
     }
 }
 
@@ -209,6 +229,9 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     if (_path) {
         _path->Move(timeStep);
+        if (_path->IsFinished()) {
+            _path->Reset();
+        }
     }
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
@@ -217,8 +240,17 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         Controls controls = controllerInput->GetControls((*it).first_);
         if (_cameras[playerId]) {
             //_cameras[playerId]->SetWorldPosition(playerNode->GetWorldPosition() + Vector3::UP * 0.1);
-            _cameras[playerId]->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+            Quaternion rotation(controls.pitch_, controls.yaw_, 0.0f);
+            _cameras[playerId]->SetRotation(rotation);
+            const float CAMERA_DISTANCE = 3.0f;
+
+            // Move camera some distance away from the ball
+            _cameras[playerId]->SetPosition(_players[playerId]->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * CAMERA_DISTANCE);
         }
+    }
+
+    for (auto it = _playerLabels.Begin(); it != _playerLabels.End(); ++it) {
+        (*it).second_->SetPosition((*it).first_->GetPosition() + Vector3::UP * 0.2);
     }
 }
 
@@ -281,4 +313,46 @@ void Level::HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventDa
     auto* controllerInput = GetSubsystem<ControllerInput>();
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
+}
+
+Node* Level::CreateControllableObject()
+{
+    auto* cache = GetSubsystem<ResourceCache>();
+
+    // Create the scene node & visual representation. This will be a replicated object
+    Node* ballNode = scene_->CreateChild("Ball");
+    ballNode->SetPosition(Vector3(0, 2, 0));
+    ballNode->SetScale(0.5f);
+    auto* ballObject = ballNode->CreateComponent<StaticModel>();
+    ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
+    ballObject->SetMaterial(cache->GetResource<Material>("Materials/Stone.xml"));
+    ballObject->SetCastShadows(true);
+
+    // Create the physics components
+    auto* body = ballNode->CreateComponent<RigidBody>();
+    body->SetMass(5.0f);
+    body->SetFriction(2.0f);
+    // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
+    body->SetLinearDamping(0.8f);
+    body->SetAngularDamping(0.8f);
+    auto* shape = ballNode->CreateComponent<CollisionShape>();
+    shape->SetSphere(1.0f);
+
+    // Create a random colored point light at the ball so that can see better where is going
+    auto* light = ballNode->CreateComponent<Light>();
+    light->SetRange(5.0f);
+    light->SetColor(Color(0.5f + Random(0.5f), 0.5f + Random(0.5f), 0.5f + Random(0.5f)));
+    light->SetCastShadows(false);
+
+    _playerLabels[ballNode] = scene_->CreateChild("Label");
+
+    auto text3D = _playerLabels[ballNode]->CreateComponent<Text3D>();
+    text3D->SetText("Player " + String(_players.Size()));
+    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+    text3D->SetColor(Color::GRAY);
+    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+    text3D->SetViewMask(~(1 << _players.Size()));
+
+    return ballNode;
 }

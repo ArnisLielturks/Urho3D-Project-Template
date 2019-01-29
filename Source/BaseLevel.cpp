@@ -7,7 +7,6 @@ Object(context)
 {
     SubscribeToBaseEvents();
     scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
-    GetSubsystem<Script>()->SetDefaultScene(scene_);
     SetGlobalVar("CameraFov", 80);
 }
 
@@ -176,7 +175,11 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         camera->SetNearClip(0.1f);
         camera->SetFov(GetGlobalVar("CameraFov").GetFloat());
         cameraNode->CreateComponent<SoundListener>();
+        camera->SetViewMask(1 << i);
+
+        //TODO only the last camera will be the sound listener
         GetSubsystem<Audio>()->SetListener(cameraNode->GetComponent<SoundListener>());
+        //GetSubsystem<Audio>()->SetListener(nullptr);
 
         SharedPtr<Viewport> viewport(new Viewport(context_, scene_, camera, rects[i]));
         SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
@@ -195,6 +198,7 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
 
         Renderer* renderer = GetSubsystem<Renderer>();
         renderer->SetViewport(i, viewport);
+
 
         _viewports[playerIndexes[i]] = viewport;
         _cameras[playerIndexes[i]] = cameraNode;

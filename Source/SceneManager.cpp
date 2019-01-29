@@ -29,7 +29,7 @@ void SceneManager::LoadScene(const String& filename)
 void SceneManager::HandleAsyncSceneLoadingProgress(StringHash eventType, VariantMap& eventData)
 {
     using namespace  AsyncLoadProgress;
-    progress = eventData[P_PROGRESS].GetFloat();
+    //progress = eventData[P_PROGRESS].GetFloat();
     int nodesLoaded = eventData[P_LOADEDNODES].GetInt();
     int totalNodes = eventData[P_TOTALNODES].GetInt();
     int resourcesLoaded = eventData[P_LOADEDRESOURCES].GetInt();
@@ -45,23 +45,21 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     // Imitate slower loading
     progress = 0.0f;
 
+    _activeScene->SetUpdateEnabled(false);
+
+    GetSubsystem<Script>()->SetDefaultScene(_activeScene);
+
     _loadingStatus = "Creating objects";
     UnsubscribeFromEvent(E_ASYNCLOADPROGRESS);
     UnsubscribeFromEvent(E_ASYNCLOADFINISHED);
 
     auto* cache = GetSubsystem<ResourceCache>();
-    const unsigned NUM_OBJECTS = 0;
+    const unsigned NUM_OBJECTS = 10;
     for (unsigned i = 0; i < NUM_OBJECTS; ++i)
     {
-        Node* mushroomNode = _activeScene->CreateChild("Mushroom");
-        mushroomNode->SetPosition(Vector3(Random(200.0f) - 45.0f, 0.0f, Random(200.0f) - 100.0f));
-        mushroomNode->SetRotation(Quaternion(0.0f, Random(360.0f), 0.0f));
-        mushroomNode->SetScale(0.1f + Random(1.0f));
-        auto* mushroomObject = mushroomNode->CreateComponent<StaticModel>();
-        mushroomObject->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
-        mushroomObject->SetMaterial(cache->GetResource<Material>("Materials/Stone.xml"));
     }
 
+    _activeScene->SetUpdateEnabled(true);
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(SceneManager, HandleUpdate));
     URHO3D_LOGINFO("Scene loaded: " + _activeScene->GetFileName());
 }
@@ -71,7 +69,7 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     static int index = 0;
 
     // Imitate slower loading with multiple loading steps
-    if (_timer.GetMSec(false) > 1000) {
+    if (_timer.GetMSec(false) > 300) {
         static const char *Messages[] = {
             "Smelling flowers",
             "Improving CPU skills",
@@ -90,7 +88,7 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 
     using namespace Update;
-    progress += eventData[P_TIMESTEP].GetFloat() / 15.0f;
+    progress += eventData[P_TIMESTEP].GetFloat() / 2.f;
     if (progress >= 1.0f) {
         progress = 1.0f;
     }

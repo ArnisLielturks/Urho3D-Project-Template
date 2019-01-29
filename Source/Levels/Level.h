@@ -41,7 +41,7 @@ namespace Levels {
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
 
-        WeakPtr<Node> _characterCameraNode;
+        Node* CreateControllableObject();
 
         bool _showScoreboard;
 
@@ -51,5 +51,7 @@ namespace Levels {
         HashMap<int, SharedPtr<Node>> _players;
 
         SharedPtr<SplinePath> _path;
+
+        HashMap<Node*, SharedPtr<Node>> _playerLabels;
     };
 }

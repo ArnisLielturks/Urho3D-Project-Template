@@ -37,6 +37,7 @@ void Achievements::Init()
 void Achievements::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_NEW_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleNewAchievement));
+    SubscribeToEvent(MyEvents::E_ADD_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleAddAchievement));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Achievements, HandleUpdate));
 }
 
@@ -165,51 +166,27 @@ void Achievements::LoadAchievementList()
                 String eventName = mapInfo["Event"].GetString();
                 String image = mapInfo["Image"].GetString();
                 String message = mapInfo["Message"].GetString();
-                String type = mapInfo["Type"].GetString();
                 int threshold = mapInfo["Threshold"].GetInt();
+                String parameterName;
+                Variant parameterValue;
 
-                AchievementRule rule;
-                rule.message = message;
-                rule.eventName = eventName;
-                rule.image = image;
-                rule.threshold = threshold;
-                rule.current = 0;
-                rule.completed = false;
-
-                // Check current achievement saved progress
-                StringHash id = rule.eventName + rule.message;
-                if (_progress.Contains(id.ToString())) {
-                    rule.current = _progress[id.ToString()];
-
-                    // Check if achievement was already unlocked
-                    if (rule.current >= rule.threshold) {
-                        rule.completed = true;
-                        URHO3D_LOGINFO("Achievement '" + rule.message + "' already unlocked!");
-                    }
-                }
-
-                if (mapInfo.Contains("ParameterName") && mapInfo["ParameterName"].IsString()
-                    && mapInfo.Contains("Value")) {
-                    rule.parameterName = mapInfo["ParameterName"].GetString();
+                if (mapInfo.Contains("ParameterName") && mapInfo["ParameterName"].IsString() && mapInfo.Contains("Value")) {
+                    parameterName = mapInfo["ParameterName"].GetString();
                     switch (mapInfo["Value"].GetValueType()) {
-                        case JSONValueType::JSON_BOOL:
-                            rule.parameterValue = mapInfo["Value"].GetBool();
-                            break;
-                        case JSONValueType::JSON_NUMBER:
-                            rule.parameterValue = mapInfo["Value"].GetInt();
-                            break;
-                        case JSONValueType::JSON_STRING:
-                            rule.parameterValue = mapInfo["Value"].GetString();
-                            break;
+                    case JSONValueType::JSON_BOOL:
+                        parameterValue = mapInfo["Value"].GetBool();
+                        break;
+                    case JSONValueType::JSON_NUMBER:
+                        parameterValue = mapInfo["Value"].GetInt();
+                        break;
+                    case JSONValueType::JSON_STRING:
+                        parameterValue = mapInfo["Value"].GetString();
+                        break;
                     }
-                    rule.deepCheck = true;
-                } else {
-                    rule.deepCheck = false;
                 }
 
-                _registeredAchievements[eventName].Push(rule);
-
-                SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
+                AddAchievement(message, eventName, image, threshold, parameterName, parameterValue);
+                
             }
             else {
                 URHO3D_LOGINFOF("Achievement array element doesnt contain all needed info! Index: %u", i);
@@ -313,4 +290,66 @@ void Achievements::ClearAchievementsProgress()
     }
 
     SaveProgress();
+}
+
+void Achievements::AddAchievement(String message, 
+    String eventName, 
+    String image, 
+    int threshold, 
+    String parameterName, 
+    Variant parameterValue
+)
+{
+    AchievementRule rule;
+    rule.message = message;
+    rule.eventName = eventName;
+    rule.image = image;
+    rule.threshold = threshold;
+    rule.current = 0;
+    rule.completed = false; 
+    if (!parameterName.Empty() && !parameterValue.IsEmpty()) {
+        rule.deepCheck = true;
+    }
+    else {
+        rule.deepCheck = false;
+    }
+    rule.parameterName = parameterName;
+    rule.parameterValue = parameterValue;
+
+    // Check current achievement saved progress
+    StringHash id = rule.eventName + rule.message;
+    if (_progress.Contains(id.ToString())) {
+        rule.current = _progress[id.ToString()];
+
+        // Check if achievement was already unlocked
+        if (rule.current >= rule.threshold) {
+            rule.completed = true;
+            URHO3D_LOGINFO("Achievement '" + rule.message + "' already unlocked!");
+        }
+    }    
+
+    _registeredAchievements[eventName].Push(rule);
+
+    URHO3D_LOGINFOF("Registering achievement [%s]", rule.message.CString());
+
+    SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
+}
+
+void Achievements::HandleAddAchievement(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::AddAchievement;
+    if (eventData.Contains(P_EVENT)
+        && eventData.Contains(P_MESSAGE)
+        && eventData.Contains(P_IMAGE)
+        && eventData.Contains(P_THRESHOLD)) {
+        AddAchievement(eventData[P_MESSAGE].GetString(),
+            eventData[P_EVENT].GetString(),
+            eventData[P_IMAGE].GetString(),
+            eventData[P_THRESHOLD].GetInt(),
+            eventData[P_PARAMETER_NAME].GetString(),
+            eventData[P_PARAMETER_VALUE]);
+    }
+    else {
+        URHO3D_LOGERRORF("Unable to register achievement [%s], incomplete data provided!", eventData[P_MESSAGE].GetString().CString());
+    }
 }

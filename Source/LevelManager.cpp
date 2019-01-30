@@ -133,6 +133,12 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         fade_window_->SetOpacity(1.0f);
         fade_time_ = MAX_FADE_TIME;
         fade_status_++;
+
+        using namespace MyEvents::LevelChangingInProgress;
+        VariantMap data = GetEventDataMap();
+        data[P_FROM] = previousLevel_;
+        data[P_TO] = currentLevel_;
+        SendEvent(MyEvents::E_LEVEL_CHANGING_IN_PROGRESS, data);
         return;
     }
 

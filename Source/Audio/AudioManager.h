@@ -115,4 +115,6 @@ private:
      * Allow multiple ambient tracks to play
      */
     bool _multipleAmbientTracks;
+
+    HashMap<StringHash, Timer> _effectsTimer;
 };

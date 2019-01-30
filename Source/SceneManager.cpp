@@ -2,6 +2,8 @@
 
 using namespace Urho3D;
 
+static int index = 0;
+
 SceneManager::SceneManager(Context* context) :
         Object(context),
         progress(0)
@@ -18,11 +20,13 @@ void SceneManager::LoadScene(const String& filename)
     _activeScene = new Scene(context_);
     _activeScene->SetAsyncLoadingMs(1);
     _activeScene->LoadAsyncXML(new File(context_, filename, FILE_READ));
-
+    progress = 0.0f;
+    index = 0;
     _loadingStatus = "Loading scene";
     URHO3D_LOGINFO("Scene manager loading scene: " + filename);
 
     SubscribeToEvent(_activeScene, E_ASYNCLOADPROGRESS, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingProgress));
+    SubscribeToEvent(_activeScene, E_ASYNCEXECFINISHED, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingFinished));
     SubscribeToEvent(_activeScene, E_ASYNCLOADFINISHED, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingFinished));
 }
 
@@ -66,7 +70,6 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 
 void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    static int index = 0;
 
     // Imitate slower loading with multiple loading steps
     if (_timer.GetMSec(false) > 300) {
@@ -92,4 +95,9 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (progress >= 1.0f) {
         progress = 1.0f;
     }
+}
+
+void SceneManager::ResetProgress()
+{
+    progress = 0.0f;
 }

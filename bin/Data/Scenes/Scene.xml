@@ -5,15 +5,24 @@
 	<attribute name="Smoothing Constant" value="50" />
 	<attribute name="Snap Threshold" value="5" />
 	<attribute name="Elapsed Time" value="0" />
-	<attribute name="Next Replicated Node ID" value="28" />
-	<attribute name="Next Replicated Component ID" value="62" />
-	<attribute name="Next Local Node ID" value="16777224" />
-	<attribute name="Next Local Component ID" value="16777291" />
+	<attribute name="Next Replicated Node ID" value="31" />
+	<attribute name="Next Replicated Component ID" value="76" />
+	<attribute name="Next Local Node ID" value="16777225" />
+	<attribute name="Next Local Component ID" value="16777303" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
 	<component type="DebugRenderer" id="2" />
 	<component type="PhysicsWorld" id="24" />
+	<component type="Zone" id="62">
+		<attribute name="Bounding Box Min" value="-50 -50 -50" />
+		<attribute name="Bounding Box Max" value="50 50 50" />
+		<attribute name="Ambient Color" value="0.3 0.3 0.3 1" />
+		<attribute name="Fog Start" value="10" />
+		<attribute name="Fog End" value="50" />
+		<attribute name="Fog Height Scale" value="7.45" />
+		<attribute name="Height Fog Mode" value="true" />
+	</component>
 	<node id="2">
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Plane" />
@@ -54,6 +63,8 @@
 			<attribute name="Mass" value="1" />
 			<attribute name="Linear Damping" value="1" />
 			<attribute name="Angular Damping" value="1" />
+			<attribute name="Collision Layer" value="4" />
+			<attribute name="Collision Mask" value="253" />
 		</component>
 	</node>
 	<node id="5">
@@ -70,26 +81,6 @@
 			<attribute name="Spot FOV" value="60" />
 			<attribute name="Cast Shadows" value="true" />
 			<attribute name="Depth Constant Bias" value="0.0001" />
-		</component>
-	</node>
-	<node id="6">
-		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="Radio" />
-		<attribute name="Tags" />
-		<attribute name="Position" value="1.42168 2.0943 0.625577" />
-		<attribute name="Rotation" value="0.999947 0 0.0103017 0" />
-		<attribute name="Scale" value="3 0.2 3" />
-		<attribute name="Variables" />
-		<component type="StaticModel" id="7">
-			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;Materials/Stone.xml" />
-			<attribute name="Cast Shadows" value="true" />
-		</component>
-		<component type="CollisionShape" id="47" />
-		<component type="RigidBody" id="48">
-			<attribute name="Physics Rotation" value="0.999947 0 0.0103017 0" />
-			<attribute name="Physics Position" value="1.42168 2.0943 0.625577" />
-			<attribute name="Mass" value="1" />
 		</component>
 	</node>
 	<node id="7">
@@ -159,7 +150,7 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Box" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="6.27242 1 -0.158492" />
+		<attribute name="Position" value="9.45442 1 -13.24" />
 		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
 		<attribute name="Scale" value="0.1 2 0.1" />
 		<attribute name="Variables" />
@@ -173,7 +164,7 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Box" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="-3.48674 1 -0.675557" />
+		<attribute name="Position" value="-16.5682 1 10.9917" />
 		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
 		<attribute name="Scale" value="0.1 2 0.1" />
 		<attribute name="Variables" />
@@ -187,7 +178,7 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Box" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="2.2672 1 2.95407" />
+		<attribute name="Position" value="14.288 1 14.9749" />
 		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
 		<attribute name="Scale" value="0.1 2 0.1" />
 		<attribute name="Variables" />
@@ -201,7 +192,7 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Box" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="0.58331 1 -5.53621" />
+		<attribute name="Position" value="-14.6349 1 -14.1766" />
 		<attribute name="Rotation" value="0.966853 0 -0.255333 0" />
 		<attribute name="Scale" value="0.1 2 0.1" />
 		<attribute name="Variables" />
@@ -246,24 +237,6 @@
 			</attribute>
 		</component>
 	</node>
-	<node id="22">
-		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="" />
-		<attribute name="Tags" />
-		<attribute name="Position" value="2.96945 1.07369 -2.71269" />
-		<attribute name="Rotation" value="1 0 0 0" />
-		<attribute name="Scale" value="1 1 1" />
-		<attribute name="Variables" />
-		<component type="StaticModel" id="33">
-			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;" />
-		</component>
-		<component type="CollisionShape" id="34" />
-		<component type="RigidBody" id="35">
-			<attribute name="Physics Position" value="2.96945 1.07369 -2.71269" />
-			<attribute name="Mass" value="1" />
-		</component>
-	</node>
 	<node id="23">
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="" />
@@ -280,24 +253,6 @@
 		<component type="StaticModel" id="43">
 			<attribute name="Model" value="Model;Models/Box.mdl" />
 			<attribute name="Material" value="Material;Materials/UrhoDecalAlphaMaskTwoSided.xml" />
-		</component>
-	</node>
-	<node id="24">
-		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="" />
-		<attribute name="Tags" />
-		<attribute name="Position" value="4.96945 1.07369 1.78731" />
-		<attribute name="Rotation" value="1 0 0 0" />
-		<attribute name="Scale" value="1 1 1" />
-		<attribute name="Variables" />
-		<component type="StaticModel" id="39">
-			<attribute name="Model" value="Model;Models/Box.mdl" />
-			<attribute name="Material" value="Material;" />
-		</component>
-		<component type="CollisionShape" id="40" />
-		<component type="RigidBody" id="41">
-			<attribute name="Physics Position" value="4.96945 1.07369 1.78731" />
-			<attribute name="Mass" value="1" />
 		</component>
 	</node>
 </scene>

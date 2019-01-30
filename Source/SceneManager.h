@@ -30,6 +30,8 @@ public:
      */
     const String& GetStatusMessage() const { return _loadingStatus; }
 
+    void ResetProgress();
+
 private:
     /**
      * Scene loading in progress

@@ -55,6 +55,7 @@ namespace Levels {
 		CreateSingleLine("INI file parser: @carnalis", 20);
 		CreateSingleLine("Level manager: @artgolf1000", 20);
         CreateSingleLine("Icons: https://game-icons.net", 20);
+        CreateSingleLine("Sounds and music: https://freesound.org", 20);
         CreateSingleLine("", 20);
 		CreateSingleLine("Special thanks to the creators", 30);
         CreateSingleLine("of the Urho3D engine!", 30);

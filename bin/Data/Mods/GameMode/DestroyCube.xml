@@ -1,25 +1,28 @@
 <?xml version="1.0"?>
-<node id="27">
+<node id="29">
 	<attribute name="Is Enabled" value="true" />
-	<attribute name="Name" value="" />
+	<attribute name="Name" value="DestroyCube" />
 	<attribute name="Tags" />
-	<attribute name="Position" value="1.6643 0.464517 1.83798" />
+	<attribute name="Position" value="0.655138 1.60143 -0.481426" />
 	<attribute name="Rotation" value="1 0 0 0" />
 	<attribute name="Scale" value="2 2 2" />
 	<attribute name="Variables" />
-	<component type="StaticModel" id="58">
+	<component type="StaticModel" id="68">
 		<attribute name="Model" value="Model;Models/Box.mdl" />
 		<attribute name="Material" value="Material;Materials/Stone.xml" />
 	</component>
-	<component type="CollisionShape" id="59" />
-	<component type="RigidBody" id="60">
-		<attribute name="Physics Position" value="1.6643 0.464517 1.83798" />
-		<attribute name="Mass" value="1" />
+	<component type="CollisionShape" id="69" />
+	<component type="RigidBody" id="70">
+		<attribute name="Physics Position" value="0.655138 1.60143 -0.481426" />
+		<attribute name="Mass" value="10" />
 		<attribute name="Linear Damping" value="0.5" />
+		<attribute name="Collision Layer" value="4" />
+		<attribute name="Collision Mask" value="253" />
 	</component>
-	<component type="ScriptInstance" id="61">
+	<component type="ScriptInstance" id="71">
 		<attribute name="Delayed Method Calls" value="0" />
 		<attribute name="Script File" value="ScriptFile;Mods/GameMode/Destroyer.as" />
 		<attribute name="Class Name" value="Destroyer" />
+		<attribute name="rotationSpeed" value="0.1 0.2 0.3" />
 	</component>
 </node>

@@ -72,5 +72,11 @@
 		"Image": "Textures/Achievements/trophy-cup.png",
 		"Message": "Unlock 5 achievements",
 		"Threshold": 5
+	},
+	{
+		"Event": "FallOffTheMap",
+		"Image": "Textures/Achievements/falling.png",
+		"Message": "Fall of the map",
+		"Threshold": 1
 	}
 ]

@@ -215,7 +215,7 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
                 processed = true;
             }
 
-            URHO3D_LOGINFOF("Achievement progress: '%s' => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
+            //URHO3D_LOGINFOF("Achievement progress: '%s' => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
             if ((*it).current >= (*it).threshold && !(*it).completed) {
                 (*it).completed = true;
                 VariantMap data = GetEventDataMap();
@@ -265,7 +265,7 @@ void Achievements::SaveProgress()
     }
     file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 
-    URHO3D_LOGINFO("Achievement progress saving done!");
+    //URHO3D_LOGINFO("Achievement progress saving done!");
 }
 
 void Achievements::LoadProgress()

@@ -162,6 +162,8 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
 
     URHO3D_LOGINFOF("Viewpors %i", playerIndexes.Size());
 
+    SetGlobalVar("Players", playerIndexes.Size());
+
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
         // so that it won't be destroyed and recreated, and we don't have to redefine the viewport on load

@@ -113,7 +113,14 @@ void AudioManager::HandleConsolePlaySound(StringHash eventType, VariantMap& even
 
 void AudioManager::PlaySound(String filename, String type, int index)
 {
-    URHO3D_LOGINFO("Playing sound: " + filename + " [" + type + "]");
+    //URHO3D_LOGINFO("Playing sound: " + filename + " [" + type + "]");
+    StringHash filenameHash(filename);
+    if (type == SOUND_EFFECT && _effectsTimer.Contains(filenameHash) && _effectsTimer[filename].GetMSec(false) < 10) {
+        // Safeguard to disable same sound effect overlapping
+        return;
+    }
+    _effectsTimer[filename].Reset();
+
      // Get the sound resource
     auto* cache = GetSubsystem<ResourceCache>();
     auto* sound = cache->GetResource<Sound>(filename);

@@ -275,12 +275,12 @@ void SettingsWindow::CreateControllersTab()
         CreateSingleLine();
         auto sensitivityX = CreateSlider(localization->Get("SENSITIVITY_X_AXIS"));
         sensitivityX->SetRange(10);
-        sensitivityX->SetValue(controllerInput->GetSensitivityX(ControllerType::JOYSTICK));
+        sensitivityX->SetValue(controllerInput->GetSensitivityX(ControllerType::JOYSTICK) * 0.2f);
         // Detect button press events
         SubscribeToEvent(sensitivityX, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
             using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat();
+            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
             auto controllerInput = GetSubsystem<ControllerInput>();
             controllerInput->SetSensitivityX(newValue, ControllerType::JOYSTICK);
             GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", newValue);
@@ -292,12 +292,12 @@ void SettingsWindow::CreateControllersTab()
         CreateSingleLine();
         auto sensitivityY = CreateSlider(localization->Get("SENSITIVITY_Y_AXIS"));
         sensitivityY->SetRange(10);
-        sensitivityY->SetValue(controllerInput->GetSensitivityY(ControllerType::JOYSTICK));
+        sensitivityY->SetValue(controllerInput->GetSensitivityY(ControllerType::JOYSTICK) * 0.2f);
         // Detect button press events
         SubscribeToEvent(sensitivityY, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
             using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat();
+            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
             auto controllerInput = GetSubsystem<ControllerInput>();
             controllerInput->SetSensitivityY(newValue, ControllerType::JOYSTICK);
             GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", newValue);

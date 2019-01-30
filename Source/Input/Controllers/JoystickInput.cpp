@@ -9,7 +9,7 @@ JoystickInput::JoystickInput(Context* context) :
 	BaseInput(context),
     _joystickAsFirstController(true)
 {
-    SetMinSensitivity(1.0f);
+    SetMinSensitivity(2.0f);
 
 	Init();
 	auto* input = GetSubsystem<Input>();
@@ -53,7 +53,7 @@ void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         joystick++;
     }
 	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick down " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
+	//URHO3D_LOGINFO("Joystick down " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
 	if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -77,7 +77,7 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         joystick++;
     }
 	auto* input = GetSubsystem<Input>();
-	URHO3D_LOGINFO("Joystick up " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
+	//URHO3D_LOGINFO("Joystick up " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
 	if (_activeAction > 0) {
 		return;
@@ -106,7 +106,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
 		position = 0.0f;
 	}
-	URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
+	//URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == _joystickMapping.y_) {
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		if (position < 0) {
@@ -162,7 +162,7 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
     int id = eventData[P_JOYSTICKID].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
-	URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
+	//URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == 0) {
         if (_invertX) {
             position *= -1.0f;

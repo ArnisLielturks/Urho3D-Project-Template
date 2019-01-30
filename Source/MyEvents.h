@@ -126,6 +126,13 @@ namespace MyEvents
         URHO3D_PARAM(P_TO, To); // string
 	}
 
+    // When the new level is actually created, before the fade effect goes away
+    URHO3D_EVENT(E_LEVEL_CHANGING_IN_PROGRESS, LevelChangingInProgress)
+    {
+        URHO3D_PARAM(P_FROM, From); // string
+        URHO3D_PARAM(P_TO, To); // string
+    }
+
     // Level changing finished
 	URHO3D_EVENT(E_LEVEL_CHANGING_FINISHED, LevelChangingFinished)
 	{
@@ -159,6 +166,11 @@ namespace MyEvents
 
     // Video settings changed event
     URHO3D_EVENT(E_VIDEO_SETTINGS_CHANGED, VideoSettingsChanged)
+    {
+    }
+
+    // Video settings changed event
+    URHO3D_EVENT(E_PLAYER_SCORES_UPDATED, PlayerScoresUpdated)
     {
     }
 

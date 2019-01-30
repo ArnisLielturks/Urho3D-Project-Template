@@ -23,5 +23,9 @@ private:
 
     void SubscribeToEvents();
 
+    void HandleScoresUpdated(StringHash eventType, VariantMap& eventData);
+
+    void CreatePlayerScores();
+
     SharedPtr<Window> _baseWindow;
 };

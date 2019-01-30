@@ -149,7 +149,9 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
     int controllerIndex = eventData[P_INDEX].GetInt();
 
     if (controllerIndex > 0) {
+        _playerLabels[_players[controllerIndex]]->Remove();
         _playerLabels.Erase(_players[controllerIndex]);
+        _players[controllerIndex]->Remove();
         _players.Erase(controllerIndex);
     }
     auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -235,6 +237,11 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     }
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
+        if ((*it).second_->GetPosition().y_ < -10) {
+            (*it).second_->SetPosition(Vector3(0, 1, 0));
+            SendEvent("FallOffTheMap");
+        }
+
         int playerId = (*it).first_;
         Node* playerNode = (*it).second_;
         Controls controls = controllerInput->GetControls((*it).first_);
@@ -242,10 +249,10 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
             //_cameras[playerId]->SetWorldPosition(playerNode->GetWorldPosition() + Vector3::UP * 0.1);
             Quaternion rotation(controls.pitch_, controls.yaw_, 0.0f);
             _cameras[playerId]->SetRotation(rotation);
-            const float CAMERA_DISTANCE = 3.0f;
+            const float CAMERA_DISTANCE = 2.0f;
 
             // Move camera some distance away from the ball
-            _cameras[playerId]->SetPosition(_players[playerId]->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * CAMERA_DISTANCE);
+            _cameras[playerId]->SetPosition((*it).second_->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * CAMERA_DISTANCE);
         }
     }
 
@@ -320,7 +327,8 @@ Node* Level::CreateControllableObject()
     auto* cache = GetSubsystem<ResourceCache>();
 
     // Create the scene node & visual representation. This will be a replicated object
-    Node* ballNode = scene_->CreateChild("Ball");
+    Node* ballNode = scene_->CreateChild("Player");
+    ballNode->SetVar("Player", _players.Size());
     ballNode->SetPosition(Vector3(0, 2, 0));
     ballNode->SetScale(0.5f);
     auto* ballObject = ballNode->CreateComponent<StaticModel>();
@@ -335,6 +343,8 @@ Node* Level::CreateControllableObject()
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     body->SetLinearDamping(0.8f);
     body->SetAngularDamping(0.8f);
+    body->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES);
+
     auto* shape = ballNode->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
 

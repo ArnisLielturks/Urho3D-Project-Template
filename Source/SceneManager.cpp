@@ -2,7 +2,7 @@
 
 using namespace Urho3D;
 
-static int index = 0;
+static int loadingIndex = 0;
 
 SceneManager::SceneManager(Context* context) :
         Object(context),
@@ -20,8 +20,6 @@ void SceneManager::LoadScene(const String& filename)
     _activeScene = new Scene(context_);
     _activeScene->SetAsyncLoadingMs(1);
     _activeScene->LoadAsyncXML(new File(context_, filename, FILE_READ));
-    progress = 0.0f;
-    index = 0;
     _loadingStatus = "Loading scene";
     URHO3D_LOGINFO("Scene manager loading scene: " + filename);
 
@@ -82,11 +80,11 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             "Loosing trust in people",
             "Meditating"
         };
-        if (index > 6) {
-            index = 6;
+        if (loadingIndex > 6) {
+            loadingIndex = 6;
             progress = 1.0f;
         }
-        _loadingStatus = Messages[index++];
+        _loadingStatus = Messages[loadingIndex++];
         _timer.Reset();
     }
 
@@ -100,4 +98,5 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void SceneManager::ResetProgress()
 {
     progress = 0.0f;
+    loadingIndex = 0;
 }

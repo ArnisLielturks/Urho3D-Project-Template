@@ -23,7 +23,7 @@ private:
 
     UIElement* CreateSingleLine();
 
-    Button* CreateItem(const String& image, const String& message, bool completed);
+    Button* CreateItem(const String& image, const String& message, bool completed, int progress, int threshold);
 
     void HandleAchievementUnlocked(StringHash eventType, VariantMap& eventData);
 
@@ -33,6 +33,8 @@ private:
      * Window title bar
      */
     SharedPtr<UIElement> _titleBar;
+
+    SharedPtr<ListView> _listView;
 
     SharedPtr<UIElement> _activeLine;
 };

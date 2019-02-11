@@ -89,7 +89,7 @@ void BaseApplication::Start()
     ApplyGraphicsSettings();
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Loading";
+    eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 }
 

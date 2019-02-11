@@ -86,9 +86,17 @@ void AchievementsWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
+    _listView = _baseWindow->CreateChild<ListView>();
+    _listView->SetFixedWidth(_baseWindow->GetWidth() - 20);
+    _listView->SetStyleAuto();
+    _listView->SetMinHeight(_baseWindow->GetHeight() - 30 - 10);
+    _listView->SetPosition(10, 30);
+    _listView->SetScrollBarsVisible(false, true);
+
+
     auto achievements = GetSubsystem<Achievements>()->GetAchievements();
     for (auto it = achievements.Begin(); it != achievements.End(); ++it) {
-        CreateItem((*it).image, (*it).message, (*it).completed);
+        CreateItem((*it).image, (*it).message, (*it).completed, (*it).current, (*it).threshold);
     }
 
     SubscribeToEvent(MyEvents::E_ACHIEVEMENT_UNLOCKED, URHO3D_HANDLER(AchievementsWindow, HandleAchievementUnlocked));
@@ -109,24 +117,20 @@ UIElement* AchievementsWindow::CreateSingleLine()
     SharedPtr<UIElement> container(new UIElement(context_));
     container->SetAlignment(HA_LEFT, VA_TOP);
     container->SetLayout(LM_HORIZONTAL, 20);
-    container->SetPosition(10, top);
-    container->SetFixedWidth(_baseWindow->GetWidth());
-    _baseWindow->AddChild(container);
+    container->SetPosition(20, top);
+    container->SetFixedWidth(_listView->GetWidth());
+    container->SetMinHeight(20);
+    _listView->AddItem(container);
 
     _activeLine = container;
 
     return container;
 }
 
-Button* AchievementsWindow::CreateItem(const String& image, const String& message, bool completed)
+Button* AchievementsWindow::CreateItem(const String& image, const String& message, bool completed, int progress, int threshold)
 {
-    if (!_activeLine) {
-        CreateSingleLine();
-    }
-
-    if (_activeLine->GetChildren().Size() >= 4) {
-        CreateSingleLine();
-    }
+    CreateSingleLine();
+    CreateSingleLine();
 
     auto* cache = GetSubsystem<ResourceCache>();
 
@@ -137,17 +141,33 @@ Button* AchievementsWindow::CreateItem(const String& image, const String& messag
     sprite->SetFixedWidth(_activeLine->GetWidth() / 4 - 20);
     sprite->SetTexture(cache->GetResource<Texture2D>(image));
 
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
+    int fontSize = 10;
+
+    auto* achievementText = _activeLine->CreateChild<Text>();
+    achievementText->SetStyle("ToolTipText");
+    achievementText->SetFont(font, fontSize);
+    achievementText->SetText(message);
+    achievementText->SetPosition(sprite->GetWidth() + 10, sprite->GetHeight() / 2 - fontSize / 2.0);
+
+
+
     // Add a tooltip to Fish button
     auto* toolTip = new ToolTip(context_);
-    sprite->AddChild(toolTip);
-    toolTip->SetPosition(IntVector2(sprite->GetWidth() / 2, sprite->GetWidth() / 2)); // slightly offset from close button
+    _activeLine->AddChild(toolTip);
+    IntVector2 position;// = _activeLine->GetScreenPosition();
+    position.x_ += _activeLine->GetWidth() / 2;
+    position.y_ += _activeLine->GetHeight() / 2;
+    toolTip->SetPosition(position); // slightly offset from close button
     auto* textHolder = new BorderImage(context_);
     toolTip->AddChild(textHolder);
     textHolder->SetStyle("ToolTipBorderImage");
     auto* toolTipText = new Text(context_);
     textHolder->AddChild(toolTipText);
     toolTipText->SetStyle("ToolTipText");
-    toolTipText->SetText(message);
+    toolTipText->SetFont(font, fontSize);
+    toolTipText->SetText("Progress: " + String(progress) + " / " + String(threshold));
 
     if (!completed) {
         sprite->SetColor(Color::GRAY);

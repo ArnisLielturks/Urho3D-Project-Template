@@ -69,11 +69,17 @@ void BaseApplication::Start()
 
     URHO3D_LOGINFO("Console command execution disabled");
     context_->RegisterSubsystem<LevelManager>();
+    URHO3D_LOGINFO("LevelManager subsystem created");
     context_->RegisterSubsystem<WindowManager>();
+    URHO3D_LOGINFO("WindowManager subsystem created");
     context_->RegisterSubsystem<Message>();
+    URHO3D_LOGINFO("Message subsystem created");
     context_->RegisterSubsystem<Notifications>();
+    URHO3D_LOGINFO("Notifications subsystem created");
     context_->RegisterSubsystem<Achievements>();
+    URHO3D_LOGINFO("Achievements subsystem created");
 	context_->RegisterSubsystem<ModLoader>();
+    URHO3D_LOGINFO("ModLoader subsystem created");
 
     context_->RegisterSubsystem<AudioManager>();
 

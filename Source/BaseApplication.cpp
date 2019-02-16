@@ -90,14 +90,15 @@ void BaseApplication::Start()
     URHO3D_LOGINFO("AudioManager subsystem configured");
 
     URHO3D_LOGINFO("AudioManager configured");
-	context_->RegisterSubsystem(new ControllerInput(context_));
+    auto controllerInput = new ControllerInput(context_);
+	context_->RegisterSubsystem(controllerInput);
     URHO3D_LOGINFO("ControllerInput subsystem created");
     // Single player mode, all the input is handled by single Controls object
-    context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
+    controllerInput->SetMultipleControllerSupport(true);
     // Keyboard/mouse - 1st player, all the connected joysticks control new players
     // This will have no effect if `SetMultipleControllerSupport` is set to `false`
-    context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
-    context_->GetSubsystem<ControllerInput>()->LoadConfig();
+    controllerInput->SetJoystickAsFirstController(false);
+    controllerInput->LoadConfig();
     URHO3D_LOGINFO("ControllerInput subsystem configured");
 
     context_->RegisterSubsystem(new Notifications(context_));

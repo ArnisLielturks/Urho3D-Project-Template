@@ -55,7 +55,7 @@ void BaseApplication::Start()
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
 
-    cache->SetAutoReloadResources(false);
+    cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
     SubscribeToEvents();
@@ -92,6 +92,8 @@ void BaseApplication::Start()
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "MainMenu";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
+
+    URHO3D_LOGINFO("All systems are set up, starting levels!");
 }
 
 void BaseApplication::Stop()
@@ -163,6 +165,7 @@ void BaseApplication::RegisterConsoleCommands()
 
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 {
+    URHO3D_LOGINFO("Exiting system");
     GetSubsystem<Engine>()->Exit();
 }
 

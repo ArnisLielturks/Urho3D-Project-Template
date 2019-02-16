@@ -29,9 +29,9 @@ jobs:
         command: |
           mkdir archive
           cp build-windows/bin/EmptyProject.exe archive/EmptyProject.exe || true
-          cp build-windows/bin/EmptyProject.exe archive/EmptyProject_d.exe || true
+          cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true
           cp build/bin/EmptyProject archive/EmptyProject || true
-          cp build/bin/EmptyProject archive/EmptyProject_d || true
+          cp build/bin/EmptyProject_d archive/EmptyProject_d || true
           cp -r bin/Data archive/Data
           cp -r bin/CoreData archive/CoreData
           cd archive

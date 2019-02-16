@@ -50,18 +50,24 @@ void BaseApplication::Start()
     UI* ui = GetSubsystem<UI>();
     GetSubsystem<ConsoleHandler>()->Create();
 
+    URHO3D_LOGINFO("ConsoleHandler created");
+
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
     auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
 
+    URHO3D_LOGINFO("DebugHud created");
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
+    URHO3D_LOGINFO("Resources auto load and default style is set up");
     SubscribeToEvents();
 
+    URHO3D_LOGINFO("Subscribed to events");
     GetSubsystem<FileSystem>()->SetExecuteConsoleCommands(false);
 
+    URHO3D_LOGINFO("Console command execution disabled");
     context_->RegisterSubsystem<LevelManager>();
     context_->RegisterSubsystem<WindowManager>();
     context_->RegisterSubsystem<Message>();
@@ -70,11 +76,14 @@ void BaseApplication::Start()
 	context_->RegisterSubsystem<ModLoader>();
 
     context_->RegisterSubsystem<AudioManager>();
+
+    URHO3D_LOGINFO("All custom subsystems initialized");
     // Allow multiple music tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleMusicTracks(true);
     // Allow multiple ambient tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleAmbientTracks(true);
 
+    URHO3D_LOGINFO("AudioManager configured");
 	context_->RegisterSubsystem<ControllerInput>();
     // Single player mode, all the input is handled by single Controls object
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
@@ -82,12 +91,15 @@ void BaseApplication::Start()
     // This will have no effect if `SetMultipleControllerSupport` is set to `false`
     context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
+    URHO3D_LOGINFO("ControllerInput subsystem configured");
 
     SendEvent("GameStarted");
 
     RegisterConsoleCommands();
+    URHO3D_LOGINFO("Console commands registered");
 
     ApplyGraphicsSettings();
+    URHO3D_LOGINFO("Graphics settings applied");
 
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = "MainMenu";

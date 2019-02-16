@@ -54,7 +54,7 @@ void BaseApplication::Start()
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
 
-    cache->SetAutoReloadResources(true);
+    cache->SetAutoReloadResources(false);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
     SubscribeToEvents();

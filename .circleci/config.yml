@@ -34,6 +34,7 @@ jobs:
           cp build/bin/EmptyProject_d archive/EmptyProject_d || true
           cp -r bin/Data archive/Data
           cp -r bin/CoreData archive/CoreData
+          chmod -R 777 archive
           cd archive
           zip -r "${CIRCLE_PROJECT_REPONAME}_${CIRCLE_BUILD_NUM}.zip" *  > /dev/null
           curl -X POST \

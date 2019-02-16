@@ -46,6 +46,7 @@ void BaseApplication::Setup()
 
 void BaseApplication::Start()
 {
+    URHO3D_LOGINFO("Program dir " + GetSubsystem<FileSystem>()->GetProgramDir());
     UI* ui = GetSubsystem<UI>();
     GetSubsystem<ConsoleHandler>()->Create();
 

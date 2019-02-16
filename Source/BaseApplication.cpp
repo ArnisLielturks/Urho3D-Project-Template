@@ -82,14 +82,16 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(new AudioManager(context_));
     URHO3D_LOGINFO("AudioManager subsystem created");
 
-    URHO3D_LOGINFO("All custom subsystems initialized");
     // Allow multiple music tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleMusicTracks(true);
     // Allow multiple ambient tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleAmbientTracks(true);
 
+    URHO3D_LOGINFO("AudioManager subsystem configured");
+
     URHO3D_LOGINFO("AudioManager configured");
 	context_->RegisterSubsystem(new ControllerInput(context_));
+    URHO3D_LOGINFO("ControllerInput subsystem created");
     // Single player mode, all the input is handled by single Controls object
     context_->GetSubsystem<ControllerInput>()->SetMultipleControllerSupport(true);
     // Keyboard/mouse - 1st player, all the connected joysticks control new players

@@ -74,8 +74,6 @@ void BaseApplication::Start()
     URHO3D_LOGINFO("WindowManager subsystem created");
     context_->RegisterSubsystem(new Message(context_));
     URHO3D_LOGINFO("Message subsystem created");
-    context_->RegisterSubsystem(new Notifications(context_));
-    URHO3D_LOGINFO("Notifications subsystem created");
     context_->RegisterSubsystem(new Achievements(context_));
     URHO3D_LOGINFO("Achievements subsystem created");
 	context_->RegisterSubsystem(new ModLoader(context_));
@@ -99,6 +97,9 @@ void BaseApplication::Start()
     context_->GetSubsystem<ControllerInput>()->SetJoystickAsFirstController(false);
     context_->GetSubsystem<ControllerInput>()->LoadConfig();
     URHO3D_LOGINFO("ControllerInput subsystem configured");
+
+    context_->RegisterSubsystem(new Notifications(context_));
+    URHO3D_LOGINFO("Notifications subsystem created");
 
     SendEvent("GameStarted");
 

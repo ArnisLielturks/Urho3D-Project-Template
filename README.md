@@ -18,7 +18,7 @@ Make sure that the URHO3D_HOME environment variable is set and points to the rig
 ```
 git clone https://github.com/ArnisLielturks/Urho3D-Empty-Project.git
 cd Urho3D-Empty-Project
-./cmake_generic.sh build
+./script/cmake_generic.sh build
 cd  build
 make
 ```

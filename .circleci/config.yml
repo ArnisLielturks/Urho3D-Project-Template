@@ -3,6 +3,6 @@ jobs:
   build:
     machine: true
     steps:
-    - checkout
-    # Build the image
-    - run: - docker build --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+      - checkout
+      # Build the image
+      - run: - docker build --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .

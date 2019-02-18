@@ -1,0 +1,46 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: arnislielturks/urho3d:15
+    working_directory: ~/Urho3D-Empty-Project
+    steps:
+      - checkout
+      - run: apt update
+      - run: apt-get install -y python-setuptools curl zip
+      - run: /usr/bin/x86_64-w64-mingw32-g++ --version
+      # - restore_cache:
+      #     keys:
+      #       - build-v1-{{ checksum "CMakeLists.txt" }}
+      #       - build-v1-
+      - run: bash ./script/cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build -DCMAKE_BUILD_TYPE=Release || true
+      - run: bash ./script/cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib -DCMAKE_BUILD_TYPE=Release || true
+      - run: cd build-windows && make -j 2
+      - run: cd ..
+      - run: cd build && make -j 2
+      - run: cd ..
+      # - save_cache:
+      #     key: build-v1-{{ checksum "CMakeLists.txt" }}
+      #     paths:
+      #       - build
+      - type: deploy
+        name: Upload to Site
+        command: |
+          mkdir archive
+          cp build-windows/bin/EmptyProject.exe archive/EmptyProject.exe || true
+          cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true
+          cp build/bin/EmptyProject archive/EmptyProject || true
+          cp build/bin/EmptyProject_d archive/EmptyProject_d || true
+          cp -r bin/Data archive/Data
+          cp -r bin/CoreData archive/CoreData
+          chmod -R 777 archive
+          cd archive
+          zip -r "${CIRCLE_PROJECT_REPONAME}_${CIRCLE_BUILD_NUM}.zip" *  > /dev/null
+          curl -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -F file=@${CIRCLE_PROJECT_REPONAME}_${CIRCLE_BUILD_NUM}.zip \
+            -F build=${CIRCLE_BUILD_NUM} \
+            -F description="CircleCI automated build" \
+            -F token=$SITE_TOKEN \
+            $SITE_URL

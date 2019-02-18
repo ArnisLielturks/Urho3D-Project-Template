@@ -9,7 +9,7 @@ COPY script /code/script
 
 # Install all the dependencies
 RUN apt-get update \
-    && apt-get install -y python-setuptools curl zip \
+    && apt-get install -y curl zip \
     && apt-get purge --auto-remove -y && apt-get clean
 
 RUN cd /code \

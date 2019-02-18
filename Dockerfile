@@ -1,4 +1,4 @@
-FROM arnislielturks/urho3d:14
+FROM arnislielturks/urho3d:3
 MAINTAINER Arnis Lielturks <arnis@example.com>
 
 COPY bin /code/bin

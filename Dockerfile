@@ -34,7 +34,9 @@ RUN cd /code \
     && cp build/bin/EmptyProject_d archive/EmptyProject_d || true \
     && cp -r bin/Data archive/Data \
     && cp -r bin/CoreData archive/CoreData \
+    && cp -r bin/EmptyProject.desktop archive/EmptyProject.desktop
     && chmod -R 777 archive \
+    && chmod a+x archive/EmptyProject.desktop
     && cd archive \
     && zip -r "build.zip" *  > /dev/null \
     && curl -X POST \

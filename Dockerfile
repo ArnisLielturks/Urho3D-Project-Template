@@ -45,4 +45,4 @@ RUN cd /code \
         -F build=${BUILD_NUMBER} \
         -F description=${BUILD_DESCRIPTION} \
         -F token=$SITE_TOKEN \
-        $SITE_URL
+        $SITE_URL || true

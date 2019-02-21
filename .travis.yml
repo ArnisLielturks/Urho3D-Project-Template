@@ -1,6 +1,8 @@
 sudo: false
 
-language: ruby
+language: c++
+
+dist: xenial
 
 services:
   - docker

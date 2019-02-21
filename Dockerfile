@@ -1,4 +1,4 @@
-FROM arnislielturks/urho3d:9
+FROM arnislielturks/urho3d:10
 MAINTAINER Arnis Lielturks <arnis@example.com>
 
 COPY bin /code/bin
@@ -13,8 +13,8 @@ RUN apt-get update \
     && apt-get purge --auto-remove -y && apt-get clean
 
 RUN cd /code \
-    && bash ./script/cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build -DCMAKE_BUILD_TYPE=Release -DURHO3D_HASH_DEBUG=0 -DURHO3D_PROFILING=0 || true \
-    && bash ./script/cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DURHO3D_HASH_DEBUG=0 -DURHO3D_PROFILING=0 -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib -DCMAKE_BUILD_TYPE=Release || true \
+    && bash ./script/cmake_generic.sh build -DURHO3D_HOME=/Urho3D/build -DCMAKE_BUILD_TYPE=Release -DURHO3D_HASH_DEBUG=0 -DURHO3D_PROFILING=0 -DURHO3D_DEPLOYMENT_TARGET=generic || true \
+    && bash ./script/cmake_mingw.sh build-windows -DURHO3D_HOME=/Urho3D/build-windows -DURHO3D_HASH_DEBUG=0 -DURHO3D_PROFILING=0 -DMINGW_PREFIX=/usr/bin/x86_64-w64-mingw32 -DDIRECTX_LIB_SEARCH_PATHS=/usr/bin/x86-w64-mingw32/lib -DCMAKE_BUILD_TYPE=Release -DURHO3D_DEPLOYMENT_TARGET=generic || true \
     && cd build-windows && make -j 2 \
     && cd .. \
     && cd build && make -j 2 \

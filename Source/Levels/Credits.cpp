@@ -51,7 +51,9 @@ namespace Levels {
         const int HEADER_SIZE = 30;
         const int HEADER_MARGIN = 6;
         const int PARAGRAPH = 20;
+        const int IMAGE_SIZE = 50;
 
+        CreateImageLine("Textures/UrhoIcon.png", IMAGE_SIZE);
         CreateSingleLine("Creator", HEADER_SIZE);
         CreateSingleLine("", HEADER_MARGIN);
         CreateSingleLine("Arnis Lielturks", PARAGRAPH);
@@ -75,7 +77,7 @@ namespace Levels {
         CreateSingleLine("Special thanks to the creators", HEADER_SIZE);
         CreateSingleLine("of the Urho3D engine!", HEADER_SIZE);
 
-        _creditLengthInSeconds = _credits.Size() * 2;
+        _creditLengthInSeconds = _credits.Size() * 1.5;
 
         SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
         SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
@@ -139,5 +141,23 @@ namespace Levels {
         text->SetText(content);
         _credits.Push(text);
         _totalCreditsHeight += 20;
+    }
+
+    void Credits::CreateImageLine(const String& image, int size)
+    {
+        _totalCreditsHeight += size;
+
+        auto cache = GetSubsystem<ResourceCache>();
+        auto texture = cache->GetResource<Texture2D>(image);
+        float originalWidth = texture->GetWidth();
+        float originalHeight = texture->GetHeight();
+
+        SharedPtr<Sprite> sprite(_creditsBase->CreateChild<Sprite>());
+        sprite->SetTexture(texture);
+        sprite->SetFixedHeight(size);
+        sprite->SetFixedWidth(((float)sprite->GetHeight() / originalHeight) * originalWidth);
+        sprite->SetHotSpot(sprite->GetWidth() / 2, sprite->GetHeight() / 2);
+
+        _credits.Push(sprite);
     }
 }

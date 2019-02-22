@@ -29,12 +29,13 @@ namespace Levels {
         void HandleEndCredits();
 
 		void CreateSingleLine(String content, int fontSize);
+		void CreateImageLine(const String& image, int size);
 
 		void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
         Timer _timer;
 
-		Vector<SharedPtr<Text>> _credits;
+		Vector<SharedPtr<UIElement>> _credits;
 		SharedPtr<UIElement> _creditsBase;
 		int _totalCreditsHeight;
 		int _creditLengthInSeconds;

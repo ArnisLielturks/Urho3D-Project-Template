@@ -29,7 +29,7 @@ void SettingsWindow::Create()
 {
     auto* localization = GetSubsystem<Localization>();
 
-    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(400, 500);

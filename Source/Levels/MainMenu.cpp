@@ -9,9 +9,7 @@ using namespace Levels;
 
     /// Construct.
 MainMenu::MainMenu(Context* context) :
-    BaseLevel(context),
-    _showGUI(true),
-    _active(true)
+    BaseLevel(context)
 {
 }
 

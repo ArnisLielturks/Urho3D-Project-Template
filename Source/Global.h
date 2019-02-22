@@ -8,7 +8,7 @@ static const unsigned CTRL_RIGHT = 1 << 4; //8
 static const unsigned CTRL_JUMP = 1 << 5; //16
 static const unsigned CTRL_ACTION = 1 << 6; //32
 static const unsigned CTRL_SPRINT = 1 << 7; //64
-static const unsigned CTRL_UP = 1 << 8;
+static const unsigned CTRL_UP = 1 << 8; //128
 
 static const unsigned COLLISION_MASK_PLAYER = 1 << 0; //1
 static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2 

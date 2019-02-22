@@ -27,4 +27,8 @@ protected:
      * Get rid of the window
      */
     virtual void Dispose() {}
+
+    Sprite* CreateOverlay();
+
+    SharedPtr<Sprite> _overlay;
 };

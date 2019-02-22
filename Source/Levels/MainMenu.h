@@ -33,9 +33,5 @@ namespace Levels {
         SharedPtr<Button> _exitButton;
 
         Button* CreateButton(const String& text, int width, IntVector2 position);
-
-        bool _active;
-
-        bool _showGUI;
     };
 }

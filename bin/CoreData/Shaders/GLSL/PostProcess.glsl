@@ -82,8 +82,19 @@ vec3 ToGamma(vec3 color)
     return vec3(pow(color.r, Gamma), pow(color.g, Gamma), pow(color.b, Gamma));
 }
 
+vec3 ToGamma(vec3 color, float gamma)
+{
+    return vec3(pow(color.r, gamma), pow(color.g, gamma), pow(color.b, gamma));
+}
+
 vec3 ToInverseGamma(vec3 color)
 {
     return vec3(pow(color.r, InverseGamma), pow(color.g, InverseGamma), pow(color.b, InverseGamma));
+}
+
+vec3 ToInverseGamma(vec3 color, float inverseGamma)
+{
+    inverseGamma = 1.0 / inverseGamma;
+    return vec3(pow(color.r, inverseGamma), pow(color.g, inverseGamma), pow(color.b, inverseGamma));
 }
 #endif

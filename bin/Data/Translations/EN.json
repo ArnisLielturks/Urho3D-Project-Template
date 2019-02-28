@@ -194,5 +194,9 @@
   "JOYSTICK_AS_FIRST_CONTROLLER":{
     "EN": "Joystick as first controller",
     "LV": "Joystick kā pirmais kontrolieris"
+  },
+  "GAMMA":{
+    "EN": "Gamma",
+    "LV": "Gamma"
   }
 }

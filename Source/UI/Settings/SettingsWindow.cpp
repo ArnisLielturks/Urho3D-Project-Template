@@ -384,6 +384,25 @@ void SettingsWindow::CreateVideoTab()
     auto* localization = GetSubsystem<Localization>();
     InitGraphicsSettings();
 
+    // Gamma
+    CreateSingleLine();
+    auto gammaSlider = CreateSlider(localization->Get("GAMMA"));
+    gammaSlider->SetRange(GAMMA_MAX_VALUE);
+    gammaSlider->SetValue(GetSubsystem<ConfigManager>()->GetFloat("engine", "Gamma", 1.0f));
+    // Detect button press events
+    SubscribeToEvent(gammaSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+        using namespace SliderChanged;
+        float newValue = eventData[P_VALUE].GetFloat();
+        VariantMap data = GetEventDataMap();
+        StringVector command;
+        command.Push("gamma");
+        command.Push(String(newValue));
+        data["Parameters"] = command;
+        SendEvent("gamma", data);
+
+    });
+
     // FOV
     CreateSingleLine();
     auto fovSlider = CreateSlider(localization->Get("FIELD_OF_VIEW"));

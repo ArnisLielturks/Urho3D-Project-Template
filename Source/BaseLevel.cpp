@@ -1,6 +1,7 @@
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
+#include "Global.h"
 
 BaseLevel::BaseLevel(Context* context) :
 Object(context)
@@ -19,6 +20,25 @@ void BaseLevel::SubscribeToBaseEvents()
 {
     SubscribeToEvent("LevelStart", URHO3D_HANDLER(BaseLevel, HandleStart));
     SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, URHO3D_HANDLER(BaseLevel, HandleLevelLoaded));
+
+    // How to use lambda (anonymous) functions
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma");
+    SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
+        URHO3D_LOGINFO("Gamma changing");
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() == 2) {
+            float value = ToFloat(params[1]);
+            GetSubsystem<ConfigManager>()->Set("engine", "Gamma", value);
+            GetSubsystem<ConfigManager>()->Save(true);
+            auto* controllerInput = GetSubsystem<ControllerInput>();
+            Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+            InitViewports(controlIndexes);
+        }
+
+        else {
+            URHO3D_LOGERROR("Invalid number of parameters");
+        }
+    });
 }
 
 void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
@@ -188,6 +208,8 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/GammaCorrection.xml"));
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
         // Make the bloom mixing parameter more pronounced
         //effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 0.1);
 //        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
@@ -196,6 +218,10 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         effectRenderPath->SetEnabled("AutoExposure", false);
         effectRenderPath->SetEnabled("Bloom", false);
         effectRenderPath->SetEnabled("FXAA3", true);
+        effectRenderPath->SetEnabled("GammaCorrection", true);
+        effectRenderPath->SetEnabled("ColorCorrection", false);
+        float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("engine", "Gamma", 1.0f), 0.05f, GAMMA_MAX_VALUE);
+        effectRenderPath->SetShaderParameter("Gamma", gamma);
         viewport->SetRenderPath(effectRenderPath);
 
         Renderer* renderer = GetSubsystem<Renderer>();

@@ -108,7 +108,7 @@ void BaseApplication::Start()
     URHO3D_LOGINFO("Graphics settings applied");
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "MainMenu";
+    eventData["Name"] = "Splash";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     URHO3D_LOGINFO("All systems are set up, starting levels!");

@@ -6,6 +6,10 @@
 
 varying vec2 vScreenPos;
 
+#ifdef COMPILEPS
+uniform float cGamma;
+#endif
+
 void VS()
 {
     mat4 modelMatrix = iModelMatrix;
@@ -17,5 +21,5 @@ void VS()
 void PS()
 {
     vec3 color = texture2D(sDiffMap, vScreenPos).rgb;
-    gl_FragColor = vec4(ToInverseGamma(color), 1.0);
+    gl_FragColor = vec4(ToGamma(color, cGamma), 1.0);
 }

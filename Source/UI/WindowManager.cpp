@@ -42,10 +42,6 @@ void WindowManager::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_CLOSE_ALL_WINDOWS, URHO3D_HANDLER(WindowManager, HandleCloseAllWindows));
 }
 
-void WindowManager::Dispose()
-{
-}
-
 void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData)
 {
     String windowName = eventData["Name"].GetString();

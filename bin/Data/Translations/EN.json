@@ -186,5 +186,13 @@
   "LANGUAGE":{
     "EN": "Language",
     "LV": "Valoda"
+  },
+  "MULTIPLE_CONTROLLER_SUPPORT":{
+    "EN": "Multiple controllers",
+    "LV": "Vairāki kontrolieri"
+  },
+  "JOYSTICK_AS_FIRST_CONTROLLER":{
+    "EN": "Joystick as first controller",
+    "LV": "Joystick kā pirmais kontrolieris"
   }
 }

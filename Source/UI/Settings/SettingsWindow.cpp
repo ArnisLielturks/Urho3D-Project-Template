@@ -6,6 +6,11 @@
 #include "../../Global.h"
 #include "../../Messages/Achievements.h"
 
+/**
+ * Settings view has horizontal layout, and each element takes up this much horizontal space
+ */
+static const int COLUMN_WIDTH = 250;
+
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
         BaseWindow(context)
@@ -301,6 +306,36 @@ void SettingsWindow::CreateControllersTab()
             auto controllerInput = GetSubsystem<ControllerInput>();
             controllerInput->SetSensitivityY(newValue, ControllerType::JOYSTICK);
             GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", newValue);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
+        // Multiple controller support
+        CreateSingleLine();
+        auto multipleControllers = CreateCheckbox(localization->Get("MULTIPLE_CONTROLLER_SUPPORT"));
+        multipleControllers->SetChecked(controllerInput->GetMultipleControllerSupport());
+        SubscribeToEvent(multipleControllers, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
+
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetMultipleControllerSupport(enabled);
+            GetSubsystem<ConfigManager>()->Set("joystick", "MultipleControllers", enabled);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
+        // Joystick as first controller
+        CreateSingleLine();
+        auto joystickAsFirstController = CreateCheckbox(localization->Get("JOYSTICK_AS_FIRST_CONTROLLER"));
+        joystickAsFirstController->SetChecked(controllerInput->GetJoystickAsFirstController());
+        SubscribeToEvent(joystickAsFirstController, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace Toggled;
+            bool enabled = eventData[P_STATE].GetBool();
+
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetJoystickAsFirstController(enabled);
+            GetSubsystem<ConfigManager>()->Set("joystick", "JoystickAsFirstController", enabled);
 
             GetSubsystem<ConfigManager>()->Save(true);
         });
@@ -711,7 +746,7 @@ Button* SettingsWindow::CreateButton(const String& text)
 
     auto* button = _activeLine->CreateChild<Button>();
     button->SetStyleAuto();
-    button->SetFixedWidth(200);
+    button->SetFixedWidth(COLUMN_WIDTH);
     button->SetFixedHeight(30);
 
     auto* buttonText = button->CreateChild<Text>("Label");
@@ -736,7 +771,7 @@ CheckBox* SettingsWindow::CreateCheckbox(const String& label)
     _activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
-    text->SetFixedWidth(200);
+    text->SetFixedWidth(COLUMN_WIDTH);
     text->SetFont(font, 12);
 
     SharedPtr<CheckBox> box(new CheckBox(context_));
@@ -762,7 +797,7 @@ Text* SettingsWindow::CreateLabel(const String& text)
     label->SetFont(font, 12);
     label->SetPosition(10, 30 + _tabElementCount * 30);
     label->SetText(text);
-    label->SetFixedWidth(200);
+    label->SetFixedWidth(COLUMN_WIDTH);
 
     return label;
 }
@@ -783,13 +818,13 @@ Slider* SettingsWindow::CreateSlider(const String& text)
     sliderText->SetWidth(50);
     sliderText->SetFont(font, 12);
     sliderText->SetText(text);
-    sliderText->SetFixedWidth(200);
+    sliderText->SetFixedWidth(COLUMN_WIDTH);
 
     auto* slider = _activeLine->CreateChild<Slider>();
     slider->SetStyleAuto();
     slider->SetPosition(0, 0);
     slider->SetSize(300, 30);
-    slider->SetFixedWidth(200);
+    slider->SetFixedWidth(COLUMN_WIDTH);
     // Use 0-1 range for controlling sound/music master volume
     slider->SetRange(1.0f);
     slider->SetRepeatRate(0.2);
@@ -811,13 +846,13 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
     _activeLine->AddChild(text);
     text->SetText(label);
     text->SetStyleAuto();
-    text->SetFixedWidth(200);
+    text->SetFixedWidth(COLUMN_WIDTH);
     text->SetFont(font, 12);
 
     SharedPtr<DropDownList> list(new DropDownList(context_));
     _activeLine->AddChild(list);
     list->SetStyleAuto();
-    list->SetFixedWidth(200);
+    list->SetFixedWidth(COLUMN_WIDTH);
 
     for (auto it = items.Begin(); it != items.End(); ++it)
     {
@@ -825,7 +860,7 @@ DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& it
         list->AddItem(item);
         item->SetText((*it));
         item->SetStyleAuto();
-        item->SetFixedWidth(200);
+        item->SetFixedWidth(COLUMN_WIDTH);
         item->SetFont(font, 12);
     }
 

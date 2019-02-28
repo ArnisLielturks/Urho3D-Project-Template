@@ -93,11 +93,6 @@ void BaseApplication::Start()
     auto controllerInput = new ControllerInput(context_);
 	context_->RegisterSubsystem(controllerInput);
     URHO3D_LOGINFO("ControllerInput subsystem created");
-    // Single player mode, all the input is handled by single Controls object
-    controllerInput->SetMultipleControllerSupport(true);
-    // Keyboard/mouse - 1st player, all the connected joysticks control new players
-    // This will have no effect if `SetMultipleControllerSupport` is set to `false`
-    controllerInput->SetJoystickAsFirstController(false);
     controllerInput->LoadConfig();
     URHO3D_LOGINFO("ControllerInput subsystem configured");
 

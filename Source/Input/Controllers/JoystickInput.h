@@ -17,6 +17,8 @@ public:
 
     void SetJoystickAsFirstController(bool enabled);
 
+	bool GetJoystickAsFirstController();
+
 	/**
      * Load joystick config from config.cfg file [joystick] block
      */

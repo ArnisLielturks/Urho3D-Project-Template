@@ -14,10 +14,6 @@ public:
 
     virtual ~AudioManager();
 
-    void Create();
-
-    void Dispose();
-
     /**
      * When enabled, multiple music tracks can be played simultaneously
      * If disabled, previous music track will be stopped when new music
@@ -48,7 +44,15 @@ protected:
 private:
 
     SoundSource3D* CreateNodeSound(Node* node, const String& filename, const String& type);
+
+    /**
+     * Register to all sound related events
+     */
     void SubscribeToEvents();
+
+    /**
+     * Subscribe to console commands to allow sound playing via console commands
+     */
 	void SubscribeConsoleCommands();
 
 	/**

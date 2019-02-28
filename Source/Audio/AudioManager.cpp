@@ -29,12 +29,7 @@ void AudioManager::Init()
 
     _ambientSounds[AMBIENT_SOUNDS::LEVEL] = "Sounds/ambient.wav";
 
-    Create();
     SubscribeToEvents();
-}
-
-void AudioManager::Create()
-{
 }
 
 void AudioManager::SubscribeToEvents()
@@ -49,10 +44,6 @@ void AudioManager::SubscribeToEvents()
 
     SubscribeToEvent("ConsolePlaySound", URHO3D_HANDLER(AudioManager, HandleConsolePlaySound));
 	SubscribeConsoleCommands();
-}
-
-void AudioManager::Dispose()
-{
 }
 
 void AudioManager::SubscribeConsoleCommands()

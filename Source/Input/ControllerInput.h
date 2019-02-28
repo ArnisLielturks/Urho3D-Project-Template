@@ -91,6 +91,11 @@ public:
 	void SetMultipleControllerSupport(bool enabled);
 
 	/**
+	 * Get Multiple controller support
+	 */
+	bool GetMultipleControllerSupport() { return _multipleControllerSupport; }
+
+	/**
 	 * Detect if mapping is in progress
 	 */
 	bool IsMappingInProgress();
@@ -106,6 +111,11 @@ public:
      * Ignored if `SetMultipleControllerSupport` is set as `false`
      */
     void SetJoystickAsFirstController(bool enabled);
+
+	/**
+     * Is joystick set as first controller
+     */
+	bool GetJoystickAsFirstController();
 
     /**
      * Set inverted X axis for specific controller

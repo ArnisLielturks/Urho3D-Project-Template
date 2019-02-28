@@ -44,6 +44,11 @@ void JoystickInput::SetJoystickAsFirstController(bool enabled)
     _joystickAsFirstController = enabled;
 }
 
+bool JoystickInput::GetJoystickAsFirstController()
+{
+	return _joystickAsFirstController;
+}
+
 void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
 	using namespace JoystickButtonDown;

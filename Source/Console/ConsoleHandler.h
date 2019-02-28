@@ -20,6 +20,9 @@ public:
 
     virtual void Init();
 
+    /**
+     * Create the console
+     */
     virtual void Create();
 
 private:

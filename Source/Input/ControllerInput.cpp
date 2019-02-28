@@ -74,6 +74,12 @@ void ControllerInput::LoadConfig()
     for (auto it = _inputHandlers.Begin(); it != _inputHandlers.End(); ++it) {
         (*it).second_->LoadConfig();
     }
+
+	// Single player mode, all the input is handled by single Controls object
+	SetMultipleControllerSupport(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", true));
+	// Keyboard/mouse - 1st player, all the connected joysticks control new players
+	// This will have no effect if `SetMultipleControllerSupport` is set to `false`
+	SetJoystickAsFirstController(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", false));
 }
 
 void ControllerInput::SaveConfig()
@@ -347,6 +353,17 @@ void ControllerInput::SetJoystickAsFirstController(bool enabled)
     if (joystickInput) {
         joystickInput->SetJoystickAsFirstController(enabled);
     }
+}
+
+bool ControllerInput::GetJoystickAsFirstController()
+{
+	BaseInput* input = _inputHandlers[ControllerType::JOYSTICK];
+	JoystickInput* joystickInput = input->Cast<JoystickInput>();
+	if (joystickInput) {
+		return joystickInput->GetJoystickAsFirstController();
+	}
+
+	return false;
 }
 
 void ControllerInput::SetInvertX(bool enabled, int controller)

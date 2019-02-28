@@ -30,6 +30,9 @@ public:
      */
     const String& GetStatusMessage() const { return _loadingStatus; }
 
+    /**
+     * Set current progress to 0
+     */
     void ResetProgress();
 
 private:

@@ -14,6 +14,7 @@ namespace Levels {
         Splash(Context* context);
 
         virtual ~Splash();
+
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
@@ -24,6 +25,9 @@ namespace Levels {
 
         void CreateScene();
 
+        /**
+         * Create the actual splash screen content
+         */
         void CreateUI();
 
         void SubscribeToEvents();

@@ -58,7 +58,7 @@ void Level::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    Input* input = GetSubsystem<Input>();
+    auto input = GetSubsystem<Input>();
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
@@ -99,8 +99,7 @@ void Level::CreateScene()
 void Level::CreateUI()
 {
     auto* localization = GetSubsystem<Localization>();
-    UI* ui = GetSubsystem<UI>();
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    auto ui = GetSubsystem<UI>();
 
     Text* text = ui->GetRoot()->CreateChild<Text>();
     text->SetHorizontalAlignment(HA_CENTER);

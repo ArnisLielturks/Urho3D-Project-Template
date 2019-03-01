@@ -174,4 +174,21 @@ namespace MyEvents
     {
     }
 
+	//
+	URHO3D_EVENT(E_REGISTER_LOADING_STEP, RegisterLoadingStep)
+	{
+		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+		URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
+	}
+
+	URHO3D_EVENT(E_ACK_LOADING_STEP, AckLoadingStep)
+	{
+		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+	}
+
+	URHO3D_EVENT(E_LOADING_STEP_FINISHED, LoadingStepFinished)
+	{
+		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+	}
+
 }

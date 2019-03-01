@@ -2,6 +2,15 @@
 
 #include <Urho3D/Urho3DAll.h>
 
+struct LoadingStep {
+    String event;
+    String name;
+    bool finished;
+    bool ack;
+    bool ackSent;
+    Timer ackTimer;
+};
+
 class SceneManager : public Object
 {
 URHO3D_OBJECT(SceneManager, Object);
@@ -36,6 +45,7 @@ public:
     void ResetProgress();
 
 private:
+
     /**
      * Scene loading in progress
      */
@@ -48,6 +58,12 @@ private:
 
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+    void HandleRegisterLoadingStep(StringHash eventType, VariantMap& eventData);
+
+    void HandleLoadingStepAck(StringHash eventType, VariantMap& eventData);
+
+    void HandleLoadingStepFinished(StringHash eventType, VariantMap& eventData);
+
     /**
      * Current active scene
      */
@@ -59,9 +75,14 @@ private:
     float progress;
 
     /**
+     * Target progress, `progress` variable will reach `targetProgress` in few seconds
+     */
+    float targetProgress;
+
+    /**
      * Current loading status
      */
     String _loadingStatus;
 
-    Timer _timer;
+    HashMap<StringHash, LoadingStep> _loadingSteps;
 };

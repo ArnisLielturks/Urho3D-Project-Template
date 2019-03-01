@@ -34,7 +34,6 @@ BaseApplication::BaseApplication(Context* context) :
 
     auto* localization = GetSubsystem<Localization>();
     localization->LoadJSONFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/EN.json");
-
 }
 
 void BaseApplication::Setup()
@@ -108,7 +107,7 @@ void BaseApplication::Start()
     URHO3D_LOGINFO("Graphics settings applied");
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Splash";
+    eventData["Name"] = "Loading";
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     URHO3D_LOGINFO("All systems are set up, starting levels!");

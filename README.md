@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Project-Template/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
+[![Build Status](https://travis-ci.org/ArnisLielturks/Urho3D-Project-Template.svg?branch=master)](https://travis-ci.org/ArnisLielturks/Urho3D-Project-Template)
 
 # Urho3D-Project-Template
 App template with the following features:

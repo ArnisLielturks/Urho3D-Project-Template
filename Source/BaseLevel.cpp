@@ -24,7 +24,6 @@ void BaseLevel::SubscribeToBaseEvents()
     // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma");
     SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
-        URHO3D_LOGINFO("Gamma changing");
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() == 2) {
             float value = ToFloat(params[1]);
@@ -180,7 +179,9 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     _viewports.Clear();
     _cameras.Clear();
 
-    URHO3D_LOGINFOF("Viewpors %i", playerIndexes.Size());
+    if (!scene_) {
+        return;
+    }
 
     SetGlobalVar("Players", playerIndexes.Size());
 

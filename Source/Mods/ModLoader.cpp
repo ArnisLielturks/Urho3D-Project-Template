@@ -1,6 +1,7 @@
 #include <Urho3D/Urho3DAll.h>
 #include "ModLoader.h"
 #include "../MyEvents.h"
+#include "../Config/ConfigManager.h"
 
 /// Construct.
 ModLoader::ModLoader(Context* context) :
@@ -15,14 +16,16 @@ ModLoader::~ModLoader()
 
 void ModLoader::Init()
 {
-    auto asScript = new Script(context_);
-    context_->RegisterSubsystem(asScript);
-    asScript->SetExecuteConsoleCommands(false);
-    auto luaScript = new LuaScript(context_);
-    context_->RegisterSubsystem(luaScript);
-    luaScript->SetExecuteConsoleCommands(false);
-    Create();
-    SubscribeToEvents();
+    if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
+        auto asScript = new Script(context_);
+        context_->RegisterSubsystem(asScript);
+        asScript->SetExecuteConsoleCommands(false);
+        auto luaScript = new LuaScript(context_);
+        context_->RegisterSubsystem(luaScript);
+        luaScript->SetExecuteConsoleCommands(false);
+        Create();
+        SubscribeToEvents();
+    }
 }
 
 void ModLoader::Create()
@@ -38,7 +41,6 @@ void ModLoader::Create()
 
 void ModLoader::LoadASMods()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
     Vector<String> result;
 
     // Scan Data/Mods directory for all *.as files
@@ -49,9 +51,6 @@ void ModLoader::LoadASMods()
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
         SharedPtr<ScriptFile> scriptFile(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Mods/" + (*it)));
-        /*if (scriptFile && scriptFile->Execute("void Start()")) {
-            URHO3D_LOGINFO("Mod " + (*it) + " succesfully loaded!");
-        }*/
         if (scriptFile) {
             _asMods.Push(scriptFile);
             _asScriptMap["Mods/" + (*it)] = scriptFile;

@@ -3,12 +3,17 @@ uint count = 0;
 
 void Start()
 {
-	SubscribeToEvent("LevelChangingInProgress", "HandleLevelChange");
+	SubscribeToEvent("LoadGamemode", "HandleLoadGameMode");
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
 
+    // Register our loading step
     VariantMap data;
+    data["Name"] = "Initializing GameMode";
+    data["Event"] = "LoadGamemode";
+    SendEvent("RegisterLoadingStep", data);
+
     data["Event"] = "BoxDestroyed";
     data["Message"] = "Destroy 1 box";
     data["Image"] = "Textures/Achievements/trophy-cup.png";
@@ -68,16 +73,21 @@ void CreateObject()
 /**
  * Output debug message when level changing is requested
  */
-void HandleLevelChange(StringHash eventType, VariantMap& eventData)
+void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
 {
-    String levelName = eventData["To"].GetString();
+    VariantMap data;
+    data["Event"] = "LoadGamemode";
 
-    if (levelName == "Level") {
-    	for (uint i = 0; i < 30; i++) {
-            CreateObject();
-	    }
-        CreateCheckpoint();
+    // Sent event to let the system know that we will handle this loading step
+    SendEvent("AckLoadingStep", data);
+
+    for (uint i = 0; i < 30; i++) {
+        CreateObject();
     }
+    CreateCheckpoint();
+
+    // Let the loading system know that we finished our work
+    SendEvent("LoadingStepFinished", data);
 }
 
 void UpdatePlayerScore(int playerId, int points)

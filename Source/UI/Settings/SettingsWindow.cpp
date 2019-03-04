@@ -102,10 +102,6 @@ void SettingsWindow::Create()
     SubscribeToEvent(_tabs[GAME], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(GAME);
     });
-	_tabs[MISC] = CreateTabButton(localization->Get("MISC"));
-	SubscribeToEvent(_tabs[MISC], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-		ChangeTab(MISC);
-	});
 
     ChangeTab(CONTROLS);
 }
@@ -137,9 +133,6 @@ void SettingsWindow::ChangeTab(SettingTabs tab)
             break;
         case GAME:
             CreateGameTab();
-            break;
-        case MISC:
-            CreateMiscTab();
             break;
     }
 }
@@ -624,11 +617,28 @@ void SettingsWindow::CreateGameTab()
 
         //TODO - apply settings directly, reload view or just show the pop-up message?
     });
-}
 
-void SettingsWindow::CreateMiscTab()
-{
-    auto* localization = GetSubsystem<Localization>();
+    // Load mods
+    CreateSingleLine();
+    auto loadMods = CreateCheckbox(localization->Get("LOAD_MODS"));
+    loadMods->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true));
+    SubscribeToEvent(loadMods, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("game", "LoadMods", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+    });
+
+    // Load mods
+    CreateSingleLine();
+    auto developerConsole = CreateCheckbox(localization->Get("DEVELOPER_CONSOLE"));
+    developerConsole->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));
+    SubscribeToEvent(developerConsole, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("game", "DeveloperConsole", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+    });
 
     CreateSingleLine();
     auto clearAchievementsButton = CreateButton(localization->Get("CLEAR_ACHIEVEMENTS"));

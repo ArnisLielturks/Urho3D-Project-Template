@@ -9,6 +9,8 @@ struct LoadingStep {
     bool ack;
     bool ackSent;
     Timer ackTimer;
+    float progress;
+    Timer loadTime;
 };
 
 class SceneManager : public Object
@@ -58,10 +60,24 @@ private:
 
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Add new loading step to the loading screen
+     */
     void HandleRegisterLoadingStep(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Ackownledge the loading step and let it finish
+     */
     void HandleLoadingStepAck(StringHash eventType, VariantMap& eventData);
 
+    /**
+     * Receive update status for specific loading step
+     */
+    void HandleLoadingStepProgress(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Receive loading step finished message
+     */
     void HandleLoadingStepFinished(StringHash eventType, VariantMap& eventData);
 
     /**
@@ -84,5 +100,8 @@ private:
      */
     String _loadingStatus;
 
+    /**
+     * List of all the loading steps registered in the system
+     */
     HashMap<StringHash, LoadingStep> _loadingSteps;
 };

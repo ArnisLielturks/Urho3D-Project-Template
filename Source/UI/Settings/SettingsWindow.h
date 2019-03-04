@@ -8,8 +8,7 @@ enum SettingTabs {
     AUDIO,
     CONTROLS,
     CONTROLLERS,
-    GAME,
-    MISC
+    GAME
 };
 
 /**
@@ -97,11 +96,6 @@ private:
      * Create game settings tab
      */
     void CreateGameTab();
-
-    /**
-     * Create miscellaneous settings view
-     */
-    void CreateMiscTab();
 
     /**
      * Set up graphics settings temporary data and available options

@@ -3,6 +3,7 @@
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
 #include "../SceneManager.h"
+#include "../Config/ConfigManager.h"
 
 using namespace Levels;
 
@@ -58,7 +59,7 @@ void Loading::CreateUI()
     auto height = (float)graphics->GetHeight();
 
     // The UI root element is as big as the rendering window, set random position within it
-    sprite->SetPosition(width - decalTex->GetWidth(), height - decalTex->GetHeight());
+    sprite->SetPosition(width - decalTex->GetWidth(), height - decalTex->GetHeight() - 20);
 
     // Set sprite size & hotspot in its center
     sprite->SetSize(IntVector2(decalTex->GetWidth(), decalTex->GetHeight()));
@@ -91,7 +92,7 @@ void Loading::CreateUI()
     _status = ui->GetRoot()->CreateChild<Text>();
     _status->SetHorizontalAlignment(HA_LEFT);
     _status->SetVerticalAlignment(VA_BOTTOM);
-    _status->SetPosition(20, -20);
+    _status->SetPosition(20, -30);
     _status->SetStyleAuto();
     _status->SetText("Progress: 0%");
     _status->SetTextEffect(TextEffect::TE_STROKE);
@@ -115,6 +116,8 @@ void Loading::CreateUI()
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _status->SetObjectAnimation(animation);
+
+    CreateProgressBar();
 }
 
 void Loading::SubscribeToEvents()
@@ -132,7 +135,11 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     float progress = GetSubsystem<SceneManager>()->GetProgress();
     _status->SetText(String((int)(progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
-    //if (timer.GetMSec(false) > 3000) {
+
+    if (_loadingBar) {
+        _loadingBar->SetWidth(progress * (GetSubsystem<Graphics>()->GetWidth() - 20));
+    }
+
     if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);
@@ -146,4 +153,30 @@ void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 	VariantMap data = GetEventDataMap();
 	data["Name"] = "Level";
     SendEvent(MyEvents::E_SET_LEVEL, data);
+}
+
+void Loading::CreateProgressBar()
+{
+    if (GetSubsystem<ConfigManager>()->GetBool("game", "ShowProgressBar", true)) {
+        UI *ui = GetSubsystem<UI>();
+        ResourceCache *cache = GetSubsystem<ResourceCache>();
+
+        // Get the Urho3D fish texture
+        auto *progressBarTexture = cache->GetResource<Texture2D>("Textures/Loading.png");
+        // Create a new sprite, set it to use the texture
+        _loadingBar = ui->GetRoot()->CreateChild<Sprite>();
+        _loadingBar->SetTexture(progressBarTexture);
+
+        auto *graphics = GetSubsystem<Graphics>();
+
+        // Get rendering window size as floats
+        auto width = (float) graphics->GetWidth();
+        auto height = (float) graphics->GetHeight();
+
+        // The UI root element is as big as the rendering window, set random position within it
+        _loadingBar->SetPosition(10, height - 30);
+
+        // Set sprite size & hotspot in its center
+        _loadingBar->SetSize(0, 20);
+    }
 }

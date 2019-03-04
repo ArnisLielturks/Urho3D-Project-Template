@@ -117,6 +117,14 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (fade_status_ == 3) {
         // Create new level
         level_ = context_->CreateObject(StringHash(level_queue_.Front()));
+        if (!level_) {
+            URHO3D_LOGERROR("Level '" + level_queue_.Front() + "' doesn't exist in the system! Moving to 'Splash' level");
+            level_queue_.PopFront();
+            VariantMap& eventData = GetEventDataMap();
+            eventData["Name"] = "Splash";
+            SendEvent(MyEvents::E_SET_LEVEL, eventData);
+            return;
+        }
         level_->SendEvent("LevelStart", data_);
 
         previousLevel_ = currentLevel_;

@@ -32,8 +32,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new SceneManager(context_));
 
-    auto* localization = GetSubsystem<Localization>();
-    localization->LoadJSONFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/EN.json");
+    LoadTranslationFiles();
 }
 
 void BaseApplication::Setup()
@@ -107,7 +106,7 @@ void BaseApplication::Start()
     URHO3D_LOGINFO("Graphics settings applied");
 
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = "Loading";
+    eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     URHO3D_LOGINFO("All systems are set up, starting levels!");
@@ -289,4 +288,26 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
     data[P_EVENT] = "ConsoleGlobalVariableChange";
     data[P_DESCRIPTION] = "Show/Change global variable value";
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+}
+
+void BaseApplication::LoadTranslationFiles()
+{
+    Vector<String> result;
+    auto* localization = GetSubsystem<Localization>();
+
+    // Get all translation files in the Data/Translations folder
+    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Translations"), String("*.json"), SCAN_FILES, false);
+
+    for (auto it = result.Begin(); it != result.End(); ++it) {
+        String file = (*it);
+        String filepath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/" + file;
+
+        // Filename is handled as a language
+        file.Replace(".json", "", false);
+
+        // Load the actual file in the system
+        localization->LoadJSONFile(filepath, file);
+        URHO3D_LOGINFO("Loading translation file '" + filepath + "' to '" + file + "' language");
+
+    }
 }

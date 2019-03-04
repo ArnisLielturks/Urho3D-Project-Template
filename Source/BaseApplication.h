@@ -49,6 +49,10 @@ private:
 	 */
     void LoadConfig(String filename, String prefix = "", bool isMain = false);
 
+    /**
+     * Load all translation files
+     */
+    void LoadTranslationFiles();
 
     /**
      * Handle event for config loading

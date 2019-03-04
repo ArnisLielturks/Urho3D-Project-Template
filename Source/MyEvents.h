@@ -174,18 +174,27 @@ namespace MyEvents
     {
     }
 
-	//
+	// Register new loading step in the loading screen
 	URHO3D_EVENT(E_REGISTER_LOADING_STEP, RegisterLoadingStep)
 	{
 		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
 		URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
 	}
 
+	// ACK event to mark loading step as valid
 	URHO3D_EVENT(E_ACK_LOADING_STEP, AckLoadingStep)
 	{
 		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
 	}
 
+	// Loading step progress update
+    URHO3D_EVENT(E_LOADING_STEP_PROGRESS, LoadingStepProgress)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+        URHO3D_PARAM(P_PROGRESS, Progress); // float - 0.0 - 1.0 to indicate the loading step progress
+    }
+
+    // Load step loading finished event
 	URHO3D_EVENT(E_LOADING_STEP_FINISHED, LoadingStepFinished)
 	{
 		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process

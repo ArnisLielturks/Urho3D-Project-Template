@@ -1,202 +1,53 @@
 {
-  "NEW_GAME":{
-    "EN": "New Game",
-    "LV": "Sākt spēli"
-  },
-  "SETTINGS":{
-    "EN": "Settings",
-    "LV": "Uzstādījumi"
-  },
-  "ACHIEVEMENTS":{
-    "EN": "Achievements",
-    "LV": "Sasniegumi"
-  },
-  "CREDITS":{
-    "EN": "Credits",
-    "LV": "Informācija"
-  },
-  "EXIT":{
-    "EN": "Exit",
-    "LV": "Iziet"
-  },
-  "START":{
-    "EN": "Start",
-    "LV": "Sākt"
-  },
-  "CONTINUE":{
-    "EN": "Continue",
-    "LV": "Turpināt"
-  },
-  "RETURN_TO_MENU":{
-    "EN": "Return to menu",
-    "LV": "Atgriezties uz galveno izvēlni"
-  },
-  "EXIT_GAME":{
-    "EN": "Exit game",
-    "LV": "Iziet no spēles"
-  },
-  "YES":{
-    "EN": "Yes",
-    "LV": "Jā"
-  },
-  "NO":{
-    "EN": "No",
-    "LV": "Nē"
-  },
-  "CONTROLS":{
-    "EN": "Controls",
-    "LV": "Kontroles"
-  },
-  "CONTROLLERS":{
-    "EN": "Controllers",
-    "LV": "Kontrolieri"
-  },
-  "AUDIO":{
-    "EN": "Audio",
-    "LV": "Audio"
-  },
-  "VIDEO":{
-    "EN": "Video",
-    "LV": "Video"
-  },
-  "MOUSE":{
-    "EN": "Mouse",
-    "LV": "Pele"
-  },
-  "INVERT_X_AXIS":{
-    "EN": "Invert X axis",
-    "LV": "Apgriezt X asi"
-  },
-  "INVERT_Y_AXIS":{
-    "EN": "Invert Y axis",
-    "LV": "Apgriezt Y asi"
-  },
-  "SENSITIVITY":{
-    "EN": "Sensitivity",
-    "LV": "Jūtība"
-  },
-  "JOYSTICK":{
-    "EN": "Joystick",
-    "LV": "Kontrolieris"
-  },
-  "SENSITIVITY_X_AXIS":{
-    "EN": "Sensitivity X axis",
-    "LV": "X ass jūtība"
-  },
-  "SENSITIVITY_Y_AXIS":{
-    "EN": "Sensitivity Y axis",
-    "LV": "Y ass jūtība"
-  },
-  "MASTER_VOLUME":{
-    "EN": "Master",
-    "LV": "Kopējais skaļums"
-  },
-  "EFFECT_VOLUME":{
-    "EN": "Effect",
-    "LV": "Efektu skaļums"
-  },
-  "AMBIENT_VOLUME":{
-    "EN": "Ambient",
-    "LV": "Fona skaļums"
-  },
-  "VOICE_VOLUME":{
-    "EN": "Voice",
-    "LV": "Balss skaļums"
-  },
-  "MUSIC_VOLUME":{
-    "EN": "Music",
-    "LV": "Mūzikas skaļums"
-  },
-  "FIELD_OF_VIEW":{
-    "EN": "Field of view",
-    "LV": "Field of view"
-  },
-  "FULLSCREEN":{
-    "EN": "Fullscreen",
-    "LV": "Pilnekrāna režīms"
-  },
-  "FRAME_LIMITER":{
-    "EN": "Frame limiter",
-    "LV": "Frame limiter"
-  },
-  "ENABLE_SHADOWS":{
-    "EN": "Enable shadows",
-    "LV": "Ieslēgt ēnas"
-  },
-  "VERTICAL_SYNC":{
-    "EN": "Vertical sync",
-    "LV": "Vertical sync"
-  },
-  "TRIPLE_BUFFERING":{
-    "EN": "Triple buffering",
-    "LV": "Triple buffering"
-  },
-  "RESOLUTION":{
-    "EN": "Resolution",
-    "LV": "Izšķirtspēja"
-  },
-  "SHADOW_QUALITY":{
-    "EN": "Shadow quality",
-    "LV": "Ēnu kvalitāte"
-  },
-  "TEXTURE_FILTER_MODE":{
-    "EN": "Texture filter mode",
-    "LV": "Texture filter mode"
-  },
-  "TEXTURE_ANISTROPY_LEVEL":{
-    "EN": "Texture anistropy level",
-    "LV": "Texture anistropy level"
-  },
-  "TEXTURE_QUALITY":{
-    "EN": "Texture quality",
-    "LV": "Tekstūru kvalitāte"
-  },
-  "MULTISAMPLE":{
-    "EN": "Multisample",
-    "LV": "Multisample",
-  },
-  "APPLY":{
-    "EN": "Apply",
-    "LV": "Apstiprināt"
-  },
-  "ENABLE_MODS":{
-    "EN": "Enable mods",
-    "LV": "Ieslēgt modus"
-  },
-  "EXITING_GAME":{
-    "EN": "Exiting game",
-    "LV": "Spēle tiek izslēgta"
-  },
-  "TUTORIAL":{
-    "EN": "ESC - pause menu\nTAB - scoreboard\nF2 - toggle console",
-    "LV": "ESC - pauzes menu\nTAB - rezultātu logs\nF2 - ieslēgt/izslēgt konsoles logu"
-  },
-  "CLEAR_ACHIEVEMENTS":{
-    "EN": "Clear achievements",
-    "LV": "Notīrīt sasniegumus"
-  },
-  "GAME":{
-    "EN": "Game",
-    "LV": "Spēle"
-  },
-  "MISC":{
-    "EN": "Misc",
-    "LV": "Dažādi"
-  },
-  "LANGUAGE":{
-    "EN": "Language",
-    "LV": "Valoda"
-  },
-  "MULTIPLE_CONTROLLER_SUPPORT":{
-    "EN": "Multiple controllers",
-    "LV": "Vairāki kontrolieri"
-  },
-  "JOYSTICK_AS_FIRST_CONTROLLER":{
-    "EN": "Joystick as first controller",
-    "LV": "Joystick kā pirmais kontrolieris"
-  },
-  "GAMMA":{
-    "EN": "Gamma",
-    "LV": "Gamma"
-  }
+  "NEW_GAME": "New Game",
+  "SETTINGS": "Settings",
+  "ACHIEVEMENTS": "Achievements",
+  "CREDITS": "Credits",
+  "EXIT": "Exit",
+  "START": "Start",
+  "CONTINUE": "Continue",
+  "RETURN_TO_MENU": "Return to menu",
+  "EXIT_GAME": "Exit game",
+  "YES": "Yes",
+  "NO": "No",
+  "CONTROLS": "Controls",
+  "CONTROLLERS": "Controllers",
+  "AUDIO": "Audio",
+  "VIDEO": "Video",
+  "MOUSE": "Mouse",
+  "INVERT_X_AXIS": "Invert X axis",
+  "INVERT_Y_AXIS": "Invert Y axis",
+  "SENSITIVITY": "Sensitivity",
+  "JOYSTICK": "Joystick",
+  "SENSITIVITY_X_AXIS": "Sensitivity X axis",
+  "SENSITIVITY_Y_AXIS": "Sensitivity Y axis",
+  "MASTER_VOLUME": "Master",
+  "EFFECT_VOLUME": "Effect",
+  "AMBIENT_VOLUME": "Ambient",
+  "VOICE_VOLUME": "Voice",
+  "MUSIC_VOLUME": "Music",
+  "FIELD_OF_VIEW": "Field of view",
+  "FULLSCREEN": "Fullscreen",
+  "FRAME_LIMITER": "Frame limiter",
+  "ENABLE_SHADOWS": "Enable shadows",
+  "VERTICAL_SYNC": "Vertical sync",
+  "TRIPLE_BUFFERING": "Triple buffering",
+  "RESOLUTION": "Resolution",
+  "SHADOW_QUALITY": "Shadow quality",
+  "TEXTURE_FILTER_MODE": "Texture filter mode",
+  "TEXTURE_ANISTROPY_LEVEL": "Texture anistropy level",
+  "TEXTURE_QUALITY": "Texture quality",
+  "MULTISAMPLE": "Multisample",
+  "APPLY": "Apply",
+  "ENABLE_MODS": "Enable mods",
+  "EXITING_GAME": "Exiting game",
+  "TUTORIAL": "ESC - pause menu\nTAB - scoreboard\nF2 - toggle console",
+  "CLEAR_ACHIEVEMENTS": "Clear achievements",
+  "GAME": "Game",
+  "LANGUAGE": "Language",
+  "MULTIPLE_CONTROLLER_SUPPORT": "Multiple controllers",
+  "JOYSTICK_AS_FIRST_CONTROLLER": "Joystick as first controller",
+  "GAMMA": "Gamma",
+  "LOAD_MODS": "Load mods",
+  "DEVELOPER_CONSOLE": "Developer console"
 }

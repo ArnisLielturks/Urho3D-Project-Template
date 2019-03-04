@@ -26,9 +26,24 @@ namespace Levels {
 
         void SubscribeToEvents();
 
+        /**
+         * Horizontal progress bar at the bottom of the screen
+         */
+        void CreateProgressBar();
+
+        /**
+         * Finish loading and move to next level
+         */
         void HandleEndLoading(StringHash eventType, VariantMap& eventData);
 
+        /**
+         * Status message of the current loading step
+         */
         SharedPtr<Text> _status;
-        Timer timer;
+
+        /**
+         * Loading bar UI element
+         */
+        SharedPtr<Sprite> _loadingBar;
     };
 }

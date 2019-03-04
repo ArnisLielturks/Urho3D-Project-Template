@@ -21,8 +21,6 @@ namespace Levels {
         void Init () override;
 
     private:
-		friend void CheckThreading(const WorkItem* item, unsigned threadIndex);
-
         void CreateScene();
 
         /**
@@ -36,8 +34,6 @@ namespace Levels {
          * Show next screen
          */
         void HandleEndSplash();
-
-		void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
 
 		/**
 		 * Timer to check splash screen lifetime

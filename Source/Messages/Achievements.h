@@ -128,6 +128,11 @@ private:
     void LoadProgress();
 
     /**
+     * Calculate the total count of achievements
+     */
+    int CountAchievements();
+
+    /**
      * Active achievement list
      */
     List<SharedPtr<SingleAchievement>> _activeAchievements;

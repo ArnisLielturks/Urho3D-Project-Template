@@ -44,72 +44,48 @@ void BaseApplication::Setup()
 
 void BaseApplication::Start()
 {
-    URHO3D_LOGINFO("Program dir " + GetSubsystem<FileSystem>()->GetProgramDir());
     UI* ui = GetSubsystem<UI>();
     GetSubsystem<ConsoleHandler>()->Create();
-
-    URHO3D_LOGINFO("ConsoleHandler created");
 
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
     auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
 
-    URHO3D_LOGINFO("DebugHud created");
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
 
-    URHO3D_LOGINFO("Resources auto load and default style is set up");
     SubscribeToEvents();
 
-    URHO3D_LOGINFO("Subscribed to events");
     GetSubsystem<FileSystem>()->SetExecuteConsoleCommands(false);
 
-    URHO3D_LOGINFO("Console command execution disabled");
     context_->RegisterSubsystem(new LevelManager(context_));
-    URHO3D_LOGINFO("LevelManager subsystem created");
     context_->RegisterSubsystem(new WindowManager(context_));
-    URHO3D_LOGINFO("WindowManager subsystem created");
     context_->RegisterSubsystem(new Message(context_));
-    URHO3D_LOGINFO("Message subsystem created");
     context_->RegisterSubsystem(new Achievements(context_));
-    URHO3D_LOGINFO("Achievements subsystem created");
 	context_->RegisterSubsystem(new ModLoader(context_));
-    URHO3D_LOGINFO("ModLoader subsystem created");
-
     context_->RegisterSubsystem(new AudioManager(context_));
-    URHO3D_LOGINFO("AudioManager subsystem created");
 
     // Allow multiple music tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleMusicTracks(true);
     // Allow multiple ambient tracks to play at the same time
     context_->GetSubsystem<AudioManager>()->AllowMultipleAmbientTracks(true);
 
-    URHO3D_LOGINFO("AudioManager subsystem configured");
-
-    URHO3D_LOGINFO("AudioManager configured");
     auto controllerInput = new ControllerInput(context_);
 	context_->RegisterSubsystem(controllerInput);
-    URHO3D_LOGINFO("ControllerInput subsystem created");
     controllerInput->LoadConfig();
-    URHO3D_LOGINFO("ControllerInput subsystem configured");
 
     context_->RegisterSubsystem(new Notifications(context_));
-    URHO3D_LOGINFO("Notifications subsystem created");
 
     SendEvent("GameStarted");
 
     RegisterConsoleCommands();
-    URHO3D_LOGINFO("Console commands registered");
 
     ApplyGraphicsSettings();
-    URHO3D_LOGINFO("Graphics settings applied");
 
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
-
-    URHO3D_LOGINFO("All systems are set up, starting levels!");
 }
 
 void BaseApplication::Stop()
@@ -174,14 +150,11 @@ void BaseApplication::RegisterConsoleCommands()
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
         GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
-//        String stat = "ABCV";
-//        GetSubsystem<DebugHud>()->SetAppStats("Hahaha", stat);
     });
 }
 
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 {
-    URHO3D_LOGINFO("Exiting system");
     GetSubsystem<Engine>()->Exit();
 }
 

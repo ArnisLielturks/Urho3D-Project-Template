@@ -150,7 +150,6 @@ void Achievements::LoadAchievementList()
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
     if (value.IsArray()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", value.Size());
         URHO3D_LOGINFOF("Loading achievements config: %u", value.Size());
         for (int i = 0; i < value.Size(); i++) {
             JSONValue mapInfo = value[i];
@@ -192,6 +191,8 @@ void Achievements::LoadAchievementList()
                 URHO3D_LOGINFOF("Achievement array element doesnt contain all needed info! Index: %u", i);
             }
         }
+
+        GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
     }
     else {
         URHO3D_LOGERROR("Data/Config/Achievements.json must be an array");
@@ -333,6 +334,8 @@ void Achievements::AddAchievement(String message,
     URHO3D_LOGINFOF("Registering achievement [%s]", rule.message.CString());
 
     SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
+
+    GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
 }
 
 void Achievements::HandleAddAchievement(StringHash eventType, VariantMap& eventData)
@@ -352,4 +355,13 @@ void Achievements::HandleAddAchievement(StringHash eventType, VariantMap& eventD
     else {
         URHO3D_LOGERRORF("Unable to register achievement [%s], incomplete data provided!", eventData[P_MESSAGE].GetString().CString());
     }
+}
+
+int Achievements::CountAchievements()
+{
+    int count = 0;
+    for (auto it = _registeredAchievements.Begin(); it != _registeredAchievements.End(); ++it) {
+        count += (*it).second_.Size();
+    }
+    return count;
 }

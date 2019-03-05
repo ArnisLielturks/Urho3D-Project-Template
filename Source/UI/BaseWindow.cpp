@@ -30,6 +30,7 @@ Sprite* BaseWindow::CreateOverlay()
     _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth());
     _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight());
     _overlay->SetBlendMode(BlendMode::BLEND_ALPHA);
+    _overlay->SetPriority(1000);
 
     return _overlay;
 }

@@ -33,7 +33,11 @@ void Loading::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
+    if (data_.Contains("Map")) {
+        GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
+    } else {
+        GetSubsystem<SceneManager>()->LoadScene(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml");
+    }
 }
 
 void Loading::CreateScene()

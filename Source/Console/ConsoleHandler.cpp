@@ -35,6 +35,7 @@ void ConsoleHandler::Create()
     _console->GetBackground()->SetOpacity(0.8f);
     _console->SetNumHistoryRows(1000);
     _console->SetNumBufferedRows(100);
+    _console->GetBackground()->SetPriority(9999);
 
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         _console->AddAutoComplete((*it).first_);

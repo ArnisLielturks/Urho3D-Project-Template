@@ -78,6 +78,8 @@ void Splash::CreateUI()
         sprite->SetHotSpot(IntVector2(128, 128));
     }
 
+    sprite->SetPriority(0);
+
     // Add as a child of the root UI element
     ui->GetRoot()->AddChild(sprite);
 

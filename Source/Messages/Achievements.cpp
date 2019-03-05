@@ -331,7 +331,7 @@ void Achievements::AddAchievement(String message,
 
     _registeredAchievements[eventName].Push(rule);
 
-    URHO3D_LOGINFOF("Registering achievement [%s]", rule.message.CString());
+//    URHO3D_LOGINFOF("Registering achievement [%s]", rule.message.CString());
 
     SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
 

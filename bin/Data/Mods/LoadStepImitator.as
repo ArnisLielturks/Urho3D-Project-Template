@@ -15,7 +15,7 @@ void Start()
     data["Event"] = "LoadImages";
     SendEvent("RegisterLoadingStep", data);
 
-    for (uint i = 0; i < 3; i++) {
+    for (uint i = 0; i < 1; i++) {
         // Invalid loading steps which will test our ACK flow
         data["Name"] = "Loading step without ACK #" + String(i);
         data["Event"] = "LoadUnknown #" + String(i);

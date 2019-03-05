@@ -10,12 +10,9 @@ Array<Text@> textElements;
 void Start()
 {
     log.Info("Debugger.as START");
-    SubscribeToEvent("SetLevel", "HandleLevelChange");
     SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
     SubscribeToEvent("InputMappingFinished", "HandleInputMappingFinished");
-    SubscribeToEvent("LevelChangingStarted", "HandleLevelChangingStarted");
-    SubscribeToEvent("LevelChangingFinished", "HandleLevelChangingFinished");
 
     // Add new global config value
     VariantMap data;
@@ -36,33 +33,12 @@ void Start()
     DelayedExecute(5.0, true, "void ShowNotitification()");
 }
 
-void HandleLevelChangingStarted(StringHash eventType, VariantMap& eventData)
-{
-    String from = eventData["From"].GetString();
-    String to = eventData["To"].GetString();
-}
-
-void HandleLevelChangingFinished(StringHash eventType, VariantMap& eventData)
-{
-    String from = eventData["From"].GetString();
-    String to = eventData["To"].GetString();
-}
-
 void ShowNotitification()
 {
     VariantMap data;
     data["Message"] = "Uptime seconds: " + String(time.elapsedTime);
     SendEvent("ShowNotification", data);
 }
-
-// void StopSound()
-// {
-//     VariantMap data;
-//     data["Index"] = -1;
-//     data["Type"] = "Music";
-//     SendEvent("StopSound", data);
-//     // DelayedExecute(1.0, false, "void PlaySound()");
-// }
 
 void Stop()
 {
@@ -78,40 +54,6 @@ void HandleInputMappingFinished(StringHash eventType, VariantMap& eventData)
     log.Info("Key: " + String(eventData["Key"].GetInt()));
     log.Info("KeyName: " + eventData["KeyName"].GetString());
     log.Info("------------");
-}
-
-/**
- * Output debug message when level changing is requested
- */
-void HandleLevelChange(StringHash eventType, VariantMap& eventData)
-{
-    String levelName = eventData["Name"].GetString();
-    log.Info("[Debugger.as] Level loaded: " + levelName);
-
-    if (levelName == "Splash") {
-        // Stop all previous music first
-        VariantMap data;
-        data["Index"] = -1;
-        data["Type"] = "Music";
-        SendEvent("StopSound", data);
-
-        // Play sound by our choice
-        data["Index"] = 0;
-        data["Type"] = "Music";
-        SendEvent("PlaySound", data);
-    }
-    if (levelName == "MainMenu") {
-        //Stop all previous music first
-        VariantMap data;
-        data["Index"] = -1;
-        data["Type"] = "Music";
-        SendEvent("StopSound", data);
-
-        // Play sound by our choice
-        data["Index"] = 1;
-        data["Type"] = "Music";
-        SendEvent("PlaySound", data);
-    }
 }
 
 /**

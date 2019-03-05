@@ -109,14 +109,16 @@ void ModLoader::Dispose()
 
 void ModLoader::Reload()
 {
-	//_mods.Clear();
-	for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
-	    if ((*it)) {
-            (*it)->Execute("void Stop()");
-            (*it)->Execute("void Start()");
+    if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
+        //_mods.Clear();
+        for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
+            if ((*it)) {
+                (*it)->Execute("void Stop()");
+                (*it)->Execute("void Start()");
+            }
         }
-	}
-    CheckAllMods();
+        CheckAllMods();
+    }
 }
 
 void ModLoader::SubscribeConsoleCommands()
@@ -151,6 +153,10 @@ void ModLoader::CheckAllMods()
 
 void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
 {
+    if (!GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
+        return;
+    }
+
     using namespace FileChanged;
     String filename = eventData[P_RESOURCENAME].GetString();
     if (!filename.Contains(".as") && !filename.Contains(".lua")) {

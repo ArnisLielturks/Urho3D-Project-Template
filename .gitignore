@@ -1,3 +1,7 @@
+.vscode
+.gradle
 build/
 cmake-build-debug/
 .idea/
+android/launcher-app/build
+android/launcher-app/.externalNativeBuild

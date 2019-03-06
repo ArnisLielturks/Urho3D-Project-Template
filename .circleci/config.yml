@@ -1,9 +1,20 @@
 version: 2
 jobs:
-  build:
+  build_android:
+    machine: true
+    steps:
+    - checkout
+    - run: ./android/script.sh
+  build_desktop:
     machine: true
     steps:
       - checkout
-      - run: ./android/script.sh
       # Build the image
       - run: docker build --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+
+workflows:
+  version: 2
+  build:
+    jobs:
+    - build_android
+    - build_desktop

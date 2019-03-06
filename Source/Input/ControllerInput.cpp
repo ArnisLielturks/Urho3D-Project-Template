@@ -76,10 +76,10 @@ void ControllerInput::LoadConfig()
     }
 
 	// Single player mode, all the input is handled by single Controls object
-	SetMultipleControllerSupport(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", true));
+	SetMultipleControllerSupport(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", false));
 	// Keyboard/mouse - 1st player, all the connected joysticks control new players
 	// This will have no effect if `SetMultipleControllerSupport` is set to `false`
-	SetJoystickAsFirstController(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", false));
+	SetJoystickAsFirstController(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", true));
 }
 
 void ControllerInput::SaveConfig()

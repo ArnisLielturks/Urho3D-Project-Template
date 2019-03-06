@@ -50,7 +50,7 @@ void ModLoader::LoadASMods()
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
-        SharedPtr<ScriptFile> scriptFile(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Mods/" + (*it)));
+        SharedPtr<ScriptFile> scriptFile(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>("Mods/" + (*it)));
         if (scriptFile) {
             _asMods.Push(scriptFile);
             _asScriptMap["Mods/" + (*it)] = scriptFile;

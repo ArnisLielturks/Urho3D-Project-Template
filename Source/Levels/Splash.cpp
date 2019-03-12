@@ -61,8 +61,8 @@ void Splash::CreateUI()
     auto* graphics = GetSubsystem<Graphics>();
 
     // Get rendering window size as floats
-    auto width = (float)graphics->GetWidth();
-    auto height = (float)graphics->GetHeight();
+    auto width = (float)graphics->GetWidth() / GetSubsystem<UI>()->GetScale();
+    auto height = (float)graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
 
     // The UI root element is as big as the rendering window, set random position within it
     sprite->SetPosition(width / 2, height / 2);

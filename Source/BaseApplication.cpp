@@ -26,7 +26,11 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<ConsoleHandler>();
     context_->RegisterFactory<SceneManager>();
 
+#ifdef __ANDROID__
+    _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate/config.cfg";
+#else
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
+#endif
 
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
@@ -274,17 +278,20 @@ void BaseApplication::LoadTranslationFiles()
     auto* localization = GetSubsystem<Localization>();
 
     // Get all translation files in the Data/Translations folder
-    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Translations"), String("*.json"), SCAN_FILES, false);
+    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Translations"), String("*.json"), SCAN_FILES, true);
 
-#if __ANDROID__
+#ifdef __ANDROID__
     result.Push("EN.json");
     result.Push("LV.json");
 #endif
 
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
-        String filepath = "Data/Translations/" + file;
-
+#ifdef __ANDROID__
+        String filepath = "Translations/" + file;
+#else
+        String filepath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/" + file;
+#endif
         // Filename is handled as a language
         file.Replace(".json", "", false);
 

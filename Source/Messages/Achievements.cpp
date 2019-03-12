@@ -147,7 +147,7 @@ void Achievements::LoadAchievementList()
     LoadProgress();
 
     JSONFile configFile(context_);
-    configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/Achievements.json");
+    configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/Achievements.json");
     JSONValue value = configFile.GetRoot();
     if (value.IsArray()) {
         URHO3D_LOGINFOF("Loading achievements config: %u", value.Size());
@@ -264,7 +264,15 @@ void Achievements::SaveProgress()
             file.GetRoot()[id.ToString()] = (*achievement).current;
         }
     }
+#ifdef __ANDROID__
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
+    if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
+        GetSubsystem<FileSystem>()->CreateDir(directory);
+    }
+    file.SaveFile(directory + "/Achievements.json");
+#else
     file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
+#endif
 
     //URHO3D_LOGINFO("Achievement progress saving done!");
 }
@@ -272,7 +280,17 @@ void Achievements::SaveProgress()
 void Achievements::LoadProgress()
 {
     JSONFile configFile(context_);
+
+#ifdef __ANDROID__
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
+    if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
+        GetSubsystem<FileSystem>()->CreateDir(directory);
+    }
+    configFile.LoadFile(directory + "/Achievements.json");
+#else
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
+#endif
+
     JSONValue value = configFile.GetRoot();
     if (value.IsObject()) {
         for (auto it = value.Begin(); it != value.End(); ++it) {

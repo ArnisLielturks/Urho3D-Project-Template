@@ -28,6 +28,7 @@ void MouseInput::SubscribeToEvents()
 	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(MouseInput, HandleKeyUp));
 	SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(MouseInput, HandleMouseMove));
 	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MouseInput, HandleUpdate));
+//    GetSubsystem<Input>()->SetTouchEmulation(true);
 }
 
 void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
@@ -100,10 +101,10 @@ String MouseInput::GetActionKeyName(int action)
 
 void MouseInput::LoadConfig()
 {
-    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
-    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
-    _invertX = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX");
-    _invertY = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY");
+    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
+    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
+    _invertX = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX", false);
+    _invertY = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY", false);
 }
 
 void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)

@@ -236,10 +236,10 @@ void JoystickInput::HandleJoystickDisconnected(StringHash eventType, VariantMap&
 
 void JoystickInput::LoadConfig()
 {
-    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX");
-    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY");
-    _invertX = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX");
-    _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY");
+    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 1.0f);
+    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 1.0f);
+    _invertX = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false);
+    _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false);
 
     //TODO put these settings inside controllers tab
     _joystickMapping.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis");

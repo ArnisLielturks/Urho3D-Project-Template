@@ -46,7 +46,7 @@ void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
 #ifdef __ANDROID__
-    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.5));
+    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.8));
 #else
     ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
 #endif
@@ -276,9 +276,14 @@ void BaseApplication::LoadTranslationFiles()
     // Get all translation files in the Data/Translations folder
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Translations"), String("*.json"), SCAN_FILES, false);
 
+#if __ANDROID__
+    result.Push("EN.json");
+    result.Push("LV.json");
+#endif
+
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
-        String filepath = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Translations/" + file;
+        String filepath = "Data/Translations/" + file;
 
         // Filename is handled as a language
         file.Replace(".json", "", false);

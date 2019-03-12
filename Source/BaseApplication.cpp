@@ -45,7 +45,11 @@ void BaseApplication::Setup()
 void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
+#ifdef __ANDROID__
+    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.5));
+#else
     ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
+#endif
     GetSubsystem<ConsoleHandler>()->Create();
 
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();

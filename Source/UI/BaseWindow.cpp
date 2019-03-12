@@ -27,8 +27,8 @@ Sprite* BaseWindow::CreateOverlay()
     _overlay->SetEnabled(true);
     _overlay->SetPosition(0, 0);
     _overlay->SetTexture(cache->GetResource<Texture2D>("Textures/Transparent.png"));
-    _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth());
-    _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight());
+    _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+    _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
     _overlay->SetBlendMode(BlendMode::BLEND_ALPHA);
     _overlay->SetPriority(1000);
 

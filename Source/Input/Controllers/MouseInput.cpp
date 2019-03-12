@@ -27,6 +27,7 @@ void MouseInput::SubscribeToEvents()
 	SubscribeToEvent(E_MOUSEBUTTONDOWN, URHO3D_HANDLER(MouseInput, HandleKeyDown));
 	SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(MouseInput, HandleKeyUp));
 	SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(MouseInput, HandleMouseMove));
+	SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MouseInput, HandleUpdate));
 }
 
 void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
@@ -103,4 +104,23 @@ void MouseInput::LoadConfig()
     _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity");
     _invertX = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX");
     _invertY = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY");
+}
+
+void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+	auto input = GetSubsystem<Input>();
+	ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+	for (unsigned i = 0; i < input->GetNumTouches(); ++i) {
+		TouchState* state = input->GetTouch(i);
+		if (!state->touchedElement_)    // Touch on empty space
+		{
+			if (state->delta_.x_ || state->delta_.y_)
+			{
+				float yaw = _sensitivityX * state->delta_.x_;
+				float pitch = _sensitivityY * state->delta_.y_;
+				controllerInput->UpdateYaw(yaw);
+				controllerInput->UpdatePitch(pitch);
+			}
+		}
+	}
 }

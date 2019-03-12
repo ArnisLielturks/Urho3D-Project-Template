@@ -45,6 +45,7 @@ void BaseApplication::Setup()
 void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
+    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
     GetSubsystem<ConsoleHandler>()->Create();
 
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();

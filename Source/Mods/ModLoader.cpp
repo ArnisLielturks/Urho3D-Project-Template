@@ -47,6 +47,16 @@ void ModLoader::LoadASMods()
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
     URHO3D_LOGINFO("Total AS mods found: " + String(result.Size()));
 
+#ifdef __ANDROID__
+    result.Push("Debugger.as");
+    result.Push("GameMode.as");
+    result.Push("LevelLoader.as");
+    result.Push("LoadingScreen.as");
+    result.Push("LoadStepImitator.as");
+    result.Push("LogoRotate.as");
+    result.Push("Skybox.as");
+#endif
+
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));

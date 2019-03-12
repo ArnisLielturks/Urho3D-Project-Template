@@ -377,6 +377,20 @@ void SettingsWindow::CreateVideoTab()
     auto* localization = GetSubsystem<Localization>();
     InitGraphicsSettings();
 
+    // UI Scale
+    CreateSingleLine();
+    auto scaleSlider = CreateSlider(localization->Get("UI"));
+    scaleSlider->SetRange(0.5);
+    scaleSlider->SetValue(GetSubsystem<UI>()->GetScale() - 1.0f);
+    // Detect button press events
+    SubscribeToEvent(scaleSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+        using namespace SliderChanged;
+        float newValue = eventData[P_VALUE].GetFloat();
+        GetSubsystem<UI>()->SetScale(newValue + 1.0f);
+
+    });
+
     // Gamma
     CreateSingleLine();
     auto gammaSlider = CreateSlider(localization->Get("GAMMA"));

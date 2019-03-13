@@ -2,6 +2,7 @@
 #include "Achievements.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
+#include "../Global.h"
 
 void SaveProgressAsync(const WorkItem* item, unsigned threadIndex)
 {
@@ -265,8 +266,8 @@ void Achievements::SaveProgress()
         }
     }
 #ifdef __ANDROID__
-    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
-    file.SaveFile(directory + "Achievements.json");
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
+    file.SaveFile(directory + "/Achievements.json");
 #else
     file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif
@@ -279,11 +280,8 @@ void Achievements::LoadProgress()
     JSONFile configFile(context_);
 
 #ifdef __ANDROID__
-    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
-    if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
-        GetSubsystem<FileSystem>()->CreateDir(directory);
-    }
-    configFile.LoadFile(directory + "Achievements.json");
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
+    configFile.LoadFile(directory + "/Achievements.json");
 #else
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif

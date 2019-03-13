@@ -5,6 +5,7 @@
 #include "Console/ConsoleHandler.h"
 #include "SceneManager.h"
 #include "MyEvents.h"
+#include "Global.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
@@ -27,7 +28,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<SceneManager>();
 
 #ifdef __ANDROID__
-    _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate/config.cfg";
+    _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
 #else
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
 #endif
@@ -37,7 +38,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(new SceneManager(context_));
 
 #ifdef __ANDROID__
-    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
     if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
         GetSubsystem<FileSystem>()->CreateDir(directory);
     }

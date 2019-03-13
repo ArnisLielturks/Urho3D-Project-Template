@@ -17,3 +17,5 @@ static const unsigned COLLISION_MASK_OBSTACLES = 1 << 2; //4
 static String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";
 
 static const float GAMMA_MAX_VALUE = 2.0f;
+
+static const String DOCUMENTS_DIR = "ProjectTemplate";

@@ -18,6 +18,7 @@ curl -X POST \
         -H "Content-Type: multipart/form-data" \
         -F file=@android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk \
         -F build=${CIRCLE_BUILD_NUM} \
+        -F platform=android \
         -F description="Android-automated-builds" \
         -F token=$SITE_TOKEN \
         $SITE_URL || true

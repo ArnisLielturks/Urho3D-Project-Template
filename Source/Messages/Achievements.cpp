@@ -146,9 +146,9 @@ void Achievements::LoadAchievementList()
 {
     LoadProgress();
 
-    JSONFile configFile(context_);
-    configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/Achievements.json");
-    JSONValue value = configFile.GetRoot();
+    auto configFile = GetSubsystem<ResourceCache>()->GetResource<JSONFile>("Config/Achievements.json");
+
+    JSONValue value = configFile->GetRoot();
     if (value.IsArray()) {
         URHO3D_LOGINFOF("Loading achievements config: %u", value.Size());
         for (int i = 0; i < value.Size(); i++) {

@@ -287,14 +287,22 @@ void BaseApplication::LoadTranslationFiles()
 
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
+
+#ifdef __ANDROID__
+        String filepath = "Translations/" + file;
+#else
         String filepath = "Data/Translations/" + file;
+#endif
         // Filename is handled as a language
         file.Replace(".json", "", false);
 
         auto jsonFile = GetSubsystem<ResourceCache>()->GetResource<JSONFile>(filepath);
-        // Load the actual file in the system
-        localization->LoadSingleLanguageJSON(jsonFile->GetRoot(), file);
-        URHO3D_LOGINFO("Loading translation file '" + filepath + "' to '" + file + "' language");
-
+        if (jsonFile) {
+            // Load the actual file in the system
+            localization->LoadSingleLanguageJSON(jsonFile->GetRoot(), file);
+            URHO3D_LOGINFO("Loading translation file '" + filepath + "' to '" + file + "' language");
+        } else {
+            URHO3D_LOGERROR("Translation file '" + filepath + "' not found!");
+        }
     }
 }

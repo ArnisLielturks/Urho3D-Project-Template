@@ -8,4 +8,18 @@ services:
   - docker
 
 script:
-  - docker build --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${TRAVIS_BUILD_NUMBER} --build-arg BUILD_DESCRIPTION="TravisCI-automated-build" .
+  - docker build -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${TRAVIS_BUILD_NUMBER} --build-arg BUILD_DESCRIPTION="TravisCI-automated-build" .
+
+---
+
+sudo: false
+
+language: c++
+
+dist: xenial
+
+services:
+- docker
+
+script:
+- docker build -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${TRAVIS_BUILD_NUMBER} --build-arg BUILD_DESCRIPTION="TravisCI-automated-build" .

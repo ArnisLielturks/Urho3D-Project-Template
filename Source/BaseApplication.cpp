@@ -35,8 +35,6 @@ BaseApplication::BaseApplication(Context* context) :
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new SceneManager(context_));
-
-    LoadTranslationFiles();
 }
 
 void BaseApplication::Setup()
@@ -95,6 +93,11 @@ void BaseApplication::Start()
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
+
+    LoadTranslationFiles();
+
+    auto* localization = GetSubsystem<Localization>();
+    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }
 
 void BaseApplication::Stop()
@@ -247,9 +250,6 @@ void BaseApplication::LoadINIConfig(String filename)
 	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
 	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
 	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
-
-    auto* localization = GetSubsystem<Localization>();
-    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }
 
 void BaseApplication::ApplyGraphicsSettings()
@@ -288,11 +288,7 @@ void BaseApplication::LoadTranslationFiles()
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
 
-#ifdef __ANDROID__
         String filepath = "Translations/" + file;
-#else
-        String filepath = "Data/Translations/" + file;
-#endif
         // Filename is handled as a language
         file.Replace(".json", "", false);
 

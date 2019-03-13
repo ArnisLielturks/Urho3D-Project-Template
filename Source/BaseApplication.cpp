@@ -29,12 +29,19 @@ BaseApplication::BaseApplication(Context* context) :
 #ifdef __ANDROID__
     _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate/config.cfg";
 #else
-    _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/config.cfg";
+    _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
 #endif
 
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new SceneManager(context_));
+
+#ifdef __ANDROID__
+    String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
+    if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
+        GetSubsystem<FileSystem>()->CreateDir(directory);
+    }
+#endif
 }
 
 void BaseApplication::Setup()

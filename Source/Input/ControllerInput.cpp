@@ -30,8 +30,6 @@ ControllerInput::ControllerInput(Context* context) :
 	_controlMapNames[CTRL_ACTION] = "Primary action";
 	_controlMapNames[CTRL_SPRINT] = "Sprint";
 	_controlMapNames[CTRL_UP] = "Move up";
-
-	_configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Config/controls.cfg";
 	Init();
 }
 

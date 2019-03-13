@@ -266,10 +266,7 @@ void Achievements::SaveProgress()
     }
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + "ProjectTemplate";
-    if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
-        GetSubsystem<FileSystem>()->CreateDir(directory);
-    }
-    file.SaveFile(directory + "/Achievements.json");
+    file.SaveFile(directory + "Achievements.json");
 #else
     file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif
@@ -286,7 +283,7 @@ void Achievements::LoadProgress()
     if (!GetSubsystem<FileSystem>()->DirExists(directory)) {
         GetSubsystem<FileSystem>()->CreateDir(directory);
     }
-    configFile.LoadFile(directory + "/Achievements.json");
+    configFile.LoadFile(directory + "Achievements.json");
 #else
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif

@@ -207,11 +207,6 @@ private:
 	HashMap<int, SharedPtr<BaseInput>> _inputHandlers;
 
 	/**
-	 * Filepath + filename to the configuration file
-	 */
-	String _configurationFile;
-
-	/**
 	 * Multiple controller support
 	 */
 	bool _multipleControllerSupport;

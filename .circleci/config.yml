@@ -5,16 +5,23 @@ jobs:
     steps:
     - checkout
     - run: ./android/script.sh
-  build_desktop:
+  build_windows:
     machine: true
     steps:
       - checkout
       # Build the image
-      - run: docker build --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+      - run: docker build -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+  build_linux:
+    machine: true
+    steps:
+    - checkout
+    # Build the image
+    - run: docker build -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
 
 workflows:
   version: 2
   build:
     jobs:
+    - build_linux
+    - build_windows
     - build_android
-    - build_desktop

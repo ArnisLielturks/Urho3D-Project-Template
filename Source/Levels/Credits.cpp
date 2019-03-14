@@ -68,7 +68,6 @@ namespace Levels {
         CreateSingleLine("Community", HEADER_SIZE);
         CreateSingleLine("", HEADER_MARGIN);
         CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
-        CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
         CreateSingleLine("Level manager: @artgolf1000", PARAGRAPH);
         CreateSingleLine("Icons: https://game-icons.net", PARAGRAPH);
         CreateSingleLine("Sounds and music: https://freesound.org", PARAGRAPH);

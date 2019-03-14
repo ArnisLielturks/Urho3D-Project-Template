@@ -48,6 +48,7 @@ void FinishLoadSkills()
     SendEvent("LoadingStepFinished", data);
 }
 
+float progress = 0.0;
 void HandleLoadImages()
 {
     VariantMap data;
@@ -56,13 +57,12 @@ void HandleLoadImages()
     // Sent event
     SendEvent("AckLoadingStep", data);
 
+    progress = 0.0;
     DelayedExecute(1.0, false, "void LoadImagesProgress()");
     DelayedExecute(2.0, false, "void LoadImagesProgress()");
     DelayedExecute(3.0, false, "void LoadImagesProgress()");
     DelayedExecute(4.0, false, "void FinishLoadImages()");
 }
-
-float progress = 0.0;
 
 void LoadImagesProgress()
 {

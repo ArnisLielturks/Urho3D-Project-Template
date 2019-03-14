@@ -11,7 +11,8 @@ const float PROGRESS_SPEED = 0.3f; // how fast should the progress bar increase 
 
 SceneManager::SceneManager(Context* context) :
         Object(context),
-        progress(0)
+        progress(0),
+        targetProgress(0)
 {
     SubscribeToEvent(MyEvents::E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
     SubscribeToEvent(MyEvents::E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));

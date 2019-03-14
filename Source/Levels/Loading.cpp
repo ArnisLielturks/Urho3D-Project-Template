@@ -141,7 +141,7 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     _status->SetText(String((int)(progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
 
     if (_loadingBar) {
-        _loadingBar->SetWidth(progress * (GetSubsystem<Graphics>()->GetWidth() - 20));
+        _loadingBar->SetWidth(progress * (GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() - 20));
     }
 
     if (progress >= 1.0f) {
@@ -174,8 +174,8 @@ void Loading::CreateProgressBar()
         auto *graphics = GetSubsystem<Graphics>();
 
         // Get rendering window size as floats
-        auto width = (float) graphics->GetWidth();
-        auto height = (float) graphics->GetHeight();
+        auto width = (float) graphics->GetWidth() / GetSubsystem<UI>()->GetScale();
+        auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
 
         // The UI root element is as big as the rendering window, set random position within it
         _loadingBar->SetPosition(10, height - 30);

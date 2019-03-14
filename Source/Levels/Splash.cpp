@@ -13,10 +13,10 @@ Splash::Splash(Context* context) :
     _logoIndex(0)
 {
     // List of different logos that multiple splash screens will show
-    _logos.Reserve(3);
+    _logos.Reserve(2);
     _logos.Push("Textures/UrhoIcon.png");
     _logos.Push("Textures/Achievements/lunar-module.png");
-    _logos.Push("Textures/Achievements/retro-controller.png");
+    //_logos.Push("Textures/Achievements/retro-controller.png");
 }
 
 Splash::~Splash()

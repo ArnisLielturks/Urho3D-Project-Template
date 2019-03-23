@@ -47,7 +47,7 @@ void AchievementsWindow::Create()
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(500, 400);
+    _baseWindow->SetSize(550, 400);
     _baseWindow->BringToFront();
 
     // Create Window 'titlebar' container

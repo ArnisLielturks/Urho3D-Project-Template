@@ -238,6 +238,8 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
         if ((*it).second_->GetPosition().y_ < -10) {
             (*it).second_->SetPosition(Vector3(0, 1, 0));
+            (*it).second_->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
+            (*it).second_->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
             SendEvent("FallOffTheMap");
         }
 
@@ -343,6 +345,7 @@ Node* Level::CreateControllableObject()
     body->SetLinearDamping(0.8f);
     body->SetAngularDamping(0.8f);
     body->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES);
+    body->SetCollisionEventMode(CollisionEventMode::COLLISION_ALWAYS);
 
     auto* shape = ballNode->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);

@@ -1,5 +1,5 @@
 uint count = 0;
-
+Node@ ground = null;
 
 void Start()
 {
@@ -57,7 +57,7 @@ void Stop()
 void CreateCheckpoint()
 {
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
-    scene.InstantiateXML(xml.root, Vector3(Random(30.0f) - 15.0f, 5.0f, Random(30.0f) - 15.0f), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(ground.scale.x) - ground.scale.x/2, 5.0f, Random(ground.scale.x) - ground.scale.x/2), Quaternion());
 }
 
 void CreateObject()
@@ -78,6 +78,8 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     VariantMap data;
     data["Event"] = "LoadGamemode";
 
+    ground = scene.GetChild("Ground", true);
+    
     // Sent event to let the system know that we will handle this loading step
     SendEvent("AckLoadingStep", data);
 
@@ -126,6 +128,12 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
 
     for( uint i = 0; i < 5; i++) {
         CreateObject();
+    }
+
+    if (ground !is null) {
+        if (ground.scale.x > 1) {
+            ground.scale = ground.scale * 0.9;
+        }
     }
 }
 

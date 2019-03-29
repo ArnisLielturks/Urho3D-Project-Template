@@ -35,6 +35,12 @@ void Loading::Init()
 
     if (data_.Contains("Map")) {
         GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
+	   
+	    //in test not  return , execute LoadScene in if statement and also else statement
+	    //eventully LoadScene load default "Data/Scenes/Scene.xml" not actually data["Map"]
+	    return;
+	    //
+	    
     } else {
         GetSubsystem<SceneManager>()->LoadScene(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml");
     }

@@ -64,7 +64,9 @@ void Level::Init()
     }
 
     Node* movableNode = scene_->GetChild("PathNode");
-    _path = movableNode->GetComponent<SplinePath>();
+    if (movableNode) {
+        _path = movableNode->GetComponent<SplinePath>();
+    }
 }
 
 void Level::StartAudio()

@@ -34,3 +34,8 @@ Sprite* BaseWindow::CreateOverlay()
 
     return _overlay;
 }
+
+void BaseWindow::SetData(VariantMap data)
+{
+    _data = data;
+}

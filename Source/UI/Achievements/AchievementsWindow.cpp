@@ -9,7 +9,6 @@
 AchievementsWindow::AchievementsWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 AchievementsWindow::~AchievementsWindow()

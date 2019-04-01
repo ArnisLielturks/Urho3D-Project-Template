@@ -7,7 +7,6 @@
 ScoreboardWindow::ScoreboardWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 ScoreboardWindow::~ScoreboardWindow()

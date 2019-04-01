@@ -17,7 +17,6 @@ BaseApplication::BaseApplication(Context* context) :
 
     context_->RegisterFactory<ControllerInput>();
     context_->RegisterFactory<LevelManager>();
-    context_->RegisterFactory<Message>();
     context_->RegisterFactory<Notifications>();
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
@@ -76,7 +75,6 @@ void BaseApplication::Start()
 
     context_->RegisterSubsystem(new LevelManager(context_));
     context_->RegisterSubsystem(new WindowManager(context_));
-    context_->RegisterSubsystem(new Message(context_));
     context_->RegisterSubsystem(new Achievements(context_));
 	context_->RegisterSubsystem(new ModLoader(context_));
     context_->RegisterSubsystem(new AudioManager(context_));

@@ -18,8 +18,7 @@ BaseLevel::~BaseLevel()
 
 void BaseLevel::SubscribeToBaseEvents()
 {
-    SubscribeToEvent("LevelStart", URHO3D_HANDLER(BaseLevel, HandleStart));
-    SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, URHO3D_HANDLER(BaseLevel, HandleLevelLoaded));
+    SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_STARTED, URHO3D_HANDLER(BaseLevel, HandleStart));
 
     // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma");
@@ -45,11 +44,6 @@ void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
     data_ = eventData;
     Init();
     SubscribeToEvents();
-}
-
-void BaseLevel::HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
-{
-    OnLoaded();
 }
 
 void BaseLevel::Run()

@@ -22,8 +22,6 @@ void Loading::Init()
     // Disable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(false);
 
-    BaseLevel::Init();
-
     // Create the scene content
     CreateScene();
 

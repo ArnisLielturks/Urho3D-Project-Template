@@ -8,7 +8,6 @@
 QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 QuitConfirmationWindow::~QuitConfirmationWindow()

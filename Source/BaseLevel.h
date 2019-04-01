@@ -16,19 +16,12 @@ private:
 
     void HandleStart(StringHash eventType, VariantMap& eventData);
 
-    void HandleLevelLoaded(StringHash eventType, VariantMap& eventData);
-
 protected:
 
     /**
-     * Initialize the scene
+     * Initialize the level
      */
-    virtual void Init() {}
-
-    /**
-     * Trigger when level manager has loaded the level
-     */
-    virtual void OnLoaded() {}
+    virtual void Init() {};
 
     /**
      * Start scene updates

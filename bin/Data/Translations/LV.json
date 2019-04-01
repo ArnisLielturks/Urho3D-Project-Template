@@ -49,5 +49,9 @@
   "JOYSTICK_AS_FIRST_CONTROLLER": "Joystick kā pirmais kontrolieris",
   "GAMMA": "Gamma",
   "LOAD_MODS": "Ielādēt papildinājumus",
-  "DEVELOPER_CONSOLE": "Izstrādātāja konsole"
+  "DEVELOPER_CONSOLE": "Izstrādātāja konsole",
+  "OK": "Labi",
+  "WARNING": "Uzmanību!",
+  "RESTART_TO_APPLY": "Restartējiet spēli lai izmaiņas stātos spēkā!",
+  "LEVEL_NOT_EXIST": "Līmenis neeksistē:"
 }

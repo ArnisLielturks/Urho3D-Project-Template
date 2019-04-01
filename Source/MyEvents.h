@@ -14,6 +14,7 @@ namespace MyEvents
     URHO3D_EVENT(E_OPEN_WINDOW, OpenWindow)
     {
         URHO3D_PARAM(P_NAME, Name); // string - window object name
+		URHO3D_PARAM(P_CLOSE_PREVIOUS, ClosePrevious); // bool - Close window first if it was already opened
     }
     // Close UI Window
     URHO3D_EVENT(E_CLOSE_WINDOW, CloseWindow)
@@ -200,4 +201,11 @@ namespace MyEvents
 		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
 	}
 
+	// Display pop-up message
+	URHO3D_EVENT(E_SHOW_MESSAGE, ShowMessage)
+	{
+		URHO3D_PARAM(P_TITLE, Title); // string - Title of the message
+		URHO3D_PARAM(P_MESSAGE, Message); // string - message content
+		URHO3D_PARAM(P_TYPE, Type); // string - info / warning
+	}
 }

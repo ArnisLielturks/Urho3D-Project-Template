@@ -8,7 +8,6 @@
 PauseWindow::PauseWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 PauseWindow::~PauseWindow()

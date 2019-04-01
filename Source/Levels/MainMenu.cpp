@@ -22,24 +22,11 @@ void MainMenu::Init()
     // Disable achievement showing for this level
     GetSubsystem<Achievements>()->SetShowAchievements(true);
 
-    if (data_.Contains("Message")) {
-        //SharedPtr<Urho3D::MessageBox> messageBox(new Urho3D::MessageBox(context_, data_["Message"].GetString(), "Oh crap!"));
-        VariantMap data = GetEventDataMap();
-        data["Title"] = "Error!";
-        data["Message"] = data_["Message"].GetString();
-        SendEvent("ShowAlertMessage", data);
-    }
-    BaseLevel::Init();
-
     // Create the scene content
     CreateScene();
 
     // Create the UI content
     CreateUI();
-
-//    data["Title"] = "Hey!";
-//    data["Message"] = "Seems like everything is ok!";
-//    SendEvent("ShowAlertMessage", data);
 }
 
 void MainMenu::CreateScene()
@@ -54,6 +41,17 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
+    if (data_.Contains("Message")) {
+        auto* localization = GetSubsystem<Localization>();
+
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = data_["Message"].GetString();
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    }
     auto* localization = GetSubsystem<Localization>();
 
     int marginBottom = -180;

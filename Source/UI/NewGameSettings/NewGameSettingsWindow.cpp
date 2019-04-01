@@ -8,7 +8,6 @@
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
     BaseWindow(context)
 {
-    Init();
 }
 
 NewGameSettingsWindow::~NewGameSettingsWindow()

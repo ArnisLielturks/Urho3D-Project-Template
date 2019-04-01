@@ -15,6 +15,11 @@ public:
      */
     virtual void Init() {}
 
+    /**
+     * Set the window parameters
+     */
+    void SetData(VariantMap data);
+
 private:
     /**
      * Create the UI
@@ -38,4 +43,9 @@ protected:
      * Transparent overlay object
      */
     SharedPtr<Sprite> _overlay;
+
+    /**
+     * Data which was passed when window was opened
+     */
+    VariantMap _data;
 };

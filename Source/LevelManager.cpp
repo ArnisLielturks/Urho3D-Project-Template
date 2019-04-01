@@ -137,13 +137,17 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         level_ = context_->CreateObject(StringHash(level_queue_.Front()));
         if (!level_) {
             URHO3D_LOGERROR("Level '" + level_queue_.Front() + "' doesn't exist in the system! Moving to 'Splash' level");
-            level_queue_.PopFront();
+
+            auto* localization = GetSubsystem<Localization>();
             VariantMap& eventData = GetEventDataMap();
-            eventData["Name"] = "Splash";
+            eventData["Name"] = "MainMenu";
+            eventData["Message"] = localization->Get("LEVEL_NOT_EXIST") + " :" + level_queue_.Front();
             SendEvent(MyEvents::E_SET_LEVEL, eventData);
+
+            level_queue_.PopFront();
             return;
         }
-        level_->SendEvent("LevelStart", data_);
+        SendEvent(MyEvents::E_LEVEL_CHANGING_STARTED, data_);
 
         previousLevel_ = currentLevel_;
         currentLevel_ = level_queue_.Front();

@@ -15,7 +15,6 @@ static const int COLUMN_WIDTH = 250;
 SettingsWindow::SettingsWindow(Context* context) :
         BaseWindow(context)
 {
-    Init();
 }
 
 SettingsWindow::~SettingsWindow()
@@ -629,7 +628,13 @@ void SettingsWindow::CreateGameTab()
         GetSubsystem<ConfigManager>()->Set("engine", "Language", languages.At(selection));
         GetSubsystem<ConfigManager>()->Save(true);
 
-        //TODO - apply settings directly, reload view or just show the pop-up message?
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
     // Load mods
@@ -641,9 +646,19 @@ void SettingsWindow::CreateGameTab()
         bool enabled = eventData[P_STATE].GetBool();
         GetSubsystem<ConfigManager>()->Set("game", "LoadMods", enabled);
         GetSubsystem<ConfigManager>()->Save(true);
+
+        auto* localization = GetSubsystem<Localization>();
+
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    // Load mods
+    // Developer console
     CreateSingleLine();
     auto developerConsole = CreateCheckbox(localization->Get("DEVELOPER_CONSOLE"));
     developerConsole->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));

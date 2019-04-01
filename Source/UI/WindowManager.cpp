@@ -8,6 +8,7 @@
 #include "QuitConfirmation/QuitConfirmationWindow.h"
 #include "NewGameSettings/NewGameSettingsWindow.h"
 #include "Achievements/AchievementsWindow.h"
+#include "PopupMessage/PopupMessageWindow.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -33,6 +34,7 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<NewGameSettingsWindow>();
     context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<PauseWindow>();
+    context_->RegisterFactory<PopupMessageWindow>();
 }
 
 void WindowManager::SubscribeToEvents()
@@ -44,16 +46,26 @@ void WindowManager::SubscribeToEvents()
 
 void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData)
 {
+    using namespace MyEvents::OpenWindow;
     String windowName = eventData["Name"].GetString();
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
             if (!(*it).Refs()) {
                 _windowList.Erase(it);
             } else {
-                URHO3D_LOGERROR("Window '" + windowName + "' already opened!");
+                URHO3D_LOGWARNING("Window '" + windowName + "' already opened!");
                 BaseWindow* window = (*it)->Cast<BaseWindow>();
                 //TODO bring this window to the front
-                return;
+
+                if (eventData.Contains(P_CLOSE_PREVIOUS)) {
+                    if (eventData[P_CLOSE_PREVIOUS].GetBool()) {
+                        CloseWindow(windowName);
+                    } else {
+                        return;
+                    }
+                } else {
+                    return;
+                }
             }
         }
     }
@@ -63,6 +75,8 @@ void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData
     newWindow = context_->CreateObject(StringHash(windowName));
     if (newWindow) {
         BaseWindow *window = newWindow->Cast<BaseWindow>();
+        window->SetData(eventData);
+        window->Init();
         _windowList.Push(newWindow);
 
         _openedWindows.Push(windowName);

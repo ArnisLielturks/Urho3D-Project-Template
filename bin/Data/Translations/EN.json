@@ -49,5 +49,9 @@
   "JOYSTICK_AS_FIRST_CONTROLLER": "Joystick as first controller",
   "GAMMA": "Gamma",
   "LOAD_MODS": "Load mods",
-  "DEVELOPER_CONSOLE": "Developer console"
+  "DEVELOPER_CONSOLE": "Developer console",
+  "OK": "Ok",
+  "WARNING": "Warning!",
+  "RESTART_TO_APPLY": "Restart the game to apply changes!",
+  "LEVEL_NOT_EXIST": "Level does not exist:"
 }

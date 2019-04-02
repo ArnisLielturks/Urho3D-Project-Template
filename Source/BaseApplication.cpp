@@ -96,14 +96,12 @@ void BaseApplication::Start()
 
     ApplyGraphicsSettings();
 
+    // Initialize the first level from the config file
     VariantMap& eventData = GetEventDataMap();
     eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     LoadTranslationFiles();
-
-    auto* localization = GetSubsystem<Localization>();
-    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }
 
 void BaseApplication::Stop()
@@ -307,4 +305,7 @@ void BaseApplication::LoadTranslationFiles()
             URHO3D_LOGERROR("Translation file '" + filepath + "' not found!");
         }
     }
+
+    // Finally set the application language
+    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
 }

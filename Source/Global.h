@@ -14,7 +14,7 @@ static const unsigned COLLISION_MASK_PLAYER = 1 << 0; //1
 static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2 
 static const unsigned COLLISION_MASK_OBSTACLES = 1 << 2; //4
 
-static String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";
+static const String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";
 
 static const float GAMMA_MAX_VALUE = 2.0f;
 

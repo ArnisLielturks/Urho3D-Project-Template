@@ -111,9 +111,6 @@ void BaseLevel::Dispose()
         scene_->Clear();
         scene_->Remove();
     }
-    // if (cameraNode_) {
-    //  cameraNode_->Remove();
-    // }
 
     // Remove all UI elements from UI sub-system
     if (GetSubsystem<UI>()) {
@@ -183,11 +180,8 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
         // so that it won't be destroyed and recreated, and we don't have to redefine the viewport on load
-        //cameraNode_ = new Node(context_);
         SharedPtr<Node> cameraNode(scene_->CreateChild("Camera", LOCAL));
         cameraNode->SetPosition(Vector3(0, 1, 0));
-        // Light* light = cameraNode_->CreateComponent<Light>();
-        // light->SetLightType(LightType::LIGHT_POINT);
         Camera* camera = cameraNode->CreateComponent<Camera>(LOCAL);
         camera->SetFarClip(1000.0f);
         camera->SetNearClip(0.1f);
@@ -206,18 +200,21 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/GammaCorrection.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
-        // Make the bloom mixing parameter more pronounced
-        //effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", 0.1);
-//        effectRenderPath->SetEnabled("AutoExposure", GetGlobalVar("AutoExposure").GetBool());
-//        effectRenderPath->SetEnabled("BloomHDR", GetGlobalVar("BloomHDR").GetBool());
-//        effectRenderPath->SetEnabled("FXAA3", GetGlobalVar("FXAA3").GetBool());
-        effectRenderPath->SetEnabled("AutoExposure", false);
-        effectRenderPath->SetEnabled("Bloom", false);
-        effectRenderPath->SetEnabled("FXAA3", true);
-        effectRenderPath->SetEnabled("GammaCorrection", true);
-        effectRenderPath->SetEnabled("ColorCorrection", false);
+        effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
+
+        effectRenderPath->SetEnabled("AutoExposure", GetSubsystem<ConfigManager>()->GetBool("engine", "AutoExposure", false));
+        effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", GetSubsystem<ConfigManager>()->GetFloat("engine", "AutoExposureAdaptRate", 0.1f));
+        effectRenderPath->SetEnabled("Bloom", GetSubsystem<ConfigManager>()->GetBool("engine", "Bloom", false));
+        effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("engine", "FXAA3", true));
+        effectRenderPath->SetEnabled("GammaCorrection", GetSubsystem<ConfigManager>()->GetBool("engine", "GammaCorrection", true));
+        effectRenderPath->SetEnabled("ColorCorrection", GetSubsystem<ConfigManager>()->GetBool("engine", "ColorCorrection", false));
         float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("engine", "Gamma", 1.0f), 0.05f, GAMMA_MAX_VALUE);
         effectRenderPath->SetShaderParameter("Gamma", gamma);
+
+        effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("engine", "Blur", false));
+        effectRenderPath->SetShaderParameter("BlurRadius", GetSubsystem<ConfigManager>()->GetFloat("engine", "BlurRadius", 2.0f));
+        effectRenderPath->SetShaderParameter("BlurSigma", GetSubsystem<ConfigManager>()->GetFloat("engine", "BlurSigma", 2.0f));
+
         viewport->SetRenderPath(effectRenderPath);
 
         Renderer* renderer = GetSubsystem<Renderer>();

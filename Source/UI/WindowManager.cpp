@@ -25,7 +25,7 @@ WindowManager::~WindowManager()
 
 void WindowManager::RegisterAllFactories()
 {
-    // Register classes
+    // Register all available windows
     context_->RegisterFactory<BaseWindow>();
     context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();

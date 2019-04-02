@@ -150,7 +150,7 @@ private:
     /**
      * Tab view in which all the settings will be placed
      */
-    SharedPtr<UIElement> _tabView;
+    SharedPtr<ListView> _listView;
 
     /**
      * Create TAB button at the top on window

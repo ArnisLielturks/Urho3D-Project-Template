@@ -90,7 +90,7 @@ void AchievementsWindow::Create()
     _listView->SetStyleAuto();
     _listView->SetMinHeight(_baseWindow->GetHeight() - 30 - 10);
     _listView->SetPosition(10, 30);
-    _listView->SetScrollBarsVisible(false, true);
+    //_listView->SetScrollBarsVisible(false, true);
 
 
     auto achievements = GetSubsystem<Achievements>()->GetAchievements();

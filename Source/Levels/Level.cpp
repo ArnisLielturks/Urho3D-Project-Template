@@ -25,9 +25,11 @@ Level::~Level()
 void Level::Init()
 {
     if (!scene_) {
+        auto localization = GetSubsystem<Localization>();
         // There is no scene, get back to the main menu
         VariantMap& eventData = GetEventDataMap();
         eventData["Name"] = "MainMenu";
+        eventData["Message"] = localization->Get("NO_SCENE");
         SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
         return;

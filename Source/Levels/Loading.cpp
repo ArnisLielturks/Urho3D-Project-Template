@@ -145,7 +145,6 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);
-        GetSubsystem<SceneManager>()->ResetProgress();
     }
 }
 

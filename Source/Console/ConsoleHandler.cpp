@@ -56,6 +56,20 @@ void ConsoleHandler::SubscribeToEvents()
     SendEvent("ConsoleCommandAdd", data);
     SubscribeToEvent("ConsoleHelp", URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandHelp));
 
+    // How to use lambda (anonymous) functions
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "map", MyEvents::ConsoleCommandAdd::P_EVENT, "#map", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change the map");
+    SubscribeToEvent("#map", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of params!");
+            return;
+        }
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "Loading";
+        data["Map"] = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/" + params[1];
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
+
 }
 
 void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
@@ -80,8 +94,10 @@ void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& e
     String command = eventData[P_NAME].GetString();
     String eventToCall = eventData[P_EVENT].GetString();
     String description = eventData[P_DESCRIPTION].GetString();
-    if (_registeredConsoleCommands.Contains(command)) {
-        URHO3D_LOGWARNINGF("Console command '%s' already registered! Overwriting it!", command.CString());
+    bool overwrite = eventData[P_OVERWRITE].GetBool();
+    if (_registeredConsoleCommands.Contains(command) && !overwrite) {
+        URHO3D_LOGWARNINGF("Console command '%s' already registered! Skipping console command registration!", command.CString());
+        return;
     }
 
     // Add to autocomplete

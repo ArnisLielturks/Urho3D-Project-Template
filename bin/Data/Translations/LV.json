@@ -53,5 +53,6 @@
   "OK": "Labi",
   "WARNING": "Uzmanību!",
   "RESTART_TO_APPLY": "Restartējiet spēli lai izmaiņas stātos spēkā!",
-  "LEVEL_NOT_EXIST": "Līmenis neeksistē:"
+  "LEVEL_NOT_EXIST": "Līmenis neeksistē:",
+  "NO_SCENE": "Scene was not loaded!"
 }

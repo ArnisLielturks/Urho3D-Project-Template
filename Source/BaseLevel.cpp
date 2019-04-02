@@ -18,10 +18,10 @@ BaseLevel::~BaseLevel()
 
 void BaseLevel::SubscribeToBaseEvents()
 {
-    SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_STARTED, URHO3D_HANDLER(BaseLevel, HandleStart));
+    SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_IN_PROGRESS, URHO3D_HANDLER(BaseLevel, HandleStart));
 
     // How to use lambda (anonymous) functions
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma");
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
     SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() == 2) {
@@ -69,6 +69,7 @@ void BaseLevel::SubscribeToEvents()
     data[P_NAME] = "fov";
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
+    data[P_OVERWRITE] = true;
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 }
 

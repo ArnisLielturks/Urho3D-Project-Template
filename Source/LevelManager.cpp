@@ -147,7 +147,6 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             level_queue_.PopFront();
             return;
         }
-        SendEvent(MyEvents::E_LEVEL_CHANGING_STARTED, data_);
 
         previousLevel_ = currentLevel_;
         currentLevel_ = level_queue_.Front();

@@ -15,9 +15,6 @@ SceneManager::SceneManager(Context* context) :
         targetProgress(0)
 {
     SubscribeToEvent(MyEvents::E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
-    SubscribeToEvent(MyEvents::E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));
-    SubscribeToEvent(MyEvents::E_LOADING_STEP_PROGRESS, URHO3D_HANDLER(SceneManager, HandleLoadingStepProgress));
-    SubscribeToEvent(MyEvents::E_LOADING_STEP_FINISHED, URHO3D_HANDLER(SceneManager, HandleLoadingStepFinished));
 }
 
 SceneManager::~SceneManager()
@@ -27,7 +24,6 @@ SceneManager::~SceneManager()
 void SceneManager::LoadScene(const String& filename)
 {
     ResetProgress();
-
     _activeScene.Reset();
     _activeScene = new Scene(context_);
     _activeScene->SetAsyncLoadingMs(1);
@@ -56,9 +52,6 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 {
     using namespace AsyncLoadFinished;
 
-    // Imitate slower loading
-    progress = 0.0f;
-
     _activeScene->SetUpdateEnabled(false);
 
     if (GetSubsystem<Script>()) {
@@ -67,6 +60,10 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 
     UnsubscribeFromEvent(E_ASYNCLOADPROGRESS);
     UnsubscribeFromEvent(E_ASYNCLOADFINISHED);
+
+    SubscribeToEvent(MyEvents::E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));
+    SubscribeToEvent(MyEvents::E_LOADING_STEP_PROGRESS, URHO3D_HANDLER(SceneManager, HandleLoadingStepProgress));
+    SubscribeToEvent(MyEvents::E_LOADING_STEP_FINISHED, URHO3D_HANDLER(SceneManager, HandleLoadingStepFinished));
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(SceneManager, HandleUpdate));
     URHO3D_LOGINFO("Scene loaded: " + _activeScene->GetFileName());
@@ -121,12 +118,17 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
         // Re-enable active scene
         _activeScene->SetUpdateEnabled(true);
+
+        UnsubscribeFromEvent(MyEvents::E_ACK_LOADING_STEP);
+        UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_PROGRESS);
+        UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_FINISHED);
     }
 }
 
 void SceneManager::ResetProgress()
 {
     progress = 0.0f;
+    targetProgress = 0.0f;
 
     for (auto it = _loadingSteps.Begin(); it != _loadingSteps.End(); ++it) {
         (*it).second_.finished = false;

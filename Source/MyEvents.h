@@ -37,6 +37,7 @@ namespace MyEvents
 		URHO3D_PARAM(P_NAME, ConsoleCommandName); // string - command name
 		URHO3D_PARAM(P_EVENT, ConsoleCommandEvent); // string - event to call when command entered
 		URHO3D_PARAM(P_DESCRIPTION, ConsoleCommandDescription); // string - short description of the command
+		URHO3D_PARAM(P_OVERWRITE, Overwrite); // bool - should we overwrite existing handler
 	}
 
     // Change global system variable

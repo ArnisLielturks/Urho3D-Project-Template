@@ -117,7 +117,7 @@ UIElement* AchievementsWindow::CreateSingleLine()
     container->SetAlignment(HA_LEFT, VA_TOP);
     container->SetLayout(LM_HORIZONTAL, 20);
     container->SetPosition(20, top);
-    container->SetFixedWidth(_listView->GetWidth());
+    container->SetFixedWidth(_listView->GetWidth() - 20);
     container->SetMinHeight(20);
     _listView->AddItem(container);
 

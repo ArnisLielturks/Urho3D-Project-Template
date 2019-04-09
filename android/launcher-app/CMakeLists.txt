@@ -36,7 +36,7 @@ if (COMMAND cmake_policy)
 endif ()
 
 # Set project name
-project (ProjectTemplate)
+project (Urho3D-Launcher)
 
 # Set CMake modules search path
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules)
@@ -44,4 +44,4 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules)
 # Include UrhoCommon.cmake module after setting project name
 include (UrhoCommon)
 
-add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../ ProjectTemplate)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/../../Source/ProjectTemplate ProjectTemplate)

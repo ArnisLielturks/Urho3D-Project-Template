@@ -1,5 +1,5 @@
 # Set project name
-project (EmptyProject)
+project (ProjectTemplate)
 # Set minimum version
 cmake_minimum_required (VERSION 2.8.6)
 if (COMMAND cmake_policy)
@@ -29,7 +29,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 # include_directories (${URHO3D_INCLUDE_DIRS})
 
 # Define target name
-set (TARGET_NAME EmptyProject)
+set (TARGET_NAME ProjectTemplate)
 
 define_source_files (GLOB_CPP_PATTERNS *.c* GLOB_H_PATTERNS *.h* RECURSE GROUP)
 

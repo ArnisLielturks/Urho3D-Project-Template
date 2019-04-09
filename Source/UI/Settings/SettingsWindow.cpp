@@ -75,10 +75,13 @@ void SettingsWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
+#ifndef __ANDROID__
     _tabs[CONTROLS] = CreateTabButton(localization->Get("CONTROLS"));
     SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(CONTROLS);
     });
+#endif
+
     _tabs[CONTROLLERS] = CreateTabButton(localization->Get("CONTROLLERS"));
     SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         ChangeTab(CONTROLLERS);
@@ -377,6 +380,7 @@ void SettingsWindow::CreateVideoTab()
     auto* localization = GetSubsystem<Localization>();
     InitGraphicsSettings();
 
+#ifndef __ANDROID__
     // UI Scale
     CreateSingleLine();
     auto scaleSlider = CreateSlider(localization->Get("UI"));
@@ -390,6 +394,7 @@ void SettingsWindow::CreateVideoTab()
         GetSubsystem<UI>()->SetScale(newValue + 1.0f);
 
     });
+#endif
 
     // Gamma
     CreateSingleLine();
@@ -429,6 +434,7 @@ void SettingsWindow::CreateVideoTab()
         
     });
 
+#ifndef __ANDROID__
     // Fullscreen
     CreateSingleLine();
     auto fullscreenToggle = CreateCheckbox(localization->Get("FULLSCREEN"));
@@ -439,8 +445,9 @@ void SettingsWindow::CreateVideoTab()
 
         _graphicsSettingsNew.fullscreen = enabled;
     });
+#endif
 
-    // Fullscreen
+    // Frame Limiter
     CreateSingleLine();
     auto frameLimiterToggle = CreateCheckbox(localization->Get("FRAME_LIMITER"));
     frameLimiterToggle->SetChecked(_graphicsSettings.frameLimiter);
@@ -484,6 +491,7 @@ void SettingsWindow::CreateVideoTab()
         _graphicsSettingsNew.tripleBuffer = enabled;
     });
 
+#ifndef __ANDROID__
     // Resolution
     CreateSingleLine();
     auto resolutionMenu = CreateMenu(localization->Get("RESOLUTION"), _availableResolutionNames);
@@ -503,6 +511,7 @@ void SettingsWindow::CreateVideoTab()
             _graphicsSettingsNew.activeResolution = selection;
         }
     });
+#endif
 
     // Shadow quality
     CreateSingleLine();

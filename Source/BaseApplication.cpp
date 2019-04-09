@@ -55,7 +55,7 @@ void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
 #ifdef __ANDROID__
-    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.8));
+    ui->SetScale(1.8);
 #else
     ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
 #endif

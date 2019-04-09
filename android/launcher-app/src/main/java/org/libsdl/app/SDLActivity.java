@@ -188,6 +188,17 @@ public class SDLActivity extends Activity {
 
         setContentView(mLayout);
 
+        //White Dragon: disable navigation bar
+        SDLActivity.decorView.setOnSystemUiVisibilityChangeListener
+                (new View.OnSystemUiVisibilityChangeListener() {
+                    @Override
+                    public void onSystemUiVisibilityChange(int visibility) {
+                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            hideSystemUI();
+                        }
+                    }
+                });
+
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {

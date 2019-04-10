@@ -28,10 +28,10 @@ plugins {
 }
 
 android {
-    compileSdkVersion(26)
+    compileSdkVersion(27)
     defaultConfig {
         minSdkVersion(17)
-        targetSdkVersion(26)
+        targetSdkVersion(27)
         applicationId = "com.github.urho3d.launcher"
         versionCode = 1
         versionName = project.version.toString()
@@ -40,7 +40,7 @@ android {
             cmake {
                 arguments.apply {
                     System.getenv("ANDROID_CCACHE")?.let { add("-DANDROID_CCACHE=$it") }
-                    // add("-DGRADLE_BUILD_DIR=${findProject(":android:urho3d-lib")?.buildDir}")
+                    add("-DGRADLE_BUILD_DIR=${findProject(":android:urho3d-lib")?.buildDir}")
                     addAll(listOf(
                             "URHO3D_LIB_TYPE",
                             // TODO: "URHO3D_PACKAGING",
@@ -76,6 +76,7 @@ android {
     }
     externalNativeBuild {
         cmake {
+            setVersion(cmakeVersion)
             setPath(project.file("CMakeLists.txt"))
         }
     }
@@ -83,7 +84,7 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    // implementation(project(":android:urho3d-lib"))
+    implementation(project(":android:urho3d-lib"))
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
     testImplementation("junit:junit:$junitVersion")
     androidTestImplementation("com.android.support.test:runner:$testRunnerVersion")
@@ -91,7 +92,7 @@ dependencies {
 }
 
 // Ensure IDE "gradle sync" evaluate the urho3d-lib module first
-// evaluationDependsOn(":android:urho3d-lib")
+evaluationDependsOn(":android:urho3d-lib")
 
 afterEvaluate {
     tasks {
@@ -105,7 +106,7 @@ afterEvaluate {
         val config = it.name.capitalize()
         tasks {
             "externalNativeBuild$config" {
-                // mustRunAfter(":android:urho3d-lib:externalNativeBuild$config")
+                mustRunAfter(":android:urho3d-lib:externalNativeBuild$config")
             }
         }
     }

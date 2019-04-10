@@ -20,25 +20,22 @@
 // THE SOFTWARE.
 //
 
-// See https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:deferred_configuration
-enableFeaturePreview("STABLE_PUBLISHING")
-
 pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            when {
+                requested.id.id.startsWith("com.android.") ->
+                    useModule("com.android.tools.build:gradle:$androidToolsVersion")
+                requested.id.id.startsWith("org.jetbrains.kotlin.") ->
+                    useVersion(kotlinVersion)
+            }
+        }
+    }
     repositories {
         gradlePluginPortal()
         google()
         jcenter()
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.android.")) {
-                useModule("com.android.tools.build:gradle:$androidToolsVersion")
-            }
-            if (requested.id.id.startsWith("org.jetbrains.kotlin.")) {
-                useVersion(kotlinVersion)
-            }
-        }
-    }
 }
 
-include(":android:launcher-app")
+include(":android:urho3d-lib", ":android:launcher-app")

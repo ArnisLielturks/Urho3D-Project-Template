@@ -67,16 +67,13 @@ public class SDLActivity extends Activity {
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
 
-    // Urho3D: Default implementation returns the last shared lib being loaded
-    private static String mMainSharedLib;
-
     /**
      * This method returns the name of the shared object with the application entry point
      * It can be overridden by derived classes.
      * Urho3D: Should not be called before the library is loaded.
      */
     protected String getMainSharedObject() {
-        return mMainSharedLib;
+        return "ProjectTemplate";
     }
 
     /**
@@ -88,11 +85,15 @@ public class SDLActivity extends Activity {
     }
 
     // Urho3D: Avoid hardcoding of the library list
-    protected void onLoadLibrary(List<String> libraryNames) {
-        for (final String name : libraryNames) {
-            System.loadLibrary(name);
-        }
-        mMainSharedLib = "lib" + libraryNames.get(libraryNames.size() - 1) + ".so";
+//    protected void onLoadLibrary(List<String> libraryNames) {
+//        for (final String name : libraryNames) {
+//            System.loadLibrary(name);
+//        }
+//        mMainSharedLib = "lib" + libraryNames.get(libraryNames.size() - 1) + ".so";
+//    }
+
+    static {
+        System.loadLibrary("ProjectTemplate");
     }
 
     /**
@@ -132,36 +133,27 @@ public class SDLActivity extends Activity {
         Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
-        // Urho3D: auto load all the shared libraries available in the library path
-        String errorMsgBrokenLib = "";
-        try {
-            onLoadLibrary(UrhoActivity.getLibraryNames(this));
-        } catch(Exception e) {
-            mBrokenLibraries = true;
-            errorMsgBrokenLib = e.getMessage();
-        }
-
-        if (mBrokenLibraries)
-        {
-            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-            dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
-                  + System.getProperty("line.separator")
-                  + System.getProperty("line.separator")
-                  + "Error: " + errorMsgBrokenLib);
-            dlgAlert.setTitle("SDL Error");
-            dlgAlert.setPositiveButton("Exit",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, close current activity
-                        SDLActivity.mSingleton.finish();
-                    }
-                });
-           dlgAlert.setCancelable(false);
-           dlgAlert.create().show();
-
-           return;
-        }
+//        if (mBrokenLibraries)
+//        {
+//            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+//            dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
+//                  + System.getProperty("line.separator")
+//                  + System.getProperty("line.separator")
+//                  + "Error: " + errorMsgBrokenLib);
+//            dlgAlert.setTitle("SDL Error");
+//            dlgAlert.setPositiveButton("Exit",
+//                new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog,int id) {
+//                        // if this button is clicked, close current activity
+//                        SDLActivity.mSingleton.finish();
+//                    }
+//                });
+//           dlgAlert.setCancelable(false);
+//           dlgAlert.create().show();
+//
+//           return;
+//        }
 
         // Set up JNI
         SDL.setupJNI();
@@ -187,17 +179,6 @@ public class SDLActivity extends Activity {
         mLayout.addView(mSurface);
 
         setContentView(mLayout);
-
-        //White Dragon: disable navigation bar
-        SDLActivity.decorView.setOnSystemUiVisibilityChangeListener
-                (new View.OnSystemUiVisibilityChangeListener() {
-                    @Override
-                    public void onSystemUiVisibilityChange(int visibility) {
-                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            hideSystemUI();
-                        }
-                    }
-                });
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();

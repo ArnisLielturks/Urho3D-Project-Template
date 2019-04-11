@@ -63,6 +63,8 @@ private:
      */
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
 
+    void HandleServiceMessage(StringHash eventType, VariantMap& eventData);
+
 	/**
 	 * Subscribe to console commands
 	 */

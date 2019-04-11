@@ -6,6 +6,7 @@
 #include "SceneManager.h"
 #include "MyEvents.h"
 #include "Global.h"
+#include "AndroidEvents/ServiceCmd.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
@@ -35,6 +36,9 @@ BaseApplication::BaseApplication(Context* context) :
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new SceneManager(context_));
+
+    context_->RegisterSubsystem(new ServiceCmd(context_));
+    SubscribeToEvent(E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
 
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
@@ -308,4 +312,23 @@ void BaseApplication::LoadTranslationFiles()
 
     // Finally set the application language
     localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
+}
+
+void BaseApplication::HandleServiceMessage(StringHash eventType, VariantMap& eventData)
+{
+    using namespace ServiceMessage;
+
+    int cmd    = eventData[P_COMMAND].GetInt();
+    int stat   = eventData[P_STATUS].GetInt();
+    String msg = eventData[P_MESSAGE].GetString();
+
+    String str=!msg.Empty()?msg:" ";
+
+    VariantMap& data = GetEventDataMap();
+    data["Title"] = "From Android";
+    data["Message"] = str;
+    data["Name"] = "PopupMessageWindow";
+    data["Type"] = "warning";
+    data["ClosePrevious"] = true;
+    SendEvent(MyEvents::E_OPEN_WINDOW, data);
 }

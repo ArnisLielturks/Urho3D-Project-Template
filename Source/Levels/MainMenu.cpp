@@ -4,6 +4,7 @@
 #include "../MyEvents.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Messages/Achievements.h"
+#include "../AndroidEvents/ServiceCmd.h"
 
 using namespace Levels;
 
@@ -80,6 +81,8 @@ void MainMenu::CreateUI()
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
+
+        GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
     });
 
     marginBottom += 40;

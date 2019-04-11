@@ -73,7 +73,7 @@ public class SDLActivity extends Activity {
      * Urho3D: Should not be called before the library is loaded.
      */
     protected String getMainSharedObject() {
-        return "ProjectTemplate";
+        return "libProjectTemplate.so";
     }
 
     /**
@@ -93,6 +93,7 @@ public class SDLActivity extends Activity {
 //    }
 
     static {
+        System.loadLibrary("Urho3D");
         System.loadLibrary("ProjectTemplate");
     }
 

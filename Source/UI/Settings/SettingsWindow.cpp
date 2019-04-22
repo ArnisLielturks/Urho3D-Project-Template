@@ -380,6 +380,7 @@ void SettingsWindow::CreateVideoTab()
     auto* localization = GetSubsystem<Localization>();
     InitGraphicsSettings();
 
+/*
 #ifndef __ANDROID__
     // UI Scale
     CreateSingleLine();
@@ -395,6 +396,7 @@ void SettingsWindow::CreateVideoTab()
 
     });
 #endif
+*/
 
     // Gamma
     CreateSingleLine();

@@ -220,7 +220,6 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         Renderer* renderer = GetSubsystem<Renderer>();
         renderer->SetViewport(i, viewport);
 
-
         _viewports[playerIndexes[i]] = viewport;
         _cameras[playerIndexes[i]] = cameraNode;
     }

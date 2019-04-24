@@ -29,6 +29,7 @@ RUN cd /code \
     && cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true \
     && cp -r bin/Data archive/Data \
     && cp -r bin/CoreData archive/CoreData \
+    && rm -rf archive/Data/Saves/Achievements.json
     && chmod -R 777 archive \
     && cd archive \
     && zip -r "build.zip" *  > /dev/null \

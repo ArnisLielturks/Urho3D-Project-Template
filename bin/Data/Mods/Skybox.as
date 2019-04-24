@@ -49,7 +49,7 @@ void Create()
     zone.ambientColor = Color(0.0f, 0.0f, 0.0f);
     zone.fogColor = Color(1.0f, 1.0f, 1.0f);
     zone.fogStart = 10.0f;
-    zone.fogEnd = 20.0f;
+    zone.fogEnd = 50.0f;
 }
 
 void HandleCreateSkybox(StringHash eventType, VariantMap& eventData)

@@ -71,6 +71,8 @@ void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], true, joystick);
 	}
+
+	GetSubsystem<DebugHud>()->SetAppStats("Key " + String(key), true);
 }
 
 void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
@@ -92,20 +94,21 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 		auto* controllerInput = GetSubsystem<ControllerInput>();
 		controllerInput->SetActionState(_mappedKeyToControl[key], false, joystick);
 	}
+	GetSubsystem<DebugHud>()->SetAppStats("JoyKey " + String(key), false);
 }
 
 void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 {
 	using namespace JoystickAxisMove;
-	URHO3D_PARAM(P_JOYSTICKID, JoystickID);        // int
-	URHO3D_PARAM(P_AXIS, Button);                  // int
-	URHO3D_PARAM(P_POSITION, Position);
 	int joystick = eventData[P_JOYSTICKID].GetInt();
+
     if (!_joystickAsFirstController) {
         joystick++;
     }
 	int buttonId = eventData[P_AXIS].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
+
+	GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
 
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
 	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
@@ -166,6 +169,9 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 	int buttonId = eventData[P_HAT].GetInt();
     int id = eventData[P_JOYSTICKID].GetInt();
 	float position = eventData[P_POSITION].GetFloat();
+
+	GetSubsystem<DebugHud>()->SetAppStats("JoyHatMove" + String(buttonId), position);
+
 	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
 	//URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
 	if (buttonId == 0) {

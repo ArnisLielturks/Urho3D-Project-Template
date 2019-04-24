@@ -115,8 +115,6 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Splash::HandleEndSplash()
 {
-	//WorkQueue* workQueue = GetSubsystem<WorkQueue>();
-	//workQueue->Complete(100);
 	UnsubscribeFromEvent(E_UPDATE);
 	VariantMap data = GetEventDataMap();
     _logoIndex++;

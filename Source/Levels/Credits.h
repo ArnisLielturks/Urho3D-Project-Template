@@ -33,7 +33,7 @@ namespace Levels {
         /**
          * End credits
          */
-        void HandleEndCredits();
+        void HandleEndCredits(bool forced = false);
 
         /**
          * Create single text line

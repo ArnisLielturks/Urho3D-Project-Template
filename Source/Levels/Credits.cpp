@@ -65,6 +65,7 @@ namespace Levels {
 
         CreateSingleLine("Community", HEADER_SIZE);
         CreateSingleLine("", HEADER_MARGIN);
+        CreateSingleLine("Android event handler: @Lumak", PARAGRAPH);
         CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
         CreateSingleLine("Level manager: @artgolf1000", PARAGRAPH);
         CreateSingleLine("Icons: https://game-icons.net", PARAGRAPH);
@@ -105,22 +106,24 @@ namespace Levels {
         }
         if (input->GetKeyDown(KEY_ESCAPE)) {
             UnsubscribeFromEvent(E_UPDATE);
-            HandleEndCredits();
+            HandleEndCredits(true);
         }
         if (_timer.GetMSec(false) > _creditLengthInSeconds * 1000) {
             UnsubscribeFromEvent(E_UPDATE);
-            HandleEndCredits();
+            HandleEndCredits(false);
         }
     }
 
-    void Credits::HandleEndCredits()
+    void Credits::HandleEndCredits(bool forced)
     {
         UnsubscribeFromEvent(E_UPDATE);
         VariantMap data = GetEventDataMap();
         data["Name"] = "MainMenu";
         SendEvent(MyEvents::E_SET_LEVEL, data);
 
-        SendEvent("CreditsEnd");
+        if (!forced) {
+            SendEvent("CreditsEnd");
+        }
     }
 
     void Credits::CreateSingleLine(String content, int fontSize)

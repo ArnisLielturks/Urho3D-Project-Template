@@ -30,7 +30,7 @@ RUN cd /code \
     && cp -r bin/Data archive/Data \
     && cp -r bin/CoreData archive/CoreData \
     && cp -r bin/EmptyProject.desktop archive/EmptyProject.desktop \
-    && rm -rf archive/Data/Saves/Achievements.json
+    && rm -rf archive/Data/Saves/Achievements.json \
     && chmod -R 777 archive \
     && chmod a+x archive/EmptyProject.desktop \
     && cd archive \

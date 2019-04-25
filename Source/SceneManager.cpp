@@ -30,6 +30,8 @@ void SceneManager::LoadScene(const String& filename)
     auto xmlFile = GetSubsystem<ResourceCache>()->GetFile(filename);
     _activeScene->LoadAsyncXML(xmlFile);
     _loadingStatus = "Loading scene";
+
+    GetSubsystem<DebugHud>()->SetAppStats("Scene manager map", filename);
     URHO3D_LOGINFO("Scene manager loading scene: " + filename);
 
     SubscribeToEvent(_activeScene, E_ASYNCLOADPROGRESS, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingProgress));

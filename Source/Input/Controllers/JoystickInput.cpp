@@ -110,7 +110,12 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 
 	GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
 
-	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
+#ifdef __ANDROID__
+	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.1f;
+#else
+	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
+#endif
+
 	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
 		position = 0.0f;
 	}
@@ -172,8 +177,12 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 
 	GetSubsystem<DebugHud>()->SetAppStats("JoyHatMove" + String(buttonId), position);
 
-	const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
-	//URHO3D_LOGINFO(">>>> HAT Joystick ID : " + String(id) + " => " + String(buttonId) + " => " + String(position));
+#ifdef __ANDROID__
+	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.1f;
+#else
+	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
+#endif
+
 	if (buttonId == 0) {
         if (_invertX) {
             position *= -1.0f;
@@ -248,8 +257,8 @@ void JoystickInput::LoadConfig()
     _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false);
 
     //TODO put these settings inside controllers tab
-    _joystickMapping.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis");
-    _joystickMapping.y_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveYAxis");
+    _joystickMapping.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis", 0);
+    _joystickMapping.y_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveYAxis", 1);
     _joystickMapping.z_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateXAxis");
     _joystickMapping.w_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateYAxis");
 }

@@ -54,5 +54,6 @@
   "WARNING": "Warning!",
   "RESTART_TO_APPLY": "Restart the game to apply changes!",
   "LEVEL_NOT_EXIST": "Level does not exist:",
-  "NO_SCENE": "Scene was not loaded!"
+  "NO_SCENE": "Scene was not loaded!",
+  "DEADZONE": "Deadzone"
 }

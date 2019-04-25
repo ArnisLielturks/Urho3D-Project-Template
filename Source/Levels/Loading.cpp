@@ -34,7 +34,7 @@ void Loading::Init()
     if (data_.Contains("Map")) {
         GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
     } else {
-        GetSubsystem<SceneManager>()->LoadScene(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Scene.xml");
+        GetSubsystem<SceneManager>()->LoadScene("Scenes/Scene.xml");
     }
 }
 

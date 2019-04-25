@@ -306,6 +306,23 @@ void SettingsWindow::CreateControllersTab()
             GetSubsystem<ConfigManager>()->Save(true);
         });
 
+        // Joystick deadzone value
+        CreateSingleLine();
+        auto deadzoneValue = CreateSlider(localization->Get("DEADZONE"));
+        deadzoneValue->SetRange(1.0f);
+        deadzoneValue->SetValue(controllerInput->GetJoystickDeadzone());
+        // Detect button press events
+        SubscribeToEvent(deadzoneValue, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
+
+            using namespace SliderChanged;
+            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
+            auto controllerInput = GetSubsystem<ControllerInput>();
+            controllerInput->SetJoystickDeadzone(newValue);
+            GetSubsystem<ConfigManager>()->Set("joystick", "Deadzone", newValue);
+
+            GetSubsystem<ConfigManager>()->Save(true);
+        });
+
         // Multiple controller support
         CreateSingleLine();
         auto multipleControllers = CreateCheckbox(localization->Get("MULTIPLE_CONTROLLER_SUPPORT"));

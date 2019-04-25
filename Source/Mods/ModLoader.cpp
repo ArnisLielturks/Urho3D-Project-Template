@@ -47,15 +47,15 @@ void ModLoader::LoadASMods()
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
     URHO3D_LOGINFO("Total AS mods found: " + String(result.Size()));
 
-#ifdef __ANDROID__
-    result.Push("Debugger.as");
-    result.Push("GameMode.as");
-    result.Push("LevelLoader.as");
-    result.Push("LoadingScreen.as");
-    result.Push("LoadStepImitator.as");
-    result.Push("LogoRotate.as");
-    result.Push("Skybox.as");
-#endif
+    auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
+    for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
+        auto files = (*it)->GetEntryNames();
+        for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
+            if ((*it2).StartsWith("Mods/") && (*it2).EndsWith(".as") && (*it2).Split('/')  .Size() == 2) {
+                result.Push((*it2).Split('/').At(1));
+            }
+        }
+    }
 
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
@@ -85,13 +85,24 @@ void ModLoader::LoadLuaMods()
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.lua"), SCAN_FILES, false);
     URHO3D_LOGINFO("Total LUA mods found: " + String(result.Size()));
 
-    // Load each of the *.as files and launch their Start() method
+    auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
+    for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
+        auto files = (*it)->GetEntryNames();
+        for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
+            if ((*it2).StartsWith("Mods/") && (*it2).EndsWith(".lua") && (*it2).Split('/')  .Size() == 2) {
+                result.Push((*it2));
+            }
+        }
+    }
+
+    // Load each of the *.lua files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
         auto luaScript = GetSubsystem<LuaScript>();
-        if (luaScript->ExecuteFile(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Mods/" + (*it)))
+        if (luaScript->ExecuteFile((*it)))
         {
             String scriptNameTrimmed = (*it).Substring(0, (*it).Length() - 4);
+            scriptNameTrimmed.Replace("Mods/", "");
             URHO3D_LOGINFO("Loading LUA method " + scriptNameTrimmed + "Start");
             luaScript->ExecuteFunction(scriptNameTrimmed + "Start");
         }

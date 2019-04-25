@@ -53,6 +53,8 @@ void BaseApplication::Setup()
     context_->RegisterSubsystem(new ConsoleHandler(context_));
     //LoadConfig("Data/Config/Config.json", "", true);
     LoadINIConfig(_configurationFile);
+
+//    GetSubsystem<ResourceCache>()->AddPackageFile("Data2.apk");
 }
 
 void BaseApplication::Start()
@@ -203,10 +205,10 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
 void BaseApplication::LoadINIConfig(String filename)
 {
 	bool loaded = GetSubsystem<ConfigManager>()->Load(filename, true);
-	if (!loaded) {
-		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
-		return;
-	}
+//	if (!loaded) {
+//		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
+//		return;
+//	}
 
     SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
     SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
@@ -214,7 +216,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowHeight", 600));
     SetEngineParameter(EP_BORDERLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Borderless", false));
     SetEngineParameter(EP_FRAME_LIMITER, GetSubsystem<ConfigManager>()->GetBool("engine", "FrameLimiter", true));
-    SetEngineParameter(EP_WINDOW_TITLE, "EmptyProject");
+    SetEngineParameter(EP_WINDOW_TITLE, "ProjectTemplate");
     SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
 
     // Logs
@@ -245,13 +247,13 @@ void BaseApplication::LoadINIConfig(String filename)
 
     SetEngineParameter(EP_FLUSH_GPU, GetSubsystem<ConfigManager>()->GetBool("engine", "FlushGPU", true));
     SetEngineParameter(EP_WORKER_THREADS, GetSubsystem<ConfigManager>()->GetBool("engine", "WorkerThreads ", true));
-    engine_->SetGlobalVar("ShadowQuality", GetSubsystem<ConfigManager>()->GetInt("engine", "ShadowQuality", 5));
+    SetEngineParameter("ShadowQuality", GetSubsystem<ConfigManager>()->GetInt("engine", "ShadowQuality", 5));
 
-	engine_->SetGlobalVar("Master" , GetSubsystem<ConfigManager>()->GetFloat("audio", "Master", 1.0));
-	engine_->SetGlobalVar("Effect", GetSubsystem<ConfigManager>()->GetFloat("audio", "Effect", 1.0));
-	engine_->SetGlobalVar("Ambient", GetSubsystem<ConfigManager>()->GetFloat("audio", "Ambient", 1.0));
-	engine_->SetGlobalVar("Voice", GetSubsystem<ConfigManager>()->GetFloat("audio", "Voice", 1.0));
-	engine_->SetGlobalVar("Music", GetSubsystem<ConfigManager>()->GetFloat("audio", "Music", 1.0));
+    SetEngineParameter("Master" , GetSubsystem<ConfigManager>()->GetFloat("audio", "Master", 1.0));
+    SetEngineParameter("Effect", GetSubsystem<ConfigManager>()->GetFloat("audio", "Effect", 1.0));
+    SetEngineParameter("Ambient", GetSubsystem<ConfigManager>()->GetFloat("audio", "Ambient", 1.0));
+    SetEngineParameter("Voice", GetSubsystem<ConfigManager>()->GetFloat("audio", "Voice", 1.0));
+    SetEngineParameter("Music", GetSubsystem<ConfigManager>()->GetFloat("audio", "Music", 1.0));
 
     Audio* audio = GetSubsystem<Audio>();
 	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());

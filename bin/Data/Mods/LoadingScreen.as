@@ -48,6 +48,19 @@ void CreateUI()
     // get files in directory
     Array<String> textures = fileSystem.ScanDir(fileSystem.programDir + "/Data/Textures/Achievements", "", SCAN_FILES, false);
 
+    for (uint i = 0; i < cache.packageFiles.length; i++)
+    {
+        Array<String> resourceNames = cache.packageFiles[i].GetEntryNames();
+        for (uint j = 0; j < resourceNames.length; j++)
+        {
+            String name = resourceNames[j];
+            if (name.StartsWith("Textures/Achievements/") && name.EndsWith(".png")) {
+                Array<String> nameParts = name.Split('/');
+                textures.Push(nameParts[nameParts.length - 1]);
+            }
+        }
+    }
+
     // add new files
     for (uint i = 0; i < textures.length; i++)
     {
@@ -58,7 +71,7 @@ void CreateUI()
         if (randomX > width / 2) {
             velocity *= -1;
         }
-        CreateSprite(fileSystem.programDir + "/Data/Textures/Achievements/" + textures[i], velocity, pos);
+        CreateSprite("Textures/Achievements/" + textures[i], velocity, pos);
     }
 }
 

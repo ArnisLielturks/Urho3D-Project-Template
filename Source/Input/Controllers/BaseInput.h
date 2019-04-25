@@ -15,6 +15,7 @@ public:
 		_activeAction(0),
         _sensitivityX(0.1f),
         _sensitivityY(0.1f),
+        _deadzone(0.1f),
         _invertX(false),
         _invertY(false)
     {
@@ -157,6 +158,17 @@ public:
     {
         return _sensitivityY;
     }
+
+    void SetDeadzone(float value)
+	{
+		_deadzone = value;
+	}
+
+	float GetDeadzone()
+	{
+		return _deadzone;
+	}
+
 protected:
 
     void SetMinSensitivity(float value)
@@ -178,4 +190,5 @@ protected:
     float _sensitivityX;
     float _sensitivityY;
     float _minSensitivity;
+    float _deadzone;
 };

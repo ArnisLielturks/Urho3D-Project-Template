@@ -110,13 +110,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
 
 	GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
 
-#ifdef __ANDROID__
-	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.1f;
-#else
-	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
-#endif
-
-	if (Abs(position) < JOYSTICK_MOVEMENT_THRESHOLD) {
+	if (Abs(position) < _deadzone) {
 		position = 0.0f;
 	}
 	//URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
@@ -177,18 +171,12 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 
 	GetSubsystem<DebugHud>()->SetAppStats("JoyHatMove" + String(buttonId), position);
 
-#ifdef __ANDROID__
-	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.1f;
-#else
-	static const float JOYSTICK_MOVEMENT_THRESHOLD = 0.01f;
-#endif
-
 	if (buttonId == 0) {
         if (_invertX) {
             position *= -1.0f;
         }
 		_axisPosition[joystick].x_ = position;
-		if (Abs(_axisPosition[joystick].x_) < JOYSTICK_MOVEMENT_THRESHOLD) {
+		if (Abs(_axisPosition[joystick].x_) < _deadzone) {
 			_axisPosition[joystick].x_ = 0;
 		}
 	}
@@ -197,7 +185,7 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
             position *= -1.0f;
         }
 		_axisPosition[joystick].y_ = position;
-		if (Abs(_axisPosition[joystick].y_) < JOYSTICK_MOVEMENT_THRESHOLD) {
+		if (Abs(_axisPosition[joystick].y_) < _deadzone) {
 			_axisPosition[joystick].y_ = 0;
 		}
 	}

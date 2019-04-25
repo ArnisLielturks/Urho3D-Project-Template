@@ -158,6 +158,16 @@ public:
     float GetSensitivityY(int controller);
 
     /**
+     * Set deadzone for joystick
+     */
+    void SetJoystickDeadzone(float value);
+
+    /**
+     * Get joystick deadzone value
+     */
+    float GetJoystickDeadzone();
+
+    /**
      * Stop input mapping process if it has been started
      */
     void StopInputMapping();

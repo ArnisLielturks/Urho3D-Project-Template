@@ -66,7 +66,7 @@ void ConsoleHandler::SubscribeToEvents()
         }
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Loading";
-        data["Map"] = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/" + params[1];
+        data["Map"] = "Scenes/" + params[1];
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 

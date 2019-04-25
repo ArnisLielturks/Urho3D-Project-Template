@@ -27,7 +27,8 @@ void SceneManager::LoadScene(const String& filename)
     _activeScene.Reset();
     _activeScene = new Scene(context_);
     _activeScene->SetAsyncLoadingMs(1);
-    _activeScene->LoadAsyncXML(new File(context_, filename, FILE_READ));
+    auto xmlFile = GetSubsystem<ResourceCache>()->GetFile(filename);
+    _activeScene->LoadAsyncXML(xmlFile);
     _loadingStatus = "Loading scene";
     URHO3D_LOGINFO("Scene manager loading scene: " + filename);
 

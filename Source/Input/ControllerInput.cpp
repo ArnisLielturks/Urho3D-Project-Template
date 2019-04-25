@@ -467,3 +467,13 @@ float ControllerInput::GetSensitivityY(int controller)
 
     return 0.0f;
 }
+
+void ControllerInput::SetJoystickDeadzone(float value)
+{
+	_inputHandlers[ControllerType::JOYSTICK]->SetDeadzone(value);
+}
+
+float ControllerInput::GetJoystickDeadzone()
+{
+	return _inputHandlers[ControllerType::JOYSTICK]->GetDeadzone();
+}

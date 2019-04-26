@@ -44,7 +44,7 @@ void ModLoader::LoadASMods()
     Vector<String> result;
 
     // Scan Data/Mods directory for all *.as files
-    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
+    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Mods"), String("*.as"), SCAN_FILES, false);
     URHO3D_LOGINFO("Total AS mods found: " + String(result.Size()));
 
     auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
@@ -57,6 +57,17 @@ void ModLoader::LoadASMods()
             }
         }
     }
+
+#ifdef __ANDROID__
+    // For Android devices is hard to get the list of assets, so we must harcode the list ourselves
+    result.Push("Debugger.as");
+    result.Push("GameMode.as");
+    result.Push("LevelLoader.as");
+    result.Push("LoadingScreen.as");
+    result.Push("LoadStepImitator.as");
+    result.Push("LogoRotate.as");
+    result.Push("Skybox.as");
+#endif
 
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
@@ -80,27 +91,32 @@ void ModLoader::LoadASMods()
 void ModLoader::LoadLuaMods()
 {
     ResourceCache* cache = GetSubsystem<ResourceCache>();
-    Vector<String> result;
 
     // Scan Data/Mods directory for all *.as files
-    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.lua"), SCAN_FILES, false);
-    URHO3D_LOGINFO("Total LUA mods found: " + String(result.Size()));
+    GetSubsystem<FileSystem>()->ScanDir(_luaMods, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Mods"), String("*.lua"), SCAN_FILES, false);
+    URHO3D_LOGINFO("Total LUA mods found: " + String(_luaMods.Size()));
 
     auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
     for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
         auto files = (*it)->GetEntryNames();
         for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
             if ((*it2).StartsWith("Mods/") && (*it2).EndsWith(".lua") && (*it2).Split('/')  .Size() == 2) {
-                result.Push((*it2));
+                _luaMods.Push((*it2));
             }
         }
     }
 
+#ifdef __ANDROID__
+    // For Android devices is hard to get the list of assets, so we must harcode the list ourselves
+    _luaMods.Push("Debugger.lua");
+    _luaMods.Push("MOTD.lua");
+#endif
+
     // Load each of the *.lua files and launch their Start() method
-    for (auto it = result.Begin(); it != result.End(); ++it) {
+    for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
         auto luaScript = GetSubsystem<LuaScript>();
-        if (luaScript->ExecuteFile((*it)))
+        if (luaScript->ExecuteFile("Mods/" + (*it)))
         {
             String scriptNameTrimmed = (*it).Substring(0, (*it).Length() - 4);
             scriptNameTrimmed.Replace("Mods/", "");
@@ -115,7 +131,7 @@ void ModLoader::LoadLuaMods()
         //_scriptMap["Mods/" + (*it)] = scriptFile;
     }
 
-    GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", result.Size());
+    GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
 }
 
 void ModLoader::SubscribeToEvents()
@@ -162,14 +178,16 @@ void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)
 void ModLoader::CheckAllMods()
 {
     Vector<String> result;
-    GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
-    StringVector modNames;
-    for (auto it = result.Begin(); it != result.End(); ++it) {
-        modNames.Push((*it));
+    result.Reserve(_asMods.Size() + _luaMods.Size());
+    for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
+        result.Push((*it)->GetName());
+    }
+    for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {
+        result.Push((*it));
     }
 
     VariantMap data = GetEventDataMap();
-    data["Mods"] = modNames;
+    data["Mods"] = result;
     SendEvent("ModsLoaded", data);
 }
 

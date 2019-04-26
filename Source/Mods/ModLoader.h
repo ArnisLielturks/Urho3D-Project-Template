@@ -76,4 +76,6 @@ private:
      * Script location, script object map
      */
     HashMap<String, SharedPtr<ScriptFile>> _asScriptMap;
+
+    Vector<String> _luaMods;
 };

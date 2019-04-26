@@ -6,7 +6,8 @@ using namespace Urho3D;
 /**
  * Wait this many MS before marking loading step as completed if no ACK request was received
  */
-const int LOADING_STEP_ACK_MAX_TIME = 2000; // Max wait time for ACK message for loading step
+const int LOADING_STEP_ACK_MAX_TIME = 2000; // Max wait time in MS for ACK message for loading step
+const int LOADING_STEP_MAX_EXECUTION_TIME = 3000; // Max loading step execution time in MS, 0 - infinite
 const float PROGRESS_SPEED = 0.3f; // how fast should the progress bar increase each second, 1 - load 0 to 100% in 1 second
 
 SceneManager::SceneManager(Context* context) :
@@ -96,6 +97,16 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         // TODO - handle long running background tasks
 
         if (!(*it).second_.finished) {
+
+            // Handle loading steps which take too much time to execute
+            if (LOADING_STEP_MAX_EXECUTION_TIME > 0 && (*it).second_.ackSent && (*it).second_.ackTimer.GetMSec(false) > LOADING_STEP_MAX_EXECUTION_TIME + LOADING_STEP_ACK_MAX_TIME) {
+                (*it).second_.finished = true;
+                (*it).second_.failed = true;
+                URHO3D_LOGERROR("Loading step '" + (*it).second_.name + "' failed, took too long to execute!");
+
+                // Note the the tasks could still succeed in the background, but the loading screen will move further without waiting it to finish
+                return;
+            }
             if (!(*it).second_.ackSent) {
 
                 // Send out event to start this loading step
@@ -147,6 +158,10 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
     LoadingStep step;
     step.name = eventData[P_NAME].GetString();
     step.event = eventData[P_EVENT].GetString();
+    step.ackSent = false;
+    step.finished = false;
+    step.failed = false;
+    step.progress = 0;
     if (step.name.Empty() || step.event.Empty()) {
         URHO3D_LOGERROR("Unable to register loading step " + step.name + ":" + step.event);
         return;

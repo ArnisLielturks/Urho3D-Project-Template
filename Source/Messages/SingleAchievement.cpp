@@ -75,8 +75,6 @@ String SingleAchievement::GetMessage()
 
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
-    auto graphics = GetSubsystem<Graphics>();
-
     using namespace PostUpdate;
 
     UpdateAttributeAnimations(eventData[P_TIMESTEP].GetFloat());

@@ -11,6 +11,7 @@ struct LoadingStep {
     Timer ackTimer;
     float progress;
     Timer loadTime;
+    bool failed;
 };
 
 class SceneManager : public Object

@@ -16,8 +16,6 @@ void Notifications::Init()
 {
     SubscribeToEvents();
 
-    float fontSize = 12.0f;
-
     // Create light animation
     notificationAnimation = new ObjectAnimation(context_);
 

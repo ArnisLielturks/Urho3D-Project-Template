@@ -39,6 +39,8 @@ void KeyboardInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         // Here we save in the Data folder with date and time appended
         screenshot.SavePNG(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Screenshot_" +
         Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_') + ".png");
+
+        SendEvent("ScreenshotTaken");
         return;
     }
 	if (key == KEY_ESCAPE && _activeAction > 0) {

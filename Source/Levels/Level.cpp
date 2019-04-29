@@ -338,7 +338,7 @@ Node* Level::CreateControllableObject()
     ballNode->SetScale(0.5f);
     auto* ballObject = ballNode->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
-    ballObject->SetMaterial(cache->GetResource<Material>("Materials/Stone.xml"));
+    ballObject->SetMaterial(cache->GetResource<Material>("Materials/Player.xml"));
     ballObject->SetCastShadows(true);
 
     // Create the physics components

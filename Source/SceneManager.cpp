@@ -94,8 +94,6 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
         targetProgress = (float)completed / ( (float) _loadingSteps.Size() + 1.0f );
 
-        // TODO - handle long running background tasks
-
         if (!(*it).second_.finished) {
 
             // Handle loading steps which take too much time to execute

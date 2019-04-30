@@ -184,8 +184,6 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
-
-    auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
         int playerId = (*it).first_;
         if (!_players.Contains(playerId)) {
@@ -217,7 +215,8 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
             body->ApplyTorque(rotation * Vector3::BACK * MOVE_TORQUE);
            // _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
         }
-        if (controls.IsDown(CTRL_UP)) {
+        if (controls.IsDown(CTRL_JUMP)) {
+//            body->ApplyImpulse(Vector3(0, 10, 0));
            // _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
         }
     }

@@ -70,6 +70,17 @@ void ConsoleHandler::SubscribeToEvents()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "opacity", MyEvents::ConsoleCommandAdd::P_EVENT, "#opacity", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change the console opacity");
+    SubscribeToEvent("#opacity", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of params!");
+            return;
+        }
+        float value = ToFloat(params[1]);
+        _console->GetBackground()->SetOpacity(value);
+    });
+
 }
 
 void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)

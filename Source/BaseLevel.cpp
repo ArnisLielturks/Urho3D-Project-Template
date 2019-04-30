@@ -161,7 +161,6 @@ Vector<IntRect> BaseLevel::InitRects(int count)
  */
 void BaseLevel::InitViewports(Vector<int> playerIndexes)
 {
-    auto* graphics = GetSubsystem<Graphics>();
     auto* cache = GetSubsystem<ResourceCache>();
 
     Vector<IntRect> rects = InitRects(playerIndexes.Size());

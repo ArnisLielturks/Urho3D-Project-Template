@@ -7,7 +7,7 @@ BaseLevel::BaseLevel(Context* context) :
 Object(context)
 {
     SubscribeToBaseEvents();
-    scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
+    _scene = GetSubsystem<SceneManager>()->GetActiveScene();
     SetGlobalVar("CameraFov", 80);
 }
 
@@ -48,15 +48,15 @@ void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
 
 void BaseLevel::Run()
 {
-    if (scene_) {
-        scene_->SetUpdateEnabled(true);
+    if (_scene) {
+        _scene->SetUpdateEnabled(true);
     }
 }
 
 void BaseLevel::Pause()
 {
-    if (scene_) {
-        scene_->SetUpdateEnabled(false);
+    if (_scene) {
+        _scene->SetUpdateEnabled(false);
     }
 }
 
@@ -106,10 +106,10 @@ void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
 void BaseLevel::Dispose()
 {
     // Pause the scene, remove all contents from the scene, then remove the scene itself.
-    if (scene_) {
-        scene_->SetUpdateEnabled(false);
-        scene_->Clear();
-        scene_->Remove();
+    if (_scene) {
+        _scene->SetUpdateEnabled(false);
+        _scene->Clear();
+        _scene->Remove();
     }
 
     // Remove all UI elements from UI sub-system
@@ -170,7 +170,7 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     _viewports.Clear();
     _cameras.Clear();
 
-    if (!scene_) {
+    if (!_scene) {
         return;
     }
 
@@ -179,20 +179,20 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
         // so that it won't be destroyed and recreated, and we don't have to redefine the viewport on load
-        SharedPtr<Node> cameraNode(scene_->CreateChild("Camera", LOCAL));
+        SharedPtr<Node> cameraNode(_scene->CreateChild("Camera", LOCAL));
         cameraNode->SetPosition(Vector3(0, 1, 0));
         Camera* camera = cameraNode->CreateComponent<Camera>(LOCAL);
         camera->SetFarClip(1000.0f);
         camera->SetNearClip(0.1f);
         camera->SetFov(GetGlobalVar("CameraFov").GetFloat());
         cameraNode->CreateComponent<SoundListener>();
-        camera->SetViewMask(1 << i);
+        camera->SetViewMask(1 << playerIndexes.At(i));
 
         //TODO only the last camera will be the sound listener
         GetSubsystem<Audio>()->SetListener(cameraNode->GetComponent<SoundListener>());
         //GetSubsystem<Audio>()->SetListener(nullptr);
 
-        SharedPtr<Viewport> viewport(new Viewport(context_, scene_, camera, rects[i]));
+        SharedPtr<Viewport> viewport(new Viewport(context_, _scene, camera, rects[i]));
         SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
         effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));

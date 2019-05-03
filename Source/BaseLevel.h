@@ -58,7 +58,7 @@ protected:
     /**
      * Level scene
      */
-    SharedPtr<Scene> scene_;
+    SharedPtr<Scene> _scene;
 
     /**
      * Data which was passed trough LevelManager

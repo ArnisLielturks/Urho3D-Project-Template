@@ -2,6 +2,7 @@
 
 #include <Urho3D/Urho3DAll.h>
 #include "../BaseLevel.h"
+#include "Player/Player.h"
 
 namespace Levels {
     class Level : public BaseLevel
@@ -19,8 +20,6 @@ namespace Levels {
 
     protected:
         virtual void Init () override;
-
-        void OnLoaded();
 
     private:
         void CreateScene();
@@ -42,19 +41,12 @@ namespace Levels {
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
 
-        Node* CreateControllableObject();
-
         bool _showScoreboard;
 
         bool _drawDebug;
 
-        /**
-        * Player variables
-        */
-        HashMap<int, SharedPtr<Node>> _players;
-
         SharedPtr<SplinePath> _path;
 
-        HashMap<Node*, SharedPtr<Node>> _playerLabels;
+        HashMap<int, SharedPtr<Player>> _players;
     };
 }

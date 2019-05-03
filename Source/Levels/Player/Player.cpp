@@ -136,19 +136,15 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     Quaternion rotation(0.0f, controls.yaw_, 0.0f);
     if (controls.IsDown(CTRL_FORWARD)) {
         _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed);
-        //   _cameras[playerId]->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_BACK)) {
         _rigidBody->ApplyTorque(rotation * Vector3::LEFT * movementSpeed);
-        //_cameras[playerId]->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_LEFT)) {
         _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed);
-        //_cameras[playerId]->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_RIGHT)) {
         _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed);
-        // _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
     }
     if (controls.IsPressed(CTRL_JUMP, _controls) && _onGround) {
         _rigidBody->ApplyImpulse(Vector3::UP * JUMP_FORCE);

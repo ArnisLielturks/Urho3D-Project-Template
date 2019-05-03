@@ -10,7 +10,6 @@
 
 using namespace Levels;
 
-    /// Construct.
 Level::Level(Context* context) :
     BaseLevel(context),
     _showScoreboard(false),

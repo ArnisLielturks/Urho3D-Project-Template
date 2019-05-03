@@ -6,6 +6,7 @@
 
 static bool SHOW_LABELS = true;
 static float MOVE_TORQUE = 20.0f;
+static float JUMP_FORCE = 40.0f;
 
 Player::Player(Context* context) :
     Object(context)
@@ -32,6 +33,16 @@ Player::Player(Context* context) :
             return;
         }
         MOVE_TORQUE = ToFloat(params[1]);
+    });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "jump_force", MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SubscribeToEvent("#jump_force", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        JUMP_FORCE = ToFloat(params[1]);
     });
 }
 
@@ -89,6 +100,8 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId)
     if (!SHOW_LABELS) {
         _label->SetEnabled(false);
     }
+
+    SubscribeToEvent(_node, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -137,13 +150,38 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed);
         // _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
     }
-    if (controls.IsDown(CTRL_JUMP)) {
-        //            body->ApplyImpulse(Vector3(0, 10, 0));
-                    // _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
+    if (controls.IsPressed(CTRL_JUMP, _controls) && _onGround) {
+        _rigidBody->ApplyImpulse(Vector3::UP * JUMP_FORCE);
     }
+    _controls = controls;
+    _onGround = false;
 }
 
 void Player::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
     _label->SetPosition(_node->GetPosition() + Vector3::UP * 0.2);
+}
+
+void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
+{
+    // Check collision contacts and see if character is standing on ground (look for a contact that has near vertical normal)
+    using namespace NodeCollision;
+
+    MemoryBuffer contacts(eventData[P_CONTACTS].GetBuffer());
+
+    while (!contacts.IsEof())
+    {
+        Vector3 contactPosition = contacts.ReadVector3();
+        Vector3 contactNormal = contacts.ReadVector3();
+        /*float contactDistance = */contacts.ReadFloat();
+        /*float contactImpulse = */contacts.ReadFloat();
+
+        // If contact is below node center and pointing up, assume it's a ground contact
+        if (contactPosition.y_ < (_node->GetPosition().y_ + 1.0f))
+        {
+            float level = contactNormal.y_;
+            if (level > 0.75)
+                _onGround = true;
+        }
+    }
 }

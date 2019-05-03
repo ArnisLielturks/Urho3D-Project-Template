@@ -21,10 +21,13 @@ private:
 
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleNodeCollision(StringHash eventType, VariantMap& eventData);
 
     RigidBody* _rigidBody;
     SharedPtr<Node> _node;
     unsigned int _controllerId;
     SharedPtr<Node> _label;
     Controls _controls;
+    bool _onGround;
+
 };

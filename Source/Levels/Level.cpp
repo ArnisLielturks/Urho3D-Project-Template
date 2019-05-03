@@ -13,7 +13,8 @@ using namespace Levels;
     /// Construct.
 Level::Level(Context* context) :
     BaseLevel(context),
-    _showScoreboard(false)
+    _showScoreboard(false),
+    _drawDebug(false)
 {
 }
 
@@ -123,11 +124,22 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Level, HandlePostUpdate));
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
+    SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Level, HandlePostRenderUpdate));
 
     SubscribeToEvent(MyEvents::E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
     SubscribeToEvent(MyEvents::E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
 
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry", MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry");
+    SubscribeToEvent("#debug_geometry", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() > 1) {
+            URHO3D_LOGERROR("This command doesn't take any arguments!");
+            return;
+        }
+        _drawDebug = !_drawDebug;
+    });
 }
 
 void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
@@ -220,6 +232,15 @@ void Level::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
            // _cameras[playerId]->Translate(Vector3::UP * MOVE_SPEED * timeStep);
         }
     }
+}
+
+void Level::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
+{
+    if (!_drawDebug) {
+        return;
+    }
+    scene_->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
+    scene_->GetComponent<PhysicsWorld>()->SetDebugRenderer(scene_->GetComponent<DebugRenderer>());
 }
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)

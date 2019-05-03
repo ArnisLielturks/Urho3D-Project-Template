@@ -15,6 +15,7 @@ namespace Levels {
         virtual ~Level();
         void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
         void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+        void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:
         virtual void Init () override;
@@ -44,6 +45,8 @@ namespace Levels {
         Node* CreateControllableObject();
 
         bool _showScoreboard;
+
+        bool _drawDebug;
 
         /**
         * Player variables

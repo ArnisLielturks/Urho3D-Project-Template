@@ -224,6 +224,9 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_LOG_LEVEL, GetSubsystem<ConfigManager>()->GetInt("engine", "LogLevel", LOG_INFO));
     SetEngineParameter(EP_LOG_QUIET, GetSubsystem<ConfigManager>()->GetBool("engine", "LogQuiet", false));
 
+    // TODO - fully support headless mode
+    SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Headless", false));
+
     // Graphics
     SetEngineParameter(EP_LOW_QUALITY_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "LowQualityShadows", false));
     SetEngineParameter(EP_MATERIAL_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "MaterialQuality", 15));
@@ -254,6 +257,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter("Ambient", GetSubsystem<ConfigManager>()->GetFloat("audio", "Ambient", 1.0));
     SetEngineParameter("Voice", GetSubsystem<ConfigManager>()->GetFloat("audio", "Voice", 1.0));
     SetEngineParameter("Music", GetSubsystem<ConfigManager>()->GetFloat("audio", "Music", 1.0));
+
 
     Audio* audio = GetSubsystem<Audio>();
 	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());

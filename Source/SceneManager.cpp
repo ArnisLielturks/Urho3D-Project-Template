@@ -167,6 +167,8 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
 
     URHO3D_LOGINFO("Registering new loading step: " + step.name + "; " + step.event);
     _loadingSteps[step.event] = step;
+
+    GetSubsystem<DebugHud>()->SetAppStats("Loading steps", _loadingSteps.Size());
 }
 
 void SceneManager::HandleLoadingStepAck(StringHash eventType, VariantMap& eventData)

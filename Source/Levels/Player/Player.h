@@ -17,7 +17,6 @@ public:
     void SetControllerId(unsigned int id);
 
     Node* GetNode();
-
 private:
 
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);

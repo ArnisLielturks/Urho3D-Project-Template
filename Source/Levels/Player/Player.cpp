@@ -4,11 +4,35 @@
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
 
+static bool SHOW_LABELS = true;
+static float MOVE_TORQUE = 20.0f;
+
 Player::Player(Context* context) :
     Object(context)
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Player, HandlePostUpdate));
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "show_labels", MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SubscribeToEvent("#show_labels", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        SHOW_LABELS = ToBool(params[1]);
+        _label->SetEnabled(SHOW_LABELS);
+    });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed", MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SubscribeToEvent("#movement_speed", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        MOVE_TORQUE = ToFloat(params[1]);
+    });
 }
 
 void Player::RegisterObject(Context* context)
@@ -61,6 +85,10 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId)
     text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
     text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
     text3D->SetViewMask(~(1 << _controllerId));
+
+    if (!SHOW_LABELS) {
+        _label->SetEnabled(false);
+    }
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -85,29 +113,28 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         SendEvent("FallOffTheMap");
     }
 
-    // Movement speed as world units per second
-    float MOVE_TORQUE = 20.0f;
+    float movementSpeed = MOVE_TORQUE;
     Controls controls = GetSubsystem<ControllerInput>()->GetControls(_controllerId);
     if (controls.IsDown(CTRL_SPRINT)) {
-        MOVE_TORQUE = 40.0f;
+        movementSpeed *= 2;
     }
 
     // Torque is relative to the forward vector
     Quaternion rotation(0.0f, controls.yaw_, 0.0f);
     if (controls.IsDown(CTRL_FORWARD)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * MOVE_TORQUE);
+        _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed);
         //   _cameras[playerId]->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_BACK)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::LEFT * MOVE_TORQUE);
+        _rigidBody->ApplyTorque(rotation * Vector3::LEFT * movementSpeed);
         //_cameras[playerId]->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_LEFT)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * MOVE_TORQUE);
+        _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed);
         //_cameras[playerId]->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_RIGHT)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::BACK * MOVE_TORQUE);
+        _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed);
         // _cameras[playerId]->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
     }
     if (controls.IsDown(CTRL_JUMP)) {

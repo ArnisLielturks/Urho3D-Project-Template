@@ -34,6 +34,3 @@ And of course here's the quick preview of how it should look in the end:
 
 # How to extend the functionality?
 Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
-
-
-script/dockerized.sh android ./gradlew -P ANDROID_ABI=armeabi-v7a -P URHO3D_LIB_TYPE=SHARED -P URHO3D_HOME= build

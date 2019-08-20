@@ -12,23 +12,25 @@ jobs:
     steps:
       - checkout
       # Build the image
-      - run: docker build -t windows -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
-      - run: id=$(docker create windows)
-      - run: docker cp $id:/code/build.zip windows_build.zip
-      - run: docker rm -v $id
+#      - run: docker build -t windows -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+#      - run: id=$(docker create windows)
+#      - run: docker cp $id:/code/build.zip windows_build.zip
+#      - run: docker rm -v $id
+      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_windows.sh
       - store_artifacts:
-          path: windows_build.zip
+          path: archive/build.zip
   build_linux:
     machine: true
     steps:
     - checkout
     # Build the image
-    - run: docker build -t linux -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
-    - run: id=$(docker create linux)
-    - run: docker cp $id:/code/build.zip linux_build.zip
-    - run: docker rm -v $id
+#    - run: docker build -t linux -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+#    - run: id=$(docker create linux)
+#    - run: docker cp $id:/code/build.zip linux_build.zip
+#    - run: docker rm -v $id
+    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh
     - store_artifacts:
-        path: linux_build.zip
+        path: archive/build.zip
   artifact_publish:
     machine: true
     steps:

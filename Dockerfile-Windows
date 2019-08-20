@@ -41,3 +41,5 @@ RUN cd /code \
         -F description=${BUILD_DESCRIPTION} \
         -F token=$SITE_TOKEN \
         $SITE_URL || true
+
+CMD ["/bin/bash"]

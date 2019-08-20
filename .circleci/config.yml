@@ -5,19 +5,35 @@ jobs:
     steps:
     - checkout
     - run: ./android/script.sh
+    - run: - store_artifacts:
+    - store_artifacts:
+        path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
   build_windows:
     machine: true
     steps:
       - checkout
       # Build the image
-      - run: docker build -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+      - run: docker build -t windows -f Dockerfile-Windows --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+      - run: id=$(docker create windows)
+      - run: docker cp $id:/code/build.zip windows_build.zip
+      - run: docker rm -v $id
+      - store_artifacts:
+          path: windows_build.zip
   build_linux:
     machine: true
     steps:
     - checkout
     # Build the image
-    - run: docker build -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
-
+    - run: docker build -t linux -f Dockerfile-Linux --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${CIRCLE_BUILD_NUM} --build-arg BUILD_DESCRIPTION="CircleCI-automated-build" .
+    - run: id=$(docker create linux)
+    - run: docker cp $id:/code/build.zip linux_build.zip
+    - run: docker rm -v $id
+    - store_artifacts:
+        path: linux_build.zip
+  artifact_publish:
+    machine: true
+    steps:
+      - run:
 workflows:
   version: 2
   build:

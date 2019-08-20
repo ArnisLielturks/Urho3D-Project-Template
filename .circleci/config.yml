@@ -7,6 +7,7 @@ jobs:
     - run: ./android/script.sh
     - store_artifacts:
         path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
+        destination: launcher-app-armeabi-v7a-debug.apk
   build_windows:
     machine: true
     steps:
@@ -17,8 +18,21 @@ jobs:
 #      - run: docker cp $id:/code/build.zip windows_build.zip
 #      - run: docker rm -v $id
       - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_windows.sh
+      - run:
+          name: Archiving
+          command: |
+            mkdir archive
+            cp build-windows/bin/EmptyProject.exe archive/EmptyProject.exe || true
+            cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true
+            cp -r bin/Data archive/Data
+            cp -r bin/CoreData archive/CoreData
+            rm -rf archive/Data/Saves/Achievements.json
+            chmod -R 777 archive
+            cd archive
+            zip -r "build.zip" *  > /dev/null
       - store_artifacts:
           path: archive/build.zip
+          destination: build.zip
   build_linux:
     machine: true
     steps:
@@ -29,8 +43,23 @@ jobs:
 #    - run: docker cp $id:/code/build.zip linux_build.zip
 #    - run: docker rm -v $id
     - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh
+    - run:
+        name: Archiving
+        command: |
+          mkdir archive
+          cp build/bin/EmptyProject archive/EmptyProject || true
+          cp build/bin/EmptyProject_d archive/EmptyProject_d || true
+          cp -r bin/Data archive/Data
+          cp -r bin/CoreData archive/CoreData
+          cp -r bin/EmptyProject.desktop archive/EmptyProject.desktop
+          rm -rf archive/Data/Saves/Achievements.json
+          chmod -R 777 archive
+          chmod a+x archive/EmptyProject.desktop
+          cd archive
+          zip -r "build.zip" *  > /dev/null
     - store_artifacts:
         path: archive/build.zip
+        destination: build.zip
   artifact_publish:
     machine: true
     steps:

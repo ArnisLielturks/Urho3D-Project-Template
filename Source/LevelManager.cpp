@@ -1,3 +1,12 @@
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Graphics.h>
 #include "LevelManager.h"
 #include "Levels/Splash.h"
 #include "Levels/MainMenu.h"
@@ -7,6 +16,7 @@
 #include "Levels/Credits.h"
 #include "MyEvents.h"
 
+using namespace Urho3D;
 
 LevelManager::LevelManager(Context* context) :
 Object(context)

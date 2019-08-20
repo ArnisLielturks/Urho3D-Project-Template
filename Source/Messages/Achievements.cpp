@@ -1,8 +1,20 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Core/WorkQueue.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Scene/ValueAnimation.h>
+#include <Urho3D/Scene/ObjectAnimation.h>
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/Audio/AudioDefs.h>
+#include <Urho3D/Resource/JSONFile.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/IO/FileSystem.h>
 #include "Achievements.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
 #include "../Global.h"
+
+using namespace Urho3D;
 
 void SaveProgressAsync(const WorkItem* item, unsigned threadIndex)
 {

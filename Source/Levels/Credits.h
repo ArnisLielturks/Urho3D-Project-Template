@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/UIElement.h>
 #include "../BaseLevel.h"
 
 namespace Levels {

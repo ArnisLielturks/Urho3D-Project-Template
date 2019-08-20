@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
 #include "BaseInput.h"
 #include "../../Config/ConfigFile.h"
 

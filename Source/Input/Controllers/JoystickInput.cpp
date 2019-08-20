@@ -1,4 +1,7 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/IO/Log.h>
 #include "JoystickInput.h"
 #include "../ControllerInput.h"
 #include "../../MyEvents.h"

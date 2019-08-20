@@ -1,8 +1,10 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/Button.h>
 #include "../BaseLevel.h"
 #include <vector>
+
+using namespace Urho3D;
 
 namespace Levels {
 

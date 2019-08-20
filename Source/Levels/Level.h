@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Scene/SplinePath.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 

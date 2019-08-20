@@ -1,4 +1,10 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/Font.h>
 #include "MainMenu.h"
 #include "../Global.h"
 #include "../MyEvents.h"

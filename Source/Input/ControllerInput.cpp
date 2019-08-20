@@ -1,9 +1,15 @@
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/IO/Log.h>
 #include "ControllerInput.h"
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "Controllers/KeyboardInput.h"
 #include "Controllers/MouseInput.h"
 #include "Controllers/JoystickInput.h"
+
+using namespace Urho3D;
 
 /// Construct.
 ControllerInput::ControllerInput(Context* context) :

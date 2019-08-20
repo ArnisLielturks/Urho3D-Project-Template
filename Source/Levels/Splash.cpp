@@ -1,4 +1,11 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Texture2D.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Scene/ObjectAnimation.h>
+#include <Urho3D/Scene/ValueAnimation.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Input/Input.h>
 #include "Splash.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"

@@ -1,4 +1,9 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Font.h>
 #include "ExitGame.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"

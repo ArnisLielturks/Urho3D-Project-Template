@@ -1,4 +1,6 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Input/InputEvents.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Input/Input.h>
 #include "MouseInput.h"
 #include "../ControllerInput.h"
 #include "../../MyEvents.h"

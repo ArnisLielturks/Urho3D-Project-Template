@@ -1,6 +1,9 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Scene/Animatable.h>
+#include <Urho3D/UI/Window.h>
+#include <Urho3D/UI/Sprite.h>
+#include <Urho3D/UI/Text.h>
 
 using namespace Urho3D;
 

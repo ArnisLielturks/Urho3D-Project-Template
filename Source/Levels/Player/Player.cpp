@@ -1,4 +1,14 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Physics/PhysicsEvents.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/UI/Text3D.h>
+#include <Urho3D/Physics/CollisionShape.h>
+#include <Urho3D/IO/MemoryBuffer.h>
+#include <Urho3D/Graphics/Model.h>
+#include <Urho3D/UI/Font.h>
 #include "Player.h"
 #include "../../MyEvents.h"
 #include "../../Global.h"

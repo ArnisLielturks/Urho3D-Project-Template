@@ -5,7 +5,6 @@ jobs:
     steps:
     - checkout
     - run: ./android/script.sh
-    - run: - store_artifacts:
     - store_artifacts:
         path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
   build_windows:

@@ -1,4 +1,3 @@
-#include <Urho3D/Urho3DAll.h>
 #include "ControllerInput.h"
 #include "../MyEvents.h"
 #include "../Global.h"

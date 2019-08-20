@@ -1,3 +1,12 @@
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Audio/SoundListener.h>
+#include <Urho3D/Audio/Audio.h>
+#include <Urho3D/Graphics/RenderPath.h>
+#include <Urho3D/Resource/ResourceCache.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Engine/Console.h>
+#include <Urho3D/Container/Str.h>
+
+using namespace Urho3D;
 
 struct SingleConsoleCommand {
     String command;

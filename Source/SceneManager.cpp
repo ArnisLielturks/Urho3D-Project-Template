@@ -1,3 +1,10 @@
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Scene/SceneEvents.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/IO/IOEvents.h>
+#include <Urho3D/AngelScript/Script.h>
+#include <Urho3D/Core/CoreEvents.h>
 #include "SceneManager.h"
 #include "MyEvents.h"
 

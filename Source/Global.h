@@ -1,4 +1,4 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Container/Str.h>
 
 // Control bits we define
 static const unsigned CTRL_FORWARD = 1 << 0; //1

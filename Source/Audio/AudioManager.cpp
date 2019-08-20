@@ -1,7 +1,10 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+
 #include "AudioManager.h"
 #include "../MyEvents.h"
 #include "AudioManagerDefs.h"
+
+using namespace Urho3D;
 
 /// Construct.
 AudioManager::AudioManager(Context* context) :

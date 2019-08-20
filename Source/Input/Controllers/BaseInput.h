@@ -1,8 +1,9 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
 #include "../../Config/ConfigFile.h"
 
+using namespace Urho3D;
 
 class BaseInput : public Object
 {

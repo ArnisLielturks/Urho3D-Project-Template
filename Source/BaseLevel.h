@@ -1,7 +1,11 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Graphics/Viewport.h>
 #include "MyEvents.h"
+
+using namespace Urho3D;
 
 class BaseLevel : public Object
 {

@@ -1,4 +1,10 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Engine/Console.h>
+#include <Urho3D/Engine/EngineEvents.h>
+#include <Urho3D/IO/Log.h>
 #include "ConsoleHandler.h"
 #include "../MyEvents.h"
 #include "../Config/ConfigManager.h"

@@ -1,8 +1,12 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Input/Controls.h>
+#include <Urho3D/Container/Str.h>
 #include "../Config/ConfigManager.h"
 #include "Controllers/BaseInput.h"
+
+using namespace Urho3D;
 
 /**
  * Different types of input handlers

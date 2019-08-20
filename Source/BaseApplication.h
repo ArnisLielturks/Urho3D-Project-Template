@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Engine/Application.h>
 #include "LevelManager.h"
 #include "Messages/Achievements.h"
 #include "Messages/Notifications.h"

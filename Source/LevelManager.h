@@ -1,6 +1,10 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Container/List.h>
+#include <Urho3D/UI/Window.h>
+
+using namespace Urho3D;
 
 class LevelManager : public Object
 {

@@ -1,6 +1,10 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Core/Timer.h>
+#include <Urho3D/Scene/Scene.h>
+
+using namespace Urho3D;
 
 struct LoadingStep {
     String event;

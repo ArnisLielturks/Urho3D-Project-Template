@@ -238,7 +238,7 @@
     </element>
     <element type="Text">
         <attribute name="Font" value="Font;Fonts/Muli-Regular.ttf" />
-        <attribute name="Font Size" value="11" />
+        <attribute name="Font Size" value="12" />
         <attribute name="Color" value="0.85 0.85 0.85" />
     </element>
     <element type="DebugHudText" style="Text" auto="false">

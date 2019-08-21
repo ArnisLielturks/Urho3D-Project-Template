@@ -20,10 +20,9 @@ Splash::Splash(Context* context) :
     _logoIndex(0)
 {
     // List of different logos that multiple splash screens will show
-    _logos.Reserve(2);
+    _logos.Reserve(1);
     _logos.Push("Textures/UrhoIcon.png");
-    _logos.Push("Textures/Achievements/lunar-module.png");
-    //_logos.Push("Textures/Achievements/retro-controller.png");
+//    _logos.Push("Textures/Achievements/retro-controller.png");
 }
 
 Splash::~Splash()
@@ -100,6 +99,18 @@ void Splash::CreateUI()
     scale->SetKeyFrame(SPLASH_TIME / 1000, Vector2(1, 1));
     scale->SetKeyFrame(SPLASH_TIME / 1000 * 2, Vector2(1, 1));
     animation->AddAttributeAnimation("Scale", scale);
+
+    SharedPtr<ValueAnimation> rotation(new ValueAnimation(context_));
+    // Use spline interpolation method
+    rotation->SetInterpolationMethod(IM_SPLINE);
+    rotation->SetSplineTension(0.0f);
+    // Set spline tension
+    rotation->SetKeyFrame(0.0f, 0.0f);
+    rotation->SetKeyFrame(1.0, 0.0f);
+    rotation->SetKeyFrame(2.0, 360 * 1.0f);
+    rotation->SetKeyFrame(SPLASH_TIME / 1000, 360 * 1.0f);
+    rotation->SetKeyFrame(SPLASH_TIME / 1000 * 2, 360 * 1.0f);
+    animation->AddAttributeAnimation("Rotation", rotation);
 
     sprite->SetObjectAnimation(animation);
 }

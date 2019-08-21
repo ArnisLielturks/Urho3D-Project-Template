@@ -1,6 +1,12 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/Window.h>
+#include <Urho3D/UI/ListView.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/CheckBox.h>
+#include <Urho3D/UI/Slider.h>
+#include <Urho3D/UI/DropDownList.h>
 #include "../BaseWindow.h"
 
 enum SettingTabs {

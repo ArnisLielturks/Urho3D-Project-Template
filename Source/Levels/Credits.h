@@ -35,6 +35,8 @@ namespace Levels {
          */
         void HandleEndCredits(bool forced = false);
 
+        UIElement* CreateEmptyLine(int height);
+
         /**
          * Create single text line
          */
@@ -65,14 +67,6 @@ namespace Levels {
 		 */
 		SharedPtr<UIElement> _creditsBase;
 
-		/**
-		 * Total vertical size of credits
-		 */
-		int _totalCreditsHeight;
-
-		/**
-		 * Credits screen lifetime length
-		 */
-		int _creditLengthInSeconds;
+		float _offset;
     };
 }

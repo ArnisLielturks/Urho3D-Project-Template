@@ -1,5 +1,6 @@
 uint count = 0;
 Node@ ground = null;
+Vector3 targetGroundScale = Vector3(40, 40, 40);
 
 void Start()
 {
@@ -7,6 +8,7 @@ void Start()
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
+    SubscribeToEvent("Update", "HandleUpdate");
 
     // Register our loading step
     VariantMap data;
@@ -57,7 +59,19 @@ void Stop()
 void CreateCheckpoint()
 {
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
-    scene.InstantiateXML(xml.root, Vector3(Random(ground.scale.x) - ground.scale.x/2, 5.0f, Random(ground.scale.x) - ground.scale.x/2), Quaternion());
+    float scale = targetGroundScale.x * 0.5;
+    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 5.0f, Random(scale * 2) - scale), Quaternion());
+}
+
+void UpdateBoxes()
+{
+    Array<Node@>@ cubes = scene.GetChildrenWithTag("Cube", true);
+    for (int i = 0; i < cubes.length; i++)
+    {
+        RigidBody@ body = cubes[i].GetComponent("RigidBody");
+        body.Activate();
+        body.ApplyImpulse(Vector3(0, 10, 0));
+    }
 }
 
 void CreateObject()
@@ -92,6 +106,21 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     SendEvent("LoadingStepFinished", data);
 }
 
+void HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    if (ground is null) {
+        return;
+    }
+    float timestep = eventData["TimeStep"].GetFloat();
+    float diff = (targetGroundScale.x - ground.scale.x);
+    if (Abs(diff) > 0.1) {
+        ground.scale += Vector3(1, 1, 1) * diff * timestep;
+    } else {
+        UpdateBoxes();
+        UnsubscribeFromEvent("Update");
+    }
+}
+
 void UpdatePlayerScore(int playerId, int points)
 {
     if (playerId < 0) {
@@ -121,8 +150,7 @@ void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
 
 void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
 {
-    int playerId = eventData["Player"].GetInt();   
-    CreateCheckpoint();
+    int playerId = eventData["Player"].GetInt();
 
     UpdatePlayerScore(playerId, 5);
 
@@ -131,8 +159,13 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
     }
 
     if (ground !is null) {
-        if (ground.scale.x > 1) {
-            ground.scale = ground.scale * 0.9;
+        if (ground.scale.x > 10) {
+            targetGroundScale = ground.scale * 0.9;
+            CreateCheckpoint();
+            SubscribeToEvent("Update", "HandleUpdate");
+        } else {
+            targetGroundScale = Vector3(40, 40, 40);
+            DelayedExecute(2.0, false, "void CreateCheckpoint()");
         }
     }
 }

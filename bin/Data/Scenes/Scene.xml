@@ -7,8 +7,8 @@
 	<attribute name="Elapsed Time" value="0" />
 	<attribute name="Next Replicated Node ID" value="32" />
 	<attribute name="Next Replicated Component ID" value="80" />
-	<attribute name="Next Local Node ID" value="16777226" />
-	<attribute name="Next Local Component ID" value="16777315" />
+	<attribute name="Next Local Node ID" value="16777227" />
+	<attribute name="Next Local Component ID" value="16777327" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
@@ -29,7 +29,7 @@
 		<attribute name="Tags" />
 		<attribute name="Position" value="0 0.0792121 0" />
 		<attribute name="Rotation" value="1 0 0 0" />
-		<attribute name="Scale" value="40 40 40" />
+		<attribute name="Scale" value="5 5 5" />
 		<attribute name="Variables" />
 		<component type="StaticModel" id="3">
 			<attribute name="Model" value="Model;Models/Plane.mdl" />
@@ -71,31 +71,15 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Light1" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="0.275269 1.54593 -5.1247" />
-		<attribute name="Rotation" value="0.996465 0.0840061 0 0" />
+		<attribute name="Position" value="0.275269 3.08244 -2.47244" />
+		<attribute name="Rotation" value="0.707107 0.707107 0 0" />
 		<attribute name="Scale" value="1 1 1" />
 		<attribute name="Variables" />
 		<component type="Light" id="6">
-			<attribute name="Light Type" value="Spot" />
-			<attribute name="Color" value="1 0.5 0.5 1" />
-			<attribute name="Spot FOV" value="60" />
-			<attribute name="Cast Shadows" value="true" />
-			<attribute name="Depth Constant Bias" value="0.0001" />
-		</component>
-	</node>
-	<node id="7">
-		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="Light2" />
-		<attribute name="Tags" />
-		<attribute name="Position" value="-1.60567 7.13075 2.62329" />
-		<attribute name="Rotation" value="0.598598 0.675073 0.407304 -0.141692" />
-		<attribute name="Scale" value="1 1 1" />
-		<attribute name="Variables" />
-		<component type="Light" id="8">
-			<attribute name="Light Type" value="Spot" />
-			<attribute name="Color" value="1.52 0.5 1 1" />
-			<attribute name="Brightness Multiplier" value="2" />
-			<attribute name="Spot FOV" value="60" />
+			<attribute name="Color" value="0.9 0.9 0.9 1" />
+			<attribute name="Range" value="98.38" />
+			<attribute name="Spot FOV" value="62.18" />
+			<attribute name="Light Shape Texture" value="TextureCube;" />
 			<attribute name="Cast Shadows" value="true" />
 			<attribute name="Depth Constant Bias" value="0.0001" />
 		</component>
@@ -118,14 +102,15 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Light2" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="-5.9035 0.969277 1.11496" />
+		<attribute name="Position" value="13.8283 0.969277 11.6715" />
 		<attribute name="Rotation" value="0.346269 0.0588016 0.923076 -0.156752" />
 		<attribute name="Scale" value="1 1 1" />
 		<attribute name="Variables" />
 		<component type="Light" id="11">
-			<attribute name="Light Type" value="Spot" />
 			<attribute name="Color" value="0.5 0.5 1 1" />
+			<attribute name="Range" value="13.26" />
 			<attribute name="Spot FOV" value="60" />
+			<attribute name="Light Shape Texture" value="TextureCube;" />
 			<attribute name="Cast Shadows" value="true" />
 			<attribute name="Depth Constant Bias" value="0.0001" />
 		</component>
@@ -134,14 +119,15 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Light2" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="-1.90578 3.8011 3.29073" />
+		<attribute name="Position" value="-13.7086 3.8011 -10.5459" />
 		<attribute name="Rotation" value="0.346269 0.0588016 0.923076 -0.156752" />
 		<attribute name="Scale" value="1 1 1" />
 		<attribute name="Variables" />
 		<component type="Light" id="12">
-			<attribute name="Light Type" value="Spot" />
 			<attribute name="Color" value="0.5 0.5 1 1" />
+			<attribute name="Range" value="20" />
 			<attribute name="Spot FOV" value="60" />
+			<attribute name="Light Shape Texture" value="TextureCube;" />
 			<attribute name="Cast Shadows" value="true" />
 			<attribute name="Depth Constant Bias" value="0.0001" />
 		</component>

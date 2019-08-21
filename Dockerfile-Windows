@@ -25,8 +25,8 @@ ARG BUILD_DESCRIPTION="Docker automated build"
 RUN cd /code \
     && mkdir archive \
     && pwd \
-    && cp build-windows/bin/EmptyProject.exe archive/EmptyProject.exe || true \
-    && cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true \
+    && cp build-windows/bin/ProjectTemplate.exe archive/ProjectTemplate.exe || true \
+    && cp build-windows/bin/ProjectTemplate_d.exe archive/ProjectTemplate_d.exe || true \
     && cp -r bin/Data archive/Data \
     && cp -r bin/CoreData archive/CoreData \
     && rm -rf archive/Data/Saves/Achievements.json \

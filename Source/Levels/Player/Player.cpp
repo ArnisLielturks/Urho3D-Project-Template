@@ -9,6 +9,8 @@
 #include <Urho3D/IO/MemoryBuffer.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Material.h>
 #include "Player.h"
 #include "../../MyEvents.h"
 #include "../../Global.h"
@@ -93,7 +95,7 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId)
 
     // Create a random colored point light at the ball so that can see better where is going
     auto* light = _node->CreateComponent<Light>();
-    light->SetRange(5.0f);
+    light->SetRange(20.0f);
     light->SetColor(Color(0.5f + Random(0.5f), 0.5f + Random(0.5f), 0.5f + Random(0.5f)));
     light->SetCastShadows(false);
 

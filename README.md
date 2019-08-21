@@ -25,7 +25,7 @@ make
 ```
 
 
-If everything worked, build/bin directory should contain `EmptyProject` executable.
+If everything worked, build/bin directory should contain `ProjectTemplate` executable.
 
 
 And of course here's the quick preview of how it should look in the end:

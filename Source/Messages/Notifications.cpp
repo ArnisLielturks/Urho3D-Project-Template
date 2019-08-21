@@ -47,7 +47,6 @@ void Notifications::SubscribeToEvents()
 {
     SubscribeToEvent("ShowNotification", URHO3D_HANDLER(Notifications, HandleNewNotification));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Notifications, HandleUpdate));
-    SubscribeToEvent(StringHash("ClientGameRoundEnd"), URHO3D_HANDLER(Notifications, HandleGameEnd));
 }
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)

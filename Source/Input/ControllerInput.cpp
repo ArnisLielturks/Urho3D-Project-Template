@@ -27,14 +27,14 @@ ControllerInput::ControllerInput(Context* context) :
 	_inputHandlers[ControllerType::MOUSE] = context_->CreateObject<MouseInput>();
 	_inputHandlers[ControllerType::JOYSTICK] = context_->CreateObject<JoystickInput>();
 
-	_controlMapNames[CTRL_FORWARD] = "Move forward";
-	_controlMapNames[CTRL_BACK] = "Move backward";
-	_controlMapNames[CTRL_LEFT] = "Strafe left";
-	_controlMapNames[CTRL_RIGHT] = "Strafe right";
-	_controlMapNames[CTRL_JUMP] = "Jump";
-	_controlMapNames[CTRL_ACTION] = "Primary action";
-	_controlMapNames[CTRL_SPRINT] = "Sprint";
-	_controlMapNames[CTRL_UP] = "Move up";
+	_controlMapNames[CTRL_FORWARD]  = "Move forward";
+	_controlMapNames[CTRL_BACK]     = "Move backward";
+	_controlMapNames[CTRL_LEFT]     = "Strafe left";
+	_controlMapNames[CTRL_RIGHT]    = "Strafe right";
+	_controlMapNames[CTRL_JUMP]     = "Jump";
+	_controlMapNames[CTRL_ACTION]   = "Primary action";
+	_controlMapNames[CTRL_SPRINT]   = "Sprint";
+	_controlMapNames[CTRL_UP]       = "Move up";
 	Init();
 }
 

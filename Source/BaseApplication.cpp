@@ -1,3 +1,10 @@
+#include <Urho3D/IO/FileSystem.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Engine/EngineDefs.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Audio/Audio.h>
+#include <Urho3D/Resource/Localization.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -71,7 +78,6 @@ void BaseApplication::Start()
     auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
-    debugHud->Toggle(DEBUGHUD_SHOW_STATS);
 
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
@@ -220,7 +226,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
 
     // Logs
-    SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "EmptyProject.log"));
+    SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "ProjectTemplate.log"));
     SetEngineParameter(EP_LOG_LEVEL, GetSubsystem<ConfigManager>()->GetInt("engine", "LogLevel", LOG_INFO));
     SetEngineParameter(EP_LOG_QUIET, GetSubsystem<ConfigManager>()->GetBool("engine", "LogQuiet", false));
 

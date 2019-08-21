@@ -1,4 +1,9 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
 #include "PauseWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"

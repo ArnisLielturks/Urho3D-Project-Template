@@ -1,6 +1,11 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/Core/Variant.h>
+#include <Urho3D/UI/Sprite.h>
+
+using namespace Urho3D;
 
 class BaseWindow : public Object
 {

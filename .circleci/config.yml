@@ -22,8 +22,8 @@ jobs:
           name: Archiving
           command: |
             mkdir archive
-            cp build-windows/bin/EmptyProject.exe archive/EmptyProject.exe || true
-            cp build-windows/bin/EmptyProject_d.exe archive/EmptyProject_d.exe || true
+            cp build-windows/bin/ProjectTemplate.exe archive/ProjectTemplate.exe || true
+            cp build-windows/bin/ProjectTemplate_d.exe archive/ProjectTemplate_d.exe || true
             cp -r bin/Data archive/Data
             cp -r bin/CoreData archive/CoreData
             rm -rf archive/Data/Saves/Achievements.json
@@ -47,14 +47,14 @@ jobs:
         name: Archiving
         command: |
           mkdir archive
-          cp build/bin/EmptyProject archive/EmptyProject || true
-          cp build/bin/EmptyProject_d archive/EmptyProject_d || true
+          cp build/bin/ProjectTemplate archive/ProjectTemplate || true
+          cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
           cp -r bin/Data archive/Data
           cp -r bin/CoreData archive/CoreData
-          cp -r bin/EmptyProject.desktop archive/EmptyProject.desktop
+          cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
-          chmod a+x archive/EmptyProject.desktop
+          chmod a+x archive/ProjectTemplate.desktop
           cd archive
           zip -r "build.zip" *  > /dev/null
     - store_artifacts:

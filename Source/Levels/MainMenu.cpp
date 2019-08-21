@@ -14,6 +14,11 @@
 
 using namespace Levels;
 
+const static int BUTTON_WIDTH = 180;
+const static int BUTTON_HEIGHT = 40;
+const static int BUTTON_SPACING = 10;
+const static int BUTTON_FONT_SIZE = 16;
+
     /// Construct.
 MainMenu::MainMenu(Context* context) :
     BaseLevel(context)
@@ -61,8 +66,8 @@ void MainMenu::CreateUI()
     }
     auto* localization = GetSubsystem<Localization>();
 
-    int marginBottom = -180;
-    _newGameButton = CreateButton(localization->Get("NEW_GAME"), 150, IntVector2(-20, marginBottom));
+    int marginBottom = -4 * (BUTTON_HEIGHT + BUTTON_SPACING) - BUTTON_SPACING;
+    _newGameButton = CreateButton(localization->Get("NEW_GAME"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
     _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -71,8 +76,8 @@ void MainMenu::CreateUI()
 
     });
 
-    marginBottom += 40;
-    _settingsButton = CreateButton(localization->Get("SETTINGS"), 150, IntVector2(-20, marginBottom));
+    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
+    _settingsButton = CreateButton(localization->Get("SETTINGS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
     _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -80,8 +85,8 @@ void MainMenu::CreateUI()
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    marginBottom += 40;
-    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"), 150, IntVector2(-20, marginBottom));
+    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
+    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
     _achievementsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -91,8 +96,8 @@ void MainMenu::CreateUI()
         GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
     });
 
-    marginBottom += 40;
-    _creditsButton = CreateButton(localization->Get("CREDITS"), 150, IntVector2(-20, marginBottom));
+    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
+    _creditsButton = CreateButton(localization->Get("CREDITS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
     _creditsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_creditsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -100,8 +105,8 @@ void MainMenu::CreateUI()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    marginBottom += 40;
-    _exitButton = CreateButton(localization->Get("EXIT"), 150, IntVector2(-20, marginBottom));
+    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
+    _exitButton = CreateButton(localization->Get("EXIT"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
     _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -118,11 +123,11 @@ Button* MainMenu::CreateButton(const String& text, int width, IntVector2 positio
     auto* button = GetSubsystem<UI>()->GetRoot()->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedWidth(width);
-    button->SetFixedHeight(30);
+    button->SetFixedHeight(BUTTON_HEIGHT);
     button->SetPosition(position);
 
     auto* buttonText = button->CreateChild<Text>();
-    buttonText->SetFont(font, 12);
+    buttonText->SetFont(font, BUTTON_FONT_SIZE);
     buttonText->SetAlignment(HA_CENTER, VA_CENTER);
     buttonText->SetText(text);
 

@@ -114,14 +114,9 @@ void Loading::CreateUI()
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
     // Use spline interpolation method
     colorAnimation->SetInterpolationMethod(IM_LINEAR);
-    // Set spline tension
-    colorAnimation->SetSplineTension(0.7f);
-    colorAnimation->SetKeyFrame(0.0f, Color::RED);
-    colorAnimation->SetKeyFrame(1.0f, Color::YELLOW);
-    colorAnimation->SetKeyFrame(2.0f, Color::GREEN);
-    colorAnimation->SetKeyFrame(3.0f, Color::GRAY);
-    colorAnimation->SetKeyFrame(4.0f, Color::BLUE);
-    colorAnimation->SetKeyFrame(5.0f, Color::RED);
+    colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
+    colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
+    colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _status->SetObjectAnimation(animation);
@@ -168,23 +163,12 @@ void Loading::CreateProgressBar()
     if (GetSubsystem<ConfigManager>()->GetBool("game", "ShowProgressBar", true)) {
         UI *ui = GetSubsystem<UI>();
         ResourceCache *cache = GetSubsystem<ResourceCache>();
-
-        // Get the Urho3D fish texture
         auto *progressBarTexture = cache->GetResource<Texture2D>("Textures/Loading.png");
-        // Create a new sprite, set it to use the texture
         _loadingBar = ui->GetRoot()->CreateChild<Sprite>();
         _loadingBar->SetTexture(progressBarTexture);
-
         auto *graphics = GetSubsystem<Graphics>();
-
-        // Get rendering window size as floats
-        auto width = (float) graphics->GetWidth() / GetSubsystem<UI>()->GetScale();
         auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
-
-        // The UI root element is as big as the rendering window, set random position within it
         _loadingBar->SetPosition(10, height - 30);
-
-        // Set sprite size & hotspot in its center
         _loadingBar->SetSize(0, 20);
     }
 }

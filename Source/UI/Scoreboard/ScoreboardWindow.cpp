@@ -1,4 +1,7 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
 #include "ScoreboardWindow.h"
 #include "../../MyEvents.h"
 #include "../../Global.h"

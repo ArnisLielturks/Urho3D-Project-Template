@@ -1,4 +1,9 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/Scene/ObjectAnimation.h>
+#include <Urho3D/Scene/ValueAnimation.h>
 #include "PopupMessageWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"
@@ -37,17 +42,24 @@ void PopupMessageWindow::Create()
     _okButton->SetAlignment(HA_CENTER, VA_BOTTOM);
     _okButton->SetPosition(0, -20);
 
+    Color color = Color::GREEN;
     if (_data.Contains("Type")) {
-        if (_data["Type"].GetString() == "info") {
-            _baseWindow->SetColor(Color::GREEN);
-        } else if (_data["Type"].GetString() == "warning") {
-            _baseWindow->SetColor(Color::YELLOW);
+        if (_data["Type"].GetString() == "warning") {
+            color = Color::YELLOW;
         } else if (_data["Type"].GetString() == "error") {
-            _baseWindow->SetColor(Color::RED);
-        } else {
-            _baseWindow->SetColor(Color::GREEN);
+            color = Color::RED;
         }
     }
+
+    SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
+    SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
+    colorAnimation->SetInterpolationMethod(IM_LINEAR);
+    colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
+    colorAnimation->SetKeyFrame(0.5f, color);
+    colorAnimation->SetKeyFrame(1.0f, Color::WHITE);
+    animation->AddAttributeAnimation("Color", colorAnimation);
+
+    _baseWindow->SetObjectAnimation(animation);
 
     auto title = CreateLabel(_data["Title"].GetString());
     title->SetAlignment(HA_CENTER, VA_TOP);
@@ -108,29 +120,15 @@ Button* PopupMessageWindow::CreateButton(const String& text, int width, IntVecto
 
 Text* PopupMessageWindow::CreateLabel(const String& text)
 {
-    String message = "";
-
-    // Split longer messages into multiple lines
-    String line;
-    auto words = text.Split(' ', false);
-    for (auto it = words.Begin(); it != words.End(); ++it) {
-        if (line.Length() + (*it).Length() > 30) {
-            message += line + "\n";
-            line = "";
-        }
-        line += (*it) + " ";
-    }
-    if (!line.Empty()) {
-        message += line;
-    }
-
     auto *cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
     // Create log element to view latest logs from the system
     auto *label = _baseWindow->CreateChild<Text>();
     label->SetFont(font, 12);
-    label->SetText(message);
+    label->SetWidth(_baseWindow->GetWidth() - 20);
+    label->SetWordwrap(true);
+    label->SetText(text);
 
     return label;
 }

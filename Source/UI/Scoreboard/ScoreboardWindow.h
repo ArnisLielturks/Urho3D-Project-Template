@@ -1,6 +1,5 @@
 #pragma once
-
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/Window.h>
 #include "../BaseWindow.h"
 
 class ScoreboardWindow : public BaseWindow

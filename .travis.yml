@@ -9,7 +9,7 @@ services:
 
 env:
   matrix:
-    - DOCKERFILE=Dockerfile-Linux
-    - DOCKERFILE=Dockerfile-Windows
+    - SCRIPT=/var/sample/build_windows.sh
+    - SCRIPT=/var/sample/build_linux.sh
 script:
-  - docker build -f $DOCKERFILE --build-arg SITE_URL=${SITE_URL} --build-arg SITE_TOKEN=${SITE_TOKEN} --build-arg BUILD_NUMBER=${TRAVIS_BUILD_NUMBER} --build-arg BUILD_DESCRIPTION="TravisCI-automated-build" .
+  - docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash $SCRIPT

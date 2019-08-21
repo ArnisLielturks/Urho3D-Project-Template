@@ -1,6 +1,6 @@
 #pragma once
-
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Object.h>
+#include <Urho3D/Container/List.h>
 #include "BaseWindow.h"
 
 using namespace Urho3D;

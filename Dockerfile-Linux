@@ -25,14 +25,14 @@ ARG BUILD_DESCRIPTION="Docker automated build"
 RUN cd /code \
     && mkdir archive \
     && pwd \
-    && cp build/bin/EmptyProject archive/EmptyProject || true \
-    && cp build/bin/EmptyProject_d archive/EmptyProject_d || true \
+    && cp build/bin/ProjectTemplate archive/ProjectTemplate || true \
+    && cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true \
     && cp -r bin/Data archive/Data \
     && cp -r bin/CoreData archive/CoreData \
-    && cp -r bin/EmptyProject.desktop archive/EmptyProject.desktop \
+    && cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop \
     && rm -rf archive/Data/Saves/Achievements.json \
     && chmod -R 777 archive \
-    && chmod a+x archive/EmptyProject.desktop \
+    && chmod a+x archive/ProjectTemplate.desktop \
     && cd archive \
     && zip -r "build.zip" *  > /dev/null \
     && curl -X POST \

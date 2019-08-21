@@ -1,4 +1,14 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Audio/AudioDefs.h>
+#include <Urho3D/Audio/Audio.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/UI/Font.h>
 #include "SettingsWindow.h"
 #include "../../MyEvents.h"
 #include "../../Input/ControllerInput.h"
@@ -104,6 +114,7 @@ void SettingsWindow::Create()
     _listView->SetWidth(_baseWindow->GetWidth() - 20);
     _listView->SetFixedHeight(_baseWindow->GetHeight() - 80);
     _listView->SetPosition(10, 70);
+    _listView->SetLayoutBorder(IntRect(4, 4, 4, 4));
     //_listView->SetScrollBarsVisible(false, true);
 
     ChangeTab(CONTROLS);
@@ -834,7 +845,7 @@ Button* SettingsWindow::CreateButton(const String& text)
     auto* button = _activeLine->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedWidth(COLUMN_WIDTH);
-    button->SetFixedHeight(30);
+    button->SetHeight(30);
 
     auto* buttonText = button->CreateChild<Text>("Label");
     buttonText->SetFont(font, 12);
@@ -958,8 +969,7 @@ UIElement* SettingsWindow::CreateSingleLine()
 {
     SharedPtr<UIElement> container(new UIElement(context_));
     container->SetAlignment(HA_LEFT, VA_TOP);
-    container->SetLayout(LM_HORIZONTAL, 20);
-    //container->SetPosition(10, 30 + _tabElementCount * 30);
+    container->SetLayout(LM_HORIZONTAL, 20, IntRect(4, 4, 4, 4));
     container->SetFixedWidth(_listView->GetWidth() - 20);
     container->SetFixedHeight(30);
     _listView->AddItem(container);

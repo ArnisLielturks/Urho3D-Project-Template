@@ -38,6 +38,8 @@ SingleAchievement::SingleAchievement(Context* context) :
     _title->SetFont(font, 10);
     _title->SetAlignment(HA_LEFT, VA_CENTER);
     _title->SetPosition(100, 0);
+    _title->SetWordwrap(true);
+    _title->SetWidth(_baseWindow->GetWidth() - _sprite->GetWidth() - 20);
 }
 
 SingleAchievement::~SingleAchievement()
@@ -52,25 +54,9 @@ void SingleAchievement::SetImage(String image)
     _sprite->SetTexture(cache->GetResource<Texture2D>(image));
 }
 
-void SingleAchievement::SetMessage(String message)
-{
+void SingleAchievement::SetMessage(String message) {
     _message = "";
-
-    // Split longer messages into multiple lines
-    String line;
-    auto words = message.Split(' ', false);
-    for (auto it = words.Begin(); it != words.End(); ++it) {
-        if (line.Length() + (*it).Length() > 20) {
-            _message += line + "\n";
-            line = "";
-        }
-        line += (*it) + " ";
-    }
-    if (!line.Empty()) {
-        _message += line;
-    }
-
-    _title->SetText(_message);
+    _title->SetText(message);
 }
 
 String SingleAchievement::GetMessage()

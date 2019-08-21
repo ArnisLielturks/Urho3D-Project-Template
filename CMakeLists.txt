@@ -27,14 +27,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 file(GLOB_RECURSE SRCS src/*.cpp)
 file(GLOB_RECURSE HDRS include/*.h)
 
-add_definitions(-DURHO3D_DATABASE_SQLITE)
-
 # Find Urho3D library
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
 # Define target name
-set (TARGET_NAME EmptyProject)
+set (TARGET_NAME ProjectTemplate)
 
 define_source_files (GLOB_CPP_PATTERNS Source/*.c* GLOB_H_PATTERNS Source/*.h* RECURSE GROUP)
 

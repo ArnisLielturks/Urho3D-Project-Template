@@ -1,6 +1,8 @@
 #pragma once
 
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/UI/Button.h>
+#include <Urho3D/UI/Window.h>
+#include <Urho3D/UI/Text.h>
 #include "../BaseWindow.h"
 
 class PopupMessageWindow : public BaseWindow

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Urho3D/Container/List.h>
+#include <Urho3D/Core/WorkQueue.h>
 #include "SingleAchievement.h"
 
 using namespace Urho3D;

@@ -1,6 +1,7 @@
 .vscode
 .gradle
 build/
+build-windows/
 cmake-build-debug/
 .idea/
 android/launcher-app/build

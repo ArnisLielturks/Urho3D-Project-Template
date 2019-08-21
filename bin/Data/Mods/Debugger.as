@@ -29,15 +29,6 @@ void Start()
     SendEvent("LoadConfig", loadConfigData);
 
     log.Info("Developer name: " + GetGlobalVar("Debugger_Developer").GetString());
-
-    DelayedExecute(5.0, true, "void ShowNotitification()");
-}
-
-void ShowNotitification()
-{
-    VariantMap data;
-    data["Message"] = "Uptime seconds: " + String(time.elapsedTime);
-    SendEvent("ShowNotification", data);
 }
 
 void Stop()

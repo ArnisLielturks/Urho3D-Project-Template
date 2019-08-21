@@ -1,3 +1,11 @@
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/Audio/SoundListener.h>
+#include <Urho3D/Audio/Audio.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Physics/PhysicsEvents.h>
+#include <Urho3D/Physics/PhysicsWorld.h>
+#include <Urho3D/Core/CoreEvents.h>
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"

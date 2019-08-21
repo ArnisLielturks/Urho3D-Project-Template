@@ -1,4 +1,5 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Core/CoreEvents.h>
 #include "WindowManager.h"
 #include "../MyEvents.h"
 

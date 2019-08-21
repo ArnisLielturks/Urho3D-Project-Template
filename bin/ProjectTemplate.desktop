@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=EmptyProject
-Exec=sh -c "`dirname %k`/EmptyProject `dirname %k`"
+Name=ProjectTemplate
+Exec=sh -c "`dirname %k`/ProjectTemplate `dirname %k`"
 Terminal=false
 Type=Application
 Categories=Utility;Application;

@@ -1,4 +1,12 @@
-#include <Urho3D/Urho3DAll.h>
+#include <Urho3D/Core/Context.h>
+#include <Urho3D/AngelScript/Script.h>
+#include <Urho3D/LuaScript/LuaScript.h>
+#include <Urho3D/Resource/ResourceEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/IO/PackageFile.h>
+#include <Urho3D/IO/FileSystem.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Engine/DebugHud.h>
 #include "ModLoader.h"
 #include "../MyEvents.h"
 #include "../Config/ConfigManager.h"

@@ -13,6 +13,8 @@ Node@ vehicleNode;
 
 void Start()
 {
+    // Disable vehicle mod for now
+    return;
     SubscribeToEvent("CreateVehicles", "HandleCreateVehicles");
 
     VariantMap data;

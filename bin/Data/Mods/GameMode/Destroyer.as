@@ -5,6 +5,7 @@ class Destroyer : ScriptObject
     Vector3 rotationSpeed = Vector3(0.1, 0.2, 0.3);
     void Start()
     {
+        node.AddTag("Cube");
         // Subscribe physics collisions that concern this scene node
         SubscribeToEvent(node, "NodeCollisionStart", "HandleNodeCollision");
     }
@@ -21,8 +22,17 @@ class Destroyer : ScriptObject
 
         if (otherBody.mass > 0.0f)
         {
+            VectorBuffer contacts = eventData["Contacts"].GetBuffer();
+
             RigidBody@ body = node.GetComponent("RigidBody");
-            body.ApplyImpulse(Vector3(0, body.mass * 4.0, 0));
+            while (!contacts.eof)
+            {
+                Vector3 contactPosition = contacts.ReadVector3();
+                Vector3 contactNormal = contacts.ReadVector3();
+                float contactDistance = contacts.ReadFloat();
+                float contactImpulse = contacts.ReadFloat();
+                body.ApplyImpulse(contactNormal * contactImpulse * 10);
+            }
             node.scale = node.scale * 0.9;
 
             if (otherBody.node.name == "Player") {

@@ -7,3 +7,4 @@ cmake-build-debug/
 android/launcher-app/build
 android/launcher-app/.externalNativeBuild
 Urho3D
+bin/Data/Textures/Avatar.png

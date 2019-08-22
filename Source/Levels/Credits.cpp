@@ -73,6 +73,7 @@ namespace Levels {
         CreateSingleLine("", HEADER_MARGIN);
         CreateSingleLine("@CG-SS", PARAGRAPH);
         CreateSingleLine("@urnenfeld", PARAGRAPH);
+        CreateSingleLine("@Modanung", PARAGRAPH);
         CreateSingleLine("", PARAGRAPH);
 
         CreateSingleLine("Community", HEADER_SIZE);

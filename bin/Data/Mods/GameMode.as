@@ -102,6 +102,8 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     }
     CreateCheckpoint();
 
+    count = 0;
+
     // Let the loading system know that we finished our work
     SendEvent("LoadingStepFinished", data);
 }

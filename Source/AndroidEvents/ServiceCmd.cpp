@@ -3,46 +3,49 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Engine/DebugHud.h>
 
 #include "ServiceCmd.h"
+#include "../MyEvents.h"
 
 #include <Urho3D/DebugNew.h>
-//=============================================================================
-//=============================================================================
+
+static ServiceCmd *handler = nullptr;
+
 #if defined(__ANDROID__)
 #include <SDL/SDL.h>
+#include <jni.h>
 extern "C"
 {
-int Android_JNI_SendMessage(int command, int param);
-}
+    int Android_JNI_SendMessage(int command, int param);
 
+
+    JNIEXPORT void JNICALL
+    Java_org_libsdl_app_SDLActivity_SendServiceCommand(JNIEnv *env, jobject obj, jint cmd, jint status, jstring message) {
+        if (handler) {
+            const char *nativeString = env->GetStringUTFChars(message, 0);
+            handler->ReceiveCmdMessage(cmd, status, nativeString);
+
+            env->ReleaseStringUTFChars(message, nativeString);
+        }
+    }
+}
 #else
 // create dummy interface for all non-Android platforms
-typedef void (*UserActivityCallback)(int id1, int istat, const char *str, void *param);
-void SDL_RegisterUserActivityCallback(UserActivityCallback callback, void *param){}
 int Android_JNI_SendMessage(int command, int param){ return 0; }
 #endif
 
-//=============================================================================
-//=============================================================================
+
 ServiceCmd::ServiceCmd(Context* context)
         : Object(context)
 {
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(ServiceCmd, HandleUpdate));
-//    SDL_RegisterUserActivityCallback(&ServiceCmd::JavaActivityCallback, this);
+    handler = this;
 }
 
 ServiceCmd::~ServiceCmd()
 {
-//    SDL_RegisterUserActivityCallback(NULL, NULL);
-}
 
-void ServiceCmd::JavaActivityCallback(int ival, int istat, const char *pstr, void *param)
-{
-    if (param)
-    {
-        ((ServiceCmd*)param)->ActivityCallback(ival, istat, pstr);
-    }
 }
 
 void ServiceCmd::SendCmdMessage(int cmd, int param)
@@ -50,16 +53,16 @@ void ServiceCmd::SendCmdMessage(int cmd, int param)
     Android_JNI_SendMessage(cmd, param);
 }
 
-void ServiceCmd::ActivityCallback(int val, int stat, const char *pstr)
+void ServiceCmd::ReceiveCmdMessage(int cmd, int status, const char* message)
 {
     MutexLock lock(mutexMessageLock_);
 
     messageList_.Resize(messageList_.Size() + 1);
     MessageData &messageData = messageList_[messageList_.Size() - 1];
 
-    messageData.val_     = val;
-    messageData.stat_    = stat;
-    messageData.message_ = pstr?String(pstr):String::EMPTY;
+    messageData.command  = cmd;
+    messageData.status   = status;
+    messageData.message  = message ? String(message) : String::EMPTY;
 }
 
 bool ServiceCmd::HasQueueMessage(MessageData& messageData)
@@ -89,14 +92,17 @@ void ServiceCmd::PopFrontQueue()
 
 void ServiceCmd::SendResponseMsg(const MessageData &msg)
 {
-    using namespace ServiceMessage;
+    using namespace MyEvents::ServiceMessage;
 
     VariantMap& eventData = GetEventDataMap();
-    eventData[P_COMMAND]  = msg.val_;
-    eventData[P_STATUS]   = msg.stat_;
-    eventData[P_MESSAGE]  = msg.message_;
+    eventData[P_COMMAND]  = msg.command;
+    eventData[P_STATUS]   = msg.status;
+    eventData[P_MESSAGE]  = msg.message;
 
-    SendEvent(E_SERVICE_MESSAGE, eventData);
+    SendEvent(MyEvents::E_SERVICE_MESSAGE, eventData);
+
+    eventData["Message"] = "Got cmd: " + String(msg.command) + "; Status: " + String(msg.status) + "; Msg: " + msg.message;
+    SendEvent("ShowNotification", eventData);
 }
 
 void ServiceCmd::ProcessMessageQueue()
@@ -113,6 +119,5 @@ void ServiceCmd::ProcessMessageQueue()
 void ServiceCmd::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
-
     ProcessMessageQueue();
 }

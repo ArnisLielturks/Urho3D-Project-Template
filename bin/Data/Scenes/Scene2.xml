@@ -15,13 +15,13 @@
 	<component type="DebugRenderer" id="2" />
 	<component type="PhysicsWorld" id="24" />
 	<component type="Zone" id="62">
-		<attribute name="Bounding Box Min" value="-50 -50 -50" />
-		<attribute name="Bounding Box Max" value="50 50 50" />
-		<attribute name="Ambient Color" value="0.4 0.4 0.4 1" />
-		<attribute name="Fog Start" value="50" />
-		<attribute name="Fog End" value="100" />
-		<attribute name="Fog Height Scale" value="7.45" />
-		<attribute name="Height Fog Mode" value="true" />
+		<attribute name="Bounding Box Min" value="-500 -500 -500" />
+		<attribute name="Bounding Box Max" value="500 500 500" />
+		<attribute name="Ambient Color" value="0 0 0 1" />
+		<attribute name="Fog Color" value="1 1 1 1" />
+		<attribute name="Fog Start" value="5" />
+		<attribute name="Fog End" value="10" />
+		<attribute name="Fog Height Scale" value="0" />
 	</component>
 	<node id="2">
 		<attribute name="Is Enabled" value="true" />
@@ -33,7 +33,7 @@
 		<attribute name="Variables" />
 		<component type="StaticModel" id="3">
 			<attribute name="Model" value="Model;Models/Plane.mdl" />
-			<attribute name="Material" value="Material;Materials/StoneTiled.xml" />
+			<attribute name="Material" value="Material;Materials/Player.xml" />
 		</component>
 		<component type="RigidBody" id="23">
 			<attribute name="Physics Position" value="0 0.0792121 0" />
@@ -66,23 +66,23 @@
 			<attribute name="Collision Layer" value="4" />
 			<attribute name="Collision Mask" value="253" />
 		</component>
-	</node>
-	<node id="5">
-		<attribute name="Is Enabled" value="true" />
-		<attribute name="Name" value="Light1" />
-		<attribute name="Tags" />
-		<attribute name="Position" value="0.275269 3.08244 -2.47244" />
-		<attribute name="Rotation" value="0.707107 0.707107 0 0" />
-		<attribute name="Scale" value="1 1 1" />
-		<attribute name="Variables" />
-		<component type="Light" id="6">
-			<attribute name="Color" value="0.9 0.9 0.9 1" />
-			<attribute name="Range" value="98.38" />
-			<attribute name="Spot FOV" value="62.18" />
-			<attribute name="Light Shape Texture" value="TextureCube;" />
-			<attribute name="Cast Shadows" value="true" />
-			<attribute name="Depth Constant Bias" value="0.0001" />
-		</component>
+		<node id="5">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="Light1" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="-0.382946 2.48814 1.51461" />
+			<attribute name="Rotation" value="0.707107 0.707107 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="Light" id="6">
+				<attribute name="Color" value="0.9 0.7 0.7 1" />
+				<attribute name="Range" value="98.38" />
+				<attribute name="Spot FOV" value="62.18" />
+				<attribute name="Light Shape Texture" value="TextureCube;" />
+				<attribute name="Cast Shadows" value="true" />
+				<attribute name="Depth Constant Bias" value="0.0001" />
+			</component>
+		</node>
 	</node>
 	<node id="8">
 		<attribute name="Is Enabled" value="true" />

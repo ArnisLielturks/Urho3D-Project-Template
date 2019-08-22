@@ -87,7 +87,7 @@ namespace Levels {
         CreateSingleLine("Special thanks to the creators", HEADER_SIZE);
         CreateSingleLine("of the Urho3D engine!", HEADER_SIZE);
 
-        _offset = GetSubsystem<Graphics>()->GetHeight() * 1.1;
+        _offset = GetSubsystem<Graphics>()->GetHeight() * 1.1 / GetSubsystem<UI>()->GetScale();
         _creditsBase->SetPosition(0, _offset);
         SubscribeToEvents();
     }
@@ -109,7 +109,7 @@ namespace Levels {
             UnsubscribeFromEvent(E_UPDATE);
             HandleEndCredits(true);
         }
-        _offset -= timestep * CREDITS_SCROLL_SPEED / GetSubsystem<UI>()->GetScale();
+        _offset -= timestep * CREDITS_SCROLL_SPEED * GetSubsystem<UI>()->GetScale();
         _creditsBase->SetPosition(_creditsBase->GetPosition().x_, _offset);
 
         if (_credits.Back()) {

@@ -55,5 +55,7 @@
   "RESTART_TO_APPLY": "Restart the game to apply changes!",
   "LEVEL_NOT_EXIST": "Level does not exist:",
   "NO_SCENE": "Scene was not loaded!",
-  "DEADZONE": "Deadzone"
+  "DEADZONE": "Deadzone",
+  "NAME": "Name",
+  "DESCRIPTION": "Description"
 }

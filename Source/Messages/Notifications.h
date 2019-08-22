@@ -42,7 +42,7 @@ private:
     /**
      * List of all active messages
      */
-    Vector<SharedPtr<Text>> _messages;
+    Vector<SharedPtr<UIElement>> _messages;
     SharedPtr<ObjectAnimation> notificationAnimation;
     SharedPtr<ValueAnimation> positionAnimation;
     SharedPtr<ValueAnimation> opacityAnimation;

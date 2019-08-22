@@ -10,7 +10,7 @@ Array<Text@> textElements;
 void Start()
 {
     log.Info("Debugger.as START");
-    SubscribeToEvent("LevelChangingFinished", "HandleLevelLoaded");
+    SubscribeToEvent("LevelChangingInProgress", "HandleLevelLoaded");
     SubscribeToEvent("ModsLoaded", "HandleModsLoaded");
     SubscribeToEvent("InputMappingFinished", "HandleInputMappingFinished");
 
@@ -62,7 +62,7 @@ void HandleModsLoaded(StringHash eventType, VariantMap& eventData)
 {
     mods = eventData["Mods"].GetStringVector();
     log.Info("[Debugger.as] Total mods loaded: " + mods.length);
-    DrawModNames();
+    // DrawModNames();
 }
 
 /**
@@ -89,26 +89,27 @@ void DrawModNames()
  */
 void CreateScriptName(String name, int index)
 {
-    int fontSize = 10;
+    int fontSize = 12;
     int margin = 2;
      // Construct new Text object
-    Text@ helloText = Text();
+    Text@ modText = Text();
 
     // Set String to display
-    helloText.text = name;
+    modText.text = name;
 
     // Set font and text color
-    helloText.SetFont(cache.GetResource("Font", "Fonts/Muli-Regular.ttf"), fontSize);
-    helloText.color = Color(0.0f, 0.8f, 0.0f);
+    modText.SetFont(cache.GetResource("Font", "Fonts/Muli-Regular.ttf"), fontSize);
+    modText.color = Color(0.7f, 0.7f, 0.0f);
+    modText.textEffect = TE_STROKE;
 
     // Align Text center-screen
-    helloText.horizontalAlignment = HA_LEFT;
-    helloText.verticalAlignment = VA_TOP;
+    modText.horizontalAlignment = HA_LEFT;
+    modText.verticalAlignment = VA_TOP;
 
-    helloText.position = IntVector2(10, 10 + index * (fontSize + margin));
+    modText.position = IntVector2(10, 10 + index * (fontSize + margin));
 
     // Add Text instance to the UI root element
-    ui.root.AddChild(helloText);
+    ui.root.AddChild(modText);
 
-    textElements.Push(helloText);
+    textElements.Push(modText);
 }

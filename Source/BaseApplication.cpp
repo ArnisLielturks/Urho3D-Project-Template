@@ -45,7 +45,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
-    SubscribeToEvent(E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
+    SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
 
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
@@ -78,6 +78,7 @@ void BaseApplication::Start()
     auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
+//    debugHud->Toggle(DEBUGHUD_SHOW_STATS);
 
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
@@ -329,7 +330,7 @@ void BaseApplication::LoadTranslationFiles()
 
 void BaseApplication::HandleServiceMessage(StringHash eventType, VariantMap& eventData)
 {
-    using namespace ServiceMessage;
+    using namespace MyEvents::ServiceMessage;
 
     int cmd    = eventData[P_COMMAND].GetInt();
     int stat   = eventData[P_STATUS].GetInt();

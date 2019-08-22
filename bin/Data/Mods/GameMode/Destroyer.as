@@ -31,7 +31,7 @@ class Destroyer : ScriptObject
                 Vector3 contactNormal = contacts.ReadVector3();
                 float contactDistance = contacts.ReadFloat();
                 float contactImpulse = contacts.ReadFloat();
-                body.ApplyImpulse(contactNormal * contactImpulse * 10);
+                body.ApplyImpulse(contactNormal * contactImpulse * 2);
             }
             node.scale = node.scale * 0.9;
 

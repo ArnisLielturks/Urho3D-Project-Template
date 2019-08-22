@@ -31,14 +31,14 @@ void Notifications::Init()
     // Set spline tension
     positionAnimation->SetSplineTension(0.7f);
     positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
-    positionAnimation->SetKeyFrame(4.0f, IntVector2(-10, -500));
+    positionAnimation->SetKeyFrame(6.0f, IntVector2(-10, -500));
     notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
     opacityAnimation = new ValueAnimation(context_);
     opacityAnimation->SetKeyFrame(0.0f, 0.0f);
-    opacityAnimation->SetKeyFrame(0.2f, 1.0f);
-    opacityAnimation->SetKeyFrame(3.0f, 1.0f);
-    opacityAnimation->SetKeyFrame(3.2f, 0.0f);
+    opacityAnimation->SetKeyFrame(1.0f, 1.0f);
+    opacityAnimation->SetKeyFrame(4.0f, 1.0f);
+    opacityAnimation->SetKeyFrame(5.0f, 0.0f);
     opacityAnimation->SetKeyFrame(10.0f, 0.0f);
     notificationAnimation->AddAttributeAnimation("Opacity", opacityAnimation);
 }
@@ -51,10 +51,11 @@ void Notifications::SubscribeToEvents()
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)
 {
-    float fontSize = 12.0f;
+    float fontSize = 16.0f;
     auto* cache = GetSubsystem<ResourceCache>();
 
     String message = eventData["Message"].GetString();
+
     // Construct new Text object
     SharedPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
     // Set String to display
@@ -63,7 +64,7 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     messageElement->SetStyleAuto();
 
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
-    messageElement->SetColor(Color(0.0f, 1.0f, 0.0f));
+    messageElement->SetColor(Color(1.0f, 1.0f, 0.4f));
     messageElement->SetFont(font, fontSize);
 
     // Align Text center-screen
@@ -71,7 +72,7 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     messageElement->SetVerticalAlignment(VA_BOTTOM);
 
     messageElement->SetObjectAnimation(notificationAnimation);
-    messageElement->SetVar("Lifetime", 4.0f);
+    messageElement->SetVar("Lifetime", 6.0f);
 
     _messages.Push(messageElement);
 }

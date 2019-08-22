@@ -59,6 +59,8 @@ protected:
      */
     void InitViewports(Vector<int> playerIndexes);
 
+    void CreateSingleCamera(int index = 0, int totalCount = 1, int controllerIndex = 0);
+
     /**
      * Level scene
      */

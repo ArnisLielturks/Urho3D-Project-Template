@@ -3,8 +3,14 @@
 #include <Urho3D/UI/UIEvents.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Model.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Graphics/Zone.h>
+#include <Urho3D/Resource/XMLFile.h>
 #include "MainMenu.h"
 #include "../Global.h"
 #include "../MyEvents.h"
@@ -14,10 +20,10 @@
 
 using namespace Levels;
 
-const static int BUTTON_WIDTH = 180;
-const static int BUTTON_HEIGHT = 40;
+const static int BUTTON_WIDTH = 250;
+const static int BUTTON_HEIGHT = 50;
 const static int BUTTON_SPACING = 10;
-const static int BUTTON_FONT_SIZE = 16;
+const static int BUTTON_FONT_SIZE = 20;
 
     /// Construct.
 MainMenu::MainMenu(Context* context) :
@@ -39,11 +45,34 @@ void MainMenu::Init()
 
     // Create the UI content
     CreateUI();
+
+    SubscribeToEvents();
 }
 
 void MainMenu::CreateScene()
 {
-    
+    // Create a simple background scene for the menu
+    _scene = new Scene(context_);
+    _scene->CreateComponent<Octree>();
+    auto xmlFile = GetSubsystem<ResourceCache>()->GetResource<XMLFile>("Scenes/Menu.xml");
+    _scene->LoadXML(xmlFile->GetRoot());
+
+    CreateSingleCamera();
+
+    _cameraRotateNode = _scene->CreateChild("CameraRotate");
+    _cameraRotateNode->AddChild(_cameras[0]);
+    _cameras[0]->SetPosition(Vector3(3, 3, 3));
+    _cameras[0]->LookAt(Vector3(0, 0, 0));
+
+    auto* zone = _scene->CreateComponent<Zone>();
+    zone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+    zone->SetFogStart(1.0f);
+    zone->SetFogEnd(20.0f);
+}
+
+void MainMenu::SubscribeToEvents()
+{
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
 }
 
 void MainMenu::CreateUI()
@@ -92,8 +121,6 @@ void MainMenu::CreateUI()
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
-
-        GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
     });
 
     marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
@@ -113,6 +140,9 @@ void MainMenu::CreateUI()
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
+
+    // Test Communication between the sample and android activity
+    GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
 }
 
 Button* MainMenu::CreateButton(const String& text, int width, IntVector2 position)
@@ -132,4 +162,15 @@ Button* MainMenu::CreateButton(const String& text, int width, IntVector2 positio
     buttonText->SetText(text);
 
     return button;
+}
+
+void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    using namespace Update;
+    float timestep = eventData[P_TIMESTEP].GetFloat();
+    if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
+        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+    }
+
+    _cameraRotateNode->Yaw(timestep * 5);
 }

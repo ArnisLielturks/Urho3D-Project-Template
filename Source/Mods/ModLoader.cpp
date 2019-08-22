@@ -66,17 +66,6 @@ void ModLoader::LoadASMods()
         }
     }
 
-#ifdef __ANDROID__
-    // For Android devices is hard to get the list of assets, so we must harcode the list ourselves
-    result.Push("Debugger.as");
-    result.Push("GameMode.as");
-    result.Push("LevelLoader.as");
-    result.Push("LoadingScreen.as");
-    result.Push("LoadStepImitator.as");
-    result.Push("LogoRotate.as");
-    result.Push("Skybox.as");
-#endif
-
     // Load each of the *.as files and launch their Start() method
     for (auto it = result.Begin(); it != result.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
@@ -113,12 +102,6 @@ void ModLoader::LoadLuaMods()
             }
         }
     }
-
-#ifdef __ANDROID__
-    // For Android devices is hard to get the list of assets, so we must harcode the list ourselves
-    _luaMods.Push("Debugger.lua");
-    _luaMods.Push("MOTD.lua");
-#endif
 
     // Load each of the *.lua files and launch their Start() method
     for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {

@@ -28,11 +28,14 @@ namespace Levels {
 
         void SubscribeToEvents();
 
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
         SharedPtr<Button> _newGameButton;
         SharedPtr<Button> _settingsButton;
         SharedPtr<Button> _achievementsButton;
         SharedPtr<Button> _creditsButton;
         SharedPtr<Button> _exitButton;
+        SharedPtr<Node> _cameraRotateNode;
 
         Button* CreateButton(const String& text, int width, IntVector2 position);
     };

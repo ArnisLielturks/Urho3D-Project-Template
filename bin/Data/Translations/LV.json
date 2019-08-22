@@ -55,5 +55,7 @@
   "RESTART_TO_APPLY": "Restartējiet spēli lai izmaiņas stātos spēkā!",
   "LEVEL_NOT_EXIST": "Līmenis neeksistē:",
   "NO_SCENE": "Karte nav ielādēta!",
-  "DEADZONE": "Deadzone"
+  "DEADZONE": "Deadzone",
+  "NAME": "Nosaukums",
+  "DESCRIPTION": "Apraksts"
 }

@@ -3,12 +3,19 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/UI/Text.h>
+#include <Urho3D/Graphics/Texture2D.h>
+#include <Urho3D/IO/Log.h>
+#include <Urho3D/Resource/JSONFile.h>
 #include "NewGameSettingsWindow.h"
 #include "../../MyEvents.h"
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
-/// Construct.
+static const int BUTTON_WIDTH = 150;
+static const int BUTTON_HEIGHT = 40;
+static const int MARGIN = 30;
+static const int IMAGE_SIZE = 200;
+
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
     BaseWindow(context)
 {
@@ -16,8 +23,6 @@ NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
 
 NewGameSettingsWindow::~NewGameSettingsWindow()
 {
-    _newGameButton->Remove();
-    _exitWindow->Remove();
     _baseWindow->Remove();
 }
 
@@ -30,31 +35,13 @@ void NewGameSettingsWindow::Init()
 
 void NewGameSettingsWindow::Create()
 {
-    auto* localization = GetSubsystem<Localization>();
-
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(220, 80);
+    _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
     _baseWindow->BringToFront();
 
-    _newGameButton = CreateButton(localization->Get("START"), 80, IntVector2(20, 0));
-    _newGameButton->SetAlignment(HA_LEFT, VA_CENTER);
-
-    SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "Loading";
-        data["Map"] = "Scenes/Scene.xml";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
-    });
-
-    _exitWindow = CreateButton(localization->Get("EXIT"), 80, IntVector2(-20, 0));
-    _exitWindow->SetAlignment(HA_RIGHT, VA_CENTER);
-    SubscribeToEvent(_exitWindow, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "NewGameSettingsWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
-    });
+    CreateLevelSelection();
 }
 
 void NewGameSettingsWindow::SubscribeToEvents()
@@ -62,21 +49,109 @@ void NewGameSettingsWindow::SubscribeToEvents()
 }
 
 
-Button* NewGameSettingsWindow::CreateButton(const String& text, int width, IntVector2 position)
+Button* NewGameSettingsWindow::CreateButton(UIElement *parent, const String& text, int width, IntVector2 position)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* button = _baseWindow->CreateChild<Button>();
+    auto* button = parent->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedWidth(width);
-    button->SetFixedHeight(30);
+    button->SetFixedHeight(BUTTON_HEIGHT);
     button->SetPosition(position);
 
-    auto* buttonText = button->CreateChild<Text>();
-    buttonText->SetFont(font, 12);
-    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-    buttonText->SetText(text);
+    if (!text.Empty()) {
+        auto *buttonText = button->CreateChild<Text>();
+        buttonText->SetFont(font, 16);
+        buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+        buttonText->SetText(text);
+    }
 
     return button;
+}
+
+void NewGameSettingsWindow::CreateLevelSelection()
+{
+    _levelSelection = _baseWindow->CreateChild<UIElement>();
+    _levelSelection->SetPosition(0, 0);
+    _levelSelection->SetFixedHeight(IMAGE_SIZE);
+    _levelSelection->SetLayout(LayoutMode::LM_HORIZONTAL, MARGIN);
+
+    auto cache = GetSubsystem<ResourceCache>();
+    auto font = cache->GetResource<Font>(APPLICATION_FONT);
+
+    auto maps = LoadMaps();
+
+    for (auto it = maps.Begin(); it != maps.End(); ++it) {
+
+        UIElement *mapView = _levelSelection->CreateChild<UIElement>();
+        mapView->SetLayout(LayoutMode::LM_VERTICAL, 5);
+
+        auto button = CreateButton(mapView, "", IMAGE_SIZE, IntVector2(0, 0));
+        button->SetFixedHeight(IMAGE_SIZE);
+        button->SetVar("Map", (*it).map);
+
+        SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+            using namespace Released;
+            Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
+
+            VariantMap& data = GetEventDataMap();
+            data["Name"] = "Loading";
+            data["Map"] = button->GetVar("Map");
+            SendEvent(MyEvents::E_SET_LEVEL, data);
+        });
+
+        auto sprite = button->CreateChild<Sprite>();
+        sprite->SetFixedHeight(IMAGE_SIZE);
+        sprite->SetFixedWidth(IMAGE_SIZE);
+        sprite->SetTexture(cache->GetResource<Texture2D>("Textures/UrhoIcon.png"));
+
+        auto name = mapView->CreateChild<Text>();
+        name->SetFont(font, 14);
+        name->SetAlignment(HA_LEFT, VA_TOP);
+        name->SetFixedWidth(IMAGE_SIZE);
+        name->SetWordwrap(true);
+        name->SetText((*it).name);
+
+        auto description = mapView->CreateChild<Text>();
+        description->SetFont(font, 12);
+        description->SetAlignment(HA_LEFT, VA_TOP);
+        description->SetFixedWidth(IMAGE_SIZE);
+        description->SetWordwrap(true);
+        description->SetText((*it).description);
+    }
+}
+
+Vector<MapInfo> NewGameSettingsWindow::LoadMaps()
+{
+    Vector<MapInfo> maps;
+    auto configFile = GetSubsystem<ResourceCache>()->GetResource<JSONFile>("Config/Maps.json");
+
+    JSONValue value = configFile->GetRoot();
+    if (value.IsArray()) {
+        URHO3D_LOGINFOF("Loading map list: %u", value.Size());
+        for (int i = 0; i < value.Size(); i++) {
+            JSONValue mapInfo = value[i];
+            if (mapInfo.Contains("Map")
+                && mapInfo["Map"].IsString()
+                && mapInfo.Contains("Name")
+                && mapInfo["Name"].IsString()
+                && mapInfo.Contains("Description")
+                && mapInfo["Description"].IsString()) {
+                MapInfo map;
+                map.map         = mapInfo["Map"].GetString();
+                map.name        = mapInfo["Name"].GetString();
+                map.description = mapInfo["Description"].GetString();
+                maps.Push(map);
+            }
+            else {
+                URHO3D_LOGERRORF("Map record doesnt contain all the information! Index: %u", i);
+            }
+        }
+    }
+    else {
+        URHO3D_LOGERROR("Data/Config/Maps.json must be an array");
+    }
+
+    return maps;
 }

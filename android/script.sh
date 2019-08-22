@@ -3,7 +3,7 @@
 #rm -rf Urho3D
 
 # Clone the latest engine version
-git clone https://github.com/Urho3D/Urho3D.git
+#git clone https://github.com/Urho3D/Urho3D.git
 
 # Remove original Urho3D asset directories
 rm -rf Urho3D/bin/Data
@@ -33,7 +33,7 @@ cp -r android/launcher-app Urho3D/android/launcher-app
 cd Urho3D
 
 # Run dockerized android build to genereate libProjectTemplate.so file
-./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Debug assembleDebug
+./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
 
 # Upload the application somewhere we need
 curl -X POST \

@@ -4,12 +4,17 @@
 #include <Urho3D/UI/Window.h>
 #include "../BaseWindow.h"
 
+struct MapInfo {
+    String map;
+    String name;
+    String description;
+};
+
 class NewGameSettingsWindow : public BaseWindow
 {
     URHO3D_OBJECT(NewGameSettingsWindow, BaseWindow);
 
 public:
-    /// Construct.
     NewGameSettingsWindow(Context* context);
 
     virtual ~NewGameSettingsWindow();
@@ -24,9 +29,12 @@ private:
 
     void SubscribeToEvents();
 
-    SharedPtr<Button> _newGameButton;
-    SharedPtr<Button> _exitWindow;
-    SharedPtr<Window> _baseWindow;
+    Button* CreateButton(UIElement *parent, const String& text, int width, IntVector2 position);
 
-    Button* CreateButton(const String& text, int width, IntVector2 position);
+    Vector<MapInfo> LoadMaps();
+
+    void CreateLevelSelection();
+
+    SharedPtr<Window> _baseWindow;
+    SharedPtr<UIElement> _levelSelection;
 };

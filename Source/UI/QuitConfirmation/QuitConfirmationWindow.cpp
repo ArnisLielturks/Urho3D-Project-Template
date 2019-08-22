@@ -9,7 +9,10 @@
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
-/// Construct.
+static const int BUTTON_WIDTH = 150;
+static const int BUTTON_HEIGHT = 40;
+static const int BUTTON_MARGIN = 30;
+
 QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
     BaseWindow(context)
 {
@@ -41,10 +44,10 @@ void QuitConfirmationWindow::Create()
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(220, 80);
+    _baseWindow->SetSize(BUTTON_WIDTH * 2 + BUTTON_MARGIN * 3, BUTTON_HEIGHT + BUTTON_MARGIN * 2);
     _baseWindow->BringToFront();
 
-    _yesButton = CreateButton(localization->Get("YES"), 80, IntVector2(20, 0));
+    _yesButton = CreateButton(localization->Get("YES"), BUTTON_WIDTH, IntVector2(BUTTON_MARGIN, 0));
     _yesButton->SetAlignment(HA_LEFT, VA_CENTER);
 
     SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -55,7 +58,7 @@ void QuitConfirmationWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _noButton = CreateButton(localization->Get("NO"), 80, IntVector2(-20, 0));
+    _noButton = CreateButton(localization->Get("NO"), BUTTON_WIDTH, IntVector2(-BUTTON_MARGIN, 0));
     _noButton->SetAlignment(HA_RIGHT, VA_CENTER);
 
     SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -77,11 +80,11 @@ Button* QuitConfirmationWindow::CreateButton(const String& text, int width, IntV
     auto* button = _baseWindow->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedWidth(width);
-    button->SetFixedHeight(30);
+    button->SetFixedHeight(BUTTON_HEIGHT);
     button->SetPosition(position);
 
     auto* buttonText = button->CreateChild<Text>();
-    buttonText->SetFont(font, 12);
+    buttonText->SetFont(font, 16);
     buttonText->SetAlignment(HA_CENTER, VA_CENTER);
     buttonText->SetText(text);
 

@@ -1,5 +1,6 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Input/Input.h>
 #include "WindowManager.h"
 #include "../MyEvents.h"
 
@@ -43,6 +44,7 @@ void WindowManager::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_OPEN_WINDOW, URHO3D_HANDLER(WindowManager, HandleOpenWindow));
     SubscribeToEvent(MyEvents::E_CLOSE_WINDOW, URHO3D_HANDLER(WindowManager, HandleCloseWindow));
     SubscribeToEvent(MyEvents::E_CLOSE_ALL_WINDOWS, URHO3D_HANDLER(WindowManager, HandleCloseAllWindows));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData)
@@ -90,7 +92,6 @@ void WindowManager::HandleCloseWindow(StringHash eventType, VariantMap& eventDat
 {
     String windowName = eventData["Name"].GetString();
     _closeQueue.Push(windowName);
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& eventData)
@@ -101,8 +102,6 @@ void WindowManager::HandleCloseAllWindows(StringHash eventType, VariantMap& even
     }
 
     _openedWindows.Clear();
-
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 bool WindowManager::IsWindowOpen(String windowName)
@@ -139,9 +138,10 @@ void WindowManager::CloseWindow(String windowName)
 
 void WindowManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    for (auto it = _closeQueue.Begin(); it != _closeQueue.End(); ++it) {
-        CloseWindow((*it));
+    if (!_closeQueue.Empty()) {
+        for (auto it = _closeQueue.Begin(); it != _closeQueue.End(); ++it) {
+            CloseWindow((*it));
+        }
+        _closeQueue.Clear();
     }
-    _closeQueue.Clear();
-    UnsubscribeFromEvent(E_UPDATE);
 }

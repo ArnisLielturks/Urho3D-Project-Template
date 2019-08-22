@@ -456,28 +456,7 @@ public class SDLActivity extends Activity {
             }
             case 10:
                 {
-                    new AlertDialog.Builder(context)
-                            .setTitle("Delete entry")
-                            .setMessage("Are you sure you want to delete this entry?")
-
-                            // Specifying a listener allows you to take an action before dismissing the dialog.
-                            // The dialog is automatically dismissed when a dialog button is clicked.
-                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Continue with delete operation
-                                    SDLActivity.sendMessage(11, 1);
-                                }
-                            })
-
-                            // A null listener allows the button to dismiss the dialog and take no further action.
-                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Continue with delete operation
-                                    SDLActivity.sendMessage(12, 1);
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                    SDLActivity.SendServiceCommand(10, 1, "This message was triggered from Android Activity!");
 
                 }
             default:
@@ -520,6 +499,9 @@ public class SDLActivity extends Activity {
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
+
+    // Project template specific function to call
+    public static native void SendServiceCommand(int cmd, int status, String message);
 
     /**
      * This method is called by SDL using JNI.

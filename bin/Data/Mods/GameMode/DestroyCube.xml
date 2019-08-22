@@ -9,7 +9,7 @@
 	<attribute name="Variables" />
 	<component type="StaticModel" id="68">
 		<attribute name="Model" value="Model;Models/Box.mdl" />
-		<attribute name="Material" value="Material;Materials/Stone.xml" />
+		<attribute name="Material" value="Material;Materials/Box.xml" />
 	</component>
 	<component type="CollisionShape" id="69" />
 	<component type="RigidBody" id="70">

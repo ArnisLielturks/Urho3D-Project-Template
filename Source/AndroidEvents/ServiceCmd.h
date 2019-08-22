@@ -4,37 +4,19 @@
 
 using namespace Urho3D;
 
+#if defined(__ANDROID__)
+#include <jni.h>
+extern "C" {
+    JNIEXPORT void JNICALL
+    Java_org_libsdl_app_SDLActivity_SendServiceCommand(JNIEnv *env, jobject, jint cmd, jint status, jstring message);
+}
+#endif
+
 namespace Urho3D
 {
 class Controls;
 }
 
-//=============================================================================
-//=============================================================================
-enum ServiceCommands
-{
-    // test enums used by characterdemo
-    MIN_COMMAND = 6,
-
-    COMMAND_TEST1 = 6,
-    COMMAND_TEST2 = 7,
-    COMMAND_TEST3 = 8,
-    COMMAND_TEST4 = 9,
-
-    MAX_COMMANS = 9,
-};
-
-//=============================================================================
-//=============================================================================
-URHO3D_EVENT(E_SERVICE_MESSAGE, ServiceMessage)
-{
-    URHO3D_PARAM(P_COMMAND, Command); // int
-    URHO3D_PARAM(P_STATUS, Status);   // int
-    URHO3D_PARAM(P_MESSAGE, Message); // String
-}
-
-//=============================================================================
-//=============================================================================
 class ServiceCmd : public Object
 {
     URHO3D_OBJECT(ServiceCmd, Object);
@@ -44,21 +26,18 @@ public:
 
     void SendCmdMessage(int cmd, int param);
 
+    void ReceiveCmdMessage(int cmd, int status, const char* message);
+
 protected:
-    static void JavaActivityCallback(int ival, int istat, const char *pstr, void *param);
-    void ActivityCallback(int val, int istat, const char *pstr);
     void ProcessMessageQueue();
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-
-protected:
-
 
 private:
     struct MessageData
     {
-        int val_;
-        int stat_;
-        String message_;
+        int command;
+        int status;
+        String message;
     };
 
     Vector<MessageData> messageList_;

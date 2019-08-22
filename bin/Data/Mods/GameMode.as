@@ -60,7 +60,7 @@ void CreateCheckpoint()
 {
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
     float scale = targetGroundScale.x * 0.5;
-    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 5.0f, Random(scale * 2) - scale), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 0, Random(scale * 2) - scale), Quaternion());
 }
 
 void UpdateBoxes()
@@ -76,7 +76,7 @@ void UpdateBoxes()
 
 void CreateObject()
 {
-    if (count > 200) {
+    if (count > 40) {
         log.Info("Box limit reached");
         return;
     }

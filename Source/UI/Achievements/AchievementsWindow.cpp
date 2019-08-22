@@ -156,8 +156,6 @@ Button* AchievementsWindow::CreateItem(const String& image, const String& messag
     achievementText->SetText(message);
     achievementText->SetPosition(sprite->GetWidth() + 10, sprite->GetHeight() / 2 - fontSize / 2.0);
 
-
-
     // Add a tooltip to Fish button
     auto* toolTip = new ToolTip(context_);
     _activeLine->AddChild(toolTip);

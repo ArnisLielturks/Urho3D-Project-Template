@@ -23,6 +23,6 @@
 		<attribute name="Delayed Method Calls" value="0" />
 		<attribute name="Script File" value="ScriptFile;Mods/GameMode/Checkpoint.as" />
 		<attribute name="Class Name" value="Checkpoint" />
-		<attribute name="scale" value="3 10 3" />
+		<attribute name="scale" value="3 20 3" />
 	</component>
 </node>

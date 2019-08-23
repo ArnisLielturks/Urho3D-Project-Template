@@ -13,3 +13,16 @@ env:
     - SCRIPT=/var/sample/build_linux.sh
 script:
   - docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash $SCRIPT
+---
+sudo: false
+
+language: c++
+
+dist: xenial
+addons: {apt: {packages: docker-ce}}
+
+services:
+  - docker
+
+script:
+  - ./android/script.sh

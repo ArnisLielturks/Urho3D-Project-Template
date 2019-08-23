@@ -6,6 +6,11 @@
 
 using namespace Urho3D;
 
+struct NotificationData {
+    String message;
+    Color color;
+};
+
 class Notifications : public Object
 {
     URHO3D_OBJECT(Notifications, Object);
@@ -29,6 +34,8 @@ private:
      */
     void HandleNewNotification(StringHash eventType, VariantMap& eventData);
 
+    void CreateNewNotification(NotificationData data);
+
     /**
      * Handle message displaying and animations
      */
@@ -46,4 +53,6 @@ private:
     SharedPtr<ObjectAnimation> notificationAnimation;
     SharedPtr<ValueAnimation> positionAnimation;
     SharedPtr<ValueAnimation> opacityAnimation;
+    List<NotificationData> _messageQueue;
+    Timer _timer;
 };

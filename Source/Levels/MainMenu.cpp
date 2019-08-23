@@ -11,6 +11,7 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/AngelScript/Script.h>
 #include "MainMenu.h"
 #include "../Global.h"
 #include "../MyEvents.h"
@@ -57,17 +58,31 @@ void MainMenu::CreateScene()
     auto xmlFile = GetSubsystem<ResourceCache>()->GetResource<XMLFile>("Scenes/Menu.xml");
     _scene->LoadXML(xmlFile->GetRoot());
 
-    CreateSingleCamera();
+    InitCamera();
 
-    _cameraRotateNode = _scene->CreateChild("CameraRotate");
-    _cameraRotateNode->AddChild(_cameras[0]);
-    _cameras[0]->SetPosition(Vector3(3, 3, 3));
-    _cameras[0]->LookAt(Vector3(0, 0, 0));
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        InitCamera();
+    });
 
     auto* zone = _scene->CreateComponent<Zone>();
     zone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
     zone->SetFogStart(1.0f);
     zone->SetFogEnd(20.0f);
+
+    if (GetSubsystem<Script>()) {
+        GetSubsystem<Script>()->SetDefaultScene(_scene);
+    }
+}
+
+void MainMenu::InitCamera()
+{
+    CreateSingleCamera();
+    ApplyPostProcessEffects();
+
+    _cameraRotateNode = _scene->CreateChild("CameraRotate");
+    _cameraRotateNode->AddChild(_cameras[0]);
+    _cameras[0]->SetPosition(Vector3(3, 3, 3));
+    _cameras[0]->LookAt(Vector3(0, 0, 0));
 }
 
 void MainMenu::SubscribeToEvents()

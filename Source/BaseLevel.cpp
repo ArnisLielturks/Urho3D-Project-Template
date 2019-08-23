@@ -35,16 +35,16 @@ void BaseLevel::SubscribeToBaseEvents()
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() == 2) {
             float value = ToFloat(params[1]);
-            GetSubsystem<ConfigManager>()->Set("engine", "Gamma", value);
+            GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", value);
             GetSubsystem<ConfigManager>()->Save(true);
-            auto* controllerInput = GetSubsystem<ControllerInput>();
-            Vector<int> controlIndexes = controllerInput->GetControlIndexes();
-            InitViewports(controlIndexes);
+            ApplyPostProcessEffects();
         }
-
         else {
             URHO3D_LOGERROR("Invalid number of parameters");
         }
+    });
+    SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
+        ApplyPostProcessEffects();
     });
 }
 
@@ -184,12 +184,12 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         CreateSingleCamera(i, playerIndexes.Size(), playerIndexes.At(i));
     }
+
+    ApplyPostProcessEffects();
 }
 
 void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerIndex)
 {
-    auto* cache = GetSubsystem<ResourceCache>();
-
     Vector<IntRect> rects = InitRects(totalCount);
 
     // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
@@ -208,32 +208,68 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
     //GetSubsystem<Audio>()->SetListener(nullptr);
 
     SharedPtr<Viewport> viewport(new Viewport(context_, _scene, camera, rects[index]));
-    SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/GammaCorrection.xml"));
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
-    effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
-
-    effectRenderPath->SetEnabled("AutoExposure", GetSubsystem<ConfigManager>()->GetBool("engine", "AutoExposure", false));
-    effectRenderPath->SetShaderParameter("AutoExposureAdaptRate", GetSubsystem<ConfigManager>()->GetFloat("engine", "AutoExposureAdaptRate", 0.1f));
-    effectRenderPath->SetEnabled("Bloom", GetSubsystem<ConfigManager>()->GetBool("engine", "Bloom", false));
-    effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("engine", "FXAA3", true));
-    effectRenderPath->SetEnabled("GammaCorrection", GetSubsystem<ConfigManager>()->GetBool("engine", "GammaCorrection", true));
-    effectRenderPath->SetEnabled("ColorCorrection", GetSubsystem<ConfigManager>()->GetBool("engine", "ColorCorrection", false));
-    float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("engine", "Gamma", 1.0f), 0.05f, GAMMA_MAX_VALUE);
-    effectRenderPath->SetShaderParameter("Gamma", gamma);
-
-    effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("engine", "Blur", false));
-    effectRenderPath->SetShaderParameter("BlurRadius", GetSubsystem<ConfigManager>()->GetFloat("engine", "BlurRadius", 2.0f));
-    effectRenderPath->SetShaderParameter("BlurSigma", GetSubsystem<ConfigManager>()->GetFloat("engine", "BlurSigma", 2.0f));
-
-    viewport->SetRenderPath(effectRenderPath);
 
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetViewport(index, viewport);
 
     _viewports[controllerIndex] = viewport;
     _cameras[controllerIndex] = cameraNode;
+}
+
+void BaseLevel::ApplyPostProcessEffects()
+{
+    auto cache = GetSubsystem<ResourceCache>();
+    for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
+        auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
+        SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
+        if (!effectRenderPath->IsAdded("AutoExposure")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/AutoExposure.xml"));
+        }
+        if (!effectRenderPath->IsAdded("Bloom")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Bloom.xml"));
+        }
+        if (!effectRenderPath->IsAdded("BloomHDR")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/BloomHDR.xml"));
+        }
+        if (!effectRenderPath->IsAdded("FXAA2")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA2.xml"));
+        }
+        if (!effectRenderPath->IsAdded("FXAA3")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
+        }
+        if (!effectRenderPath->IsAdded("GammaCorrection")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/GammaCorrection.xml"));
+        }
+        if (!effectRenderPath->IsAdded("ColorCorrection")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
+        }
+        if (!effectRenderPath->IsAdded("Blur")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
+        }
+
+        effectRenderPath->SetEnabled("AutoExposure",
+                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", false));
+        effectRenderPath->SetShaderParameter("AutoExposureAdaptRate",
+                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "AutoExposureAdaptRate",
+                                                                                     0.1f));
+        effectRenderPath->SetEnabled("Bloom", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Bloom", false));
+        effectRenderPath->SetEnabled("BloomHDR", GetSubsystem<ConfigManager>()->GetBool("postprocess", "BloomHDR", false));
+        effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", true));
+        effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", true));
+        effectRenderPath->SetEnabled("GammaCorrection",
+                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", true));
+        effectRenderPath->SetEnabled("ColorCorrection",
+                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "ColorCorrection", false));
+        float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f), 0.05f,
+                            GAMMA_MAX_VALUE);
+        effectRenderPath->SetShaderParameter("Gamma", gamma);
+
+        effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
+        effectRenderPath->SetShaderParameter("BlurRadius",
+                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));
+        effectRenderPath->SetShaderParameter("BlurSigma",
+                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurSigma", 2.0f));
+
+        viewport->SetRenderPath(effectRenderPath);
+    }
 }

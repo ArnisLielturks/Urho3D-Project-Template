@@ -4,8 +4,11 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/IO/Log.h>
 #include "Notifications.h"
 #include "../Global.h"
+
+static const int NOTIFICATION_OVERLAP_TIME = 500;
 
 Notifications::Notifications(Context* context) :
     Object(context)
@@ -51,20 +54,41 @@ void Notifications::SubscribeToEvents()
 
 void Notifications::HandleNewNotification(StringHash eventType, VariantMap& eventData)
 {
+    String message = eventData["Message"].GetString();
+    String status = eventData["Status"].GetString();
+    Color color(0.4f, 1.0f, 0.4f);
+
+    if (status == "Error") {
+        color = Color(1.0f, 0.4f, 0.4f);
+    } else if (status == "Warning") {
+        color = Color(1.0f, 1.0f, 0.4f);
+    }
+    NotificationData data;
+    data.message = message;
+    data.color = color;
+
+    if (_timer.GetMSec(false) < NOTIFICATION_OVERLAP_TIME) {
+        _messageQueue.Push(data);
+        URHO3D_LOGINFO("Too many notification request, pushing notification on queue");
+        return;
+    }
+    CreateNewNotification(data);
+}
+
+void Notifications::CreateNewNotification(NotificationData data)
+{
     float fontSize = 16.0f;
     auto* cache = GetSubsystem<ResourceCache>();
-
-    String message = eventData["Message"].GetString();
 
     // Construct new Text object
     SharedPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
     // Set String to display
-    messageElement->SetText(message);
+    messageElement->SetText(data.message);
     messageElement->SetTextEffect(TextEffect::TE_STROKE);
     messageElement->SetStyleAuto();
 
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
-    messageElement->SetColor(Color(1.0f, 1.0f, 0.4f));
+    messageElement->SetColor(data.color);
     messageElement->SetFont(font, fontSize);
 
     // Align Text center-screen
@@ -75,6 +99,8 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     messageElement->SetVar("Lifetime", 6.0f);
 
     _messages.Push(messageElement);
+
+    _timer.Reset();
 }
 
 void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -95,6 +121,11 @@ void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
         lifetime -= timeStep;
         (*it)->SetVar("Lifetime", lifetime);
+    }
+
+    if (_timer.GetMSec(false) > 1000 && !_messageQueue.Empty()) {
+        CreateNewNotification(_messageQueue.Front());
+        _messageQueue.PopFront();
     }
 }
 

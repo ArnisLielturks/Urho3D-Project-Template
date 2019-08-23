@@ -170,5 +170,16 @@ void Loading::CreateProgressBar()
         auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
         _loadingBar->SetPosition(10, height - 30);
         _loadingBar->SetSize(0, 20);
+
+        SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
+        SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
+        // Use spline interpolation method
+        colorAnimation->SetInterpolationMethod(IM_LINEAR);
+        colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
+        colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
+        colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
+        animation->AddAttributeAnimation("Color", colorAnimation);
+
+        _loadingBar->SetObjectAnimation(animation);
     }
 }

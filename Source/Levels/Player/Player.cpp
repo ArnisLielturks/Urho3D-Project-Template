@@ -135,7 +135,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         _node->SetPosition(Vector3(0, 1, 0));
         _node->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
         _node->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
-        SendEvent("FallOffTheMap");
+        VariantMap data = GetEventDataMap();
+        data["Player"] = _controllerId;
+        SendEvent("FallOffTheMap", data);
     }
 
     float movementSpeed = MOVE_TORQUE;

@@ -48,6 +48,7 @@ void SettingsWindow::Create()
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(400, 500);
     _baseWindow->BringToFront();
+    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1);
 
     // Create Window 'titlebar' container
     _titleBar =_baseWindow->CreateChild<UIElement>();
@@ -430,7 +431,7 @@ void SettingsWindow::CreateVideoTab()
     CreateSingleLine();
     auto gammaSlider = CreateSlider(localization->Get("GAMMA"));
     gammaSlider->SetRange(GAMMA_MAX_VALUE);
-    gammaSlider->SetValue(GetSubsystem<ConfigManager>()->GetFloat("engine", "Gamma", 1.0f));
+    gammaSlider->SetValue(GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f));
     // Detect button press events
     SubscribeToEvent(gammaSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
 
@@ -442,7 +443,6 @@ void SettingsWindow::CreateVideoTab()
         command.Push(String(newValue));
         data["Parameters"] = command;
         SendEvent("gamma", data);
-
     });
 
     // FOV
@@ -533,12 +533,13 @@ void SettingsWindow::CreateVideoTab()
         StringVector dimensions = _availableResolutionNames.At(selection).Split('x', false);
         if (dimensions.Size() == 2) {
             int width = ToInt(dimensions[0]);
-            _graphicsSettingsNew.width = width;
-
             int height = ToInt(dimensions[1]);
-            _graphicsSettingsNew.height = height;
+            if (width > 0 && height > 0) {
+                _graphicsSettingsNew.width = width;
+                _graphicsSettingsNew.height = height;
 
-            _graphicsSettingsNew.activeResolution = selection;
+                _graphicsSettingsNew.activeResolution = selection;
+            }
         }
     });
 #endif
@@ -632,6 +633,73 @@ void SettingsWindow::CreateVideoTab()
         int selection = eventData[P_SELECTION].GetInt();
 
         _graphicsSettingsNew.multisample = selection;
+    });
+
+    // PostProcessEffects
+    CreateSingleLine();
+    auto blurToggle = CreateCheckbox(localization->Get("ENABLE_BLUR"));
+    blurToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
+    SubscribeToEvent(blurToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "Blur", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
+    });
+
+    CreateSingleLine();
+    auto autoExposureToggle = CreateCheckbox(localization->Get("ENABLE_AUTO_EXPOSURE"));
+    autoExposureToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", true));
+    SubscribeToEvent(autoExposureToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "AutoExposure", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
+    });
+
+    CreateSingleLine();
+    auto bloomToggle = CreateCheckbox(localization->Get("ENABLE_BLOOM"));
+    bloomToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "Bloom", true));
+    SubscribeToEvent(bloomToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "Bloom", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
+    });
+
+    CreateSingleLine();
+    auto bloomHDRToggle = CreateCheckbox(localization->Get("ENABLE_BLOOM_HDR"));
+    bloomHDRToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "BloomHDR", true));
+    SubscribeToEvent(bloomHDRToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "BloomHDR", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
+    });
+
+    CreateSingleLine();
+    auto fxaa2Toggle = CreateCheckbox(localization->Get("ENABLE_FXAA2"));
+    fxaa2Toggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", true));
+    SubscribeToEvent(fxaa2Toggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "FXAA2", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
+    });
+
+    CreateSingleLine();
+    auto fxaa3Toggle = CreateCheckbox(localization->Get("ENABLE_FXAA3"));
+    fxaa3Toggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", true));
+    SubscribeToEvent(fxaa3Toggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace Toggled;
+        bool enabled = eventData[P_STATE].GetBool();
+        GetSubsystem<ConfigManager>()->Set("postprocess", "FXAA3", enabled);
+        GetSubsystem<ConfigManager>()->Save(true);
+        SendEvent("postprocess");
     });
 
     CreateSingleLine();

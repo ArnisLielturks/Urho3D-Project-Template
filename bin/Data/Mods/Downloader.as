@@ -14,6 +14,11 @@ void Stop()
 {
 }
 
+void DownloadImageAgain()
+{
+    SubscribeToEvent("Update", "HandleUpdate");
+}
+
 void HandleDownloadImages(StringHash eventType, VariantMap& eventData)
 {
     VariantMap data;
@@ -70,6 +75,11 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
                 SendEvent("LoadingStepFinished", data);
 
                 httpRequest = null;
+
+                data["Message"] = "New image downloaded!";
+                SendEvent("ShowNotification", data);
+
+                DelayedExecute(10.0, false, "void DownloadImageAgain()");
             }
         }
     }

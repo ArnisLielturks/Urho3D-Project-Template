@@ -9,6 +9,7 @@ void Start()
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
     SubscribeToEvent("Update", "HandleUpdate");
+    SubscribeToEvent("FallOffTheMap", "HandleFallOfMap");
 
     // Register our loading step
     VariantMap data;
@@ -130,11 +131,18 @@ void UpdatePlayerScore(int playerId, int points)
     }
     String playerScoreId = "Player" + String(playerId) + "Score";
     int newScore = GetGlobalVar(playerScoreId).GetInt() + points;
+    if (newScore < 0) {
+        newScore = 0;
+    }
     SetGlobalVar(playerScoreId, newScore);
     SendEvent("PlayerScoresUpdated");
 
     VariantMap data;
     data["Message"] = "Player [" + String(playerId) + "] got " + String(points) + " points!";
+    if (points < 0) {
+        data["Message"] = "Player [" + String(playerId) + "] lost " + String(Abs(points)) + " points!";
+        data["Status"] = "Warning";
+    }
     SendEvent("ShowNotification", data);
 }
 
@@ -177,4 +185,11 @@ void HandleBoxDropped(StringHash eventType, VariantMap& eventData)
     int playerId = eventData["Player"].GetInt();
 
     UpdatePlayerScore(playerId, 2);
+}
+
+void HandleFallOfMap(StringHash eventType, VariantMap& eventData)
+{
+    int playerId = eventData["Player"].GetInt();
+
+    UpdatePlayerScore(playerId, -20);
 }

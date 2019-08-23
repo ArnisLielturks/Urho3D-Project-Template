@@ -49,9 +49,7 @@ void PauseWindow::Create()
     _continueButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_continueButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "PauseWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
     });
 
     _mainMenuButton = CreateButton(localization->Get("RETURN_TO_MENU"), 200, IntVector2(0, 60));

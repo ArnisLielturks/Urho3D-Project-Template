@@ -30,6 +30,8 @@ namespace Levels {
 
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
+        void InitCamera();
+
         SharedPtr<Button> _newGameButton;
         SharedPtr<Button> _settingsButton;
         SharedPtr<Button> _achievementsButton;

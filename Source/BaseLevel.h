@@ -61,6 +61,8 @@ protected:
 
     void CreateSingleCamera(int index = 0, int totalCount = 1, int controllerIndex = 0);
 
+    void ApplyPostProcessEffects();
+
     /**
      * Level scene
      */

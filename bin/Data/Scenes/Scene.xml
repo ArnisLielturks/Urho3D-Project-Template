@@ -7,8 +7,8 @@
 	<attribute name="Elapsed Time" value="0" />
 	<attribute name="Next Replicated Node ID" value="32" />
 	<attribute name="Next Replicated Component ID" value="80" />
-	<attribute name="Next Local Node ID" value="16777228" />
-	<attribute name="Next Local Component ID" value="16777339" />
+	<attribute name="Next Local Node ID" value="16777229" />
+	<attribute name="Next Local Component ID" value="16777351" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
@@ -17,7 +17,7 @@
 	<component type="Zone" id="62">
 		<attribute name="Bounding Box Min" value="-50 -50 -50" />
 		<attribute name="Bounding Box Max" value="50 50 50" />
-		<attribute name="Ambient Color" value="0.4 0.4 0.4 1" />
+		<attribute name="Ambient Color" value="0.8 0.8 0.8 1" />
 		<attribute name="Fog Start" value="50" />
 		<attribute name="Fog End" value="100" />
 		<attribute name="Fog Height Scale" value="7.45" />

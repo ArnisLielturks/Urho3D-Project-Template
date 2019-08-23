@@ -3,6 +3,7 @@
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Graphics/Texture2D.h>
 #include "BaseWindow.h"
+#include "../MyEvents.h"
 
 /// Construct.
 BaseWindow::BaseWindow(Context* context):
@@ -33,7 +34,12 @@ Sprite* BaseWindow::CreateOverlay()
     _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
     _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
     _overlay->SetBlendMode(BlendMode::BLEND_ALPHA);
-    _overlay->SetPriority(1000);
+
+    // In cases where resolution is changed, we have to resize the overlay to match the new resolution
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+        _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
+    });
 
     return _overlay;
 }

@@ -234,7 +234,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         if (_cameras[playerId]) {
             Quaternion rotation(controls.pitch_, controls.yaw_, 0.0f);
             _cameras[playerId]->SetRotation(rotation);
-            const float CAMERA_DISTANCE = 2.0f;
+            const float CAMERA_DISTANCE = 1.5f;
 
             // Move camera some distance away from the ball
             _cameras[playerId]->SetPosition((*it).second_->GetNode()->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * CAMERA_DISTANCE);

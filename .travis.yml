@@ -9,8 +9,7 @@ services:
 
 env:
   matrix:
-    - COMMAND="docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_windows.sh"
-    - COMMAND="docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh"
-    - COMMAND="./android/script.sh"
+    - SCRIPT=/var/sample/build_windows.sh
+    - SCRIPT=/var/sample/build_linux.sh
 script:
-  - $(COMMAND)
+  - docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash $SCRIPT

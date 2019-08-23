@@ -9,22 +9,8 @@ services:
 
 env:
   matrix:
-    - SCRIPT=/var/sample/build_windows.sh
-    - SCRIPT=/var/sample/build_linux.sh
+    - COMMAND="docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_windows.sh"
+    - COMMAND="docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh"
+    - COMMAND="./android/script.sh"
 script:
-  - docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash $SCRIPT
-
----
-
-sudo: false
-
-language: c++
-
-dist: xenial
-addons: {apt: {packages: docker-ce}}
-
-services:
-  - docker
-
-script:
-  - ./android/script.sh
+  - $(COMMAND)

@@ -3,7 +3,7 @@
 #rm -rf Urho3D
 
 # Clone the latest engine version
-#git clone https://github.com/Urho3D/Urho3D.git
+git clone https://github.com/Urho3D/Urho3D.git
 
 # Remove original Urho3D asset directories
 rm -rf Urho3D/bin/Data

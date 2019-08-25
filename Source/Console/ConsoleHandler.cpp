@@ -39,9 +39,18 @@ void ConsoleHandler::Create()
     _console = GetSubsystem<Engine>()->CreateConsole();
     _console->SetDefaultStyle(xmlFile);
     _console->GetBackground()->SetOpacity(0.8f);
-    _console->SetNumHistoryRows(1000);
+    _console->SetNumHistoryRows(50);
     _console->SetNumBufferedRows(100);
     _console->GetBackground()->SetPriority(9999);
+
+    // Hack to hide interpretator DropDownList
+    PODVector<UIElement*> elements;
+    _console->GetBackground()->GetChildren(elements, true);
+    for (auto it = elements.Begin(); it != elements.End(); ++it) {
+        if ((*it)->GetType() == "DropDownList") {
+            (*it)->SetVisible(false);
+        }
+    }
 
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         _console->AddAutoComplete((*it).first_);

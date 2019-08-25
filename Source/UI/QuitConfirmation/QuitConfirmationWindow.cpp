@@ -46,6 +46,7 @@ void QuitConfirmationWindow::Create()
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(BUTTON_WIDTH * 2 + BUTTON_MARGIN * 3, BUTTON_HEIGHT + BUTTON_MARGIN * 2);
     _baseWindow->BringToFront();
+    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1000);
 
     _yesButton = CreateButton(localization->Get("YES"), BUTTON_WIDTH, IntVector2(BUTTON_MARGIN, 0));
     _yesButton->SetAlignment(HA_LEFT, VA_CENTER);

@@ -4,10 +4,18 @@ jobs:
     machine: true
     steps:
     - checkout
+    - restore_cache:
+        keys:
+          - script-{{ checksum "android/script.sh" }}
+          - script-
     - run: ./android/script.sh
     - store_artifacts:
         path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
         destination: launcher-app-armeabi-v7a-debug.apk
+    - save_cache:
+        key: script-{{ checksum "android/script.sh" }}
+        paths:
+          - node_modules
   build_windows:
     machine: true
     steps:

@@ -15,7 +15,7 @@ jobs:
     - save_cache:
         key: script-{{ checksum "android/script.sh" }}
         paths:
-          - node_modules
+          - Urho3D
   build_windows:
     machine: true
     steps:

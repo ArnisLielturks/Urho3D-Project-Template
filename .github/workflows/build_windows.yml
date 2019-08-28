@@ -1,0 +1,13 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build Linux
+      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_windows.sh

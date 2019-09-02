@@ -41,7 +41,7 @@ void AudioManager::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_STOP_SOUND, URHO3D_HANDLER(AudioManager, HandleStopSound));
     SubscribeToEvent(MyEvents::E_STOP_ALL_SOUNDS, URHO3D_HANDLER(AudioManager, HandleStopAllSounds));
 
-    SubscribeToEvent(E_RELEASED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
+    SubscribeToEvent(E_PRESSED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
     SubscribeToEvent(E_ITEMSELECTED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
     SubscribeToEvent(E_TOGGLED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
 

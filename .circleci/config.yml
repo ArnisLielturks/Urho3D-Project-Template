@@ -35,7 +35,7 @@ jobs:
             zip -r "build.zip" *  > /dev/null
       - store_artifacts:
           path: archive/build.zip
-          destination: ProjectTemplate_Windows_${CIRCLE_BUILD_NUM}.zip
+          destination: "ProjectTemplate_Windows_${CIRCLE_BUILD_NUM}.zip"
   build_windows_no_scripts:
     machine: true
     steps:
@@ -55,7 +55,7 @@ jobs:
             zip -r "build.zip" *  > /dev/null
       - store_artifacts:
           path: archive/build.zip
-          destination: ProjectTemplate_Windows_${CIRCLE_BUILD_NUM}_no_scripts.zip
+          destination: "ProjectTemplate_Windows_${CIRCLE_BUILD_NUM}_no_scripts.zip"
   build_linux:
     machine: true
     steps:
@@ -77,7 +77,7 @@ jobs:
           zip -r "build.zip" *  > /dev/null
     - store_artifacts:
         path: archive/build.zip
-        destination: ProjectTemplate_Linux_${CIRCLE_BUILD_NUM}.zip
+        destination: "ProjectTemplate_Linux_${CIRCLE_BUILD_NUM}.zip"
   build_linux_no_scripts:
     machine: true
     steps:
@@ -99,7 +99,7 @@ jobs:
           zip -r "build.zip" *  > /dev/null
     - store_artifacts:
         path: archive/build.zip
-        destination: ProjectTemplate_Linux_${CIRCLE_BUILD_NUM}_no_scripts.zip
+        destination: "ProjectTemplate_Linux_${CIRCLE_BUILD_NUM}_no_scripts.zip"
   artifact_publish:
     machine: true
     steps:

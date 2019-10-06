@@ -41,4 +41,5 @@ Download almost latest builds from CI (list is updated manually):
 * Windows (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/455/artifacts?branch=master&tag=latest
 * Linux: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/454/artifacts?branch=master&tag=latest
 * Linux (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/453/artifacts?branch=master&tag=latest
+* Android: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/457/artifacts?branch=master&tag=latest
 

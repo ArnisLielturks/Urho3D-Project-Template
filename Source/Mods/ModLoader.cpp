@@ -1,6 +1,10 @@
 #include <Urho3D/Core/Context.h>
+#ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
+#endif
+#ifdef URHO3D_LUA
 #include <Urho3D/LuaScript/LuaScript.h>
+#endif
 #include <Urho3D/Resource/ResourceEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/PackageFile.h>
@@ -25,12 +29,17 @@ ModLoader::~ModLoader()
 void ModLoader::Init()
 {
     if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
+        #ifdef URHO3D_ANGELSCRIPT
         auto asScript = new Script(context_);
         context_->RegisterSubsystem(asScript);
         asScript->SetExecuteConsoleCommands(false);
+        #endif
+
+        #ifdef URHO3D_LUA
         auto luaScript = new LuaScript(context_);
         context_->RegisterSubsystem(luaScript);
         luaScript->SetExecuteConsoleCommands(false);
+        #endif
         Create();
         SubscribeToEvents();
     }
@@ -38,8 +47,13 @@ void ModLoader::Init()
 
 void ModLoader::Create()
 {
+    #ifdef URHO3D_ANGELSCRIPT
     LoadASMods();
+    #endif
+
+    #ifdef URHO3D_LUA
     LoadLuaMods();
+    #endif
 
     SubscribeToEvent(E_FILECHANGED, URHO3D_HANDLER(ModLoader, HandleReloadScript));
 
@@ -49,6 +63,7 @@ void ModLoader::Create()
 
 void ModLoader::LoadASMods()
 {
+    #ifdef URHO3D_ANGELSCRIPT
     Vector<String> result;
 
     // Scan Data/Mods directory for all *.as files
@@ -83,10 +98,12 @@ void ModLoader::LoadASMods()
     }
 
     GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", _asMods.Size());
+    #endif
 }
 
 void ModLoader::LoadLuaMods()
 {
+    #ifdef URHO3D_LUA
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     // Scan Data/Mods directory for all *.as files
@@ -123,21 +140,25 @@ void ModLoader::LoadLuaMods()
     }
 
     GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
+    #endif
 }
 
 void ModLoader::SubscribeToEvents()
 {
-	SubscribeConsoleCommands();
-	SubscribeToEvent("HandleReloadMods", URHO3D_HANDLER(ModLoader, HandleReload));
+    SubscribeConsoleCommands();
+    SubscribeToEvent("HandleReloadMods", URHO3D_HANDLER(ModLoader, HandleReload));
 }
 
 void ModLoader::Dispose()
 {
+    #ifdef URHO3D_ANGELSCRIPT
     _asMods.Clear();
+    #endif
 }
 
 void ModLoader::Reload()
 {
+    #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
         //_mods.Clear();
         for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
@@ -148,35 +169,39 @@ void ModLoader::Reload()
         }
         CheckAllMods();
     }
+    #endif
 }
 
 void ModLoader::SubscribeConsoleCommands()
 {
-	using namespace MyEvents::ConsoleCommandAdd;
+    using namespace MyEvents::ConsoleCommandAdd;
 
-	VariantMap data = GetEventDataMap();
-	data[P_NAME] = "reload_mods";
-	data[P_EVENT] = "HandleReloadMods";
-	data[P_DESCRIPTION] = "Reload all scripts";
-	SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    VariantMap data = GetEventDataMap();
+    data[P_NAME] = "reload_mods";
+    data[P_EVENT] = "HandleReloadMods";
+    data[P_DESCRIPTION] = "Reload all scripts";
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 }
 
 void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)
 {
-	Reload();
+    Reload();
 }
 
 void ModLoader::CheckAllMods()
 {
     Vector<String> result;
+    #ifdef URHO3D_ANGELSCRIPT
     result.Reserve(_asMods.Size() + _luaMods.Size());
     for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
         result.Push((*it)->GetName());
     }
+    #endif
+    #ifdef URHO3D_LUA
     for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {
         result.Push((*it));
     }
-
+    #endif
     VariantMap data = GetEventDataMap();
     data["Mods"] = result;
     SendEvent("ModsLoaded", data);
@@ -184,6 +209,7 @@ void ModLoader::CheckAllMods()
 
 void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
 {
+    #ifdef URHO3D_ANGELSCRIPT
     if (!GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
         return;
     }
@@ -220,9 +246,9 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
         Vector<String> result;
         // Scan Data/Mods directory for all *.as files
         GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("/Data/Mods"), String("*.as"), SCAN_FILES, false);
-		VariantMap loadedMods;
+        VariantMap loadedMods;
         for (auto it = result.Begin(); it != result.End(); ++it) {
-			loadedMods["Mods/" + (*it)] = true;
+            loadedMods["Mods/" + (*it)] = true;
             // Check if reloaded file is in the mods directory
             if ("Mods/" + (*it) == filename) {
                 auto* cache = GetSubsystem<ResourceCache>();
@@ -238,15 +264,16 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
                 }
             }
         }
-		for (auto it = _asScriptMap.Begin(); it != _asScriptMap.End(); ++it) {
-			if (!loadedMods.Contains((*it).first_)) {
-				if (_asScriptMap[(*it).first_]->GetFunction("void Stop()")) {
+        for (auto it = _asScriptMap.Begin(); it != _asScriptMap.End(); ++it) {
+            if (!loadedMods.Contains((*it).first_)) {
+                if (_asScriptMap[(*it).first_]->GetFunction("void Stop()")) {
                     _asScriptMap[(*it).first_]->Execute("void Stop()");
-				}
-				URHO3D_LOGWARNING("Unloading mod '" + (*it).first_ + "'");
+                }
+                URHO3D_LOGWARNING("Unloading mod '" + (*it).first_ + "'");
                 _asScriptMap.Erase((*it).first_);
-			}
-		}
+            }
+        }
         CheckAllMods();
     }
+    #endif
 }

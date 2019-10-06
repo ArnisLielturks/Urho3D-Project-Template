@@ -36,11 +36,53 @@ jobs:
       - store_artifacts:
           path: archive/build.zip
           destination: build.zip
+  build_windows_no_scripts:
+    machine: true
+    steps:
+      - checkout
+      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:no-scripts bash /var/sample/build_windows.sh
+      - run:
+          name: Archiving
+          command: |
+            mkdir archive
+            cp build-windows/bin/ProjectTemplate.exe archive/ProjectTemplate.exe || true
+            cp build-windows/bin/ProjectTemplate_d.exe archive/ProjectTemplate_d.exe || true
+            cp -r bin/Data archive/Data
+            cp -r bin/CoreData archive/CoreData
+            rm -rf archive/Data/Saves/Achievements.json
+            chmod -R 777 archive
+            cd archive
+            zip -r "build.zip" *  > /dev/null
+      - store_artifacts:
+          path: archive/build.zip
+          destination: build.zip
   build_linux:
     machine: true
     steps:
     - checkout
     - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh
+    - run:
+        name: Archiving
+        command: |
+          mkdir archive
+          cp build/bin/ProjectTemplate archive/ProjectTemplate || true
+          cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
+          cp -r bin/Data archive/Data
+          cp -r bin/CoreData archive/CoreData
+          cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop
+          rm -rf archive/Data/Saves/Achievements.json
+          chmod -R 777 archive
+          chmod a+x archive/ProjectTemplate.desktop
+          cd archive
+          zip -r "build.zip" *  > /dev/null
+    - store_artifacts:
+        path: archive/build.zip
+        destination: build.zip
+  build_linux_no_scripts:
+    machine: true
+    steps:
+    - checkout
+    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:no-scripts bash /var/sample/build_linux.sh
     - run:
         name: Archiving
         command: |
@@ -69,3 +111,5 @@ workflows:
     - build_linux
     - build_windows
     - build_android
+    - build_linux_no_scripts
+    - build_windows_no_scripts

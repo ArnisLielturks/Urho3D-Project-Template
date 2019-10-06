@@ -10,4 +10,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build Linux
-      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:1-no-scripts bash /var/sample/build_linux.sh
+      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:1-no-scripts bash /var/sample/build_linux.sh -DURHO3D_LUA=0 -DURHO3D_ANGELSCRIPT=0

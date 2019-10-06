@@ -11,7 +11,9 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Resource/XMLFile.h>
+#ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
+#endif
 #include "MainMenu.h"
 #include "../Global.h"
 #include "../MyEvents.h"
@@ -69,9 +71,11 @@ void MainMenu::CreateScene()
     zone->SetFogStart(1.0f);
     zone->SetFogEnd(20.0f);
 
+#ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
         GetSubsystem<Script>()->SetDefaultScene(_scene);
     }
+#endif
 }
 
 void MainMenu::InitCamera()

@@ -15,7 +15,7 @@
 #include "Global.h"
 #include "AndroidEvents/ServiceCmd.h"
 
-#ifdef URHO3D_LUA || URHO3D_ANGELSCRIPT
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
 #endif
 
@@ -33,7 +33,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
 
-    #ifdef URHO3D_LUA || URHO3D_ANGELSCRIPT
+    #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();
     #endif
 
@@ -99,7 +99,7 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(new WindowManager(context_));
     context_->RegisterSubsystem(new Achievements(context_));
 
-    #ifdef URHO3D_LUA || URHO3D_ANGELSCRIPT
+    #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterSubsystem(new ModLoader(context_));
     #endif
 

@@ -1,3 +1,4 @@
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include <Urho3D/Core/Context.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
@@ -277,3 +278,4 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
     }
     #endif
 }
+#endif

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef URHO3D_LUA || URHO3D_ANGELSCRIPT
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include <Urho3D/Core/Object.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/ScriptFile.h>

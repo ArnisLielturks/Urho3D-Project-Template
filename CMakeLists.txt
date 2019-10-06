@@ -32,17 +32,13 @@ file(GLOB_RECURSE HDRS include/*.h)
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
-# check_cxx_source_compiles ("#include <Urho3D/AngelScript/ScriptFile.h>\n int main() { return 0; }" URHO3D_ANGELSCRIPT_CHECK)
+if (URHO3D_ANGELSCRIPT)
+ add_definitions(-DURHO3D_ANGELSCRIPT=1)
+endif()
 
-# if (URHO3D_ANGELSCRIPT_CHECK)
-#  add_definitions(-DURHO3D_ANGELSCRIPT=1)
-# endif()
-
-# check_cxx_source_compiles ("#include <Urho3D/LuaScript/LuaScript.h>\n int main() { return 0; }" URHO3D_LUA_CHECK)
-
-# if (URHO3D_LUA_CHECK)
-#  add_definitions(-DURHO3D_LUA=1)
-# endif()
+if (URHO3D_LUA)
+ add_definitions(-DURHO3D_LUA=1)
+endif()
 
 # Define target name
 set (TARGET_NAME ProjectTemplate)

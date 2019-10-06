@@ -1,7 +1,10 @@
 #pragma once
 
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include <Urho3D/Core/Object.h>
+#ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/ScriptFile.h>
+#endif
 #include <Urho3D/Container/Str.h>
 
 using namespace Urho3D;
@@ -21,27 +24,27 @@ protected:
 
 private:
 
-	/**
+    /**
     * Load and create all scripts
     */
-	void Create();
+    void Create();
 
-	/**
-	 * Destroy all created scripts
-	 */
-	void Dispose();
+    /**
+     * Destroy all created scripts
+     */
+    void Dispose();
 
-	/**
-	 * Reload changed scripts
-	 */
-	void Reload();
+    /**
+     * Reload changed scripts
+     */
+    void Reload();
 
-	/**
-	 * Load all .as mods from Data/Mods directory
-	 */
+    /**
+     * Load all .as mods from Data/Mods directory
+     */
     void LoadASMods();
 
-	/**
+    /**
      * Load all .lua mods from Data/Mods directory
      */
     void LoadLuaMods();
@@ -52,16 +55,16 @@ private:
     /**
      * Subscribe for console commands to support script reloading
      */
-	void SubscribeConsoleCommands();
+    void SubscribeConsoleCommands();
 
-	/**
-	 * Handle script reload command
-	 */
-	void HandleReload(StringHash eventType, VariantMap& eventData);
+    /**
+     * Handle script reload command
+     */
+    void HandleReload(StringHash eventType, VariantMap& eventData);
 
-	/**
-	 * Handle single script reload
-	 */
+    /**
+     * Handle single script reload
+     */
     void HandleReloadScript(StringHash eventType, VariantMap& eventData);
 
     /**
@@ -74,10 +77,15 @@ private:
      */
     Vector<SharedPtr<ScriptFile>> _asMods;
 
+    #ifdef URHO3D_ANGELSCRIPT
     /**
      * Script location, script object map
      */
     HashMap<String, SharedPtr<ScriptFile>> _asScriptMap;
+    #endif
 
+    #ifdef URHO3D_LUA
     Vector<String> _luaMods;
+    #endif
 };
+#endif

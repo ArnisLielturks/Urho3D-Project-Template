@@ -4,7 +4,6 @@
 #include "LevelManager.h"
 #include "Messages/Achievements.h"
 #include "Messages/Notifications.h"
-#include "Mods/ModLoader.h"
 #include "UI/WindowManager.h"
 #include "Config/ConfigManager.h"
 
@@ -41,11 +40,11 @@ private:
     /**
      * Load configuration files
      */
-	void LoadINIConfig(String filename);
+    void LoadINIConfig(String filename);
 
-	/**
-	 * Load custom configuration file
-	 */
+    /**
+     * Load custom configuration file
+     */
     void LoadConfig(String filename, String prefix = "", bool isMain = false);
 
     /**
@@ -65,9 +64,9 @@ private:
 
     void HandleServiceMessage(StringHash eventType, VariantMap& eventData);
 
-	/**
-	 * Subscribe to console commands
-	 */
+    /**
+     * Subscribe to console commands
+     */
     void RegisterConsoleCommands();
 
     /**

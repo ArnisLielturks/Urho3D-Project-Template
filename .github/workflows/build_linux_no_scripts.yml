@@ -1,0 +1,13 @@
+name: Build Linux
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build Linux
+      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:1-no-scripts bash /var/sample/build_linux.sh

@@ -15,12 +15,16 @@
 #include "Global.h"
 #include "AndroidEvents/ServiceCmd.h"
 
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
+#include "Mods/ModLoader.h"
+#endif
+
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
 
 BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
-	ConfigFile::RegisterObject(context);
+    ConfigFile::RegisterObject(context);
     ConfigManager::RegisterObject(context);
 
     context_->RegisterFactory<ControllerInput>();
@@ -28,7 +32,11 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Notifications>();
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
+
+    #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();
+    #endif
+
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
     context_->RegisterFactory<ConsoleHandler>();
@@ -90,7 +98,11 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(new LevelManager(context_));
     context_->RegisterSubsystem(new WindowManager(context_));
     context_->RegisterSubsystem(new Achievements(context_));
-	context_->RegisterSubsystem(new ModLoader(context_));
+
+    #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
+    context_->RegisterSubsystem(new ModLoader(context_));
+    #endif
+
     context_->RegisterSubsystem(new AudioManager(context_));
 
     // Allow multiple music tracks to play at the same time
@@ -99,7 +111,7 @@ void BaseApplication::Start()
     context_->GetSubsystem<AudioManager>()->AllowMultipleAmbientTracks(true);
 
     auto controllerInput = new ControllerInput(context_);
-	context_->RegisterSubsystem(controllerInput);
+    context_->RegisterSubsystem(controllerInput);
     controllerInput->LoadConfig();
 
     context_->RegisterSubsystem(new Notifications(context_));
@@ -211,11 +223,11 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
 
 void BaseApplication::LoadINIConfig(String filename)
 {
-	bool loaded = GetSubsystem<ConfigManager>()->Load(filename, true);
-//	if (!loaded) {
-//		URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
-//		return;
-//	}
+    bool loaded = GetSubsystem<ConfigManager>()->Load(filename, true);
+//  if (!loaded) {
+//      URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
+//      return;
+//  }
 
     SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
     SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
@@ -267,11 +279,11 @@ void BaseApplication::LoadINIConfig(String filename)
 
 
     Audio* audio = GetSubsystem<Audio>();
-	audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());
-	audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("Effect").GetFloat());
-	audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
-	audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
-	audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
+    audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());
+    audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("Effect").GetFloat());
+    audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
+    audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
+    audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
 }
 
 void BaseApplication::ApplyGraphicsSettings()
@@ -284,7 +296,7 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
 {
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
-	_globalSettings[parameter] = parameter;
+    _globalSettings[parameter] = parameter;
 
     using namespace MyEvents::ConsoleCommandAdd;
     VariantMap data = GetEventDataMap();

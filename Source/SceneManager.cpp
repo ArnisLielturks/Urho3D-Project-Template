@@ -3,7 +3,9 @@
 #include <Urho3D/Scene/SceneEvents.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/IO/IOEvents.h>
+#ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
+#endif
 #include <Urho3D/Core/CoreEvents.h>
 #include "SceneManager.h"
 #include "MyEvents.h"
@@ -65,9 +67,11 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 
     _activeScene->SetUpdateEnabled(false);
 
+#ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
         GetSubsystem<Script>()->SetDefaultScene(_activeScene);
     }
+#endif
 
     UnsubscribeFromEvent(E_ASYNCLOADPROGRESS);
     UnsubscribeFromEvent(E_ASYNCLOADFINISHED);

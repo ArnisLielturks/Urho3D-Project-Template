@@ -27,6 +27,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 file(GLOB_RECURSE SRCS src/*.cpp)
 file(GLOB_RECURSE HDRS include/*.h)
 
+
+# Find Urho3D library
+find_package (Urho3D REQUIRED)
+include_directories (${URHO3D_INCLUDE_DIRS})
+
 check_cxx_source_compiles ("#include <Urho3D/AngelScript/ScriptFile.h>\n int main(){}" URHO3D_ANGELSCRIPT_CHECK)
 
 if (URHO3D_ANGELSCRIPT_CHECK)
@@ -38,11 +43,6 @@ check_cxx_source_compiles ("#include <Urho3D/LuaScript/LuaScript.h>\n int main()
 if (URHO3D_LUA_CHECK)
  add_definitions(-DURHO3D_LUA=1)
 endif()
-
-
-# Find Urho3D library
-find_package (Urho3D REQUIRED)
-include_directories (${URHO3D_INCLUDE_DIRS})
 
 # Define target name
 set (TARGET_NAME ProjectTemplate)

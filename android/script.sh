@@ -1,6 +1,6 @@
 #!/bin/bash
 # For debugging remove the Urho3D folder every time we run the script
-rm -rf Urho3D
+#rm -rf Urho3D
 
 # Clone the latest engine version
 git clone https://github.com/Urho3D/Urho3D.git --depth=1

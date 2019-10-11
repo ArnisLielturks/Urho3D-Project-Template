@@ -30,7 +30,7 @@ rm -rf Urho3D/android/launcher-app
 #cp -r android/urho3d-lib Urho3D/android/urho3d-lib
 cp -r android/launcher-app Urho3D/android/launcher-app
 
-cp -r android/SDL/android-project/* Urho3D/ThirdParty/SDL/android-project/
+cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project/
 
 cd Urho3D
 

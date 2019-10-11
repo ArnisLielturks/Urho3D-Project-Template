@@ -108,8 +108,8 @@ workflows:
   version: 2
   build:
     jobs:
-    - build_linux
-    - build_windows
+#    - build_linux
+#    - build_windows
     - build_android
-    - build_linux_no_scripts
-    - build_windows_no_scripts
+#    - build_linux_no_scripts
+#    - build_windows_no_scripts

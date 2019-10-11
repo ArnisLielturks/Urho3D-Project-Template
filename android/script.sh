@@ -23,11 +23,11 @@ cp -rf Source/* Urho3D/Source/ProjectTemplate/
 cp android/CMakeLists.txt Urho3D/Source/ProjectTemplate/
 
 # Remove original Urho3D android application files
-rm -rf Urho3D/android/urho3d-lib
+#rm -rf Urho3D/android/urho3d-lib
 rm -rf Urho3D/android/launcher-app
 
 # Copy our versions of the apps
-cp -r android/urho3d-lib Urho3D/android/urho3d-lib
+#cp -r android/urho3d-lib Urho3D/android/urho3d-lib
 cp -r android/launcher-app Urho3D/android/launcher-app
 
 cd Urho3D

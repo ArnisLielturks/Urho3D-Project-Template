@@ -22,9 +22,8 @@
 
 package com.github.urho3d.launcher
 
-import org.libsdl.app.SDLActivity
+import com.github.urho3d.UrhoActivity
 
-class MainActivity : SDLActivity() {
-
+class MainActivity : UrhoActivity() {
 
 }

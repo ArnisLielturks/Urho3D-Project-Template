@@ -176,36 +176,36 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         // Urho3D - auto load all the shared libraries available in the library path
-        String errorMsgBrokenLib = "";
-        try {
-            onLoadLibrary(UrhoActivity.getLibraryNames(this));
-        } catch(Exception e) {
-            mBrokenLibraries = true;
-            errorMsgBrokenLib = e.getMessage();
-        }
+        // String errorMsgBrokenLib = "";
+        // try {
+        //     onLoadLibrary(UrhoActivity.getLibraryNames(this));
+        // } catch(Exception e) {
+        //     mBrokenLibraries = true;
+        //     errorMsgBrokenLib = e.getMessage();
+        // }
 
-        if (mBrokenLibraries)
-        {
-            mSingleton = this;
-            AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-            dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
-                  + System.getProperty("line.separator")
-                  + System.getProperty("line.separator")
-                  + "Error: " + errorMsgBrokenLib);
-            dlgAlert.setTitle("SDL Error");
-            dlgAlert.setPositiveButton("Exit",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, close current activity
-                        SDLActivity.mSingleton.finish();
-                    }
-                });
-           dlgAlert.setCancelable(false);
-           dlgAlert.create().show();
+        // if (mBrokenLibraries)
+        // {
+        //     mSingleton = this;
+        //     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        //     dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
+        //           + System.getProperty("line.separator")
+        //           + System.getProperty("line.separator")
+        //           + "Error: " + errorMsgBrokenLib);
+        //     dlgAlert.setTitle("SDL Error");
+        //     dlgAlert.setPositiveButton("Exit",
+        //         new DialogInterface.OnClickListener() {
+        //             @Override
+        //             public void onClick(DialogInterface dialog,int id) {
+        //                 // if this button is clicked, close current activity
+        //                 SDLActivity.mSingleton.finish();
+        //             }
+        //         });
+        //    dlgAlert.setCancelable(false);
+        //    dlgAlert.create().show();
 
-           return;
-        }
+        //    return;
+        // }
 
         // Set up JNI
         SDL.setupJNI();

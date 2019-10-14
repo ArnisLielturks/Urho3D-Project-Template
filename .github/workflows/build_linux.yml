@@ -10,4 +10,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build Linux
-      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:10 bash /var/sample/build_linux.sh
+      run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:14 bash /var/sample/build_linux.sh

@@ -86,14 +86,14 @@ public class MainActivity extends SDLActivity {
             };
             rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
         } else if (id == ANDROID_AD_SHOW_INTERSTITIAL) {
-            if (mInterstitialAd && mInterstitialAd.isLoaded()) {
+            if (mInterstitialAd != null && mInterstitialAd.isLoaded()) {
                 mInterstitialAd.show();
                 SDLActivity.SendServiceCommand(ANDROID_AD_SHOW_INTERSTITIAL_OPENED, 1, "ANDROID_AD_SHOW_INTERSTITIAL_OPENED");
             } else {
                 SDLActivity.SendServiceCommand(ANDROID_AD_INTERSTITIAL_NOT_LOADED, 1, "ANDROID_AD_INTERSTITIAL_NOT_LOADED");
             }
         } else if (id == ANDROID_AD_REWARDED_SHOW) {
-            if (rewardedAd && rewardedAd.isLoaded()) {
+            if (rewardedAd != null && rewardedAd.isLoaded()) {
                 MainActivity activityContext = this;
                 RewardedAdCallback adCallback = new RewardedAdCallback() {
                     @Override

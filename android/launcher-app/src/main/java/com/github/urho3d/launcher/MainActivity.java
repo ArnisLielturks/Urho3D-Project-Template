@@ -14,23 +14,23 @@ public class MainActivity extends SDLActivity {
 
     private RewardedAd rewardedAd;
 
-    final int ANDROID_AD_INITIALIZED = 10;
+    public static final int ANDROID_AD_INITIALIZED = 10;
 
-    final int ANDROID_AD_LOAD_INTERSTITIAL = 20;
-    final int ANDROID_AD_SHOW_INTERSTITIAL = 21;
-    final int ANDROID_AD_INTERSTITIAL_LOADED = 22;
-    final int ANDROID_AD_SHOW_INTERSTITIAL_OPENED = 23;
-    final int ANDROID_AD_INTERSTITIAL_NOT_LOADED = 24;
-    final int ANDROID_AD_INTERSTITIAL_CLOSED = 25;
+    public static final int ANDROID_AD_LOAD_INTERSTITIAL = 20;
+    public static final int ANDROID_AD_SHOW_INTERSTITIAL = 21;
+    public static final int ANDROID_AD_INTERSTITIAL_LOADED = 22;
+    public static final int ANDROID_AD_SHOW_INTERSTITIAL_OPENED = 23;
+    public static final int ANDROID_AD_INTERSTITIAL_NOT_LOADED = 24;
+    public static final int ANDROID_AD_INTERSTITIAL_CLOSED = 25;
 
-    final int ANDROID_AD_LOAD_REWARDED = 30;
-    final int ANDROID_AD_REWARDED_SHOW = 31;
-    final int ANDROID_AD_REWARDED_LOADED = 32;
-    final int ANDROID_AD_REWARDED_FAILED_TO_LOAD = 33;
-    final int ANDROID_AD_REWARDED_OPENED = 34;
-    final int ANDROID_AD_REWARDED_CLOSED = 35;
-    final int ANDROID_AD_REWARDED_EARNED = 36;
-    final int ANDROID_AD_REWARDED_FAILED_TO_SHOW = 37;
+    public static final int ANDROID_AD_LOAD_REWARDED = 30;
+    public static final int ANDROID_AD_REWARDED_SHOW = 31;
+    public static final int ANDROID_AD_REWARDED_LOADED = 32;
+    public static final int ANDROID_AD_REWARDED_FAILED_TO_LOAD = 33;
+    public static final int ANDROID_AD_REWARDED_OPENED = 34;
+    public static final int ANDROID_AD_REWARDED_CLOSED = 35;
+    public static final int ANDROID_AD_REWARDED_EARNED = 36;
+    public static final int ANDROID_AD_REWARDED_FAILED_TO_SHOW = 37;
 
 
     @Override

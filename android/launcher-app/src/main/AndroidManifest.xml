@@ -22,6 +22,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
 
+	<meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+	    android:value="ca-app-pub-5635283337405077~17109320756"/>
+
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

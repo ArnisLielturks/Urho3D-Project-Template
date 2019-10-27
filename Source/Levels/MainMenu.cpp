@@ -161,7 +161,7 @@ void MainMenu::CreateUI()
     });
 
     // Test Communication between the sample and android activity
-    GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
+    GetSubsystem<ServiceCmd>()->SendCmdMessage(11, 1);
 }
 
 Button* MainMenu::CreateButton(const String& text, int width, IntVector2 position)

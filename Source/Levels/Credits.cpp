@@ -91,6 +91,8 @@ namespace Levels {
         _offset = GetSubsystem<Graphics>()->GetHeight() * 1.1 / GetSubsystem<UI>()->GetScale();
         _creditsBase->SetPosition(0, _offset);
         SubscribeToEvents();
+
+        GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_REWARDED, 1);
     }
 
     void Credits::SubscribeToEvents()

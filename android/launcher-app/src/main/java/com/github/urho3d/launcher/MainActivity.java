@@ -38,17 +38,12 @@ public class MainActivity extends SDLActivity {
         super.onCreate(savedInstanceState);
 
         MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
-        mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
-
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(InitializationStatus initializationStatus) {
                  SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_INITIALIZED, 1, "ANDROID_AD_INITIALIZED");
             }
         });
-
-        rewardedAd = new RewardedAd(this, "ca-app-pub-3940256099942544/5224354917");
         
     }
 
@@ -57,6 +52,8 @@ public class MainActivity extends SDLActivity {
     {
         super.onMessageReceivedFromGame(id);
         if (id == MainActivity.ANDROID_AD_LOAD_INTERSTITIAL) {
+            mInterstitialAd = new InterstitialAd(this);
+            mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
             mInterstitialAd.loadAd(new AdRequest.Builder().build());
             // Set an AdListener.
             mInterstitialAd.setAdListener(new AdListener() {
@@ -71,6 +68,7 @@ public class MainActivity extends SDLActivity {
                 }
             });
         } else if (id == MainActivity.ANDROID_AD_LOAD_REWARDED) {
+            rewardedAd = new RewardedAd(this, "ca-app-pub-3940256099942544/5224354917");
             RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
                 @Override
                 public void onRewardedAdLoaded() {

@@ -55,6 +55,7 @@ public class MainActivity extends SDLActivity {
     @Override
     public void onMessageReceivedFromGame(int id)
     {
+        super.onMessageReceivedFromGame(id);
         if (id == ANDROID_AD_LOAD_INTERSTITIAL) {
             mInterstitialAd.loadAd(new AdRequest.Builder().build());
             // Set an AdListener.
@@ -85,16 +86,14 @@ public class MainActivity extends SDLActivity {
             };
             rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
         } else if (id == ANDROID_AD_SHOW_INTERSTITIAL) {
-            super.onMessageReceivedFromGame(id);
-            SDLActivity.SendServiceCommand(id, 1, "This message was triggered from MainActivity!");
-            if (mInterstitialAd.isLoaded()) {
+            if (mInterstitialAd && mInterstitialAd.isLoaded()) {
                 mInterstitialAd.show();
                 SDLActivity.SendServiceCommand(ANDROID_AD_SHOW_INTERSTITIAL_OPENED, 1, "ANDROID_AD_SHOW_INTERSTITIAL_OPENED");
             } else {
                 SDLActivity.SendServiceCommand(ANDROID_AD_INTERSTITIAL_NOT_LOADED, 1, "ANDROID_AD_INTERSTITIAL_NOT_LOADED");
             }
         } else if (id == ANDROID_AD_REWARDED_SHOW) {
-            if (rewardedAd.isLoaded()) {
+            if (rewardedAd && rewardedAd.isLoaded()) {
                 MainActivity activityContext = this;
                 RewardedAdCallback adCallback = new RewardedAdCallback() {
                     @Override

@@ -37,9 +37,9 @@ Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
 
 # Prebuilt binaries
 Download almost latest builds from CI (list is updated manually):
-* Windows: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/456/artifacts?branch=master&tag=latest
-* Windows (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/455/artifacts?branch=master&tag=latest
-* Linux: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/454/artifacts?branch=master&tag=latest
-* Linux (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/453/artifacts?branch=master&tag=latest
-* Android: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/557/artifacts?branch=master&tag=latest
+* Windows: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/637/artifacts?branch=master&tag=latest
+* Windows (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/638/artifacts?branch=master&tag=latest
+* Linux: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/636/artifacts?branch=master&tag=latest
+* Linux (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/635/artifacts?branch=master&tag=latest
+* Android: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/639/artifacts?branch=master&tag=latest
 

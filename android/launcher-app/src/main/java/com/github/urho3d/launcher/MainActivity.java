@@ -44,7 +44,7 @@ public class MainActivity extends SDLActivity {
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(InitializationStatus initializationStatus) {
-                 SDLActivity.SendServiceCommand(ANDROID_AD_INITIALIZED, 1, "ANDROID_AD_INITIALIZED");
+                 SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_INITIALIZED, 1, "ANDROID_AD_INITIALIZED");
             }
         });
 
@@ -56,73 +56,73 @@ public class MainActivity extends SDLActivity {
     public void onMessageReceivedFromGame(int id)
     {
         super.onMessageReceivedFromGame(id);
-        if (id == ANDROID_AD_LOAD_INTERSTITIAL) {
+        if (id == MainActivity.ANDROID_AD_LOAD_INTERSTITIAL) {
             mInterstitialAd.loadAd(new AdRequest.Builder().build());
             // Set an AdListener.
             mInterstitialAd.setAdListener(new AdListener() {
             @Override
                 public void onAdLoaded() {
-                    SDLActivity.SendServiceCommand(ANDROID_AD_INTERSTITIAL_LOADED, 1, "ANDROID_AD_INTERSTITIAL_LOADED");
+                    SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_INTERSTITIAL_LOADED, 1, "ANDROID_AD_INTERSTITIAL_LOADED");
                 }
 
                 @Override
                 public void onAdClosed() {
-                    SDLActivity.SendServiceCommand(ANDROID_AD_INTERSTITIAL_CLOSED, 1, "ANDROID_AD_INTERSTITIAL_CLOSED");
+                    SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_INTERSTITIAL_CLOSED, 1, "ANDROID_AD_INTERSTITIAL_CLOSED");
                 }
             });
-        } else if (id == ANDROID_AD_LOAD_REWARDED) {
+        } else if (id == MainActivity.ANDROID_AD_LOAD_REWARDED) {
             RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
                 @Override
                 public void onRewardedAdLoaded() {
                     // Ad successfully loaded.
-                    SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_LOADED, 1, "ANDROID_AD_REWARDED_LOADED");
+                    SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_LOADED, 1, "ANDROID_AD_REWARDED_LOADED");
                 }
 
                @Override
                 public void onRewardedAdFailedToLoad(int errorCode) {
                     // Ad failed to load.
-                    SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_FAILED_TO_LOAD, 1, "ANDROID_AD_REWARDED_FAILED_TO_LOAD");
+                    SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_FAILED_TO_LOAD, 1, "ANDROID_AD_REWARDED_FAILED_TO_LOAD");
                 }
             };
             rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
-        } else if (id == ANDROID_AD_SHOW_INTERSTITIAL) {
+        } else if (id == MainActivity.ANDROID_AD_SHOW_INTERSTITIAL) {
             if (mInterstitialAd != null && mInterstitialAd.isLoaded()) {
                 mInterstitialAd.show();
-                SDLActivity.SendServiceCommand(ANDROID_AD_SHOW_INTERSTITIAL_OPENED, 1, "ANDROID_AD_SHOW_INTERSTITIAL_OPENED");
+                SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_SHOW_INTERSTITIAL_OPENED, 1, "ANDROID_AD_SHOW_INTERSTITIAL_OPENED");
             } else {
-                SDLActivity.SendServiceCommand(ANDROID_AD_INTERSTITIAL_NOT_LOADED, 1, "ANDROID_AD_INTERSTITIAL_NOT_LOADED");
+                SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_INTERSTITIAL_NOT_LOADED, 1, "ANDROID_AD_INTERSTITIAL_NOT_LOADED");
             }
-        } else if (id == ANDROID_AD_REWARDED_SHOW) {
+        } else if (id == MainActivity.ANDROID_AD_REWARDED_SHOW) {
             if (rewardedAd != null && rewardedAd.isLoaded()) {
                 MainActivity activityContext = this;
                 RewardedAdCallback adCallback = new RewardedAdCallback() {
                     @Override
                     public void onRewardedAdOpened() {
                         // Ad opened.
-                        SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_OPENED, 1, "ANDROID_AD_REWARDED_OPENED");
+                        SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_OPENED, 1, "ANDROID_AD_REWARDED_OPENED");
                     }
 
                     @Override
                     public void onRewardedAdClosed() {
                         // Ad closed.
-                        SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_CLOSED, 1, "ANDROID_AD_REWARDED_CLOSED");
+                        SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_CLOSED, 1, "ANDROID_AD_REWARDED_CLOSED");
                     }
 
                     @Override
                     public void onUserEarnedReward(@NonNull RewardItem reward) {
                         // User earned reward.
-                        SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_EARNED, 1, "ANDROID_AD_REWARDED_EARNED");
+                        SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_EARNED, 1, "ANDROID_AD_REWARDED_EARNED");
                     }
 
                     @Override
                     public void onRewardedAdFailedToShow(int errorCode) {
                         // Ad failed to display
-                        SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_FAILED_TO_SHOW, 1, "ANDROID_AD_REWARDED_FAILED_TO_SHOW");
+                        SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_FAILED_TO_SHOW, 1, "ANDROID_AD_REWARDED_FAILED_TO_SHOW");
                     }
                 };
                 rewardedAd.show(activityContext, adCallback);
             } else {
-                SDLActivity.SendServiceCommand(ANDROID_AD_REWARDED_FAILED_TO_LOAD, 1, "ANDROID_AD_REWARDED_FAILED_TO_LOAD");
+                SDLActivity.SendServiceCommand(MainActivity.ANDROID_AD_REWARDED_FAILED_TO_LOAD, 1, "ANDROID_AD_REWARDED_FAILED_TO_LOAD");
             }
         }
     }

@@ -89,6 +89,7 @@ dependencies {
     implementation(project(":android:urho3d-lib"))
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
     implementation("com.google.android.gms:play-services-ads:18.2.0")
+    implementation("androidx.annotation:annotation:1.1.0")
     testImplementation("junit:junit:$junitVersion")
     androidTestImplementation("com.android.support.test:runner:$testRunnerVersion")
     androidTestImplementation("com.android.support.test.espresso:espresso-core:$testEspressoVersion")

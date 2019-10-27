@@ -12,6 +12,7 @@
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "../Messages/Achievements.h"
+#include "../AndroidEvents/ServiceCmd.h"
 
 using namespace Levels;
 using namespace Urho3D;

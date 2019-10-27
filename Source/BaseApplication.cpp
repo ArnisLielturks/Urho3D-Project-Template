@@ -53,7 +53,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
-    SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
+    // SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
 
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;

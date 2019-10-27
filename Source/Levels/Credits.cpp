@@ -94,6 +94,14 @@ namespace Levels {
         SubscribeToEvents();
 
         GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_REWARDED, 1);
+
+        SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+            using namespace MyEvents::ServiceMessage;
+            int eventId = eventData[P_COMMAND].GetInt();
+            if (eventId == ANDROID_AD_REWARDED_LOADED) {
+                GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_REWARDED_SHOW, 1);
+            }
+        });
     }
 
     void Credits::SubscribeToEvents()

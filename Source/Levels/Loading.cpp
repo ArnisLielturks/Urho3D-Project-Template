@@ -153,9 +153,10 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
 	UnsubscribeFromEvent(E_UPDATE);
-	VariantMap data = GetEventDataMap();
-	data["Name"] = "Level";
-    SendEvent(MyEvents::E_SET_LEVEL, data);
+
+	// Forward event data to the next level
+	data_["Name"] = "Level";
+    SendEvent(MyEvents::E_SET_LEVEL, data_);
 }
 
 void Loading::CreateProgressBar()

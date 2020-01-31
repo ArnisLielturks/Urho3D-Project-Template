@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Urho3D/Scene/SplinePath.h>
+#include <Urho3D/Graphics/Terrain.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 
@@ -41,6 +42,8 @@ namespace Levels {
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
 
+        void GenerateMap(float frequency, int octaves, int seed);
+
         bool _showScoreboard;
 
         bool _drawDebug;
@@ -48,5 +51,7 @@ namespace Levels {
         SharedPtr<SplinePath> _path;
 
         HashMap<int, SharedPtr<Player>> _players;
+
+        SharedPtr<Terrain> _terrain;
     };
 }

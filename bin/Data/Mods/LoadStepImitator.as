@@ -7,9 +7,6 @@ void Start()
     SubscribeToEvent("LoadImages", "HandleLoadImages");
 
     VariantMap data;
-    data["Name"] = "Loading skills";
-    data["Event"] = "LoadSkills";
-    SendEvent("RegisterLoadingStep", data);
 
     data["Name"] = "Loading images";
     data["Event"] = "LoadImages";
@@ -26,26 +23,6 @@ void Start()
 void Stop()
 {
     log.Info("LevelLoader.as STOP");
-}
-
-void HandleLoadSkills()
-{
-    VariantMap data;
-    data["Event"] = "LoadSkills";
-
-    // Sent event to let the system know that we will handle this loading step
-    SendEvent("AckLoadingStep", data);
-
-    // Imitate loading
-    DelayedExecute(2.0, false, "void FinishLoadSkills()");
-}
-
-void FinishLoadSkills()
-{
-    // Let the loading system know that we finished our work
-    VariantMap data;
-    data["Event"] = "LoadSkills";
-    SendEvent("LoadingStepFinished", data);
 }
 
 float progress = 0.0;

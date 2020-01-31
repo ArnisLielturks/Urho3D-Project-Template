@@ -79,7 +79,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
                 data["Message"] = "New image downloaded!";
                 SendEvent("ShowNotification", data);
 
-                DelayedExecute(10.0, false, "void DownloadImageAgain()");
+                DelayedExecute(60.0, false, "void DownloadImageAgain()");
             }
         }
     }

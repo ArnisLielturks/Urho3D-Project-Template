@@ -81,9 +81,14 @@ namespace Levels {
         CreateSingleLine("Android event handler: @Lumak", PARAGRAPH);
         CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
         CreateSingleLine("Level manager: @artgolf1000", PARAGRAPH);
+        CreateSingleLine("Perlin Noise algorithm: @Reputeless", PARAGRAPH);
+        CreateSingleLine("", PARAGRAPH);
+
+        CreateSingleLine("Assets", HEADER_SIZE);
+        CreateSingleLine("", HEADER_MARGIN);
         CreateSingleLine("Icons: https://game-icons.net", PARAGRAPH);
         CreateSingleLine("Sounds and music: https://freesound.org", PARAGRAPH);
-        CreateSingleLine("", PARAGRAPH);
+        CreateSingleLine("", PARAGRAPH);;
 
         CreateSingleLine("Special thanks to the creators", HEADER_SIZE);
         CreateSingleLine("of the Urho3D engine!", HEADER_SIZE);

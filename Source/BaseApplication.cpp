@@ -13,6 +13,7 @@
 #include "SceneManager.h"
 #include "MyEvents.h"
 #include "Global.h"
+#include "Generator/Generator.h"
 #include "AndroidEvents/ServiceCmd.h"
 
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
@@ -41,6 +42,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<AudioManager>();
     context_->RegisterFactory<ConsoleHandler>();
     context_->RegisterFactory<SceneManager>();
+    context_->RegisterFactory<Generator>();
 
 #ifdef __ANDROID__
     _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
@@ -61,6 +63,8 @@ BaseApplication::BaseApplication(Context* context) :
         GetSubsystem<FileSystem>()->CreateDir(directory);
     }
 #endif
+
+    context_->RegisterSubsystem(new Generator(context_));
 }
 
 void BaseApplication::Setup()

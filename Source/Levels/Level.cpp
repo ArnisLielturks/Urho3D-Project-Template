@@ -6,6 +6,9 @@
 #include <Urho3D/Physics/PhysicsEvents.h>
 #include <Urho3D/Physics/PhysicsWorld.h>
 #include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Physics/CollisionShape.h>
+#include <Urho3D/Physics/RigidBody.h>
+#include "../Generator/PerlinNoise.h"
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
@@ -66,6 +69,49 @@ void Level::Init()
         _players[(*it)]->CreateNode(_scene, (*it));
     }
 
+    if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Scene2.xml") {
+
+        auto cache = GetSubsystem<ResourceCache>();
+        Node *terrainNode = _scene->CreateChild("Terrain");
+        terrainNode->SetPosition(Vector3(0.0f, -0.0f, 0.0f));
+        _terrain = terrainNode->CreateComponent<Terrain>();
+        _terrain->SetPatchSize(64);
+        _terrain->SetSpacing(Vector3(1.0f, 0.1f, 1.0f));
+        _terrain->SetSmoothing(true);
+        _terrain->SetHeightMap(cache->GetResource<Image>("Textures/HeightMap.png"));
+        _terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain.xml"));
+        _terrain->SetOccluder(true);
+        _terrain->SetCastShadows(true);
+
+        GenerateMap(30, 4, 0);
+
+        auto *body = terrainNode->CreateComponent<RigidBody>();
+        body->SetCollisionLayer(2); // Use layer bitmask 2 for static geometry
+        auto *shape = terrainNode->CreateComponent<CollisionShape>();
+        shape->SetTerrain();
+
+        SendEvent(
+                MyEvents::E_CONSOLE_COMMAND_ADD,
+                MyEvents::ConsoleCommandAdd::P_NAME, "generate_map",
+                MyEvents::ConsoleCommandAdd::P_EVENT, "#generate_map",
+                MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Perlin noise map generating",
+                MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+        );
+        SubscribeToEvent("#generate_map", [&](StringHash eventType, VariantMap &eventData) {
+            StringVector params = eventData["Parameters"].GetStringVector();
+            if (params.Size() < 4) {
+                URHO3D_LOGERROR("generate_map expects 3 parameters: frequency(0.1 - 64.0), octaves(1 - 16), seed");
+                return;
+            }
+
+            const float frequency = ToFloat(params[1]);
+            const int octaves     = ToInt(params[2]);
+            const int seed        = ToInt(params[3]);
+
+            GenerateMap(frequency, octaves, seed);
+        });
+    }
+
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
@@ -78,6 +124,44 @@ void Level::Init()
     if (movableNode) {
         _path = movableNode->GetComponent<SplinePath>();
     }
+}
+
+void Level::GenerateMap(float frequency, int octaves, int seed)
+{
+    if (!_terrain) {
+        return;
+    }
+
+    frequency = Clamp(frequency, 0.1f, 64.0f);
+    octaves   = Clamp(octaves, 1, 16);
+
+    URHO3D_LOGINFOF("Frequency: %f", frequency);
+    URHO3D_LOGINFOF("Octaves: %d", octaves);
+    URHO3D_LOGINFOF("Seed: %d", seed);
+
+
+    PerlinNoise perlin(seed);
+
+    Image *image = _terrain->GetHeightMap();
+    for (int x = 0; x < image->GetWidth(); x++) {
+        for (int y = 0; y < image->GetHeight(); y++) {
+            float dx = x / frequency;
+            float dy = y / frequency;
+            auto result = perlin.octaveNoise0_1(dx, dy, octaves);
+            image->SetPixel(x, y, Color(result, result, result));
+        }
+    }
+    _terrain->ApplyHeightMap();  // has to be called to apply the changes
+
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
+        Vector3 position = _players[(*it)]->GetNode()->GetWorldPosition();
+        position.y_ = _terrain->GetHeight(position) + 1.0f;
+        _players[(*it)]->GetNode()->SetWorldPosition(position);
+    }
+
+    image->SavePNG("Data/Textures/HeightMap.png");
 }
 
 void Level::StartAudio()
@@ -139,7 +223,13 @@ void Level::SubscribeToEvents()
 
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry", MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry");
+    SendEvent(
+        MyEvents::E_CONSOLE_COMMAND_ADD,
+        MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry",
+        MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry",
+        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
+        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
     SubscribeToEvent("#debug_geometry", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() > 1) {

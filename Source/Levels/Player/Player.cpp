@@ -26,7 +26,13 @@ Player::Player(Context* context) :
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Player, HandlePostUpdate));
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "show_labels", MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SendEvent(
+        MyEvents::E_CONSOLE_COMMAND_ADD,
+        MyEvents::ConsoleCommandAdd::P_NAME, "show_labels",
+        MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels",
+        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
     SubscribeToEvent("#show_labels", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 2) {
@@ -37,7 +43,13 @@ Player::Player(Context* context) :
         _label->SetEnabled(SHOW_LABELS);
     });
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed", MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SendEvent(
+        MyEvents::E_CONSOLE_COMMAND_ADD,
+        MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed",
+        MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed",
+        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
     SubscribeToEvent("#movement_speed", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 2) {
@@ -47,7 +59,13 @@ Player::Player(Context* context) :
         MOVE_TORQUE = ToFloat(params[1]);
     });
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "jump_force", MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels");
+    SendEvent(
+        MyEvents::E_CONSOLE_COMMAND_ADD,
+        MyEvents::ConsoleCommandAdd::P_NAME, "jump_force",
+        MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force",
+        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
     SubscribeToEvent("#jump_force", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 2) {
@@ -131,7 +149,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
-    if (_node->GetPosition().y_ < -10) {
+    if (_node->GetPosition().y_ < -30) {
         _node->SetPosition(Vector3(0, 1, 0));
         _node->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
         _node->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);

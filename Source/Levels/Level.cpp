@@ -8,6 +8,9 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/Physics/RigidBody.h>
+#include <Urho3D/Resource/ResourceCache.h>
+
+#include <Urho3D/Graphics/Material.h>
 #include "../Generator/PerlinNoise.h"
 #include "Level.h"
 #include "../MyEvents.h"

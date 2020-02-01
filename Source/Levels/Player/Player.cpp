@@ -81,7 +81,7 @@ void Player::RegisterObject(Context* context)
     context->RegisterFactory<Player>();
 }
 
-void Player::CreateNode(Scene* scene, unsigned int controllerId)
+void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrain)
 {
     SetControllerId(controllerId);
 
@@ -132,6 +132,24 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId)
     }
 
     SubscribeToEvent(_node, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
+
+    _terrain = terrain;
+
+    ResetPosition();
+}
+
+void Player::ResetPosition()
+{
+    Vector3 position = GetNode()->GetWorldPosition();
+    if (_terrain) {
+        position.y_ = _terrain->GetHeight(position) + 1.0f;
+    } else {
+        position.y_ = 1;
+    }
+    GetNode()->SetWorldPosition(position);
+
+    GetNode()->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
+    GetNode()->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -150,9 +168,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
 
     if (_node->GetPosition().y_ < -30) {
-        _node->SetPosition(Vector3(0, 1, 0));
-        _node->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
-        _node->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
+        ResetPosition();
         VariantMap data = GetEventDataMap();
         data["Player"] = _controllerId;
         SendEvent("FallOffTheMap", data);

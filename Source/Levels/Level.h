@@ -2,6 +2,7 @@
 
 #include <Urho3D/Scene/SplinePath.h>
 #include <Urho3D/Graphics/Terrain.h>
+#include <Urho3D/Graphics/Zone.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 
@@ -42,8 +43,6 @@ namespace Levels {
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
 
-        void GenerateMap(float frequency, int octaves, int seed);
-
         bool _showScoreboard;
 
         bool _drawDebug;
@@ -53,5 +52,7 @@ namespace Levels {
         HashMap<int, SharedPtr<Player>> _players;
 
         SharedPtr<Terrain> _terrain;
+
+        SharedPtr<Zone> _defaultZone;
     };
 }

@@ -63,8 +63,6 @@ BaseApplication::BaseApplication(Context* context) :
         GetSubsystem<FileSystem>()->CreateDir(directory);
     }
 #endif
-
-    context_->RegisterSubsystem(new Generator(context_));
 }
 
 void BaseApplication::Setup()
@@ -74,6 +72,8 @@ void BaseApplication::Setup()
     LoadINIConfig(_configurationFile);
 
 //    GetSubsystem<ResourceCache>()->AddPackageFile("Data2.apk");
+
+    context_->RegisterSubsystem(new Generator(context_));
 }
 
 void BaseApplication::Start()

@@ -8,7 +8,8 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/Physics/RigidBody.h>
-#include "../Generator/PerlinNoise.h"
+#include <Urho3D/Resource/Image.h>
+#include "../Generator/Generator.h"
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
@@ -64,11 +65,6 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        _players[(*it)] = new Player(context_);
-        _players[(*it)]->CreateNode(_scene, (*it));
-    }
-
     if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Scene2.xml") {
 
         auto cache = GetSubsystem<ResourceCache>();
@@ -83,34 +79,18 @@ void Level::Init()
         _terrain->SetOccluder(true);
         _terrain->SetCastShadows(true);
 
-        GenerateMap(30, 4, 0);
-
         auto *body = terrainNode->CreateComponent<RigidBody>();
         body->SetCollisionLayer(2); // Use layer bitmask 2 for static geometry
         auto *shape = terrainNode->CreateComponent<CollisionShape>();
         shape->SetTerrain();
-
-        SendEvent(
-                MyEvents::E_CONSOLE_COMMAND_ADD,
-                MyEvents::ConsoleCommandAdd::P_NAME, "generate_map",
-                MyEvents::ConsoleCommandAdd::P_EVENT, "#generate_map",
-                MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Perlin noise map generating",
-                MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-        );
-        SubscribeToEvent("#generate_map", [&](StringHash eventType, VariantMap &eventData) {
-            StringVector params = eventData["Parameters"].GetStringVector();
-            if (params.Size() < 4) {
-                URHO3D_LOGERROR("generate_map expects 3 parameters: frequency(0.1 - 64.0), octaves(1 - 16), seed");
-                return;
-            }
-
-            const float frequency = ToFloat(params[1]);
-            const int octaves     = ToInt(params[2]);
-            const int seed        = ToInt(params[3]);
-
-            GenerateMap(frequency, octaves, seed);
-        });
     }
+
+    Node* zoneNode = _scene->CreateChild("Zone", LOCAL);
+    _defaultZone = zoneNode->CreateComponent<Zone>();
+    _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+    _defaultZone->SetAmbientColor(Color(0.1f, 0.1f, 0.1f));
+    _defaultZone->SetFogStart(100.0f);
+    _defaultZone->SetFogEnd(300.0f);
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
@@ -124,45 +104,39 @@ void Level::Init()
     if (movableNode) {
         _path = movableNode->GetComponent<SplinePath>();
     }
-}
 
-void Level::GenerateMap(float frequency, int octaves, int seed)
-{
-    if (!_terrain) {
-        return;
-    }
-
-    frequency = Clamp(frequency, 0.1f, 64.0f);
-    octaves   = Clamp(octaves, 1, 16);
-
-    URHO3D_LOGINFOF("Frequency: %f", frequency);
-    URHO3D_LOGINFOF("Octaves: %d", octaves);
-    URHO3D_LOGINFOF("Seed: %d", seed);
-
-
-    PerlinNoise perlin(seed);
-
-    Image *image = _terrain->GetHeightMap();
-    for (int x = 0; x < image->GetWidth(); x++) {
-        for (int y = 0; y < image->GetHeight(); y++) {
-            float dx = x / frequency;
-            float dy = y / frequency;
-            auto result = perlin.octaveNoise0_1(dx, dy, octaves);
-            image->SetPixel(x, y, Color(result, result, result));
-        }
-    }
-    _terrain->ApplyHeightMap();  // has to be called to apply the changes
-
-    auto* controllerInput = GetSubsystem<ControllerInput>();
-    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        Vector3 position = _players[(*it)]->GetNode()->GetWorldPosition();
-        position.y_ = _terrain->GetHeight(position) + 1.0f;
-        _players[(*it)]->GetNode()->SetWorldPosition(position);
+        _players[(*it)] = new Player(context_);
+        _players[(*it)]->CreateNode(_scene, (*it), _terrain);
     }
-
-    image->SavePNG("Data/Textures/HeightMap.png");
 }
+//
+//void Level::GenerateMap(float frequency, int octaves, int seed)
+//{
+//    if (!_terrain) {
+//        return;
+//    }
+//
+//    frequency = Clamp(frequency, 0.1f, 64.0f);
+//    octaves   = Clamp(octaves, 1, 16);
+//
+//    URHO3D_LOGINFOF("Frequency: %f", frequency);
+//    URHO3D_LOGINFOF("Octaves: %d", octaves);
+//    URHO3D_LOGINFOF("Seed: %d", seed);
+//
+//
+//    Image* image = GetSubsystem<Generator>()->GenerateImage(frequency, octaves, seed);
+//    _terrain->SetHeightMap(image);
+//
+//    // Make sure our players are on top of terrain and don't get stuck
+//    auto* controllerInput = GetSubsystem<ControllerInput>();
+//    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
+//    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
+//        Vector3 position = _players[(*it)]->GetNode()->GetWorldPosition();
+//        position.y_ = _terrain->GetHeight(position) + 1.0f;
+//        _players[(*it)]->GetNode()->SetWorldPosition(position);
+//    }
+//}
 
 void Level::StartAudio()
 {
@@ -238,6 +212,46 @@ void Level::SubscribeToEvents()
         }
         _drawDebug = !_drawDebug;
     });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "ambient_light",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#ambient_light",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 4) {
+            URHO3D_LOGERROR("ambient_light expects 3 float values: r g b ");
+            return;
+        }
+
+        const float r = ToFloat(params[1]);
+        const float g = ToFloat(params[2]);
+        const float b = ToFloat(params[3]);
+        _defaultZone->SetAmbientColor(Color(r, g, b));
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "fog",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#fog",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 3) {
+            URHO3D_LOGERROR("fog expects 2 parameters: fog_start fog_end ");
+            return;
+        }
+
+        const float start = ToFloat(params[1]);
+        const float end = ToFloat(params[2]);
+        _defaultZone->SetFogStart(start);
+        _defaultZone->SetFogEnd(end);
+    });
 }
 
 void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
@@ -255,7 +269,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
 
     if (!_players.Contains(controllerIndex)) {
         _players[controllerIndex] = new Player(context_);
-        _players[controllerIndex]->CreateNode(_scene, controllerIndex);
+        _players[controllerIndex]->CreateNode(_scene, controllerIndex, _terrain);
     }
 }
 

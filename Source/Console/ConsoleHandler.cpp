@@ -160,6 +160,8 @@ void ConsoleHandler::ParseCommand(String input)
 
         // Call the actual event and pass all the parameters
         SendEvent(_registeredConsoleCommands[command].eventToCall, data);
+    } else {
+        URHO3D_LOGERRORF("Command '%s' not registered", command.CString());
     }
 }
 

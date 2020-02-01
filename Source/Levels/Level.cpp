@@ -10,6 +10,9 @@
 #include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Resource/Image.h>
 #include "../Generator/Generator.h"
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Material.h>
+#include "../Generator/PerlinNoise.h"
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"

@@ -3,7 +3,6 @@
  */
 void Start()
 {
-    SubscribeToEvent("LoadSkills", "HandleLoadSkills");
     SubscribeToEvent("LoadImages", "HandleLoadImages");
 
     VariantMap data;

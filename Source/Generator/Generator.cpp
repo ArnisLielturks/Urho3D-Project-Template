@@ -6,6 +6,7 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/AngelScript/ScriptEventListener.h>
 #include "Generator.h"
 #include "../Global.h"
 #include "PerlinNoise.h"
@@ -16,7 +17,7 @@ Generator::Generator(Context* context) :
     Object(context)
 {
     _generatedImage = new Image(context);
-    _generatedImage->SetSize(512, 512, 3);
+    _generatedImage->SetSize(256, 256, 3);
     SubscribeToEvents();
 }
 

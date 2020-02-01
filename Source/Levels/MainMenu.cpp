@@ -101,12 +101,12 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
-    if (data_.Contains("Message")) {
+    if (_data.Contains("Message")) {
         auto* localization = GetSubsystem<Localization>();
 
         VariantMap& data = GetEventDataMap();
         data["Title"] = localization->Get("WARNING");
-        data["Message"] = data_["Message"].GetString();
+        data["Message"] = _data["Message"].GetString();
         data["Name"] = "PopupMessageWindow";
         data["Type"] = "warning";
         data["ClosePrevious"] = true;

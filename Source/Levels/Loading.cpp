@@ -38,8 +38,8 @@ void Loading::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    if (data_.Contains("Map")) {
-        GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
+    if (_data.Contains("Map")) {
+        GetSubsystem<SceneManager>()->LoadScene(_data["Map"].GetString());
     } else {
         GetSubsystem<SceneManager>()->LoadScene("Scenes/Scene.xml");
     }
@@ -155,8 +155,8 @@ void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 	UnsubscribeFromEvent(E_UPDATE);
 
 	// Forward event data to the next level
-	data_["Name"] = "Level";
-    SendEvent(MyEvents::E_SET_LEVEL, data_);
+    _data["Name"] = "Level";
+    SendEvent(MyEvents::E_SET_LEVEL, _data);
 }
 
 void Loading::CreateProgressBar()

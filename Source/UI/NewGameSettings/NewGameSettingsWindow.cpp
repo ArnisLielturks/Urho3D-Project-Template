@@ -104,7 +104,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
         auto sprite = button->CreateChild<Sprite>();
         sprite->SetFixedHeight(IMAGE_SIZE);
         sprite->SetFixedWidth(IMAGE_SIZE);
-        sprite->SetTexture(cache->GetResource<Texture2D>("Textures/UrhoIcon.png"));
+        sprite->SetTexture(cache->GetResource<Texture2D>("Textures/Transparent.png"));
 
         auto name = mapView->CreateChild<Text>();
         name->SetFont(font, 14);

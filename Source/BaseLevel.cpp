@@ -50,7 +50,7 @@ void BaseLevel::SubscribeToBaseEvents()
 
 void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
 {
-    data_ = eventData;
+    _data = eventData;
     Init();
     SubscribeToEvents();
 }

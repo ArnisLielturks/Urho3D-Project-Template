@@ -56,7 +56,7 @@ void Splash::CreateUI()
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     // Get the current logo index
-    _logoIndex = data_["LogoIndex"].GetInt();
+    _logoIndex = _data["LogoIndex"].GetInt();
 
     // Get the Urho3D fish texture
     auto* decalTex = cache->GetResource<Texture2D>(_logos[_logoIndex]);

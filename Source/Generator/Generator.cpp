@@ -34,7 +34,9 @@ Image* Generator::GenerateImage(double frequency, int octaves, int seed)
         for (int y = 0; y < _generatedImage->GetHeight(); y++) {
             float dx = x / frequency;
             float dy = y / frequency;
-            auto result = perlin.octaveNoise0_1(dx, dy, octaves);
+            auto result = perlin.octaveNoise(dx, dy, octaves);
+            result *= 0.4;
+            result += 0.4;
             _generatedImage->SetPixel(x, y, Color(result, result, result));
         }
     }

@@ -78,6 +78,22 @@ void Generator::SubscribeToEvents()
     SubscribeToEvent("#save_heightmap", [&](StringHash eventType, VariantMap &eventData) {
         Save();
     });
+
+
+    // Register our loading step
+    SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
+              MyEvents::RegisterLoadingStep::P_NAME, "Generating world",
+              MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+
+    // Handle our loading step
+    SubscribeToEvent("GenerateWorld", [&](StringHash eventType, VariantMap& eventData) {
+        SendEvent(MyEvents::E_ACK_LOADING_STEP,
+                MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+        GenerateImage(40, 1, Random());
+        Save();
+        SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
+                  MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+    });
 }
 
 void Generator::Save()

@@ -72,8 +72,6 @@ void BaseApplication::Setup()
     LoadINIConfig(_configurationFile);
 
 //    GetSubsystem<ResourceCache>()->AddPackageFile("Data2.apk");
-
-    context_->RegisterSubsystem(new Generator(context_));
 }
 
 void BaseApplication::Start()
@@ -102,6 +100,7 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(new LevelManager(context_));
     context_->RegisterSubsystem(new WindowManager(context_));
     context_->RegisterSubsystem(new Achievements(context_));
+    context_->RegisterSubsystem(new Generator(context_));
 
     #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterSubsystem(new ModLoader(context_));

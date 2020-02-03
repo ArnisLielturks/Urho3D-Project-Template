@@ -233,6 +233,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
     SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowWidth", 800));
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowHeight", 600));
+    SetEngineParameter(EP_HIGH_DPI, GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false));
     SetEngineParameter(EP_BORDERLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Borderless", false));
     SetEngineParameter(EP_FRAME_LIMITER, GetSubsystem<ConfigManager>()->GetBool("engine", "FrameLimiter", true));
     SetEngineParameter(EP_WINDOW_TITLE, "ProjectTemplate");

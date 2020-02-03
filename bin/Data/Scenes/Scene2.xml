@@ -86,7 +86,7 @@
 		</component>
 	</node>
 	<node id="11">
-		<attribute namse="Is Enabled" value="true" />
+		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="Light2" />
 		<attribute name="Tags" />
 		<attribute name="Position" value="-13.7086 3.8011 -10.5459" />

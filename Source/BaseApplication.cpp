@@ -227,18 +227,22 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
 void BaseApplication::LoadINIConfig(String filename)
 {
     bool loaded = GetSubsystem<ConfigManager>()->Load(filename, true);
-//  if (!loaded) {
-//      URHO3D_LOGERROR("Unable to load configuration file '" + _configurationFile + "'");
-//      return;
-//  }
 
-    SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("engine", "Monitor", 0));
-    SetEngineParameter(EP_FULL_SCREEN, GetSubsystem<ConfigManager>()->GetBool("engine", "FullScreen", false));
-    SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowWidth", 800));
-    SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("engine", "WindowHeight", 600));
+    SetEngineParameter(EP_MONITOR, GetSubsystem<ConfigManager>()->GetInt("video", "Monitor", 0));
+    int windowMode = GetSubsystem<ConfigManager>()->GetInt("video", "WindowMode", 0);
+    SetEngineParameter(EP_FULL_SCREEN, windowMode == 2);
+    SetEngineParameter(EP_BORDERLESS, windowMode == 1);
+
+    SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("video", "Width", 800));
+    SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 600));
+    SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("video", "VSync", true));
+    SetEngineParameter(EP_REFRESH_RATE, GetSubsystem<ConfigManager>()->GetInt("video", "RefreshRate", 60));
+    SetEngineParameter(EP_WINDOW_RESIZABLE, GetSubsystem<ConfigManager>()->GetBool("video", "ResizableWindow", false));
+
+
+    // Engine settings
+    GetSubsystem<Engine>()->SetMaxFps(GetSubsystem<ConfigManager>()->GetInt("engine", "FPSLimit", 60));
     SetEngineParameter(EP_HIGH_DPI, GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false));
-    SetEngineParameter(EP_BORDERLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Borderless", false));
-    SetEngineParameter(EP_FRAME_LIMITER, GetSubsystem<ConfigManager>()->GetBool("engine", "FrameLimiter", true));
     SetEngineParameter(EP_WINDOW_TITLE, "ProjectTemplate");
     SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
 
@@ -246,34 +250,11 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "ProjectTemplate.log"));
     SetEngineParameter(EP_LOG_LEVEL, GetSubsystem<ConfigManager>()->GetInt("engine", "LogLevel", LOG_INFO));
     SetEngineParameter(EP_LOG_QUIET, GetSubsystem<ConfigManager>()->GetBool("engine", "LogQuiet", false));
-
     // TODO - fully support headless mode
     SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Headless", false));
-
-    // Graphics
-    SetEngineParameter(EP_LOW_QUALITY_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "LowQualityShadows", false));
-    SetEngineParameter(EP_MATERIAL_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "MaterialQuality", 15));
-    SetEngineParameter(EP_MULTI_SAMPLE, GetSubsystem<ConfigManager>()->GetInt("engine", "MultiSample", 1));
-    SetEngineParameter(EP_SHADOWS, GetSubsystem<ConfigManager>()->GetBool("engine", "Shadows", true));
-    SetEngineParameter(EP_TEXTURE_ANISOTROPY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureAnisotropy", 15));
-    SetEngineParameter(EP_TEXTURE_FILTER_MODE, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureFilterMode", 3));
-
-    SetEngineParameter(EP_TEXTURE_QUALITY, GetSubsystem<ConfigManager>()->GetInt("engine", "TextureQuality", 15));
-    SetEngineParameter(EP_TRIPLE_BUFFER, GetSubsystem<ConfigManager>()->GetBool("engine", "TripleBuffer", true));
-    SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("engine", "VSync", true));
-
     SetEngineParameter(EP_RESOURCE_PATHS, GetSubsystem<ConfigManager>()->GetString("engine", "ResourcePaths", "Data;CoreData"));
-
-    // Sound
-    SetEngineParameter(EP_SOUND, GetSubsystem<ConfigManager>()->GetBool("audio", "Sound", true));
-    SetEngineParameter(EP_SOUND_BUFFER, GetSubsystem<ConfigManager>()->GetInt("audio", "SoundBuffer", 100));
-    SetEngineParameter(EP_SOUND_INTERPOLATION, GetSubsystem<ConfigManager>()->GetBool("audio", "SoundInterpolation", true));
-    SetEngineParameter(EP_SOUND_MIX_RATE, GetSubsystem<ConfigManager>()->GetInt("audio", "SoundMixRate", 44100));
-    SetEngineParameter(EP_SOUND_STEREO, GetSubsystem<ConfigManager>()->GetBool("audio", "SoundStereo", true));
-
     SetEngineParameter(EP_FLUSH_GPU, GetSubsystem<ConfigManager>()->GetBool("engine", "FlushGPU", true));
     SetEngineParameter(EP_WORKER_THREADS, GetSubsystem<ConfigManager>()->GetBool("engine", "WorkerThreads ", true));
-    SetEngineParameter("ShadowQuality", GetSubsystem<ConfigManager>()->GetInt("engine", "ShadowQuality", 5));
 
     SetEngineParameter("Master" , GetSubsystem<ConfigManager>()->GetFloat("audio", "Master", 1.0));
     SetEngineParameter("Effect", GetSubsystem<ConfigManager>()->GetFloat("audio", "Effect", 1.0));
@@ -293,7 +274,16 @@ void BaseApplication::LoadINIConfig(String filename)
 void BaseApplication::ApplyGraphicsSettings()
 {
     auto* renderer = GetSubsystem<Renderer>();
-    renderer->SetShadowQuality((ShadowQuality)engine_->GetGlobalVar("ShadowQuality").GetInt());
+
+    renderer->SetTextureQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "TextureQuality", MaterialQuality::QUALITY_MEDIUM));
+    renderer->SetMaterialQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "MaterialQuality", MaterialQuality::QUALITY_MEDIUM));
+    renderer->SetDrawShadows(GetSubsystem<ConfigManager>()->GetBool("graphics", "DrawShadows", true));
+    renderer->SetShadowMapSize(GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowMapSize", 512));
+    renderer->SetShadowQuality((ShadowQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowQuality", ShadowQuality::SHADOWQUALITY_PCF_16BIT));
+    renderer->SetMaxOccluderTriangles(GetSubsystem<ConfigManager>()->GetInt("graphics", "MaxOccluderTriangles", 5000));
+    renderer->SetDynamicInstancing(GetSubsystem<ConfigManager>()->GetBool("graphics", "DynamicInstancing", true));
+    renderer->SetSpecularLighting(GetSubsystem<ConfigManager>()->GetBool("graphics", "SpecularLighting", true));
+    renderer->SetHDRRendering(GetSubsystem<ConfigManager>()->GetBool("graphics", "HDRRendering", true));
 }
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)

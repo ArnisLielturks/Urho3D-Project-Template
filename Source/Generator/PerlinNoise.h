@@ -1,168 +1,161 @@
-# pragma once
-# include <cstdint>
-# include <numeric>
-# include <random>
-# include <iterator>
-# include <type_traits>
+#pragma once
+#include <random>
+#include <iterator>
+#include <Urho3D/Math/MathDefs.h>
 
-    class PerlinNoise
+class PerlinNoise
+{
+private:
+
+    std::uint8_t randomNumbers[512];
+
+    static double Fade(double t) noexcept
     {
-    private:
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
 
-        std::uint8_t p[512];
+    static double Lerp(double t, double a, double b) noexcept
+    {
+        return a + t * (b - a);
+    }
 
-        static double Fade(double t) noexcept
+    static double Grad(std::uint8_t hash, double x, double y, double z) noexcept
+    {
+        const std::uint8_t h = hash & 15;
+        const double u = h < 8 ? x : y;
+        const double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+        return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+    }
+
+public:
+
+    explicit PerlinNoise(int seed)
+    {
+        reseed(seed);
+    }
+
+    void reseed(int seed)
+    {
+        for (size_t i = 0; i < 256; ++i)
         {
-            return t * t * t * (t * (t * 6 - 15) + 10);
+            randomNumbers[i] = static_cast<std::uint8_t>(i);
         }
 
-        static double Lerp(double t, double a, double b) noexcept
+        std::shuffle(std::begin(randomNumbers), std::begin(randomNumbers) + 512, std::default_random_engine(seed));
+    }
+
+    double noise(double x) const
+    {
+        return noise(x, 0.0, 0.0);
+    }
+
+    double noise(double x, double y) const
+    {
+        return noise(x, y, 0.0);
+    }
+
+    double noise(double x, double y, double z) const
+    {
+        const int X = static_cast<int>(Floor(x)) & 255;
+        const int Y = static_cast<int>(Floor(y)) & 255;
+        const int Z = static_cast<int>(Floor(z)) & 255;
+
+        x -= Floor(x);
+        y -= Floor(y);
+        z -= Floor(z);
+
+        const double u = Fade(x);
+        const double v = Fade(y);
+        const double w = Fade(z);
+
+        const int A = randomNumbers[X] + Y, AA = randomNumbers[A] + Z, AB = randomNumbers[A + 1] + Z;
+        const int B = randomNumbers[X + 1] + Y, BA = randomNumbers[B] + Z, BB = randomNumbers[B + 1] + Z;
+
+        return Lerp(w, Lerp(v, Lerp(u, Grad(randomNumbers[AA], x, y, z),
+                                    Grad(randomNumbers[BA], x - 1, y, z)),
+                            Lerp(u, Grad(randomNumbers[AB], x, y - 1, z),
+                                 Grad(randomNumbers[BB], x - 1, y - 1, z))),
+                    Lerp(v, Lerp(u, Grad(randomNumbers[AA + 1], x, y, z - 1),
+                                 Grad(randomNumbers[BA + 1], x - 1, y, z - 1)),
+                         Lerp(u, Grad(randomNumbers[AB + 1], x, y - 1, z - 1),
+                              Grad(randomNumbers[BB + 1], x - 1, y - 1, z - 1))));
+    }
+
+    double octaveNoise(double x, int octaves) const
+    {
+        double result = 0.0;
+        double amp = 1.0;
+
+        for (int i = 0; i < octaves; ++i)
         {
-            return a + t * (b - a);
+            result += noise(x) * amp;
+            x *= 2.0;
+            amp *= 0.5;
         }
 
-        static double Grad(std::uint8_t hash, double x, double y, double z) noexcept
+        return result;
+    }
+
+    double octaveNoise(double x, double y, int octaves) const
+    {
+        double result = 0.0;
+        double amp = 1.0;
+
+        for (std::int32_t i = 0; i < octaves; ++i)
         {
-            const std::uint8_t h = hash & 15;
-            const double u = h < 8 ? x : y;
-            const double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-            return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+            result += noise(x, y) * amp;
+            x *= 2.0;
+            y *= 2.0;
+            amp *= 0.5;
         }
 
-    public:
+        return result;
+    }
 
-        explicit PerlinNoise(std::uint32_t seed = std::default_random_engine::default_seed)
+    double octaveNoise(double x, double y, double z, int octaves) const
+    {
+        double result = 0.0;
+        double amp = 1.0;
+
+        for (int i = 0; i < octaves; ++i)
         {
-            reseed(seed);
+            result += noise(x, y, z) * amp;
+            x *= 2.0;
+            y *= 2.0;
+            z *= 2.0;
+            amp *= 0.5;
         }
 
-        void reseed(std::uint32_t seed)
-        {
-            for (size_t i = 0; i < 256; ++i)
-            {
-                p[i] = static_cast<std::uint8_t>(i);
-            }
+        return result;
+    }
 
-            std::shuffle(std::begin(p), std::begin(p) + 256, std::default_random_engine(seed));
+    double noise0_1(double x) const
+    {
+        return noise(x) * 0.5 + 0.5;
+    }
 
-            for (size_t i = 0; i < 256; ++i)
-            {
-                p[256 + i] = p[i];
-            }
-        }
+    double noise0_1(double x, double y) const
+    {
+        return noise(x, y) * 0.5 + 0.5;
+    }
 
-        double noise(double x) const
-        {
-            return noise(x, 0.0, 0.0);
-        }
+    double noise0_1(double x, double y, double z) const
+    {
+        return noise(x, y, z) * 0.5 + 0.5;
+    }
 
-        double noise(double x, double y) const
-        {
-            return noise(x, y, 0.0);
-        }
+    double octaveNoise0_1(double x, int octaves) const
+    {
+        return octaveNoise(x, octaves) * 0.5 + 0.5;
+    }
 
-        double noise(double x, double y, double z) const
-        {
-            const std::int32_t X = static_cast<std::int32_t>(std::floor(x)) & 255;
-            const std::int32_t Y = static_cast<std::int32_t>(std::floor(y)) & 255;
-            const std::int32_t Z = static_cast<std::int32_t>(std::floor(z)) & 255;
+    double octaveNoise0_1(double x, double y, int octaves) const
+    {
+        return octaveNoise(x, y, octaves) * 0.5 + 0.5;
+    }
 
-            x -= std::floor(x);
-            y -= std::floor(y);
-            z -= std::floor(z);
-
-            const double u = Fade(x);
-            const double v = Fade(y);
-            const double w = Fade(z);
-
-            const std::int32_t A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z;
-            const std::int32_t B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
-
-            return Lerp(w, Lerp(v, Lerp(u, Grad(p[AA], x, y, z),
-                                        Grad(p[BA], x - 1, y, z)),
-                                Lerp(u, Grad(p[AB], x, y - 1, z),
-                                     Grad(p[BB], x - 1, y - 1, z))),
-                        Lerp(v, Lerp(u, Grad(p[AA + 1], x, y, z - 1),
-                                     Grad(p[BA + 1], x - 1, y, z - 1)),
-                             Lerp(u, Grad(p[AB + 1], x, y - 1, z - 1),
-                                  Grad(p[BB + 1], x - 1, y - 1, z - 1))));
-        }
-
-        double octaveNoise(double x, std::int32_t octaves) const
-        {
-            double result = 0.0;
-            double amp = 1.0;
-
-            for (std::int32_t i = 0; i < octaves; ++i)
-            {
-                result += noise(x) * amp;
-                x *= 2.0;
-                amp *= 0.5;
-            }
-
-            return result;
-        }
-
-        double octaveNoise(double x, double y, std::int32_t octaves) const
-        {
-            double result = 0.0;
-            double amp = 1.0;
-
-            for (std::int32_t i = 0; i < octaves; ++i)
-            {
-                result += noise(x, y) * amp;
-                x *= 2.0;
-                y *= 2.0;
-                amp *= 0.5;
-            }
-
-            return result;
-        }
-
-        double octaveNoise(double x, double y, double z, std::int32_t octaves) const
-        {
-            double result = 0.0;
-            double amp = 1.0;
-
-            for (std::int32_t i = 0; i < octaves; ++i)
-            {
-                result += noise(x, y, z) * amp;
-                x *= 2.0;
-                y *= 2.0;
-                z *= 2.0;
-                amp *= 0.5;
-            }
-
-            return result;
-        }
-
-        double noise0_1(double x) const
-        {
-            return noise(x) * 0.5 + 0.5;
-        }
-
-        double noise0_1(double x, double y) const
-        {
-            return noise(x, y) * 0.5 + 0.5;
-        }
-
-        double noise0_1(double x, double y, double z) const
-        {
-            return noise(x, y, z) * 0.5 + 0.5;
-        }
-
-        double octaveNoise0_1(double x, std::int32_t octaves) const
-        {
-            return octaveNoise(x, octaves) * 0.5 + 0.5;
-        }
-
-        double octaveNoise0_1(double x, double y, std::int32_t octaves) const
-        {
-            return octaveNoise(x, y, octaves) * 0.5 + 0.5;
-        }
-
-        double octaveNoise0_1(double x, double y, double z, std::int32_t octaves) const
-        {
-            return octaveNoise(x, y, z, octaves) * 0.5 + 0.5;
-        }
-    };
+    double octaveNoise0_1(double x, double y, double z, int octaves) const
+    {
+        return octaveNoise(x, y, z, octaves) * 0.5 + 0.5;
+    }
+};

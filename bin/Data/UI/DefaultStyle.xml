@@ -3,6 +3,14 @@
         <attribute name="Texture" value="Texture2D;Textures/UI.png" />
         <attribute name="Blend Mode" value="alpha" />
     </element>
+    <element type="TabButtonSelected" >
+        <attribute name="Texture" value="Texture2D;Textures/UrhoIcon.png" />
+        <attribute name="Blend Mode" value="alpha" />
+    </element>
+    <element type="TabButton" >
+        <attribute name="Texture" value="Texture2D;Textures/Transparent.png" />
+        <attribute name="Blend Mode" value="alpha" />
+    </element>
     <element type="Button" style="BorderImage">
         <attribute name="Image Rect" value="16 0 32 16" />
         <attribute name="Border" value="4 4 4 4" />

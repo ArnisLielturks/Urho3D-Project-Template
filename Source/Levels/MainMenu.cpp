@@ -129,7 +129,7 @@ void MainMenu::CreateUI()
     _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
-        data["Name"] = "SettingsWindow";
+        data["Name"] = "SettingsWindowV2";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 

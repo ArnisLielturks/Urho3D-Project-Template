@@ -68,7 +68,7 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    if (_data.Contains("Map") && _data["Map"].GetString() == "Scenes/Scene2.xml") {
+    if (_data.Contains("Map") && _data["Map"].GetString() == "Scenes/Terrain.xml") {
 
         auto cache = GetSubsystem<ResourceCache>();
         Node *terrainNode = _scene->CreateChild("Terrain");

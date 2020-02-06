@@ -40,9 +40,9 @@ Download almost latest builds from CI (list is updated manually):
 
 | OS | Link |
 | --- | --- |
-| Windows             | [Download](https://719-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows.zip) |
-| Windows (no AS/LUA) | [Download](https://715-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows_no_scripts.zip) |
-| Linux               | [Download](https://718-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux.zip) |
-| Linux (no AS/LUA)   | [Download](https://717-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux_no_scripts.zip) |
-| Android             | [Download](https://716-138001494-gh.circle-artifacts.com/0/home/circleci/project/Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk) |
+| Windows             | [Download](https://732-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows.zip) |
+| Windows (no AS/LUA) | [Download](https://733-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows_no_scripts.zip) |
+| Linux               | [Download](https://731-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux.zip) |
+| Linux (no AS/LUA)   | [Download](https://734-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux_no_scripts.zip) |
+| Android             | [Download](https://730-138001494-gh.circle-artifacts.com/0/home/circleci/project/Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk) |
 

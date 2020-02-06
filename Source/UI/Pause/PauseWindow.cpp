@@ -6,7 +6,6 @@
 #include <Urho3D/UI/Font.h>
 #include "PauseWindow.h"
 #include "../../MyEvents.h"
-#include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
 /// Construct.
@@ -69,7 +68,7 @@ void PauseWindow::Create()
 
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
-        data["Name"] = "SettingsWindowV2";
+        data["Name"] = "SettingsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 

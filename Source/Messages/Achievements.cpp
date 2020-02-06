@@ -107,7 +107,7 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
 
     using namespace AudioDefs;
     using namespace MyEvents::PlaySound;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_INDEX] = SOUND_EFFECTS::ACHIEVEMENT;
     data[P_TYPE] = SOUND_EFFECT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
@@ -194,6 +194,8 @@ void Achievements::LoadAchievementList()
                     case JSONValueType::JSON_STRING:
                         parameterValue = mapInfo["Value"].GetString();
                         break;
+                    default:
+                        continue;
                     }
                 }
 
@@ -232,7 +234,7 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
             //URHO3D_LOGINFOF("Achievement progress: '%s' => %i/%i",(*it).message.CString(), (*it).current, (*it).threshold);
             if ((*it).current >= (*it).threshold && !(*it).completed) {
                 (*it).completed = true;
-                VariantMap data = GetEventDataMap();
+                VariantMap& data = GetEventDataMap();
                 data["Message"] = (*it).message;
                 data["Image"] = (*it).image;
                 SendEvent(MyEvents::E_NEW_ACHIEVEMENT, data);

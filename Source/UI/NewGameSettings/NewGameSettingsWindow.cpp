@@ -8,7 +8,6 @@
 #include <Urho3D/Resource/JSONFile.h>
 #include "NewGameSettingsWindow.h"
 #include "../../MyEvents.h"
-#include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
 static const int BUTTON_WIDTH = 150;
@@ -90,6 +89,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
         auto button = CreateButton(mapView, "", IMAGE_SIZE, IntVector2(0, 0));
         button->SetFixedHeight(IMAGE_SIZE);
         button->SetVar("Map", (*it).map);
+        button->SetStyle("MapSelection");
 
         SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
             using namespace Released;
@@ -102,20 +102,22 @@ void NewGameSettingsWindow::CreateLevelSelection()
         });
 
         auto sprite = button->CreateChild<Sprite>();
-        sprite->SetFixedHeight(IMAGE_SIZE);
-        sprite->SetFixedWidth(IMAGE_SIZE);
-        sprite->SetTexture(cache->GetResource<Texture2D>("Textures/Transparent.png"));
+        sprite->SetFixedHeight(IMAGE_SIZE - MARGIN);
+        sprite->SetFixedWidth(IMAGE_SIZE - MARGIN);
+        sprite->SetTexture(cache->GetResource<Texture2D>((*it).image));
+        sprite->SetHotSpot(sprite->GetWidth() / 2, sprite->GetHeight() / 2);
+        sprite->SetAlignment(HA_CENTER, VA_CENTER);
 
         auto name = mapView->CreateChild<Text>();
         name->SetFont(font, 14);
-        name->SetAlignment(HA_LEFT, VA_TOP);
+        name->SetAlignment(HA_CENTER, VA_TOP);
         name->SetFixedWidth(IMAGE_SIZE);
         name->SetWordwrap(true);
         name->SetText((*it).name);
 
         auto description = mapView->CreateChild<Text>();
         description->SetFont(font, 12);
-        description->SetAlignment(HA_LEFT, VA_TOP);
+        description->SetAlignment(HA_CENTER, VA_TOP);
         description->SetFixedWidth(IMAGE_SIZE);
         description->SetWordwrap(true);
         description->SetText((*it).description);
@@ -136,12 +138,15 @@ Vector<MapInfo> NewGameSettingsWindow::LoadMaps()
                 && mapInfo["Map"].IsString()
                 && mapInfo.Contains("Name")
                 && mapInfo["Name"].IsString()
+               && mapInfo.Contains("Image")
+               && mapInfo["Image"].IsString()
                 && mapInfo.Contains("Description")
                 && mapInfo["Description"].IsString()) {
                 MapInfo map;
                 map.map         = mapInfo["Map"].GetString();
                 map.name        = mapInfo["Name"].GetString();
                 map.description = mapInfo["Description"].GetString();
+                map.image       = mapInfo["Image"].GetString();
                 maps.Push(map);
             }
             else {

@@ -77,10 +77,6 @@ void Loading::CreateUI()
     // Set random rotation in degrees and random scale
     sprite->SetRotation(Random() * 360.0f);
 
-    // Set random color and additive blending mode
-    sprite->SetColor(Color(Random(0.5f) + 0.5f, Random(0.5f) + 0.5f, Random(0.5f) + 0.5f));
-    sprite->SetBlendMode(BLEND_ADD);
-
 
     // Add as a child of the root UI element
     ui->GetRoot()->AddChild(sprite);
@@ -114,9 +110,9 @@ void Loading::CreateUI()
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
     // Use spline interpolation method
     colorAnimation->SetInterpolationMethod(IM_LINEAR);
-    colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
-    colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
-    colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
+    colorAnimation->SetKeyFrame(0.0f, Color(0.9, 0.9, 0.9));
+    colorAnimation->SetKeyFrame(1.0f, Color(0.7, 0.7, 0.7));
+    colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _status->SetObjectAnimation(animation);
@@ -176,9 +172,9 @@ void Loading::CreateProgressBar()
         SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
         // Use spline interpolation method
         colorAnimation->SetInterpolationMethod(IM_LINEAR);
-        colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
-        colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
-        colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
+        colorAnimation->SetKeyFrame(0.0f, Color(0.9, 0.9, 0.9));
+        colorAnimation->SetKeyFrame(1.0f, Color(0.7, 0.7, 0.7));
+        colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
         animation->AddAttributeAnimation("Color", colorAnimation);
 
         _loadingBar->SetObjectAnimation(animation);

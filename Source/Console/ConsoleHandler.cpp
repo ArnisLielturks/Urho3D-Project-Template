@@ -2,7 +2,6 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Engine/Engine.h>
-#include <Urho3D/Engine/Console.h>
 #include <Urho3D/Engine/EngineEvents.h>
 #include <Urho3D/IO/Log.h>
 #include "ConsoleHandler.h"
@@ -33,7 +32,7 @@ void ConsoleHandler::Create()
     }
     // Get default style
     ResourceCache* cache = GetSubsystem<ResourceCache>();
-    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+    XMLFile* xmlFile     = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
 
     // Create console
     _console = GetSubsystem<Engine>()->CreateConsole();
@@ -65,10 +64,12 @@ void ConsoleHandler::SubscribeToEvents()
     SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(ConsoleHandler, HandleConsoleGlobalVariableChange));
 
     VariantMap data;
-    data["ConsoleCommandName"] = "help";
-    data["ConsoleCommandEvent"] = "ConsoleHelp";
+    data["ConsoleCommandName"]        = "help";
+    data["ConsoleCommandEvent"]       = "ConsoleHelp";
     data["ConsoleCommandDescription"] = "Displays all available commands";
+
     SendEvent("ConsoleCommandAdd", data);
+
     SubscribeToEvent("ConsoleHelp", URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandHelp));
 
     // How to use lambda (anonymous) functions
@@ -81,7 +82,7 @@ void ConsoleHandler::SubscribeToEvents()
         }
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Loading";
-        data["Map"] = "Scenes/" + params[1];
+        data["Map"]  = "Scenes/" + params[1];
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
@@ -249,7 +250,7 @@ void ConsoleHandler::HandleConsoleGlobalVariableChange(StringHash eventType, Var
 
         // Let others know that configuration was updated, to allow game tweaking accordingly
         using namespace MyEvents::ConsoleGlobalVariableChanged;
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data[P_NAME] = params[0];
         data[P_VALUE] = newValue;
         SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);

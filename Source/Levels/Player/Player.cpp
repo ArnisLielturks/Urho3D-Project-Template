@@ -120,7 +120,7 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrai
     _label = scene->CreateChild("Label");
 
     auto text3D = _label->CreateComponent<Text3D>();
-    text3D->SetText("Player " + String(_controllerId));
+    text3D->SetText("Player " + String(_controllerId + 1));
     text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
     text3D->SetColor(Color::GRAY);
     text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
@@ -145,6 +145,8 @@ void Player::ResetPosition()
         position.y_ = _terrain->GetHeight(position) + 1.0f;
     } else {
         position.y_ = 1;
+        position.x_ = 0;
+        position.z_ = 0;
     }
     GetNode()->SetWorldPosition(position);
 
@@ -169,7 +171,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 
     if (_node->GetPosition().y_ < -30) {
         ResetPosition();
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Player"] = _controllerId;
         SendEvent("FallOffTheMap", data);
     }

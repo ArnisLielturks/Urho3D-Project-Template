@@ -134,7 +134,7 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void Splash::HandleEndSplash()
 {
 	UnsubscribeFromEvent(E_UPDATE);
-	VariantMap data = GetEventDataMap();
+	VariantMap& data = GetEventDataMap();
     _logoIndex++;
 	if (_logoIndex >= _logos.Size()) {
         data["Name"] = "MainMenu";

@@ -3,8 +3,21 @@
         <attribute name="Texture" value="Texture2D;Textures/UI.png" />
         <attribute name="Blend Mode" value="alpha" />
     </element>
-    <element type="TabButtonSelected" >
-        <attribute name="Texture" value="Texture2D;Textures/UrhoIcon.png" />
+    <element type="TransparentButton" >
+        <attribute name="Texture" value="Texture2D;Textures/Blank.png" />
+        <attribute name="Blend Mode" value="alpha" />
+    </element>
+    <element type="MapSelection" >
+        <attribute name="Texture" value="Texture2D;Textures/Button.png" />
+        <attribute name="Blend Mode" value="alpha" />
+        <attribute name="Image Rect" value="0 0 4 1" />
+        <attribute name="Border" value="1 1 1  1" />
+        <attribute name="Pressed Image Offset" value="4 0" />
+        <attribute name="Hover Image Offset" value="4 0" />
+        <attribute name="Pressed Child Offset" value="0 0" />
+    </element>
+    <element type="Window" >
+        <attribute name="Texture" value="Texture2D;Textures/Gray.png" />
         <attribute name="Blend Mode" value="alpha" />
     </element>
     <element type="TabButton" >
@@ -210,11 +223,11 @@
             <attribute name="Hover Image Offset" value="0 16" />
         </element>
     </element>
-    <element type="Window" style="BorderImage">
-        <attribute name="Image Rect" value="48 0 64 16" />
-        <attribute name="Border" value="4 4 4 4" />
-        <attribute name="Resize Border" value="8 8 8 8" />
-    </element>
+<!--    <element type="Window" style="BorderImage">-->
+<!--        <attribute name="Image Rect" value="48 0 64 16" />-->
+<!--        <attribute name="Border" value="4 4 4 4" />-->
+<!--        <attribute name="Resize Border" value="8 8 8 8" />-->
+<!--    </element>-->
     <element type="DialogWindow" style="Window" auto="false">
         <attribute name="Is Movable" value="true" />
         <attribute name="Modal Shade Color" value="0.04 0.07 0.03 0.23" />

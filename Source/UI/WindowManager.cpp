@@ -11,8 +11,7 @@
 #include "NewGameSettings/NewGameSettingsWindow.h"
 #include "Achievements/AchievementsWindow.h"
 #include "PopupMessage/PopupMessageWindow.h"
-#include "SettingsNew/SettingsWindowV2.h"
-#include "SettingsNew/UIOption.h"
+#include "Settings/UIOption.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -45,7 +44,7 @@ void WindowManager::RegisterAllFactories()
     UIMultiOption::RegisterObject(context_);
     UIBoolOption::RegisterObject(context_);
     UISliderOption::RegisterObject(context_);
-    context_->RegisterFactory<SettingsWindowV2>();
+    context_->RegisterFactory<SettingsWindow>();
 }
 
 void WindowManager::SubscribeToEvents()

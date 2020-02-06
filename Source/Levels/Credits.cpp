@@ -7,7 +7,6 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Texture2D.h>
 #include <Urho3D/UI/Font.h>
-#include <Urho3D/IO/Log.h>
 #include "Credits.h"
 #include "../MyEvents.h"
 #include "../Global.h"
@@ -81,6 +80,7 @@ namespace Levels {
         CreateSingleLine("Android event handler: @Lumak", PARAGRAPH);
         CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
         CreateSingleLine("Level manager: @artgolf1000", PARAGRAPH);
+        CreateSingleLine("Settings window: @PredatorMF", PARAGRAPH);
         CreateSingleLine("Perlin Noise algorithm: @Reputeless", PARAGRAPH);
         CreateSingleLine("", PARAGRAPH);
 
@@ -128,7 +128,7 @@ namespace Levels {
     void Credits::HandleEndCredits(bool forced)
     {
         UnsubscribeFromEvent(E_UPDATE);
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "MainMenu";
         SendEvent(MyEvents::E_SET_LEVEL, data);
 

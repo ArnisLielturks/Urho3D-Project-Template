@@ -1,12 +1,7 @@
 #include <Urho3D/Scene/ObjectAnimation.h>
-#include <Urho3D/Scene/ValueAnimation.h>
-#include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/UI/Font.h>
 #include <Urho3D/IO/Log.h>
-#include <Urho3D/Engine/DebugHud.h>
-#include <Urho3D/AngelScript/ScriptEventListener.h>
 #include "Generator.h"
 #include "../Global.h"
 #include "PerlinNoise.h"
@@ -93,6 +88,43 @@ void Generator::SubscribeToEvents()
         Save();
         SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
                   MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "generate_ui_textures",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#generate_ui_textures",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Generate UI textures"
+    );
+    SubscribeToEvent("#generate_ui_textures", [&](StringHash eventType, VariantMap &eventData) {
+        Image* image = new Image(context_);
+        image->SetSize(1, 1, 4);
+        image->SetPixel(0, 0, Color(0, 0, 0, 0));
+        image->SavePNG("Data/Textures/Blank.png");
+
+        Color color(0.1, 0.1, 0.1, 1.0);
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() > 1) {
+            color.r_ = ToFloat(params[1]);
+            color.g_ = color.r_;
+            color.b_ = color.r_;
+        }
+        if (params.Size() > 2) {
+            color.a_ = ToFloat(params[2]);
+        }
+        image->SetPixel(0, 0, color);
+        image->SavePNG("Data/Textures/Gray.png");
+
+
+        image->SetSize(12, 1, 4);
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 4; j++) {
+                Color base(0.4, 0.4, 0.4);
+                image->SetPixel(i * 4 + j, 0, base - Color(i * 0.2, i * 0.2, i * 0.2, 0.0));
+            }
+        }
+        image->SavePNG("Data/Textures/Button.png");
+
     });
 }
 

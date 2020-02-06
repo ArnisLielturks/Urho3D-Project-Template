@@ -7,6 +7,7 @@
 #include <Urho3D/UI/Slider.h>
 #include <Urho3D/UI/UIEvents.h>
 #include <Urho3D/Input/InputEvents.h>
+#include <Urho3D/IO/Log.h>
 
 namespace Urho3D {
 
@@ -397,8 +398,11 @@ namespace Urho3D {
         if (slider_)
             slider_->SetValue(value_);
 
-        if (lbl_value_)
-            lbl_value_->SetText(ToString("%3.1f", value_));
+        if (lbl_value_) {
+            int full = Floor(value_);
+            int decimals = (value_ - full) * 10;
+            lbl_value_->SetText(ToString("%d.%d", full, decimals));
+        }
     }
 
     void UISliderOption::OnKey(Key key, MouseButtonFlags buttons, QualifierFlags qualifiers) {
@@ -415,11 +419,11 @@ namespace Urho3D {
     void UISliderOption::HandleSlider(StringHash eventType, VariantMap& eventData) {
         using namespace SliderChanged;
         auto value = eventData[P_VALUE].GetFloat();
+        float oldValue = value_;
         SetValue(value);
-
-        VariantMap& data = GetEventDataMap();
-        data[UISliderChanged::P_UISLIDER] = this;
-        SendEvent(E_UISLIDER_CHANGED, data);
+        if (oldValue != value_) {
+            OnChanged();
+        }
     }
 
 
@@ -557,7 +561,7 @@ namespace Urho3D {
         tabs_.Push(tab);
 
         if (tabs_.Size() == 1) {
-            tab.button->SetStyle("TabButtonSelected");
+            tab.button->SetStyle("TransparentButton");
         }
 
         //tab.button->SetStyle("UITabButton");
@@ -626,7 +630,7 @@ namespace Urho3D {
         for (int i = 0; i < (int)tabs_.Size(); ++i) {
             tabs_[i].page->SetVisible(tab == i);
             if (tab == i) {
-                tabs_[i].button->SetStyle("TabButtonSelected");
+                tabs_[i].button->SetStyle("TransparentButton");
             }
         }
 

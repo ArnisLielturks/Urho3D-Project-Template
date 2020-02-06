@@ -47,8 +47,6 @@ namespace Levels {
 
         bool _drawDebug;
 
-        SharedPtr<SplinePath> _path;
-
         HashMap<int, SharedPtr<Player>> _players;
 
         SharedPtr<Terrain> _terrain;

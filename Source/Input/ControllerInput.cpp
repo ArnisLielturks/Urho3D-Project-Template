@@ -49,6 +49,14 @@ void ControllerInput::Init()
 
     // there must be at least one controller available at start
 	_controls[0] = Controls();
+    _controls[1] = Controls();
+    _controls[2] = Controls();
+    _controls[3] = Controls();
+    _controls[4] = Controls();
+    _controls[5] = Controls();
+    _controls[6] = Controls();
+    _controls[7] = Controls();
+
 	GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
 }
 
@@ -160,7 +168,7 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 
 	// Send out event with all the details about the mapped control
 	using namespace MyEvents::InputMappingFinished;
-	VariantMap data = GetEventDataMap();
+	VariantMap& data = GetEventDataMap();
 	data[P_CONTROLLER] = controller;
 	data[P_CONTROL_ACTION] = action;
 	data[P_ACTION_NAME] = _controlMapNames[action];
@@ -174,7 +182,7 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
 void ControllerInput::StopInputMapping()
 {
     using namespace MyEvents::StopInputMapping;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_CONTROL_ACTION] = _activeAction;
 
     _activeAction = -1;
@@ -213,7 +221,7 @@ void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap
 
 void ControllerInput::RegisterConsoleCommands()
 {
-	VariantMap data = GetEventDataMap();
+	VariantMap& data = GetEventDataMap();
     data["ConsoleCommandName"] = "map_input";
     data["ConsoleCommandEvent"] = "StartInputMappingConsole";
     data["ConsoleCommandDescription"] = "Listening for keystroke";
@@ -225,7 +233,7 @@ void ControllerInput::HandleStartInputListeningConsole(StringHash eventType, Var
 	StringVector parameters = eventData["Parameters"].GetStringVector();
 	if (parameters.Size() == 2) {
 		using namespace MyEvents::StartInputMapping;
-		VariantMap data = GetEventDataMap();
+		VariantMap& data = GetEventDataMap();
 		data[P_CONTROL_ACTION] = parameters[1];
 		SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
 		return;
@@ -268,8 +276,8 @@ void ControllerInput::CreateController(int controllerIndex)
 	}
 	using namespace MyEvents::ControllerAdded;
 	_controls[controllerIndex] = Controls();
-	VariantMap data = GetEventDataMap();
-	data[P_INDEX] = controllerIndex;
+	VariantMap& data           = GetEventDataMap();
+	data[P_INDEX]              = controllerIndex;
 	SendEvent(MyEvents::E_CONTROLLER_ADDED, data);
 
 	GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
@@ -286,7 +294,7 @@ void ControllerInput::DestroyController(int controllerIndex)
 
 		using namespace MyEvents::ControllerRemoved;
 
-		VariantMap data = GetEventDataMap();
+		VariantMap& data = GetEventDataMap();
 		data[P_INDEX] = controllerIndex;
 		SendEvent(MyEvents::E_CONTROLLER_REMOVED, data);
 	}

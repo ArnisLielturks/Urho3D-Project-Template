@@ -68,10 +68,7 @@ BaseApplication::BaseApplication(Context* context) :
 void BaseApplication::Setup()
 {
     context_->RegisterSubsystem(new ConsoleHandler(context_));
-    //LoadConfig("Data/Config/Config.json", "", true);
     LoadINIConfig(_configurationFile);
-
-//    GetSubsystem<ResourceCache>()->AddPackageFile("Data2.apk");
 }
 
 void BaseApplication::Start()
@@ -88,7 +85,6 @@ void BaseApplication::Start()
     auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
-//    debugHud->Toggle(DEBUGHUD_SHOW_STATS);
 
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
@@ -119,8 +115,6 @@ void BaseApplication::Start()
 
     context_->RegisterSubsystem(new Notifications(context_));
 
-    SendEvent("GameStarted");
-
     RegisterConsoleCommands();
 
     ApplyGraphicsSettings();
@@ -131,6 +125,8 @@ void BaseApplication::Start()
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     LoadTranslationFiles();
+
+    SendEvent("GameStarted");
 }
 
 void BaseApplication::Stop()
@@ -183,15 +179,14 @@ void BaseApplication::HandleLoadConfig(StringHash eventType, VariantMap& eventDa
 
 void BaseApplication::RegisterConsoleCommands()
 {
-    VariantMap data = GetEventDataMap();
-    data["ConsoleCommandName"] = "exit";
-    data["ConsoleCommandEvent"] = "HandleExit";
+    VariantMap& data = GetEventDataMap();
+    data["ConsoleCommandName"]        = "exit";
+    data["ConsoleCommandEvent"]       = "HandleExit";
     data["ConsoleCommandDescription"] = "Exits game";
     SendEvent("ConsoleCommandAdd", data);
 
     SubscribeToEvent("HandleExit", URHO3D_HANDLER(BaseApplication, HandleExit));
 
-    // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
         GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
@@ -216,9 +211,9 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
         _globalSettings[paramName] = paramName;
 
         using namespace MyEvents::ConsoleCommandAdd;
-        VariantMap data = GetEventDataMap();
-        data[P_NAME] = paramName;
-        data[P_EVENT] = "ConsoleGlobalVariableChange";
+        VariantMap& data = GetEventDataMap();
+        data[P_NAME]        = paramName;
+        data[P_EVENT]       = "ConsoleGlobalVariableChange";
         data[P_DESCRIPTION] = "Show/Change global variable value";
         SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
     }
@@ -250,8 +245,6 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "ProjectTemplate.log"));
     SetEngineParameter(EP_LOG_LEVEL, GetSubsystem<ConfigManager>()->GetInt("engine", "LogLevel", LOG_INFO));
     SetEngineParameter(EP_LOG_QUIET, GetSubsystem<ConfigManager>()->GetBool("engine", "LogQuiet", false));
-    // TODO - fully support headless mode
-    SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("engine", "Headless", false));
     SetEngineParameter(EP_RESOURCE_PATHS, GetSubsystem<ConfigManager>()->GetString("engine", "ResourcePaths", "Data;CoreData"));
     SetEngineParameter(EP_FLUSH_GPU, GetSubsystem<ConfigManager>()->GetBool("engine", "FlushGPU", true));
     SetEngineParameter(EP_WORKER_THREADS, GetSubsystem<ConfigManager>()->GetBool("engine", "WorkerThreads ", true));
@@ -293,7 +286,7 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
     _globalSettings[parameter] = parameter;
 
     using namespace MyEvents::ConsoleCommandAdd;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_NAME] = parameter;
     data[P_EVENT] = "ConsoleGlobalVariableChange";
     data[P_DESCRIPTION] = "Show/Change global variable value";
@@ -331,7 +324,7 @@ void BaseApplication::LoadTranslationFiles()
     }
 
     // Finally set the application language
-    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("engine", "Language", "EN"));
+    localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("game", "Language", "EN"));
 }
 
 void BaseApplication::HandleServiceMessage(StringHash eventType, VariantMap& eventData)

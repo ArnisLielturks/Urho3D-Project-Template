@@ -14,11 +14,11 @@ public:
 
     virtual ~AchievementsWindow();
 
-    virtual void Init();
+    virtual void Init() override;
 
 private:
 
-    virtual void Create();
+    virtual void Create() override;
 
     void SubscribeToEvents();
 

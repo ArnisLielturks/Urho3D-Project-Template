@@ -12,14 +12,12 @@
 #include "../Generator/Generator.h"
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
-#include "../Generator/PerlinNoise.h"
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
-#include "../UI/WindowManager.h"
 #include "../Messages/Achievements.h"
 
 using namespace Levels;
@@ -103,59 +101,20 @@ void Level::Init()
         input->SetMouseVisible(false);
     }
 
-    Node* movableNode = _scene->GetChild("PathNode");
-    if (movableNode) {
-        _path = movableNode->GetComponent<SplinePath>();
-    }
-
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
         _players[(*it)] = new Player(context_);
         _players[(*it)]->CreateNode(_scene, (*it), _terrain);
     }
 }
-//
-//void Level::GenerateMap(float frequency, int octaves, int seed)
-//{
-//    if (!_terrain) {
-//        return;
-//    }
-//
-//    frequency = Clamp(frequency, 0.1f, 64.0f);
-//    octaves   = Clamp(octaves, 1, 16);
-//
-//    URHO3D_LOGINFOF("Frequency: %f", frequency);
-//    URHO3D_LOGINFOF("Octaves: %d", octaves);
-//    URHO3D_LOGINFOF("Seed: %d", seed);
-//
-//
-//    Image* image = GetSubsystem<Generator>()->GenerateImage(frequency, octaves, seed);
-//    _terrain->SetHeightMap(image);
-//
-//    // Make sure our players are on top of terrain and don't get stuck
-//    auto* controllerInput = GetSubsystem<ControllerInput>();
-//    Vector<int> controlIndexes = controllerInput->GetControlIndexes();
-//    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-//        Vector3 position = _players[(*it)]->GetNode()->GetWorldPosition();
-//        position.y_ = _terrain->GetHeight(position) + 1.0f;
-//        _players[(*it)]->GetNode()->SetWorldPosition(position);
-//    }
-//}
 
 void Level::StartAudio()
 {
     using namespace AudioDefs;
     using namespace MyEvents::PlaySound;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_INDEX] = AMBIENT_SOUNDS::LEVEL;
-    data[P_TYPE] = SOUND_AMBIENT;
+    data[P_TYPE]  = SOUND_AMBIENT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
-
-    /*auto node = scene_->GetChild("Radio", true);
-    if (node) {
-        auto soundSource = GetSubsystem<AudioManager>()->AddEffectToNode(node, SOUND_EFFECTS::HIT);
-        soundSource->SetFarDistance(10);
-        soundSource->GetSound()->SetLooped(true);
-    }*/
 }
 
 void Level::StopAllAudio()
@@ -266,8 +225,8 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "New controller connected!";
+    VariantMap& data = GetEventDataMap();
+    data["Message"]  = "New controller connected!";
     SendEvent("ShowNotification", data);
 
     if (!_players.Contains(controllerIndex)) {
@@ -288,8 +247,8 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "Controller disconnected!";
+    VariantMap& data = GetEventDataMap();
+    data["Message"]  = "Controller disconnected!";
     SendEvent("ShowNotification", data);
 
 }
@@ -327,12 +286,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 
     using namespace PostUpdate;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    if (_path) {
-        _path->Move(timeStep);
-        if (_path->IsFinished()) {
-            _path->Reset();
-        }
-    }
+
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
 
@@ -355,7 +309,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && !_showScoreboard) {
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         _showScoreboard = true;
@@ -363,7 +317,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     if (key == KEY_ESCAPE) {
         UnsubscribeToEvents();
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
@@ -377,7 +331,7 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && _showScoreboard) {
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         _showScoreboard = false;

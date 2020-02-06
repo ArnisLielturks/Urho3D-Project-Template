@@ -74,7 +74,7 @@ void BaseLevel::SubscribeToEvents()
     SubscribeToEvent("FovChange", URHO3D_HANDLER(BaseLevel, HandleFovChange));
 
     using namespace MyEvents::ConsoleCommandAdd;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_NAME] = "fov";
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
@@ -141,7 +141,9 @@ Vector<IntRect> BaseLevel::InitRects(int count)
 
         // 2 players - split vertically
     else if (count == 2) {
+        // Left
         rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight()));
+        // Right
         rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight()));
     }
 
@@ -156,10 +158,76 @@ Vector<IntRect> BaseLevel::InitRects(int count)
     }
     else if (count == 4) {
         // split screen into 4 rectangles
+        // Top left
         rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight() / 2));
+        // Top right
         rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+        // Bottom left
         rects.Push(IntRect(0, graphics->GetHeight() / 2, graphics->GetWidth() / 2, graphics->GetHeight()));
+        // Bottom right
         rects.Push(IntRect(graphics->GetWidth() / 2, graphics->GetHeight() / 2, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 5) {
+        // split screen into 5 rectangles
+        // Top left
+        rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        int width = graphics->GetWidth() / 3;
+        int top = graphics->GetHeight() / 2;
+        // Bottom left
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        // Bottom middle
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        // Bottom right
+        rects.Push(IntRect(width * 2, top, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 6) {
+        // split screen into 5 rectangles
+        int width = graphics->GetWidth() / 3;
+        // Top left
+        rects.Push(IntRect(0, 0, width, graphics->GetHeight() / 2));
+        // Top middle
+        rects.Push(IntRect(width, 0, width * 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(width * 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        int top = graphics->GetHeight() / 2;
+        // Bottom left
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        // Bottom middle
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        // Bottom right
+        rects.Push(IntRect(width * 2, top, graphics->GetWidth(), graphics->GetHeight()));
+    } else if (count == 7) {
+        int width = graphics->GetWidth() / 3;
+        rects.Push(IntRect(0, 0, width, graphics->GetHeight() / 2));
+        // Top middle
+        rects.Push(IntRect(width, 0, width * 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(width * 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        width = graphics->GetWidth() / 4;
+        int top = graphics->GetHeight() / 2;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight()));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 8) {
+        int width = graphics->GetWidth() / 4;
+        int top = 0;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        top = graphics->GetHeight() / 2;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight()));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight()));
     }
 
     return rects;

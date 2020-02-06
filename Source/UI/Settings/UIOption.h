@@ -23,11 +23,6 @@ namespace Urho3D {
         URHO3D_PARAM(P_INDEX, TabIndex); // int
     }
 
-    URHO3D_EVENT(E_UISLIDER_CHANGED, UISliderChanged)
-    {
-        URHO3D_PARAM(P_UISLIDER, Slider); // UISlider pointer
-    }
-
     class UIOption : public BorderImage {
     URHO3D_OBJECT(UIOption, BorderImage)
     public:
@@ -40,6 +35,8 @@ namespace Urho3D {
 
         void SetOptionName(const String& name);
         String GetOptionName() const { return option_name_; }
+
+        UIElement* GetControl() const { return control_; }
     protected:
         String option_name_;
         SharedPtr<Text> label_;

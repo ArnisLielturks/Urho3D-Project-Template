@@ -2,46 +2,12 @@
 
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/UI/Window.h>
-#include <Urho3D/UI/ListView.h>
-#include <Urho3D/UI/Text.h>
-#include <Urho3D/UI/CheckBox.h>
-#include <Urho3D/UI/Slider.h>
-#include <Urho3D/UI/DropDownList.h>
+#include "UIOption.h"
 #include "../BaseWindow.h"
-
-enum SettingTabs {
-    VIDEO,
-    AUDIO,
-    CONTROLS,
-    CONTROLLERS,
-    GAME
-};
-
-/**
- * Video settings are applied only after "Apply" button
- * is pressed, so this structure is meant for storign temporary
- * video settings values
- */
-struct GraphicsSettings {
-    int width;
-    int height;
-    int fullscreen;
-    int frameLimiter;
-    int monitor;
-    int vsync;
-    int tripleBuffer;
-    int shadows;
-    int shadowQuality;
-    int textureQuality;
-    int textureAnistropy;
-    int textureFilterMode;
-    int multisample;
-    int activeResolution;
-};
 
 class SettingsWindow : public BaseWindow
 {
-URHO3D_OBJECT(SettingsWindow, BaseWindow);
+    URHO3D_OBJECT(SettingsWindow, BaseWindow);
 
 public:
     /// Construct.
@@ -49,147 +15,99 @@ public:
 
     virtual ~SettingsWindow();
 
-    virtual void Init();
+    virtual void Init() override;
 
 protected:
 
-    virtual void Create();
+    virtual void Create() override;
 
 private:
 
-    /**
-     * Subscribe for events which could affect settings window
-     */
     void SubscribeToEvents();
 
-    /**
-     * Apply & Store new video settings
-     */
-    void SaveVideoSettings();
-
-    /**
-     * Handle control mapping events
-     */
-    void HandleControlsUpdated(StringHash eventType, VariantMap& eventData);
-
-    /**
-     * Switch between settings window tabs
-     * @param tab
-     */
-    void ChangeTab(SettingTabs tab);
-
-    /**
-     * Create controls view with all the options
-     */
-    void CreateControlsTab();
-
-    /**
-     * Create mouse/keyboard/joystick controls view
-     */
-    void CreateControllersTab();
-
-    /**
-     * Create audio settings view
-     */
-    void CreateAudioTab();
-
-    /**
-     * Create video settings view
-     */
     void CreateVideoTab();
-
-    /**
-     * Create game settings tab
-     */
+    void CreateGraphicsTab();
+    void CreateAudioTab();
+    void CreateControllersTab();
+    void CreateControlsTab();
+    void RefreshControlsTab();
     void CreateGameTab();
 
-    /**
-     * Set up graphics settings temporary data and available options
-     */
-    void InitGraphicsSettings();
+    /// Create and initialize a Window control.
+    void InitWindow();
+    /// Create and add various common controls for demonstration purposes.
+    void InitControls();
+    /// Handle UIOption based control being changed
+    void HandleOptionChanged(StringHash eventType, VariantMap& eventData);
+    /// Handle "Apply" button in Video settings tab
+    void HandleApply(StringHash eventType, VariantMap& eventData);
+    /// Handle tab changed
+    void HandleTabChanged(StringHash eventType, VariantMap& eventData);
+    /// Fill refresh rate options for specified monitor
+    void FillRates(int monitor);
+    /// Fill resolutions for specified monitor and rate. If rate is -1, fill all resolutions
+    void FillResolutions(int monitor, int rate = -1);
+    /// Refresh video tab options
+    void RefreshVideoOptions();
+    /// Apply video tab options
+    void ApplyVideoOptions();
+    /// Refresh graphics tab options
+    void RefreshGraphicsOptions();
+    /// Apply graphics tab options
+    void ApplyGraphicsOptions();
 
-    /**
-     * Tab buttons
-     */
-    HashMap<int, SharedPtr<Button>> _tabs;
+    /// The Window.
+    SharedPtr<Window> window_;
 
-    /**
-     * Window title bar
-     */
-    SharedPtr<UIElement> _titleBar;
+    /// Video controls.
+    WeakPtr<UITabPanel> tabs_;
+    WeakPtr<UIMultiOption> opt_monitor_;
+    WeakPtr<UIMultiOption> opt_fullscreen_;
+    WeakPtr<UIMultiOption> opt_rate_;
+    WeakPtr<UIMultiOption> opt_resolution_;
+    WeakPtr<UIBoolOption> opt_vsync_;
+    WeakPtr<Button> btn_apply_;
+    WeakPtr<UISliderOption> gamma_;
 
-    /**
-     * Active tab index
-     */
-    SettingTabs _activeTab;
+    /// Misc video controls.
+    WeakPtr<UIBoolOption> opt_resizable_;
+    WeakPtr<UIMultiOption> opt_fpslimit_;
 
-    /**
-     * Tab view element count to make sure that the settings don't overlap
-     */
-    int _tabElementCount;
+    /// Graphics controls.
+    WeakPtr<UIMultiOption> opt_texture_quality_;
+    WeakPtr<UIMultiOption> opt_material_quality_;
+    WeakPtr<UIMultiOption> opt_shadows_;
+    WeakPtr<UIMultiOption> opt_shadow_quality_;
+    WeakPtr<UIMultiOption> opt_occlusion_;
+    WeakPtr<UIMultiOption> opt_instancing_;
+    WeakPtr<UIMultiOption> opt_specular_;
+    WeakPtr<UIMultiOption> opt_hdr_;
 
-    /**
-     * Currently created active line on which the buttons, checkboxes, dropdowns will be added
-     */
-    SharedPtr<UIElement> _activeLine;
+    WeakPtr<UIMultiOption> language_selection_;
+    WeakPtr<UIBoolOption> enable_mods_;
+    WeakPtr<UIBoolOption> developer_console_;
+    WeakPtr<Button> clear_achievements_;
 
-    /**
-     * Current graphics settings
-     */
-    GraphicsSettings _graphicsSettings;
+    WeakPtr<UIBoolOption> invert_mouse_x;
+    WeakPtr<UIBoolOption> invert_mouse_y;
+    WeakPtr<UISliderOption> mouse_sensitivity;
+    WeakPtr<UIBoolOption> invert_joystic_x;
+    WeakPtr<UIBoolOption> invert_joystick_y;
+    WeakPtr<UISliderOption> joystick_sensitivity_x;
+    WeakPtr<UISliderOption> joystick_sensitivity_y;
+    WeakPtr<UISliderOption> deadzone_;
+    WeakPtr<UIBoolOption> multiple_controllers_;
+    WeakPtr<UIBoolOption> joystick_as_first_;
 
-    /**
-     * New graphics settings
-     */
-    GraphicsSettings _graphicsSettingsNew;
+    HashMap<String, WeakPtr<UISliderOption>> audio_settings_;
 
-    /**
-     * Available resolutions
-     */
-    Vector<String> _availableResolutionNames;
+    /// Mark options currently refreshing so "change" handler won't do any work.
+    bool refreshing_{};
+    /// True when video settings are changed and apply is needed.
+    bool needs_apply_{};
+    /// Initial window resolution.
+    IntVector2 windowed_resolution_{};
+    IntVector2 windowed_position_{};
 
-    /**
-     * Settings window main view
-     */
-    SharedPtr<Window> _baseWindow;
-
-    /**
-     * Tab view in which all the settings will be placed
-     */
-    SharedPtr<ListView> _listView;
-
-    /**
-     * Create TAB button at the top on window
-     */
-    Button* CreateTabButton(const String& text);
-
-    /**
-     * Add button to the currently active line
-     */
-    Button* CreateButton(const String& text);
-
-    /**
-     * Add checkbox to the currently active line
-     */
-    CheckBox* CreateCheckbox(const String& label);
-
-    /**
-     * Add label to the currently active line
-     */
-    Text* CreateLabel(const String& text);
-
-    /**
-     * Add slider to the currently active line
-     */
-    Slider* CreateSlider(const String& text);
-
-    /**
-     * Add dropdown to the currently active line
-     */
-    DropDownList* CreateMenu(const String& label, Vector<String>& items);
-
-    /**
-     * Create new line in the tab view where all the settings elemets will be placed
-     */
-    UIElement* CreateSingleLine();
+    HashMap<int, WeakPtr<Text>> control_mappings_;
 };

@@ -1,12 +1,14 @@
 [
 	{
-		"Map": "Scenes/Scene.xml",
+		"Map": "Scenes/Flat.xml",
 		"Name": "Flatland",
-		"Description": "Map consists of a simple plane"
+		"Description": "Map consists of a simple plane",
+		"Image": "Textures/Avatar.png"
 	},
 	{
-		"Map": "Scenes/Scene2.xml",
-		"Name": "Foggy Flatland",
-		"Description": "Map consists of simple plane with a dense fog"
+		"Map": "Scenes/Terrain.xml",
+		"Name": "Terrain",
+		"Description": "Generated terrain",
+		"Image": "Textures/UrhoIcon.png"
 	}
 ]

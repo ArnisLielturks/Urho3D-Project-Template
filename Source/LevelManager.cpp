@@ -42,7 +42,7 @@ Object(context)
         if (params.Size() != 2) {
             URHO3D_LOGERROR("Invalid number of parameters!");
         } else {
-            VariantMap data = GetEventDataMap();
+            VariantMap& data = GetEventDataMap();
             data[MyEvents::SetLevel::P_NAME] = params[1];
             SendEvent(MyEvents::E_SET_LEVEL, data);
         }
@@ -94,7 +94,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     // Prepare to fade out
     if (fade_status_ == 0) {
         using namespace MyEvents::LevelChangingStarted;
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data[P_FROM] = currentLevel_;
         data[P_TO] = level_queue_.Front();
         SendEvent(MyEvents::E_LEVEL_CHANGING_STARTED, data);
@@ -199,13 +199,13 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
         {
             using namespace MyEvents::LevelChangingFinished;
-            VariantMap data = GetEventDataMap();
+            VariantMap& data = GetEventDataMap();
             data[P_FROM] = previousLevel_;
             data[P_TO] = level_queue_.Front();
             SendEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, data);
         }
 
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = level_queue_.Front();
         SendEvent("LevelLoaded", data);
 

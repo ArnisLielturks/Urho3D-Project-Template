@@ -25,7 +25,6 @@ SOFTWARE.
 #include "ConfigManager.h"
 #include "ConfigFile.h"
 
-#include <Urho3D/Urho3D.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/IO/File.h>
 #include <Urho3D/IO/FileSystem.h>

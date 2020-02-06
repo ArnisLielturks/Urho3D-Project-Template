@@ -14,11 +14,11 @@ public:
 
     virtual ~PauseWindow();
 
-    virtual void Init();
+    virtual void Init() override;
 
 protected:
 
-    virtual void Create();
+    virtual void Create() override;
 
 private:
 

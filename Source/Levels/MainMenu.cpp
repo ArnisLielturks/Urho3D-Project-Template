@@ -1,9 +1,7 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/Localization.h>
 #include <Urho3D/UI/UIEvents.h>
-#include <Urho3D/Input/Input.h>
 #include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/Graphics/StaticModel.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/UI/UI.h>
@@ -101,12 +99,12 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
-    if (data_.Contains("Message")) {
+    if (_data.Contains("Message")) {
         auto* localization = GetSubsystem<Localization>();
 
         VariantMap& data = GetEventDataMap();
         data["Title"] = localization->Get("WARNING");
-        data["Message"] = data_["Message"].GetString();
+        data["Message"] = _data["Message"].GetString();
         data["Name"] = "PopupMessageWindow";
         data["Type"] = "warning";
         data["ClosePrevious"] = true;
@@ -174,6 +172,7 @@ Button* MainMenu::CreateButton(const String& text, int width, IntVector2 positio
     button->SetFixedWidth(width);
     button->SetFixedHeight(BUTTON_HEIGHT);
     button->SetPosition(position);
+    button->SetFocusMode(FM_FOCUSABLE);
 
     auto* buttonText = button->CreateChild<Text>();
     buttonText->SetFont(font, BUTTON_FONT_SIZE);

@@ -8,6 +8,7 @@ struct MapInfo {
     String map;
     String name;
     String description;
+    String image;
 };
 
 class NewGameSettingsWindow : public BaseWindow
@@ -19,11 +20,11 @@ public:
 
     virtual ~NewGameSettingsWindow();
 
-    virtual void Init();
+    virtual void Init() override;
 
 protected:
 
-    virtual void Create();
+    virtual void Create() override;
 
 private:
 

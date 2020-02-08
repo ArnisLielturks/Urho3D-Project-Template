@@ -71,7 +71,7 @@ protected:
     /**
      * Data which was passed trough LevelManager
      */
-    VariantMap data_;
+    VariantMap _data;
 
     /**
      * All available viewports in the scene

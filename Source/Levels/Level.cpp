@@ -6,13 +6,18 @@
 #include <Urho3D/Physics/PhysicsEvents.h>
 #include <Urho3D/Physics/PhysicsWorld.h>
 #include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Physics/CollisionShape.h>
+#include <Urho3D/Physics/RigidBody.h>
+#include <Urho3D/Resource/Image.h>
+#include "../Generator/Generator.h"
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Material.h>
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
-#include "../UI/WindowManager.h"
 #include "../Messages/Achievements.h"
 
 using namespace Levels;
@@ -61,10 +66,32 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        _players[(*it)] = new Player(context_);
-        _players[(*it)]->CreateNode(_scene, (*it));
+    if (_data.Contains("Map") && _data["Map"].GetString() == "Scenes/Terrain.xml") {
+
+        auto cache = GetSubsystem<ResourceCache>();
+        Node *terrainNode = _scene->CreateChild("Terrain");
+        terrainNode->SetPosition(Vector3(0.0f, -0.0f, 0.0f));
+        _terrain = terrainNode->CreateComponent<Terrain>();
+        _terrain->SetPatchSize(64);
+        _terrain->SetSpacing(Vector3(1.0f, 0.1f, 1.0f));
+        _terrain->SetSmoothing(true);
+        _terrain->SetHeightMap(cache->GetResource<Image>("Textures/HeightMap.png"));
+        _terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain.xml"));
+        _terrain->SetOccluder(true);
+        _terrain->SetCastShadows(true);
+
+        auto *body = terrainNode->CreateComponent<RigidBody>();
+        body->SetCollisionLayer(2); // Use layer bitmask 2 for static geometry
+        auto *shape = terrainNode->CreateComponent<CollisionShape>();
+        shape->SetTerrain();
     }
+
+    Node* zoneNode = _scene->CreateChild("Zone", LOCAL);
+    _defaultZone = zoneNode->CreateComponent<Zone>();
+    _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+    _defaultZone->SetAmbientColor(Color(0.1f, 0.1f, 0.1f));
+    _defaultZone->SetFogStart(100.0f);
+    _defaultZone->SetFogEnd(300.0f);
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
@@ -74,9 +101,9 @@ void Level::Init()
         input->SetMouseVisible(false);
     }
 
-    Node* movableNode = _scene->GetChild("PathNode");
-    if (movableNode) {
-        _path = movableNode->GetComponent<SplinePath>();
+    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
+        _players[(*it)] = new Player(context_);
+        _players[(*it)]->CreateNode(_scene, (*it), _terrain);
     }
 }
 
@@ -84,17 +111,10 @@ void Level::StartAudio()
 {
     using namespace AudioDefs;
     using namespace MyEvents::PlaySound;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_INDEX] = AMBIENT_SOUNDS::LEVEL;
-    data[P_TYPE] = SOUND_AMBIENT;
+    data[P_TYPE]  = SOUND_AMBIENT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);
-
-    /*auto node = scene_->GetChild("Radio", true);
-    if (node) {
-        auto soundSource = GetSubsystem<AudioManager>()->AddEffectToNode(node, SOUND_EFFECTS::HIT);
-        soundSource->SetFarDistance(10);
-        soundSource->GetSound()->SetLooped(true);
-    }*/
 }
 
 void Level::StopAllAudio()
@@ -139,7 +159,13 @@ void Level::SubscribeToEvents()
 
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry", MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry");
+    SendEvent(
+        MyEvents::E_CONSOLE_COMMAND_ADD,
+        MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry",
+        MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry",
+        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
+        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
     SubscribeToEvent("#debug_geometry", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() > 1) {
@@ -147,6 +173,46 @@ void Level::SubscribeToEvents()
             return;
         }
         _drawDebug = !_drawDebug;
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "ambient_light",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#ambient_light",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 4) {
+            URHO3D_LOGERROR("ambient_light expects 3 float values: r g b ");
+            return;
+        }
+
+        const float r = ToFloat(params[1]);
+        const float g = ToFloat(params[2]);
+        const float b = ToFloat(params[3]);
+        _defaultZone->SetAmbientColor(Color(r, g, b));
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "fog",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#fog",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 3) {
+            URHO3D_LOGERROR("fog expects 2 parameters: fog_start fog_end ");
+            return;
+        }
+
+        const float start = ToFloat(params[1]);
+        const float end = ToFloat(params[2]);
+        _defaultZone->SetFogStart(start);
+        _defaultZone->SetFogEnd(end);
     });
 }
 
@@ -159,13 +225,13 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "New controller connected!";
+    VariantMap& data = GetEventDataMap();
+    data["Message"]  = "New controller connected!";
     SendEvent("ShowNotification", data);
 
     if (!_players.Contains(controllerIndex)) {
         _players[controllerIndex] = new Player(context_);
-        _players[controllerIndex]->CreateNode(_scene, controllerIndex);
+        _players[controllerIndex]->CreateNode(_scene, controllerIndex, _terrain);
     }
 }
 
@@ -181,8 +247,8 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
 
-    VariantMap data = GetEventDataMap();
-    data["Message"] = "Controller disconnected!";
+    VariantMap& data = GetEventDataMap();
+    data["Message"]  = "Controller disconnected!";
     SendEvent("ShowNotification", data);
 
 }
@@ -220,12 +286,7 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 
     using namespace PostUpdate;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    if (_path) {
-        _path->Move(timeStep);
-        if (_path->IsFinished()) {
-            _path->Reset();
-        }
-    }
+
     auto* controllerInput = GetSubsystem<ControllerInput>();
     for (auto it = _players.Begin(); it != _players.End(); ++it) {
 
@@ -248,7 +309,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && !_showScoreboard) {
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         _showScoreboard = true;
@@ -256,7 +317,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
     if (key == KEY_ESCAPE) {
         UnsubscribeToEvents();
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
         SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
@@ -270,7 +331,7 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 
     // Toggle console by pressing F1
     if (key == KEY_TAB && _showScoreboard) {
-        VariantMap data = GetEventDataMap();
+        VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
         _showScoreboard = false;

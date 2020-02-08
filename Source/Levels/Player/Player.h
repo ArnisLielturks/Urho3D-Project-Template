@@ -4,6 +4,7 @@
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Input/Controls.h>
+#include <Urho3D/Graphics/Terrain.h>
 
 using namespace Urho3D;
 
@@ -19,7 +20,7 @@ public:
     /**
      * Create player controlled node
      */
-    void CreateNode(Scene* scene, unsigned int controllerId);
+    void CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrain);
 
     /**
      * Set controller ID to know which controller is controlling this player
@@ -42,6 +43,8 @@ private:
 
     RigidBody* _rigidBody;
     SharedPtr<Node> _node;
+
+    void ResetPosition();
     
     /**
      * Controller ID
@@ -62,5 +65,7 @@ private:
      * Is the player on the ground
      */
     bool _onGround;
+
+    Terrain* _terrain;
 
 };

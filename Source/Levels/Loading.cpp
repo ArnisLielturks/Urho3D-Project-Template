@@ -38,10 +38,10 @@ void Loading::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    if (data_.Contains("Map")) {
-        GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
+    if (_data.Contains("Map")) {
+        GetSubsystem<SceneManager>()->LoadScene(_data["Map"].GetString());
     } else {
-        GetSubsystem<SceneManager>()->LoadScene("Scenes/Scene.xml");
+        GetSubsystem<SceneManager>()->LoadScene("Scenes/Flat.xml");
     }
 }
 
@@ -77,10 +77,6 @@ void Loading::CreateUI()
     // Set random rotation in degrees and random scale
     sprite->SetRotation(Random() * 360.0f);
 
-    // Set random color and additive blending mode
-    sprite->SetColor(Color(Random(0.5f) + 0.5f, Random(0.5f) + 0.5f, Random(0.5f) + 0.5f));
-    sprite->SetBlendMode(BLEND_ADD);
-
 
     // Add as a child of the root UI element
     ui->GetRoot()->AddChild(sprite);
@@ -114,9 +110,9 @@ void Loading::CreateUI()
     SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
     // Use spline interpolation method
     colorAnimation->SetInterpolationMethod(IM_LINEAR);
-    colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
-    colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
-    colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
+    colorAnimation->SetKeyFrame(0.0f, Color(0.9, 0.9, 0.9));
+    colorAnimation->SetKeyFrame(1.0f, Color(0.7, 0.7, 0.7));
+    colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _status->SetObjectAnimation(animation);
@@ -153,9 +149,10 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
 	UnsubscribeFromEvent(E_UPDATE);
-	VariantMap data = GetEventDataMap();
-	data["Name"] = "Level";
-    SendEvent(MyEvents::E_SET_LEVEL, data);
+
+	// Forward event data to the next level
+    _data["Name"] = "Level";
+    SendEvent(MyEvents::E_SET_LEVEL, _data);
 }
 
 void Loading::CreateProgressBar()
@@ -175,9 +172,9 @@ void Loading::CreateProgressBar()
         SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
         // Use spline interpolation method
         colorAnimation->SetInterpolationMethod(IM_LINEAR);
-        colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
-        colorAnimation->SetKeyFrame(1.0f, Color::GRAY);
-        colorAnimation->SetKeyFrame(2.0f, Color::WHITE);
+        colorAnimation->SetKeyFrame(0.0f, Color(0.9, 0.9, 0.9));
+        colorAnimation->SetKeyFrame(1.0f, Color(0.7, 0.7, 0.7));
+        colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
         animation->AddAttributeAnimation("Color", colorAnimation);
 
         _loadingBar->SetObjectAnimation(animation);

@@ -1,4 +1,5 @@
 <material>
-    <technique name="Techniques/Diff.xml" quality="0" />
+    <technique name="Techniques/NoTexture.xml" quality="0" loddistance="20"  />
+    <technique name="Techniques/Diff.xml"      quality="0" loddistance="0" />
     <texture unit="diffuse" name="Textures/Box.png" />
 </material>

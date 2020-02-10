@@ -1,4 +1,4 @@
-uint count = 0;
+int count = 0;
 Node@ ground = null;
 Vector3 targetGroundScale = Vector3(40, 40, 40);
 
@@ -78,7 +78,7 @@ void UpdateBoxes()
 void CreateObject()
 {
     if (count > 40) {
-        log.Info("Box limit reached");
+        log.Info("Box limit reached, current count=" + String(count));
         return;
     }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/DestroyCube.xml");

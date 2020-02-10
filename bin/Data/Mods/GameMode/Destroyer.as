@@ -71,7 +71,7 @@ class Destroyer : ScriptObject
             SendEvent("PlaySound", data);
 
             data["Player"] = lastHitPlayerId;
-            //SendEvent("BoxDestroyed", data);
+            SendEvent("BoxDestroyed", data);
             SendEvent("BoxDropped", data);
 
             Burst();

@@ -4,6 +4,7 @@
     <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="depth" />
     <command type="scenepass" pass="depth" output="depth" />
     <command type="quad" tag="DOF" vs="SSAO" ps="SSAO" output="ssao" psdefines="OCCLUDE">
+        <texture unit="diffuse" name="Textures/random.jpg" />
         <texture unit="depth" name="depth" />
     </command>
     <command type="quad" tag="DOF" vs="SSAO" ps="SSAO" output="viewport">
@@ -11,5 +12,4 @@
         <texture unit="depth" name="ssao" />
     </command>
     <command type="clear" color="1 1 1 1" depth="1.0" output="depth" />
-    <command type="clear" color="1 1 1 1" depth="1.0" output="ssao" />
 </renderpath>

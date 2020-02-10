@@ -40,7 +40,6 @@ void BaseLevel::SubscribeToBaseEvents()
             ApplyPostProcessEffects();
         }
         else {
-            ApplyPostProcessEffects();
             URHO3D_LOGERROR("Invalid number of parameters");
         }
     });

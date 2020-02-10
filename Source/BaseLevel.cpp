@@ -40,6 +40,7 @@ void BaseLevel::SubscribeToBaseEvents()
             ApplyPostProcessEffects();
         }
         else {
+            ApplyPostProcessEffects();
             URHO3D_LOGERROR("Invalid number of parameters");
         }
     });
@@ -314,6 +315,9 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("Blur")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
         }
+        if (!effectRenderPath->IsAdded("SSAO")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
+        }
 
         effectRenderPath->SetEnabled("AutoExposure",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", false));
@@ -332,6 +336,7 @@ void BaseLevel::ApplyPostProcessEffects()
                             GAMMA_MAX_VALUE);
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
+        effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
         effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
         effectRenderPath->SetShaderParameter("BlurRadius",
                                              GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));

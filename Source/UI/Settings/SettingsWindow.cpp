@@ -181,6 +181,8 @@ void SettingsWindow::Create()
 
     // Refresh graphics settings shown in the settings window
     RefreshVideoOptions();
+
+    SubscribeToEvent(E_UIOPTION_CHANGED, URHO3D_HANDLER(SettingsWindow, HandleOptionChanged));
 }
 
 void SettingsWindow::SubscribeToEvents()
@@ -374,7 +376,6 @@ void SettingsWindow::CreateVideoTab()
     video_tab->AddChild(opt_fpslimit_);
     video_tab->AddChild(gamma_);
 
-    SubscribeToEvent(E_UIOPTION_CHANGED, URHO3D_HANDLER(SettingsWindow, HandleOptionChanged));
     SubscribeToEvent(btn_apply_, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleApply));
 }
 
@@ -933,6 +934,7 @@ void SettingsWindow::ApplyVideoOptions()
     GetSubsystem<ConfigManager>()->Set("video", "Monitor", opt_monitor_->GetOptionIndex());
 
     SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
+
 }
 
 void SettingsWindow::RefreshGraphicsOptions()

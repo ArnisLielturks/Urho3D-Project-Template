@@ -6,14 +6,13 @@
 
 varying vec2 vTexCoord;
 varying vec2 vScreenPos;
-varying vec4 vWorldPos;
-varying float v_depth;
 
 #ifdef COMPILEPS
 uniform vec2 cBlurDir;
 uniform float cBlurRadius;
 uniform float cBlurSigma;
-uniform vec2 cBlurHInvSize;
+uniform int cScreenWidth;
+uniform int cScreenHeight;
 #endif
 
 void VS()
@@ -23,17 +22,16 @@ void VS()
     gl_Position = GetClipPos(worldPos);
     vTexCoord = GetQuadTexCoord(gl_Position);
     vScreenPos = GetScreenPosPreDiv(gl_Position);
-    v_depth = -(inverse(cViewInv * cViewProj) * gl_Position).z;
 }
 
 #ifdef COMPILEPS
 vec3 normal_from_depth(float depth, vec2 texcoords) {
 
-    const vec2 offset1 = vec2(0.0,0.001);
-    const vec2 offset2 = vec2(0.001,0.0);
+    const vec2 offset1 = vec2(0.0, 0.01);
+    const vec2 offset2 = vec2(0.01, 0.0);
 
-    float depth1 = DecodeDepth(texture2D(sDepthBuffer, vScreenPos + offset1).rgb);
-    float depth2 = DecodeDepth(texture2D(sDepthBuffer, vScreenPos + offset2).rgb);
+    float depth1 = DecodeDepth(texture2D(sDepthBuffer, vTexCoord + offset1).rgb);
+    float depth2 = DecodeDepth(texture2D(sDepthBuffer, vTexCoord + offset2).rgb);
 
     vec3 p1 = vec3(offset1, depth1 - depth);
     vec3 p2 = vec3(offset2, depth2 - depth);
@@ -65,9 +63,12 @@ void PS()
     const float base = 0.2;
 
     const float area = 0.75;
-    const float falloff = 0.00004;
+    const float falloff = 0.000003;
+    float textureSize = 4;
 
-    const float radius = 0.00001;
+    vec2 noiseFactor = vec2(cScreenWidth / textureSize, cScreenHeight / textureSize);
+
+    const float radius = 0.0005;
 
     const int samples = 16;
     vec3 sample_sphere[samples] = vec3[samples](
@@ -81,13 +82,19 @@ void PS()
         vec3( 0.0352,-0.0631, 0.5460), vec3(-0.4776, 0.2847,-0.0271)
     );
 
-    vec3 random = normalize( texture2D(sDiffMap, vTexCoord.xy).rgb );
+    for (int i = 0; i < samples; i++) {
+        float factor = 1.0f;
+        sample_sphere[i].x *= factor;
+        sample_sphere[i].y *= factor;
+        sample_sphere[i].z *= factor;
+    }
 
-//    float depth = texture2D(sDiffMap, vTexCoord.xy).r;
-    float depth = DecodeDepth(texture2D(sDepthBuffer, vScreenPos).rgb);
-//
-    vec3 position = vec3(vTexCoord.xy, depth);
-    vec3 normal = normal_from_depth(depth, vTexCoord.xy);
+    vec3 random = normalize( texture2D(sDiffMap, vTexCoord * noiseFactor).rgb);
+
+    float depth = DecodeDepth(texture2D(sDepthBuffer, vTexCoord).rgb);
+
+    vec3 position = vec3(vTexCoord, depth);
+    vec3 normal = normal_from_depth(depth, vTexCoord);
 
     float radius_depth = radius/depth;
     float occlusion = 0.0;
@@ -103,16 +110,26 @@ void PS()
     }
 
     float ao = 1.0 - total_strength * occlusion * (1.0 / samples);
+
+
     gl_FragColor.r = saturateFloat(ao + base);
     gl_FragColor.g = gl_FragColor.r;
     gl_FragColor.b = gl_FragColor.r;
-#else
+
+#endif
+
+#ifdef BLUR
+    gl_FragColor = GaussianBlur(1, cBlurDir, vec2(1.0, 1.0) * cBlurRadius, cBlurSigma, sDiffMap, vTexCoord);
+#endif
+
+#ifdef OUTPUT
+
 //    if (vTexCoord.x < 0.33) {
-        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord.xy).rgb;
+        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
 //    } else if (vTexCoord.x < 0.666) {
-//        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord.xy).rgb;
-//    } else {
-        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord.xy).rgb * texture2D(sDepthBuffer, vTexCoord.xy).rgb;
+        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
+//////////    } else {
+        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
 //    }
 #endif
 

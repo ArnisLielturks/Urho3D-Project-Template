@@ -2,6 +2,7 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Math/MathDefs.h>
 #include "Generator.h"
 #include "../Global.h"
 #include "PerlinNoise.h"
@@ -102,12 +103,14 @@ void Generator::SubscribeToEvents()
         image->SetPixel(0, 0, Color(0, 0, 0, 0));
         image->SavePNG("Data/Textures/Blank.png");
 
+        int size = 2;
         Color color(0.1, 0.1, 0.1, 1.0);
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() > 1) {
             color.r_ = ToFloat(params[1]);
             color.g_ = color.r_;
             color.b_ = color.r_;
+            size = Floor(color.r_);
         }
         if (params.Size() > 2) {
             color.a_ = ToFloat(params[2]);
@@ -124,6 +127,20 @@ void Generator::SubscribeToEvents()
             }
         }
         image->SavePNG("Data/Textures/Button.png");
+
+        image->SetSize(size, size, 4);
+        SetRandomSeed(Time::GetSystemTime());
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                float factor = 1.0;
+                Color color(Random(0.0f, factor), Random(0.0f, factor), Random(0.0f, factor), 1.0);
+//                color.r_ += factor / 2.0f;
+//                color.g_ += factor / 2.0f;
+//                color.b_ += factor / 2.0f;
+                image->SetPixel(i, j, color);
+            }
+        }
+        image->SavePNG("Data/Textures/Random.png");
 
     });
 }

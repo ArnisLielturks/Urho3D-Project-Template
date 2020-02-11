@@ -1,13 +1,41 @@
 <renderpath>
-    <rendertarget name="depth" sizedivisor="1 1" format="lineardepth" />
-    <rendertarget name="ssao" sizedivisor="1 1" format="rgb" filter="true" />
+    <rendertarget name="depth" tag="SSAO" sizedivisor="1 1" format="lineardepth" />
+    <rendertarget name="ssao" tag="SSAO" sizedivisor="1 1" format="rgb" filter="true" />
+    <rendertarget name="blurh" tag="SSAO" sizedivisor="2 2" format="rgb" filter="false" />
+    <rendertarget name="blurv" tag="SSAO" sizedivisor="2 2" format="rgb" filter="false" />
     <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="depth" />
     <command type="scenepass" pass="depth" output="depth" />
-    <command type="quad" tag="DOF" vs="SSAO" ps="SSAO" output="ssao" psdefines="OCCLUDE">
-        <texture unit="diffuse" name="Textures/random.jpg" />
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OCCLUDE" output="ssao">
+        <parameter name="ScreenWidth" value="1280" />
+        <parameter name="ScreenHeight" value="720" />
+        <texture unit="diffuse" name="Textures/Noise.png" />
         <texture unit="depth" name="depth" />
     </command>
-    <command type="quad" tag="DOF" vs="SSAO" ps="SSAO" output="viewport">
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLUR" output="blurh">
+        <parameter name="BlurDir" value="1.0 0.0" />
+        <parameter name="BlurRadius" value="1.0" />
+        <parameter name="BlurSigma" value="1.0" />
+        <texture unit="diffuse" name="ssao" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLUR" output="blurv">
+        <parameter name="BlurDir" value="0.0 1.0" />
+        <parameter name="BlurRadius" value="1.0" />
+        <parameter name="BlurSigma" value="1.0" />
+        <texture unit="diffuse" name="blurh" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLUR" output="blurh">
+        <parameter name="BlurDir" value="1.0 0.0" />
+        <parameter name="BlurRadius" value="1.0" />
+        <parameter name="BlurSigma" value="1.0" />
+        <texture unit="diffuse" name="blurv" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLUR" output="ssao">
+        <parameter name="BlurDir" value="0.0 1.0" />
+        <parameter name="BlurRadius" value="1.0" />
+        <parameter name="BlurSigma" value="1.0" />
+        <texture unit="diffuse" name="blurh" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OUTPUT" output="viewport">
         <texture unit="diffuse" name="viewport" />
         <texture unit="depth" name="ssao" />
     </command>

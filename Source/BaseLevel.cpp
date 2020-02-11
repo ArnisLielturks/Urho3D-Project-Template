@@ -46,6 +46,18 @@ void BaseLevel::SubscribeToBaseEvents()
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
         ApplyPostProcessEffects();
     });
+
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        auto cache = GetSubsystem<ResourceCache>();
+        for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
+            auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
+            SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
+            effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+            effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
+
+            viewport->SetRenderPath(effectRenderPath);
+        }
+    });
 }
 
 void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
@@ -341,6 +353,9 @@ void BaseLevel::ApplyPostProcessEffects()
                                              GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));
         effectRenderPath->SetShaderParameter("BlurSigma",
                                              GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurSigma", 2.0f));
+
+        effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+        effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
 
         viewport->SetRenderPath(effectRenderPath);
     }

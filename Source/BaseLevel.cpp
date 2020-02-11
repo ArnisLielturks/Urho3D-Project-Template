@@ -323,9 +323,6 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("ColorCorrection")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
         }
-        if (!effectRenderPath->IsAdded("Blur")) {
-            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
-        }
         if (!effectRenderPath->IsAdded("SSAO")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
@@ -348,11 +345,6 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
         effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
-        effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
-        effectRenderPath->SetShaderParameter("BlurRadius",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));
-        effectRenderPath->SetShaderParameter("BlurSigma",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurSigma", 2.0f));
 
         effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
         effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());

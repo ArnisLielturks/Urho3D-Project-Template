@@ -42,33 +42,29 @@ vec3 normal_from_depth(float depth, vec2 texcoords) {
     return normalize(normal);
 }
 
-float saturateFloat(float value) {
-    return clamp(value, 0.0, 1.0);
-}
-
 vec2 saturateVec2(vec2 value) {
-    return vec2(saturateFloat(value.x), saturateFloat(value.y));
+    return vec2(clamp(0.0, 1.0, value.x), clamp(0.0, 1.0, value.y));
 }
 
 vec3 saturateVec3(vec3 value) {
-    return vec3(saturateFloat(value.x), saturateFloat(value.y), saturateFloat(value.z));
+    return vec3(clamp(0.0, 1.0, value.x), clamp(0.0, 1.0, value.y), clamp(0.0, 1.0, value.z));
 }
 #endif
 
 void PS()
 {
+    float textureSize = 128;
 #ifdef OCCLUDE
 
     const float total_strength = 1.0;
     const float base = 0.2;
 
     const float area = 0.75;
-    const float falloff = 0.000003;
-    float textureSize = 4;
+    const float falloff = 0.000001;
 
     vec2 noiseFactor = vec2(cScreenWidth / textureSize, cScreenHeight / textureSize);
 
-    const float radius = 0.0005;
+    const float radius = 0.0006;
 
     const int samples = 16;
     vec3 sample_sphere[samples] = vec3[samples](
@@ -83,25 +79,27 @@ void PS()
     );
 
     for (int i = 0; i < samples; i++) {
-        float factor = 1.0f;
-        sample_sphere[i].x *= factor;
-        sample_sphere[i].y *= factor;
-        sample_sphere[i].z *= factor;
+//        sample_sphere[i].x = sample_sphere[i].x * 0.001;
+//        sample_sphere[i].y = sample_sphere[i].x * 0.001;
+//        sample_sphere[i].z = sample_sphere[i].x * 0.001;
     }
 
-    vec3 random = normalize( texture2D(sDiffMap, vTexCoord * noiseFactor).rgb);
+    vec3 random = normalize(texture2D(sDiffMap, vTexCoord * noiseFactor).rgb);
+//    vec3 random = vec3(Noise(vTexCoord), Noise(vTexCoord * noiseFactor.x));
+    random.z = sign(random.z);
 
     float depth = DecodeDepth(texture2D(sDepthBuffer, vTexCoord).rgb);
 
     vec3 position = vec3(vTexCoord, depth);
     vec3 normal = normal_from_depth(depth, vTexCoord);
 
-    float radius_depth = radius/depth;
+    float radius_depth = radius / depth;
     float occlusion = 0.0;
+
     for (int i = 0; i < samples; i++) {
 
         vec3 ray = radius_depth * reflect(sample_sphere[i], random);
-        vec3 hemi_ray = position + sign(dot(ray,normal)) * ray;
+        vec3 hemi_ray = position + sign(dot(ray, normal)) * ray;
 
         float occ_depth = texture2D(sDepthBuffer, saturateVec2(hemi_ray.xy)).r;
         float difference = depth - occ_depth;
@@ -111,15 +109,43 @@ void PS()
 
     float ao = 1.0 - total_strength * occlusion * (1.0 / samples);
 
-
-    gl_FragColor.r = saturateFloat(ao + base);
+    gl_FragColor.r = clamp(0.0, 1.0, ao + base);
     gl_FragColor.g = gl_FragColor.r;
     gl_FragColor.b = gl_FragColor.r;
 
 #endif
 
-#ifdef BLUR
-    gl_FragColor = GaussianBlur(1, cBlurDir, vec2(1.0, 1.0) * cBlurRadius, cBlurSigma, sDiffMap, vTexCoord);
+    int blurRadius = 8;
+#ifdef BLURH
+//    gl_FragColor = GaussianBlur(9, vec2(1.0, 0.0), vec2(1.0, 0.0) * 0.005, 2.0, sDiffMap, vTexCoord);
+//    gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
+    float result = 0.0;
+    for (int x = -blurRadius; x < blurRadius; ++x)
+    {
+        vec2 offset = vec2(float(x) * 0.0001, 0.0) * blurRadius;
+        result += texture2D(sDiffMap, vTexCoord + offset).r;
+    }
+
+    result = result / float(blurRadius * 2);
+    gl_FragColor.r = result;
+    gl_FragColor.g = result;
+    gl_FragColor.b = result;
+#endif
+
+#ifdef BLURV
+//        gl_FragColor = GaussianBlur(9, vec2(0.0, 1.0), vec2(0.0, 1.0) * 0.005, 2.0, sDiffMap, vTexCoord);
+//    gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
+    float result = 0.0;
+    for (int y = -blurRadius; y < blurRadius; ++y)
+    {
+        vec2 offset = vec2(0.0, float(y) * 0.0001) * blurRadius;
+        result += texture2D(sDiffMap, vTexCoord + offset).r;
+    }
+
+    result = result / float(blurRadius * 2);
+    gl_FragColor.r = result;
+    gl_FragColor.g = result;
+    gl_FragColor.b = result;
 #endif
 
 #ifdef OUTPUT
@@ -127,8 +153,10 @@ void PS()
 //    if (vTexCoord.x < 0.33) {
         gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
 //    } else if (vTexCoord.x < 0.666) {
-        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
-//////////    } else {
+//    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
+//        color
+//        gl_FragColor.rgb = strength;
+//////////////////    } else {
         gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
 //    }
 #endif

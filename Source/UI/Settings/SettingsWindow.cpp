@@ -1044,7 +1044,7 @@ void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& event
 
         engine->SetMaxFps(fps_limit);
         GetSubsystem<ConfigManager>()->Set("video", "ResizableWindow", opt_resizable_->GetOptionValue() ? true : false);
-        GetSubsystem<ConfigManager>()->Set("engine", "FPSLimit", opt_monitor_->GetValue());
+        GetSubsystem<ConfigManager>()->Set("engine", "FPSLimit", fps_limit);
         GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", gamma_->GetValue());
 
         SendEvent("postprocess");

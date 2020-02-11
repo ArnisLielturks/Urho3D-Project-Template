@@ -4,6 +4,6 @@
     <address coord="u" mode="wrap" />
     <address coord="v" mode="wrap" />
     <address coord="w" mode="wrap" />
-    <filter mode="nearest" />
+    <filter mode="bilinear" />
 </texture>
 

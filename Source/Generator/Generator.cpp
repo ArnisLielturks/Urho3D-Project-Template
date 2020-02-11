@@ -115,18 +115,11 @@ void Generator::SubscribeToEvents()
         if (params.Size() > 2) {
             color.a_ = ToFloat(params[2]);
         }
-        image->SetPixel(0, 0, color);
-        image->SavePNG("Data/Textures/Gray.png");
+//        image->SetPixel(0, 0, color);
+//        image->SavePNG("Data/Textures/Gray.png");
 
 
-        image->SetSize(12, 1, 4);
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 4; j++) {
-                Color base(0.4, 0.4, 0.4);
-                image->SetPixel(i * 4 + j, 0, base - Color(i * 0.2, i * 0.2, i * 0.2, 0.0));
-            }
-        }
-        image->SavePNG("Data/Textures/Button.png");
+//
 
         image->SetSize(size, size, 4);
         SetRandomSeed(Time::GetSystemTime());
@@ -140,7 +133,7 @@ void Generator::SubscribeToEvents()
                 image->SetPixel(i, j, color);
             }
         }
-        image->SavePNG("Data/Textures/Random.png");
+        image->SavePNG("Data/Textures/Noise.png");
 
     });
 }

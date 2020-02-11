@@ -110,7 +110,7 @@ void Generator::SubscribeToEvents()
             color.r_ = ToFloat(params[1]);
             color.g_ = color.r_;
             color.b_ = color.r_;
-            size = Floor(color.r_);
+            size = ToInt(params[1]);
         }
         if (params.Size() > 2) {
             color.a_ = ToFloat(params[2]);

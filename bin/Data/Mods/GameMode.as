@@ -82,7 +82,7 @@ void CreateObject()
         return;
     }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/DestroyCube.xml");
-    scene.InstantiateXML(xml.root, Vector3(Random(30.0f) - 15.0f, 2.0f, Random(30.0f) - 15.0f), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(30.0f) - 15.0f, 50.0f, Random(30.0f) - 15.0f), Quaternion());
     count++;
 }
 /**

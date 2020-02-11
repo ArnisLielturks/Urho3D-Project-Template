@@ -1,44 +1,29 @@
 <renderpath>
     <rendertarget name="depth" tag="SSAO" sizedivisor="1 1" format="lineardepth" />
     <rendertarget name="ssao" tag="SSAO" sizedivisor="1 1" format="rgb" filter="true" />
-    <rendertarget name="blurH" tag="SSAO" sizedivisor="1 1" format="rgb" filter="true" />
-    <rendertarget name="blurV" tag="SSAO" sizedivisor="1 1" format="rgb" filter="true" />
+    <rendertarget name="blurH" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
+    <rendertarget name="blurV" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
     <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="depth" />
     <command type="scenepass" pass="depth" output="depth" />
     <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OCCLUDE" output="ssao">
         <parameter name="ScreenWidth" value="1280" />
         <parameter name="ScreenHeight" value="720" />
+        <parameter name="Samples" />
         <texture unit="diffuse" name="Textures/Noise.png" />
         <texture unit="depth" name="depth" />
     </command>
     <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURH" output="blurH">
-        <texture unit="diffuse" name="ssao">
-            <address coord="u" mode="clamp" />
-            <address coord="v" mode="clamp" />
-            <address coord="w" mode="clamp" />
-        </texture>
+        <texture unit="diffuse" name="ssao"/>
     </command>
     <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURV" output="ssao">
-        <texture unit="diffuse" name="blurH">
-            <address coord="u" mode="clamp" />
-            <address coord="v" mode="clamp" />
-            <address coord="w" mode="clamp" />
-        </texture>
+        <texture unit="diffuse" name="blurH"/>
     </command>
-<!--    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURH" output="blurH">-->
-<!--        <texture unit="diffuse" name="blurV">-->
-<!--            <address coord="u" mode="clamp" />-->
-<!--            <address coord="v" mode="clamp" />-->
-<!--            <address coord="w" mode="clamp" />-->
-<!--        </texture>-->
-<!--    </command>-->
-<!--    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURV" output="ssao">-->
-<!--        <texture unit="diffuse" name="blurH">-->
-<!--            <address coord="u" mode="clamp" />-->
-<!--            <address coord="v" mode="clamp" />-->
-<!--            <address coord="w" mode="clamp" />-->
-<!--        </texture>-->
-<!--    </command>-->
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURH" output="blurH">
+        <texture unit="diffuse" name="ssao"/>
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURV" output="ssao">
+        <texture unit="diffuse" name="blurH"/>
+    </command>
     <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OUTPUT" output="viewport">
         <texture unit="diffuse" name="viewport" />
         <texture unit="depth" name="ssao" />

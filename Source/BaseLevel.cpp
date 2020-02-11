@@ -7,6 +7,7 @@
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Math/MathDefs.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
@@ -32,15 +33,24 @@ void BaseLevel::SubscribeToBaseEvents()
     // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
     SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() == 2) {
-            float value = ToFloat(params[1]);
-            GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", value);
-            GetSubsystem<ConfigManager>()->Save(true);
-            ApplyPostProcessEffects();
-        }
-        else {
-            URHO3D_LOGERROR("Invalid number of parameters");
+//        StringVector params = eventData["Parameters"].GetStringVector();
+//        if (params.Size() == 2) {
+//            float value = ToFloat(params[1]);
+//            GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", value);
+//            GetSubsystem<ConfigManager>()->Save(true);
+//            ApplyPostProcessEffects();
+//        }
+//        else {
+//            URHO3D_LOGERROR("Invalid number of parameters");
+//        }
+        auto cache = GetSubsystem<ResourceCache>();
+        for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
+            auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
+            SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
+            effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+            effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
+
+            viewport->SetRenderPath(effectRenderPath);
         }
     });
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
@@ -325,6 +335,11 @@ void BaseLevel::ApplyPostProcessEffects()
         }
         if (!effectRenderPath->IsAdded("SSAO")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
+            PODVector<Vector3> samples;
+            for (int i = 0; i < 32; i++) {
+                samples.Push(Vector3(Random(0.0f, 1.0f), Random(0.0f, 1.0f), Random(0.0f, 1.0f)));
+            }
+//            effectRenderPath->SetShaderParameter("Samples", samples);
         }
 
         effectRenderPath->SetEnabled("AutoExposure",

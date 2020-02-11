@@ -44,11 +44,11 @@ vec3 normal_from_depth(float depth, vec2 texcoords) {
 }
 
 vec2 saturateVec2(vec2 value) {
-    return vec2(clamp(0.0, 1.0, value.x), clamp(0.0, 1.0, value.y));
+    return vec2(clamp(value.x, 0.0, 1.0), clamp(value.y, 0.0, 1.0));
 }
 
 vec3 saturateVec3(vec3 value) {
-    return vec3(clamp(0.0, 1.0, value.x), clamp(0.0, 1.0, value.y), clamp(0.0, 1.0, value.z));
+    return vec3(clamp(value.x, 0.0, 1.0), clamp(value.y, 0.0, 1.0), clamp(value.z, 0.0, 1.0));
 }
 #endif
 
@@ -104,13 +104,13 @@ void PS()
 
     float ao = 1.0 - total_strength * occlusion * (1.0 / samples);
 
-    gl_FragColor.r = clamp(0.0, 1.0, ao + base);
+    gl_FragColor.r = clamp(ao + base, 0.0, 1.0);
     gl_FragColor.g = gl_FragColor.r;
     gl_FragColor.b = gl_FragColor.r;
 
 #endif
 
-    const float blursize = 1.0/512.0;
+    const float blursize = 1.0/256.0;
 #ifdef BLURV
     vec4 sum = vec4(0.0);
     sum += texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y - 4.0 * blursize)) * 0.05;
@@ -142,8 +142,10 @@ void PS()
 #ifdef OUTPUT
 
     gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
-//    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
+    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
     gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
 #endif
+
+//    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 
 }

@@ -11,8 +11,9 @@ static const unsigned CTRL_SPRINT = 1 << 7; //64
 static const unsigned CTRL_UP = 1 << 8; //128
 
 static const unsigned COLLISION_MASK_PLAYER = 1 << 0; //1
-static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2 
+static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2
 static const unsigned COLLISION_MASK_OBSTACLES = 1 << 2; //4
+static const unsigned COLLISION_MASK_GROUND = 1 << 3; //8
 
 static const String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";
 

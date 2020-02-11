@@ -61,7 +61,7 @@ void CreateCheckpoint()
 {
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
     float scale = targetGroundScale.x * 0.5;
-    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 0, Random(scale * 2) - scale), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 2.0, Random(scale * 2) - scale), Quaternion());
 }
 
 void UpdateBoxes()

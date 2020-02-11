@@ -40,6 +40,9 @@ void NewGameSettingsWindow::Create()
     _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
     _baseWindow->BringToFront();
 
+    auto cache = GetSubsystem<ResourceCache>();
+    _baseWindow->SetMaterial(cache->GetResource<Material>("Materials/Player.xml"));
+
     CreateLevelSelection();
 }
 

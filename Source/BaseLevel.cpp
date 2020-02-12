@@ -53,6 +53,21 @@ void BaseLevel::SubscribeToBaseEvents()
             viewport->SetRenderPath(effectRenderPath);
         }
     });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "clip", MyEvents::ConsoleCommandAdd::P_EVENT, "clip", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change camera far/near clip", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
+    SubscribeToEvent("clip", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() == 3) {
+            float near = ToFloat(params[1]);
+            float far = ToFloat(params[2]);
+            for (int i = 0; i < _cameras.Size(); i++) {
+                _cameras[i]->GetComponent<Camera>()->SetNearClip(near);
+                _cameras[i]->GetComponent<Camera>()->SetFarClip(far);
+                URHO3D_LOGINFOF("Updating camera %d, near=%f, far=%f", i, near, far);
+            }
+        }
+    });
+
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
         ApplyPostProcessEffects();
     });

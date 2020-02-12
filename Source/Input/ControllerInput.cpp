@@ -259,7 +259,7 @@ void ControllerInput::UpdatePitch(float pitch, int index)
 	}
 	const float MOUSE_SENSITIVITY = 0.1f;
 	_controls[index].pitch_ += MOUSE_SENSITIVITY * pitch;
-	_controls[index].pitch_ = Clamp(_controls[index].pitch_, -90.0f, 90.0f);
+	_controls[index].pitch_ = Clamp(_controls[index].pitch_, -89.0f, 89.0f);
 }
 
 void ControllerInput::CreateController(int controllerIndex)

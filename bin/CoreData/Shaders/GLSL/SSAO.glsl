@@ -12,9 +12,6 @@ varying vec4 vWorldPos;
 varying float vDepth;
 
 #ifdef COMPILEPS
-uniform vec2 cBlurDir;
-uniform float cBlurRadius;
-uniform float cBlurSigma;
 uniform int cScreenWidth;
 uniform int cScreenHeight;
 uniform vec2 cBlurHInvSize;
@@ -72,15 +69,15 @@ void PS()
 
 #ifdef OCCLUDE
 
-    const float total_strength = 2.0;
+    const float total_strength = 1.0;
     const float base = 0.2;
 
-    const float area = 1.75;
-    const float falloff = 0.01;
+    const float area = 1.5;
+    const float falloff = 0.1;
 
     vec2 noiseFactor = vec2(cScreenWidth / textureSize, cScreenHeight / textureSize);
 
-    const float radius = 0.6;
+    const float radius = 1.0;
 
     const int samples = 16;
     vec3 sample_sphere[samples] = vec3[samples](
@@ -103,12 +100,7 @@ void PS()
     float occlusion = 0.0;
 
     for (int i = 0; i < samples; i++) {
-
         vec3 ray = radius_depth * reflect(sample_sphere[i], random);
-//        gl_FragColor.r = originalDepth / 100.0;
-//        gl_FragColor.g = 0;
-//        gl_FragColor.b = 0;
-//        return;
         vec3 hemi_ray = position + sign(dot(ray, normal)) * ray;
 
         float occ_depth = DecodeDepth(texture2D(sDepthBuffer, hemi_ray.xy).rgb) * (cFarClipPS - cNearClipPS);
@@ -124,34 +116,23 @@ void PS()
     gl_FragColor.b = gl_FragColor.r;
 
 #endif
-
-    const int blurRadius = 12;
-    const float[12] weights = float[12](
-        100.0,
-        70.0,
-        50.0,
-        40.0,
-        30.0,
-        25.0,
-        20.0,
-        18.0,
-        17.0,
-        16.0,
-        15.0,
-        14.0
+    const int blurRadius = 16;
+    float blurWeights[blurRadius] = float[blurRadius](
+        100, 80, 60, 50,
+        45, 40, 35, 30,
+        25, 20, 15, 10,
+        5, 4, 3, 2
     );
-
     float total = 0;
     for (int i = 0; i < blurRadius; i++) {
-        total += weights[i];
+        total += blurWeights[i];
     }
 
     float maxDepth = 0.2;
     vec2 pixelSize = vec2(1.0, 1.0) / vec2(cScreenWidth, cScreenHeight);
 
-#ifdef BLURV
-
-    vec2 offset = vec2(0.0, 1.0) * pixelSize.y;
+#if defined(BLURV) || defined(BLURH)
+    vec2 offset = vec2(0.0, 1.0) * pixelSize.y * 2;
     float up = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, vTexCoord + offset).rgb));
     float down = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, vTexCoord - offset).rgb));
 
@@ -160,19 +141,16 @@ void PS()
         || abs(originalDepth - down) >= maxDepth
     ) {
         gl_FragColor = texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y));
-//        gl_FragColor = vec4(0.5, 0.5, 0, 1);
         return;
     }
-#endif
 
-#ifdef BLURH
-    vec2 offset = vec2(1.0, 0.0) * pixelSize.x;
+    offset = vec2(1.0, 0.0) * pixelSize.x * 2;
     float right = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, vTexCoord + offset).rgb));
     float left = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, vTexCoord - offset).rgb));
 
     if (
-    abs(originalDepth - right) >= maxDepth
-    || abs(originalDepth - left) >= maxDepth
+        abs(originalDepth - right) >= maxDepth
+        || abs(originalDepth - left) >= maxDepth
     ) {
         gl_FragColor = texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y));
         return;
@@ -181,9 +159,9 @@ void PS()
 
 #ifdef BLURV
     vec4 sum = vec4(0.0);
-    sum += texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y)) * (weights[0] / total);
+    sum += texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y)) * (blurWeights[0] / total);
     for (int i = 1; i < blurRadius; i++) {
-        float weight =  weights[i] / total / 2.0;
+        float weight =  blurWeights[i] / total / 2.0;
         sum += texture2D(sNormalMap, vec2(vTexCoord.x, vTexCoord.y + i * pixelSize.y)) * weight;
         sum += texture2D(sNormalMap, vec2(vTexCoord.x, vTexCoord.y - i * pixelSize.y)) * weight;
     }
@@ -192,9 +170,9 @@ void PS()
 
 #ifdef BLURH
     vec4 sum = vec4(0.0);
-    sum += texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y)) * (weights[0] / total);
+    sum += texture2D(sDiffMap, vec2(vTexCoord.x, vTexCoord.y)) * (blurWeights[0] / total);
     for (int i = 1; i < blurRadius; i++) {
-        float weight =  weights[i] / total / 2.0;
+        float weight =  blurWeights[i] / total / 2.0;
         sum += texture2D(sNormalMap, vec2(vTexCoord.x + i * pixelSize.x, vTexCoord.y)) * weight;
         sum += texture2D(sNormalMap, vec2(vTexCoord.x - i * pixelSize.x, vTexCoord.y)) * weight;
     }
@@ -202,13 +180,13 @@ void PS()
 #endif
 
 #ifdef OUTPUT
-    if (vTexCoord.x < .33) {
-        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
-    } else if (vTexCoord.x < .66) {
+//    if (vTexCoord.x < .33) {
+//        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
+//    } else if (vTexCoord.x < .66) {
         gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
-    } else {
-        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
-    }
+//    } else {
+//        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
+//    }
 //    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
 
 #endif

@@ -77,5 +77,3 @@ workflows:
     - build_android
     - build_linux
     - build_windows
-    - build_linux_no_scripts
-    - build_windows_no_scripts

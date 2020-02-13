@@ -69,15 +69,15 @@ void PS()
 
 #ifdef OCCLUDE
 
-    const float total_strength = 1.0;
+    const float total_strength = 1.5;
     const float base = 0.2;
 
-    const float area = 1.5;
-    const float falloff = 0.1;
+    const float area = 1.0;
+    const float falloff = 0.01;
 
     vec2 noiseFactor = vec2(cScreenWidth / textureSize, cScreenHeight / textureSize);
 
-    const float radius = 1.0;
+    const float radius = 0.60;
 
     const int samples = 16;
     vec3 sample_sphere[samples] = vec3[samples](
@@ -103,7 +103,7 @@ void PS()
         vec3 ray = radius_depth * reflect(sample_sphere[i], random);
         vec3 hemi_ray = position + sign(dot(ray, normal)) * ray;
 
-        float occ_depth = DecodeDepth(texture2D(sDepthBuffer, hemi_ray.xy).rgb) * (cFarClipPS - cNearClipPS);
+        float occ_depth = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, hemi_ray.xy).rgb));
         float difference = originalDepth - occ_depth;
 
         occlusion += step(falloff, difference) * (1.0 - smoothstep(falloff, area, difference));
@@ -117,7 +117,7 @@ void PS()
 
 #endif
     const int blurRadius = 16;
-    float blurWeights[blurRadius] = float[blurRadius](
+    float blurWeights[16] = float[16](
         100, 80, 60, 50,
         45, 40, 35, 30,
         25, 20, 15, 10,
@@ -128,7 +128,7 @@ void PS()
         total += blurWeights[i];
     }
 
-    float maxDepth = 0.2;
+    float maxDepth = 0.5;
     vec2 pixelSize = vec2(1.0, 1.0) / vec2(cScreenWidth, cScreenHeight);
 
 #if defined(BLURV) || defined(BLURH)

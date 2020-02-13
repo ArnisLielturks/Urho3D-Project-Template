@@ -350,11 +350,6 @@ void BaseLevel::ApplyPostProcessEffects()
         }
         if (!effectRenderPath->IsAdded("SSAO")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
-            PODVector<Vector3> samples;
-            for (int i = 0; i < 32; i++) {
-                samples.Push(Vector3(Random(0.0f, 1.0f), Random(0.0f, 1.0f), Random(0.0f, 1.0f)));
-            }
-//            effectRenderPath->SetShaderParameter("Samples", samples);
         }
 
         effectRenderPath->SetEnabled("AutoExposure",

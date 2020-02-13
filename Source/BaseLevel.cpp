@@ -33,24 +33,15 @@ void BaseLevel::SubscribeToBaseEvents()
     // How to use lambda (anonymous) functions
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
     SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
-//        StringVector params = eventData["Parameters"].GetStringVector();
-//        if (params.Size() == 2) {
-//            float value = ToFloat(params[1]);
-//            GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", value);
-//            GetSubsystem<ConfigManager>()->Save(true);
-//            ApplyPostProcessEffects();
-//        }
-//        else {
-//            URHO3D_LOGERROR("Invalid number of parameters");
-//        }
-        auto cache = GetSubsystem<ResourceCache>();
-        for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
-            auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
-            SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
-            effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
-            effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
-
-            viewport->SetRenderPath(effectRenderPath);
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() == 2) {
+            float value = ToFloat(params[1]);
+            GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", value);
+            GetSubsystem<ConfigManager>()->Save(true);
+            ApplyPostProcessEffects();
+        }
+        else {
+            URHO3D_LOGERROR("Invalid number of parameters");
         }
     });
 

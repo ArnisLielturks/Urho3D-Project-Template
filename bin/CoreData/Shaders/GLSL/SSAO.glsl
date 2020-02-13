@@ -180,15 +180,7 @@ void PS()
 #endif
 
 #ifdef OUTPUT
-//    if (vTexCoord.x < .33) {
-//        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
-//    } else if (vTexCoord.x < .66) {
         gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
-//    } else {
-//        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
-//    }
-//    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
-
 #endif
 
 }

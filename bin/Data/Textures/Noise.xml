@@ -1,0 +1,9 @@
+<texture>
+    <mipmap enable="false" />
+    <quality low="0" />
+    <address coord="u" mode="mirror" />
+    <address coord="v" mode="mirror" />
+    <address coord="w" mode="mirror" />
+    <filter mode="nearest" />
+</texture>
+

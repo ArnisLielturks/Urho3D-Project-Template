@@ -7,6 +7,7 @@
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Math/MathDefs.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
@@ -43,8 +44,35 @@ void BaseLevel::SubscribeToBaseEvents()
             URHO3D_LOGERROR("Invalid number of parameters");
         }
     });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "clip", MyEvents::ConsoleCommandAdd::P_EVENT, "clip", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change camera far/near clip", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
+    SubscribeToEvent("clip", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() == 3) {
+            float near = ToFloat(params[1]);
+            float far = ToFloat(params[2]);
+            for (int i = 0; i < _cameras.Size(); i++) {
+                _cameras[i]->GetComponent<Camera>()->SetNearClip(near);
+                _cameras[i]->GetComponent<Camera>()->SetFarClip(far);
+                URHO3D_LOGINFOF("Updating camera %d, near=%f, far=%f", i, near, far);
+            }
+        }
+    });
+
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
         ApplyPostProcessEffects();
+    });
+
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        auto cache = GetSubsystem<ResourceCache>();
+        for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
+            auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
+            SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
+            effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+            effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
+
+            viewport->SetRenderPath(effectRenderPath);
+        }
     });
 }
 
@@ -311,8 +339,8 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("ColorCorrection")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
         }
-        if (!effectRenderPath->IsAdded("Blur")) {
-            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
+        if (!effectRenderPath->IsAdded("SSAO")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
 
         effectRenderPath->SetEnabled("AutoExposure",
@@ -332,11 +360,10 @@ void BaseLevel::ApplyPostProcessEffects()
                             GAMMA_MAX_VALUE);
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
-        effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
-        effectRenderPath->SetShaderParameter("BlurRadius",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));
-        effectRenderPath->SetShaderParameter("BlurSigma",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurSigma", 2.0f));
+        effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
+
+        effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+        effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
 
         viewport->SetRenderPath(effectRenderPath);
     }

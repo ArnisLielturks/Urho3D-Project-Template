@@ -81,7 +81,7 @@ void Level::Init()
         _terrain->SetCastShadows(true);
 
         auto *body = terrainNode->CreateComponent<RigidBody>();
-        body->SetCollisionLayer(2); // Use layer bitmask 2 for static geometry
+        body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
         auto *shape = terrainNode->CreateComponent<CollisionShape>();
         shape->SetTerrain();
     }

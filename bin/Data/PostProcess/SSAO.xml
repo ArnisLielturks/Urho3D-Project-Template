@@ -1,0 +1,34 @@
+<renderpath>
+    <rendertarget name="depth" tag="SSAO" sizedivisor="1 1" format="lineardepth" />
+    <rendertarget name="ssao" tag="SSAO" sizedivisor="1 1" format="rgb" filter="true" />
+    <rendertarget name="blurH" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
+    <rendertarget name="blurV" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
+    <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="depth" />
+    <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="ssao" />
+    <command type="scenepass" pass="depth" output="depth" />
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OCCLUDE" output="ssao">
+        <parameter name="ScreenWidth" value="1280" />
+        <parameter name="ScreenHeight" value="720" />
+        <parameter name="Samples" />
+        <texture unit="diffuse" name="Textures/Noise.png" />
+        <texture unit="depth" name="depth" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURH" output="blurH">
+        <parameter name="ScreenWidth" value="1280" />
+        <parameter name="ScreenHeight" value="720" />
+        <texture unit="diffuse" name="ssao"/>
+        <texture unit="normal" name="ssao"/>
+        <texture unit="depth" name="depth" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURV" output="blurV">
+        <parameter name="ScreenWidth" value="1280" />
+        <parameter name="ScreenHeight" value="720" />
+        <texture unit="diffuse" name="ssao"/>
+        <texture unit="normal" name="blurH"/>
+        <texture unit="depth" name="depth" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OUTPUT" output="viewport">
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="depth" name="blurV" />
+    </command>
+</renderpath>

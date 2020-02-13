@@ -4,6 +4,7 @@
     <rendertarget name="blurH" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
     <rendertarget name="blurV" tag="SSAO" sizedivisor="2 2" format="rgb" filter="true" />
     <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="depth" />
+    <command type="clear" color="1 1 1 1" depth="1.0" stencil="0" output="ssao" />
     <command type="scenepass" pass="depth" output="depth" />
     <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OCCLUDE" output="ssao">
         <parameter name="ScreenWidth" value="1280" />

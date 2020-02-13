@@ -53,7 +53,7 @@ void AudioManager::SubscribeConsoleCommands()
 {
     using namespace MyEvents::ConsoleCommandAdd;
 
-	VariantMap data = GetEventDataMap();
+	VariantMap& data = GetEventDataMap();
 	data[P_NAME] = "play_sound";
 	data[P_EVENT] = "ConsolePlaySound";
 	data[P_DESCRIPTION] = "Play sound effect";
@@ -211,7 +211,7 @@ void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData
 {
     using namespace AudioDefs;
     using namespace MyEvents::PlaySound;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
     data[P_TYPE] = SOUND_EFFECT;
     SendEvent(MyEvents::E_PLAY_SOUND, data);

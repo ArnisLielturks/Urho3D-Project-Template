@@ -12,12 +12,12 @@ public:
     MouseInput(Context* context);
 
     virtual ~MouseInput();
-	virtual String GetActionKeyName(int action);
+	virtual String GetActionKeyName(int action) override;
 
 	/**
 	 * Load mouse config from config.cfg file [mouse] block
 	 */
-    virtual void LoadConfig();
+    virtual void LoadConfig() override;
 
 protected:
     virtual void Init();

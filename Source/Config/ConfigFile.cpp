@@ -25,11 +25,9 @@ SOFTWARE.
 #include "ConfigFile.h"
 
 #include <Urho3D/Core/Context.h>
-#include <Urho3D/Core/Variant.h>
 #include <Urho3D/IO/File.h>
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Container/Vector.h>
-#include <Urho3D/Container/HashSet.h>
 #include <Urho3D/IO/MemoryBuffer.h>
 #include <Urho3D/IO/Log.h>
 

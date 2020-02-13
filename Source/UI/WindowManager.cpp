@@ -11,6 +11,7 @@
 #include "NewGameSettings/NewGameSettingsWindow.h"
 #include "Achievements/AchievementsWindow.h"
 #include "PopupMessage/PopupMessageWindow.h"
+#include "Settings/UIOption.h"
 
 /// Construct.
 WindowManager::WindowManager(Context* context) :
@@ -29,7 +30,7 @@ void WindowManager::RegisterAllFactories()
 {
     // Register all available windows
     context_->RegisterFactory<BaseWindow>();
-    context_->RegisterFactory<SettingsWindow>();
+//    context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();
     context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<QuitConfirmationWindow>();
@@ -37,6 +38,13 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<PauseWindow>();
     context_->RegisterFactory<PopupMessageWindow>();
+    context_->RegisterFactory<PopupMessageWindow>();
+
+    UIOption::RegisterObject(context_);
+    UIMultiOption::RegisterObject(context_);
+    UIBoolOption::RegisterObject(context_);
+    UISliderOption::RegisterObject(context_);
+    context_->RegisterFactory<SettingsWindow>();
 }
 
 void WindowManager::SubscribeToEvents()

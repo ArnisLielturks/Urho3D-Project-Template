@@ -1,35 +1,160 @@
-#include <Urho3D/Resource/Localization.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/UI/UIEvents.h>
 #include <Urho3D/Input/Input.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/UI/UIEvents.h>
+#include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Engine/Engine.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/Core/StringUtils.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Audio/AudioDefs.h>
 #include <Urho3D/Audio/Audio.h>
-#include <Urho3D/Engine/Engine.h>
-#include <Urho3D/Graphics/Renderer.h>
-#include <Urho3D/Graphics/Graphics.h>
-#include <Urho3D/UI/Font.h>
+#include "../../Input/ControllerInput.h"
 #include "SettingsWindow.h"
 #include "../../MyEvents.h"
-#include "../../Input/ControllerInput.h"
-#include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 #include "../../Messages/Achievements.h"
 
-/**
- * Settings view has horizontal layout, and each element takes up this much horizontal space
- */
-static const int COLUMN_WIDTH = 250;
+namespace {
+// RenderWindow modes
+    enum RenderWindowMode {
+        RWM_WINDOWED = 0,
+        RWM_FULLSCREEN_WINDOW,
+        RWM_FULLSCREEN
+    };
+
+// represents a resolution
+    struct Resolution {
+        int width;
+        int height;
+        int refreshrate;
+
+        Resolution()
+                : width(0), height(0), refreshrate(0) {}
+
+        Resolution(int w, int h, int refresh = 0)
+                : width(w), height(h), refreshrate(refresh) {}
+
+        Resolution(const Resolution& other)
+                : width(other.width), height(other.height), refreshrate(other.refreshrate) {}
+
+        void Set(int w, int h, int r = 0) {
+            width = w;
+            height = h;
+            refreshrate = r;
+        }
+
+        void operator=(const Resolution& rhs) {
+            width = rhs.width;
+            height = rhs.height;
+            refreshrate = rhs.refreshrate;
+        }
+
+        bool operator==(const Resolution& rhs) {
+            return (width == rhs.width) && (height == rhs.height) && (refreshrate == rhs.refreshrate);
+        }
+
+        bool operator > (const Resolution& rhs) const {
+            return ((width * height) > (rhs.width * rhs.height));
+        }
+
+        bool operator < (const Resolution& rhs) const {
+            return ((width * height) < (rhs.width * rhs.height));
+        }
+
+        static Resolution FromString(const String& s) {
+            auto tokens = s.Split('x');
+            if (tokens.Size() > 2) {
+                return Resolution(ToInt(tokens[0], 0), ToInt(tokens[1], 0), ToInt(tokens[2], 0));
+            } else if (tokens.Size() == 2) {
+                auto rate_tokens = tokens[1].Split('@');
+                if (rate_tokens.Size() > 1)
+                    return Resolution(ToInt(tokens[0], 0), ToInt(rate_tokens[0]), ToInt(rate_tokens[1]));
+                return Resolution(ToInt(tokens[0], 0), ToInt(tokens[1], 0));
+            } else
+                return Resolution(0, 0, 0);
+        }
+
+        String ToString(bool with_rate = false) const {
+            if (!with_rate)
+                return Urho3D::ToString("%dx%d", width, height);
+            else
+                return Urho3D::ToString("%dx%d@%dHz", width, height, refreshrate);
+        }
+    };
+
+    typedef Vector<Resolution> ResolutionVector;
+
+// Get number of currently present monitors
+    int GetMonitorCount() {
+        return SDL_GetNumVideoDisplays();
+    }
+
+// Get current desktop resolution
+    Resolution GetDesktopResolution(int monitor) {
+        SDL_DisplayMode mode;
+        if (SDL_GetDesktopDisplayMode(monitor, &mode) == 0) {
+            Resolution res;
+            res.width = mode.w;
+            res.height = mode.h;
+            res.refreshrate = mode.refresh_rate;
+            return res;
+        }
+        return Resolution();
+    }
+
+    struct greater {
+        template<class T>
+        bool operator()(T const &a, T const &b) const { return a > b; }
+    };
+
+// Get a list of supported fullscreen resolutions
+    ResolutionVector GetFullscreenResolutions(int monitor, int rate) {
+        ResolutionVector resolutions;
+        if (monitor < 0)
+            return resolutions;
+
+        int modes = SDL_GetNumDisplayModes(monitor);
+
+        SDL_DisplayMode mode;
+        for (int i = 0; i < modes; i++) {
+            if (SDL_GetDisplayMode(monitor, i, &mode) != 0)
+                continue;
+            if (rate == -1 || (rate != -1 && mode.refresh_rate == rate))
+                resolutions.Push(Resolution(mode.w, mode.h, mode.refresh_rate));
+        }
+        // sort resolutions in descending order
+        Sort(resolutions.Begin(), resolutions.End(), greater());
+        return resolutions;
+    }
+
+    Vector<int> GetFullscreenRefreshRates(int monitor) {
+        Vector<int> rates;
+        if (monitor < 0)
+            return rates;
+
+        ResolutionVector modes = GetFullscreenResolutions(monitor, -1);
+        for (auto mode : modes) {
+            if (rates.Find(mode.refreshrate) == rates.End())
+                rates.Push(mode.refreshrate);
+        }
+        return rates;
+    }
+
+} // namespace
 
 /// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
-        BaseWindow(context)
+    BaseWindow(context)
 {
 }
 
 SettingsWindow::~SettingsWindow()
 {
-    _baseWindow->Remove();
+
 }
 
 void SettingsWindow::Init()
@@ -41,42 +166,73 @@ void SettingsWindow::Init()
 
 void SettingsWindow::Create()
 {
-    auto* localization = GetSubsystem<Localization>();
+    // Load XML file containing default UI style sheet
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
 
-    _baseWindow = CreateOverlay()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(400, 500);
-    _baseWindow->BringToFront();
-    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1);
+    // Set the loaded style as default style
+    GetSubsystem<UI>()->GetRoot()->SetDefaultStyle(style);
+
+    // Initialize Window
+    InitWindow();
+
+    // Create and add some controls to the Window
+    InitControls();
+
+    // Refresh graphics settings shown in the settings window
+    RefreshVideoOptions();
+
+    SubscribeToEvent(E_UIOPTION_CHANGED, URHO3D_HANDLER(SettingsWindow, HandleOptionChanged));
+}
+
+void SettingsWindow::SubscribeToEvents()
+{
+}
+
+
+void SettingsWindow::InitWindow()
+{
+    // Create the Window and add it to the UI's root node
+    window_ = CreateOverlay()->CreateChild<Window>();
+    window_->BringToFront();
+    window_->GetParent()->SetPriority(window_->GetParent()->GetPriority() + 1);
+
+    // Set Window size and layout settings
+    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth());
+    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight());
+    window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth());
+    window_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight());
+    window_->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
+    window_->SetAlignment(HA_CENTER, VA_CENTER);
+    window_->SetName("Window");
 
     // Create Window 'titlebar' container
-    _titleBar =_baseWindow->CreateChild<UIElement>();
-    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
-    _titleBar->SetVerticalAlignment(VA_TOP);
-    _titleBar->SetLayoutMode(LM_HORIZONTAL);
-    _titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));
+    auto* titleBar = new UIElement(context_);
+    titleBar->SetMinSize(0, 24);
+    titleBar->SetMaxHeight(24);
+    titleBar->SetVerticalAlignment(VA_TOP);
+    titleBar->SetLayoutMode(LM_HORIZONTAL);
 
-    auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    auto* localization = GetSubsystem<Localization>();
 
     // Create the Window title Text
     auto* windowTitle = new Text(context_);
-    windowTitle->SetName("WindowTitle");
+    windowTitle->SetName("GraphicsSettings");
     windowTitle->SetText(localization->Get("SETTINGS"));
-    windowTitle->SetFont(font, 14);
-
 
     // Create the Window's close button
     auto* buttonClose = new Button(context_);
     buttonClose->SetName("CloseButton");
-    buttonClose->SetHorizontalAlignment(HA_RIGHT);
 
     // Add the controls to the title bar
-    _titleBar->AddChild(windowTitle);
-    _titleBar->AddChild(buttonClose);
+    titleBar->AddChild(windowTitle);
+    titleBar->AddChild(buttonClose);
+
+    // Add the title bar to the Window
+    window_->AddChild(titleBar);
 
     // Apply styles
+    window_->SetStyleAuto();
     windowTitle->SetStyleAuto();
     buttonClose->SetStyle("CloseButton");
 
@@ -86,83 +242,431 @@ void SettingsWindow::Create()
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
 
-#ifndef __ANDROID__
-    _tabs[CONTROLS] = CreateTabButton(localization->Get("CONTROLS"));
-    SubscribeToEvent(_tabs[CONTROLS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        ChangeTab(CONTROLS);
-    });
-#endif
-
-    _tabs[CONTROLLERS] = CreateTabButton(localization->Get("CONTROLLERS"));
-    SubscribeToEvent(_tabs[CONTROLLERS], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        ChangeTab(CONTROLLERS);
-    });
-    _tabs[AUDIO] = CreateTabButton(localization->Get("AUDIO"));
-    SubscribeToEvent(_tabs[AUDIO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        ChangeTab(AUDIO);
-    });
-    _tabs[VIDEO] = CreateTabButton(localization->Get("VIDEO"));
-    SubscribeToEvent(_tabs[VIDEO], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        ChangeTab(VIDEO);
-    });
-    _tabs[GAME] = CreateTabButton(localization->Get("GAME"));
-    SubscribeToEvent(_tabs[GAME], E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        ChangeTab(GAME);
-    });
-
-    _listView = _baseWindow->CreateChild<ListView>();
-    _listView->SetStyleAuto();
-    _listView->SetWidth(_baseWindow->GetWidth() - 20);
-    _listView->SetFixedHeight(_baseWindow->GetHeight() - 80);
-    _listView->SetPosition(10, 70);
-    _listView->SetLayoutBorder(IntRect(4, 4, 4, 4));
-    //_listView->SetScrollBarsVisible(false, true);
-
-    ChangeTab(CONTROLS);
+    window_->SetMovable(true);
+    window_->SetResizable(true);
 }
 
-void SettingsWindow::SubscribeToEvents()
+void SettingsWindow::InitControls()
 {
-    SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
-    SubscribeToEvent(MyEvents::E_STOP_INPUT_MAPPING, URHO3D_HANDLER(SettingsWindow, HandleControlsUpdated));
+    tabs_ = new UITabPanel(context_);
+    tabs_->SetStyleAuto();
+    window_->AddChild(tabs_);
+
+    CreateVideoTab();
+    CreateGraphicsTab();
+    CreateAudioTab();
+    CreateControllersTab();
+    CreateControlsTab();
+    CreateGameTab();
+
+    SubscribeToEvent(E_UITAB_CHANGED, URHO3D_HANDLER(SettingsWindow, HandleTabChanged));
 }
 
-void SettingsWindow::ChangeTab(SettingTabs tab)
+void SettingsWindow::CreateVideoTab()
 {
-    _activeTab = tab;
-    _listView->RemoveAllItems();
-    _tabElementCount = 0;
+    auto* localization = GetSubsystem<Localization>();
+    auto video_tab = tabs_->AddTab(localization->Get("VIDEO"));
+    video_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
-    switch (_activeTab) {
-        case CONTROLS:
-            CreateControlsTab();
-            break;
-        case CONTROLLERS:
-            CreateControllersTab();
-            break;
-        case AUDIO:
-            CreateAudioTab();
-            break;
-        case VIDEO:
-            CreateVideoTab();
-            break;
-        case GAME:
-            CreateGameTab();
-            break;
+    opt_fullscreen_ = new UIMultiOption(context_);
+    opt_fullscreen_->SetName(localization->Get("OPT_FULLSCREEN"));
+    opt_fullscreen_->SetOptionName(localization->Get("DISPLAY_MODE"));
+    opt_fullscreen_->SetStyleAuto();
+    opt_fullscreen_->SetTags({ "video" });
+
+    StringVector fullscreen_options;
+    fullscreen_options.Push("Window");
+    fullscreen_options.Push("Borderless Window");
+    fullscreen_options.Push("Fullscreen");
+    opt_fullscreen_->SetStrings(fullscreen_options);
+
+    opt_monitor_ = new UIMultiOption(context_);
+    opt_monitor_->SetName("OptMonitor");
+    opt_monitor_->SetOptionName(localization->Get("MONITOR"));
+    opt_monitor_->SetStyleAuto();
+    opt_monitor_->SetTags({ "video" });
+
+    opt_resolution_ = new UIMultiOption(context_);
+    opt_resolution_->SetName("OptResolution");
+    opt_resolution_->SetOptionName("Resolution");
+    opt_resolution_->SetStyleAuto();
+    opt_resolution_->SetTags({ "video" });
+
+    opt_rate_ = new UIMultiOption(context_);
+    opt_rate_->SetName("OptRate");
+    opt_rate_->SetOptionName("Refresh Rate");
+    opt_rate_->SetStyleAuto();
+    opt_rate_->SetTags({ "video" });
+
+    opt_vsync_ = new UIBoolOption(context_);
+    opt_vsync_->SetName("OptVsync");
+    opt_vsync_->SetOptionName("V-Sync");
+    opt_vsync_->SetStyleAuto();
+    opt_vsync_->SetTags({ "video" });
+
+    auto elm = new UIElement(context_);
+    elm->SetMinSize(0, 32);
+    elm->SetMaxHeight(30);
+    elm->SetVerticalAlignment(VA_TOP);
+    btn_apply_ = new Button(context_);
+    btn_apply_->SetFixedSize(80, 28);
+
+    auto btn_text = new Text(context_);
+    btn_text->SetText(localization->Get("APPLY"));
+    btn_apply_->AddChild(btn_text);
+    btn_text->SetAlignment(HA_CENTER, VA_CENTER);
+
+    elm->AddChild(btn_apply_);
+    btn_apply_->SetHorizontalAlignment(HA_RIGHT);
+
+    btn_apply_->SetStyleAuto();
+    btn_text->SetStyleAuto();
+    elm->SetStyleAuto();
+
+    opt_resizable_ = new UIBoolOption(context_);
+    opt_resizable_->SetName("OptResizable");
+    opt_resizable_->SetOptionName("Resizable Window");
+    opt_resizable_->SetStyleAuto();
+    opt_resizable_->SetTags({ "misc-video" });
+
+    opt_fpslimit_ = new UIMultiOption(context_);
+    opt_fpslimit_->SetName("OptFpsLimit");
+    opt_fpslimit_->SetOptionName(localization->Get("FPS_LIMIT"));
+    opt_fpslimit_->SetStyleAuto();
+    opt_fpslimit_->SetTags({ "misc-video" });
+    {
+        StringVector options;
+        options.Push("Custom");
+        options.Push("Unlimited");
+        options.Push("30");
+        options.Push("60");
+        options.Push("75");
+        options.Push("100");
+        options.Push("144");
+        options.Push("240");
+        opt_fpslimit_->SetStrings(options);
+
+        int currentFps = GetSubsystem<Engine>()->GetMaxFps();
+        if (0 == currentFps) {
+            opt_fpslimit_->SetOptionIndex(1);
+        }
+
+        for (int i = 0; i < options.Size(); i++) {
+            if (ToInt(options.At(i)) == currentFps) {
+                opt_fpslimit_->SetOptionIndex(i);
+            }
+        }
+    }
+
+    gamma_ = new UISliderOption(context_);
+    gamma_->SetName("Gamma");
+    gamma_->SetOptionName(localization->Get("GAMMA"));
+    gamma_->SetRange(2.0f);
+    gamma_->SetValue(GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f));
+    gamma_->SetStyleAuto();
+    gamma_->SetTags({"misc-video"});
+
+    video_tab->AddChild(opt_fullscreen_);
+    video_tab->AddChild(opt_monitor_);
+    video_tab->AddChild(opt_resolution_);
+    video_tab->AddChild(opt_rate_);
+    video_tab->AddChild(opt_vsync_);
+    video_tab->AddChild(elm);
+    video_tab->AddChild(opt_resizable_);
+    video_tab->AddChild(opt_fpslimit_);
+    video_tab->AddChild(gamma_);
+
+    SubscribeToEvent(btn_apply_, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleApply));
+}
+
+void SettingsWindow::CreateGraphicsTab()
+{
+    auto* localization = GetSubsystem<Localization>();
+    auto graphics_tab = tabs_->AddTab(localization->Get("GRAPHICS"));
+    graphics_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
+
+    // graphics tab
+    opt_texture_quality_ = new UIMultiOption(context_);
+    opt_texture_quality_->SetName("OptTextureQuality");
+    opt_texture_quality_->SetOptionName(localization->Get("TEXTURE_QUALITY"));
+    opt_texture_quality_->SetStyleAuto();
+    opt_texture_quality_->SetTags({ "graphics" });
+
+    StringVector quality_options;
+    quality_options.Push("Low");
+    quality_options.Push("Medium");
+    quality_options.Push("High");
+    opt_texture_quality_->SetStrings(quality_options);
+
+    opt_material_quality_ = new UIMultiOption(context_);
+    opt_material_quality_->SetName("OptMaterialQuality");
+    opt_material_quality_->SetOptionName(localization->Get("MATERIAL_QUALITY"));
+    opt_material_quality_->SetStyleAuto();
+    opt_material_quality_->SetTags({ "graphics" });
+    opt_material_quality_->SetStrings(quality_options);
+
+    opt_shadows_ = new UIMultiOption(context_);
+    opt_shadows_->SetName("OptShadows");
+    opt_shadows_->SetOptionName(localization->Get("SHADOWS"));
+    opt_shadows_->SetStyleAuto();
+    opt_shadows_->SetTags({ "graphics" });
+    {
+        StringVector options;
+        options.Push("Off");
+        options.Push("Low");
+        options.Push("Medium");
+        options.Push("High");
+        opt_shadows_->SetStrings(options);
+    }
+
+    opt_shadow_quality_ = new UIMultiOption(context_);
+    opt_shadow_quality_->SetName("OptShadowQuality");
+    opt_shadow_quality_->SetOptionName(localization->Get("SHADOW_QUALITY"));
+    opt_shadow_quality_->SetStyleAuto();
+    opt_shadow_quality_->SetTags({ "graphics" });
+    {
+        StringVector options;
+        options.Push("Simple 16 bit");
+        options.Push("Simple 24 bit");
+        options.Push("PCF 16 bit");
+        options.Push("PCF 24 bit");
+        options.Push("VSM");
+        options.Push("Blur VSM");
+        opt_shadow_quality_->SetStrings(options);
+    }
+
+    StringVector options_bool;
+    options_bool.Push(localization->Get("OFF"));
+    options_bool.Push(localization->Get("ON"));
+
+    opt_occlusion_ = new UIMultiOption(context_);
+    opt_occlusion_->SetName("OptOcclusion");
+    opt_occlusion_->SetOptionName(localization->Get("OCCLUSION"));
+    opt_occlusion_->SetStyleAuto();
+    opt_occlusion_->SetTags({ "graphics" });
+    opt_occlusion_->SetStrings(options_bool);
+
+    opt_instancing_ = new UIMultiOption(context_);
+    opt_instancing_->SetName("OptInstancing");
+    opt_instancing_->SetOptionName(localization->Get("INSTANCING"));
+    opt_instancing_->SetStyleAuto();
+    opt_instancing_->SetTags({ "graphics" });
+    opt_instancing_->SetStrings(options_bool);
+
+    opt_specular_ = new UIMultiOption(context_);
+    opt_specular_->SetName("OptSpecular");
+    opt_specular_->SetOptionName(localization->Get("SPECULAR_LIGHTING"));
+    opt_specular_->SetStyleAuto();
+    opt_specular_->SetTags({ "graphics" });
+    opt_specular_->SetStrings(options_bool);
+
+    opt_hdr_ = new UIMultiOption(context_);
+    opt_hdr_->SetName("OptHdr");
+    opt_hdr_->SetOptionName("HDR");
+    opt_hdr_->SetStyleAuto();
+    opt_hdr_->SetTags({ "graphics" });
+    opt_hdr_->SetStrings(options_bool);
+
+    graphics_tab->AddChild(opt_texture_quality_);
+    graphics_tab->AddChild(opt_material_quality_);
+    graphics_tab->AddChild(opt_shadows_);
+    graphics_tab->AddChild(opt_shadow_quality_);
+    graphics_tab->AddChild(opt_occlusion_);
+    graphics_tab->AddChild(opt_instancing_);
+    graphics_tab->AddChild(opt_specular_);
+    graphics_tab->AddChild(opt_hdr_);
+}
+
+void SettingsWindow::CreateAudioTab()
+{
+    auto* localization = GetSubsystem<Localization>();
+    auto audio_tab = tabs_->AddTab(localization->Get("AUDIO"));
+    audio_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
+
+    audio_settings_[SOUND_MASTER] = new UISliderOption(context_);
+    audio_settings_[SOUND_MASTER]->SetName("Master");
+    audio_settings_[SOUND_MASTER]->SetOptionName("Master volume");
+    audio_settings_[SOUND_MASTER]->SetRange(1.0f);
+    audio_settings_[SOUND_MASTER]->SetValue(GetSubsystem<Audio>()->GetMasterGain(SOUND_MASTER));
+    audio_settings_[SOUND_MASTER]->SetStyleAuto();
+    audio_settings_[SOUND_MASTER]->SetTags({"audio"});
+    audio_settings_[SOUND_MASTER]->SetVar("AudioType", SOUND_MASTER);
+    audio_tab->AddChild(audio_settings_[SOUND_MASTER]);
+
+    audio_settings_[SOUND_EFFECT] = new UISliderOption(context_);
+    audio_settings_[SOUND_EFFECT]->SetName("Master");
+    audio_settings_[SOUND_EFFECT]->SetOptionName("Sound effects volume");
+    audio_settings_[SOUND_EFFECT]->SetRange(1.0f);
+    audio_settings_[SOUND_EFFECT]->SetValue(GetSubsystem<Audio>()->GetMasterGain(SOUND_EFFECT));
+    audio_settings_[SOUND_EFFECT]->SetStyleAuto();
+    audio_settings_[SOUND_EFFECT]->SetTags({"audio"});
+    audio_settings_[SOUND_EFFECT]->SetVar("AudioType", SOUND_EFFECT);
+    audio_tab->AddChild(audio_settings_[SOUND_EFFECT]);
+
+    audio_settings_[SOUND_AMBIENT] = new UISliderOption(context_);
+    audio_settings_[SOUND_AMBIENT]->SetName("Master");
+    audio_settings_[SOUND_AMBIENT]->SetOptionName("Ambient volume");
+    audio_settings_[SOUND_AMBIENT]->SetRange(1.0f);
+    audio_settings_[SOUND_AMBIENT]->SetValue(GetSubsystem<Audio>()->GetMasterGain(SOUND_AMBIENT));
+    audio_settings_[SOUND_AMBIENT]->SetStyleAuto();
+    audio_settings_[SOUND_AMBIENT]->SetTags({"audio"});
+    audio_settings_[SOUND_AMBIENT]->SetVar("AudioType", SOUND_AMBIENT);
+    audio_tab->AddChild(audio_settings_[SOUND_AMBIENT]);
+
+    audio_settings_[SOUND_VOICE] = new UISliderOption(context_);
+    audio_settings_[SOUND_VOICE]->SetName("Master");
+    audio_settings_[SOUND_VOICE]->SetOptionName("Voice volume");
+    audio_settings_[SOUND_VOICE]->SetRange(1.0f);
+    audio_settings_[SOUND_VOICE]->SetValue(GetSubsystem<Audio>()->GetMasterGain(SOUND_VOICE));
+    audio_settings_[SOUND_VOICE]->SetStyleAuto();
+    audio_settings_[SOUND_VOICE]->SetTags({"audio"});
+    audio_settings_[SOUND_VOICE]->SetVar("AudioType", SOUND_VOICE);
+    audio_tab->AddChild(audio_settings_[SOUND_VOICE]);
+
+    audio_settings_[SOUND_MUSIC] = new UISliderOption(context_);
+    audio_settings_[SOUND_MUSIC]->SetName("Master");
+    audio_settings_[SOUND_MUSIC]->SetOptionName("Music volume");
+    audio_settings_[SOUND_MUSIC]->SetRange(1.0f);
+    audio_settings_[SOUND_MUSIC]->SetValue(GetSubsystem<Audio>()->GetMasterGain(SOUND_MUSIC));
+    audio_settings_[SOUND_MUSIC]->SetStyleAuto();
+    audio_settings_[SOUND_MUSIC]->SetTags({"audio"});
+    audio_settings_[SOUND_MUSIC]->SetVar("AudioType", SOUND_MUSIC);
+    audio_tab->AddChild(audio_settings_[SOUND_MUSIC]);
+}
+
+void SettingsWindow::CreateControllersTab()
+{
+    auto* localization = GetSubsystem<Localization>();
+    auto controllers_tab = tabs_->AddTab(localization->Get("CONTROLLERS"));
+    controllers_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
+
+    {
+        auto label = new Text(context_);
+        label->SetStyleAuto();
+        label->SetText(localization->Get("MOUSE"));
+        controllers_tab->AddChild(label);
+
+        invert_mouse_x = new UIBoolOption(context_);
+        invert_mouse_x->SetOptionName(localization->Get("INVERT_X_AXIS"));
+        invert_mouse_x->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX", false));
+        invert_mouse_x->SetTags({"invert_mouse_x"});
+        invert_mouse_x->SetStyleAuto();
+        controllers_tab->AddChild(invert_mouse_x);
+
+        invert_mouse_y = new UIBoolOption(context_);
+        invert_mouse_y->SetOptionName(localization->Get("INVERT_Y_AXIS"));
+        invert_mouse_y->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY", false));
+        invert_mouse_y->SetTags({"invert_mouse_y"});
+        invert_mouse_y->SetStyleAuto();
+        controllers_tab->AddChild(invert_mouse_y);
+
+        mouse_sensitivity = new UISliderOption(context_);
+        mouse_sensitivity->SetName("Mouse");
+        mouse_sensitivity->SetOptionName(localization->Get("SENSITIVITY"));
+        mouse_sensitivity->SetRange(10.0f);
+        mouse_sensitivity->SetValue(GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 2.0f));
+        mouse_sensitivity->SetStyleAuto();
+        mouse_sensitivity->SetTags({"mouse_sensitivity"});
+        controllers_tab->AddChild(mouse_sensitivity);
+    }
+
+    {
+        auto label = new Text(context_);
+        label->SetStyleAuto();
+        label->SetText(localization->Get("JOYSTICK"));
+        controllers_tab->AddChild(label);
+
+        invert_joystic_x = new UIBoolOption(context_);
+        invert_joystic_x->SetOptionName(localization->Get("INVERT_X_AXIS"));
+        invert_joystic_x->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false));
+        invert_joystic_x->SetTags({"invert_joystick_x"});
+        invert_joystic_x->SetStyleAuto();
+        controllers_tab->AddChild(invert_joystic_x);
+
+        invert_joystick_y = new UIBoolOption(context_);
+        invert_joystick_y->SetOptionName(localization->Get("INVERT_Y_AXIS"));
+        invert_joystick_y->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false));
+        invert_joystick_y->SetTags({"invert_joystick_y"});
+        invert_joystick_y->SetStyleAuto();
+        controllers_tab->AddChild(invert_joystick_y);
+
+        joystick_sensitivity_x = new UISliderOption(context_);
+        joystick_sensitivity_x->SetName("Mouse");
+        joystick_sensitivity_x->SetOptionName(localization->Get("SENSITIVITY_X"));
+        joystick_sensitivity_x->SetRange(100.0f);
+        joystick_sensitivity_x->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 2.0f));
+        joystick_sensitivity_x->SetStyleAuto();
+        joystick_sensitivity_x->SetTags({"joystick_sensitivity_x"});
+        controllers_tab->AddChild(joystick_sensitivity_x);
+
+        joystick_sensitivity_y = new UISliderOption(context_);
+        joystick_sensitivity_y->SetName("Mouse");
+        joystick_sensitivity_y->SetOptionName(localization->Get("SENSITIVITY_Y"));
+        joystick_sensitivity_y->SetRange(100.0f);
+        joystick_sensitivity_y->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 2.0f));
+        joystick_sensitivity_y->SetStyleAuto();
+        joystick_sensitivity_y->SetTags({"joystick_sensitivity_y"});
+        controllers_tab->AddChild(joystick_sensitivity_y);
+
+        deadzone_ = new UISliderOption(context_);
+        deadzone_->SetName("Mouse");
+        deadzone_->SetOptionName(localization->Get("DEADZONE"));
+        deadzone_->SetRange(10.0f);
+        deadzone_->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "Deadzone", 0.5f));
+        deadzone_->SetStyleAuto();
+        deadzone_->SetTags({"deadzone"});
+        controllers_tab->AddChild(deadzone_);
+    }
+
+    {
+        multiple_controllers_ = new UIBoolOption(context_);
+        multiple_controllers_->SetOptionName(localization->Get("MULTIPLE_CONTROLLER_SUPPORT"));
+        multiple_controllers_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", true));
+        multiple_controllers_->SetTags({"multiple_controllers"});
+        multiple_controllers_->SetStyleAuto();
+        controllers_tab->AddChild(multiple_controllers_);
+
+        joystick_as_first_ = new UIBoolOption(context_);
+        joystick_as_first_->SetOptionName(localization->Get("JOYSTICK_AS_FIRST_CONTROLLER"));
+        joystick_as_first_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", true));
+        joystick_as_first_->SetTags({"joystick_as_first"});
+        joystick_as_first_->SetStyleAuto();
+        controllers_tab->AddChild(joystick_as_first_);
     }
 }
 
 void SettingsWindow::CreateControlsTab()
 {
+    auto* localization = GetSubsystem<Localization>();
+    auto controls_tab = tabs_->AddTab(localization->Get("CONTROLS"));
+    controls_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
+
     auto controllerInput = GetSubsystem<ControllerInput>();
     auto names = controllerInput->GetControlNames();
 
     // Loop trough all of the controls
     for (auto it = names.Begin(); it != names.End(); ++it) {
-        CreateSingleLine();
-        CreateLabel((*it).second_);
-        Button* button = CreateButton(controllerInput->GetActionKeyName((*it).first_));
-        button->SetVar("Action", (*it).first_);
+        int actionId = (*it).first_;
+        //controllerInput->GetActionKeyName(actionId)
+        auto control = new UIOption(context_);
+
+        control->SetOptionName((*it).second_);
+        control->SetStyleAuto();
+
+        auto button = control->GetControl()->CreateChild<Button>();
+        button->SetVar("Action", actionId);
+        button->SetStyleAuto();
+        button->SetName("Controls_" + String(actionId));
+        button->SetStyle("TransparentButton");
+
+        control_mappings_[actionId] = button->CreateChild<Text>();
+        control_mappings_[actionId]->SetName("Label");
+        control_mappings_[actionId]->SetStyleAuto();
+        control_mappings_[actionId]->SetText(controllerInput->GetActionKeyName(actionId));
+        control_mappings_[actionId]->SetAlignment(HA_CENTER, VA_CENTER);
+
+        controls_tab->AddChild(control);
+
 
         // Detect button press events
         SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -185,866 +689,471 @@ void SettingsWindow::CreateControlsTab()
             }
         });
     }
-}
 
-void SettingsWindow::CreateControllersTab()
-{
-    auto* localization = GetSubsystem<Localization>();
-
-    auto controllerInput = GetSubsystem<ControllerInput>();
-    {
-        CreateSingleLine();
-        CreateLabel(localization->Get("MOUSE"));
-
-        // Invert X
-        CreateSingleLine();
-        auto mouseInvertX = CreateCheckbox(localization->Get("INVERT_X_AXIS"));
-        mouseInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::MOUSE));
-        URHO3D_LOGINFO("Set mouse invert x " + String(mouseInvertX->IsChecked()));
-        SubscribeToEvent(mouseInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            URHO3D_LOGINFO("Set mouse invert x " + String(enabled));
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetInvertX(enabled, ControllerType::MOUSE);
-            GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Invert Y
-        CreateSingleLine();
-        auto mouseInvertY = CreateCheckbox(localization->Get("INVERT_Y_AXIS"));
-        mouseInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::MOUSE));
-        SubscribeToEvent(mouseInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetInvertY(enabled, ControllerType::MOUSE);
-            GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Sensitivity
-        CreateSingleLine();
-        auto slider = CreateSlider(localization->Get("SENSITIVITY"));
-        slider->SetRange(10);
-        slider->SetValue(controllerInput->GetSensitivityX(ControllerType::MOUSE));
-        // Detect button press events
-        SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-            using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat();
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetSensitivityX(newValue, ControllerType::MOUSE);
-            controllerInput->SetSensitivityY(newValue, ControllerType::MOUSE);
-            GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", newValue);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-    }
-
-    // Joystick
-    {
-        CreateSingleLine();
-        CreateSingleLine();
-        CreateLabel(localization->Get("JOYSTICK"));
-
-        // Invert X
-        CreateSingleLine();
-        auto joystickInvertX = CreateCheckbox(localization->Get("INVERT_X_AXIS"));
-        joystickInvertX->SetChecked(controllerInput->GetInvertX(ControllerType::JOYSTICK));
-        SubscribeToEvent(joystickInvertX, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetInvertX(enabled, ControllerType::JOYSTICK);
-            GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Invert Y
-        CreateSingleLine();
-        auto joystickInvertY = CreateCheckbox(localization->Get("INVERT_Y_AXIS"));
-        joystickInvertY->SetChecked(controllerInput->GetInvertY(ControllerType::JOYSTICK));
-        SubscribeToEvent(joystickInvertY, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetInvertY(enabled, ControllerType::JOYSTICK);
-            GetSubsystem<ConfigManager>()->Set("joystick", "InvertY", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Sensitivity X
-        CreateSingleLine();
-        auto sensitivityX = CreateSlider(localization->Get("SENSITIVITY_X_AXIS"));
-        sensitivityX->SetRange(10);
-        sensitivityX->SetValue(controllerInput->GetSensitivityX(ControllerType::JOYSTICK) * 0.2f);
-        // Detect button press events
-        SubscribeToEvent(sensitivityX, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-            using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetSensitivityX(newValue, ControllerType::JOYSTICK);
-            GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", newValue);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Sensitivity Y
-        CreateSingleLine();
-        auto sensitivityY = CreateSlider(localization->Get("SENSITIVITY_Y_AXIS"));
-        sensitivityY->SetRange(10);
-        sensitivityY->SetValue(controllerInput->GetSensitivityY(ControllerType::JOYSTICK) * 0.2f);
-        // Detect button press events
-        SubscribeToEvent(sensitivityY, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-            using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetSensitivityY(newValue, ControllerType::JOYSTICK);
-            GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", newValue);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Joystick deadzone value
-        CreateSingleLine();
-        auto deadzoneValue = CreateSlider(localization->Get("DEADZONE"));
-        deadzoneValue->SetRange(1.0f);
-        deadzoneValue->SetValue(controllerInput->GetJoystickDeadzone());
-        // Detect button press events
-        SubscribeToEvent(deadzoneValue, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-            using namespace SliderChanged;
-            float newValue = eventData[P_VALUE].GetFloat() * 5.0f;
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetJoystickDeadzone(newValue);
-            GetSubsystem<ConfigManager>()->Set("joystick", "Deadzone", newValue);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Multiple controller support
-        CreateSingleLine();
-        auto multipleControllers = CreateCheckbox(localization->Get("MULTIPLE_CONTROLLER_SUPPORT"));
-        multipleControllers->SetChecked(controllerInput->GetMultipleControllerSupport());
-        SubscribeToEvent(multipleControllers, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetMultipleControllerSupport(enabled);
-            GetSubsystem<ConfigManager>()->Set("joystick", "MultipleControllers", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-
-        // Joystick as first controller
-        CreateSingleLine();
-        auto joystickAsFirstController = CreateCheckbox(localization->Get("JOYSTICK_AS_FIRST_CONTROLLER"));
-        joystickAsFirstController->SetChecked(controllerInput->GetJoystickAsFirstController());
-        SubscribeToEvent(joystickAsFirstController, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace Toggled;
-            bool enabled = eventData[P_STATE].GetBool();
-
-            auto controllerInput = GetSubsystem<ControllerInput>();
-            controllerInput->SetJoystickAsFirstController(enabled);
-            GetSubsystem<ConfigManager>()->Set("joystick", "JoystickAsFirstController", enabled);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-        });
-    }
-}
-
-void SettingsWindow::CreateAudioTab()
-{
-    auto* localization = GetSubsystem<Localization>();
-
-    String volumeControls[] = {
-            SOUND_MASTER,
-            SOUND_EFFECT,
-            SOUND_AMBIENT,
-            SOUND_VOICE,
-            SOUND_MUSIC
-    };
-    for (int i = 0; i < 5; i++) {
-        // Master volume slider
-        CreateSingleLine();
-        auto slider = CreateSlider(localization->Get(volumeControls[i].ToUpper() + "_VOLUME"));
-        slider->SetValue(GetSubsystem<Audio>()->GetMasterGain(volumeControls[i]));
-        slider->SetVar("SoundType", volumeControls[i]);
-
-        // Detect button press events
-        SubscribeToEvent(slider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-            using namespace SliderChanged;
-            float newVolume = eventData[P_VALUE].GetFloat();
-            Slider* slider = static_cast<Slider*>(eventData[P_ELEMENT].GetPtr());
-            String soundType = slider->GetVar("SoundType").GetString();
-
-            GetSubsystem<Audio>()->SetMasterGain(soundType, newVolume);
-
-            SetGlobalVar(soundType, newVolume);
-            GetSubsystem<ConfigManager>()->Set("audio", soundType, newVolume);
-
-            GetSubsystem<ConfigManager>()->Save(true);
-
-            URHO3D_LOGINFO("Volume changed " + soundType + " => " + String(newVolume));
-        });
-    }
-}
-void SettingsWindow::CreateVideoTab()
-{
-    auto* localization = GetSubsystem<Localization>();
-    InitGraphicsSettings();
-
-/*
-#ifndef __ANDROID__
-    // UI Scale
-    CreateSingleLine();
-    auto scaleSlider = CreateSlider(localization->Get("UI"));
-    scaleSlider->SetRange(0.5);
-    scaleSlider->SetValue(GetSubsystem<UI>()->GetScale() - 1.0f);
-    // Detect button press events
-    SubscribeToEvent(scaleSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-        using namespace SliderChanged;
-        float newValue = eventData[P_VALUE].GetFloat();
-        GetSubsystem<UI>()->SetScale(newValue + 1.0f);
-
-    });
-#endif
-*/
-
-    // Gamma
-    CreateSingleLine();
-    auto gammaSlider = CreateSlider(localization->Get("GAMMA"));
-    gammaSlider->SetRange(GAMMA_MAX_VALUE);
-    gammaSlider->SetValue(GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f));
-    // Detect button press events
-    SubscribeToEvent(gammaSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-        using namespace SliderChanged;
-        float newValue = eventData[P_VALUE].GetFloat();
-        VariantMap data = GetEventDataMap();
-        StringVector command;
-        command.Push("gamma");
-        command.Push(String(newValue));
-        data["Parameters"] = command;
-        SendEvent("gamma", data);
-    });
-
-    // FOV
-    CreateSingleLine();
-    auto fovSlider = CreateSlider(localization->Get("FIELD_OF_VIEW"));
-    fovSlider->SetRange(100);
-    fovSlider->SetValue(GetGlobalVar("CameraFov").GetFloat() - 60.0f);
-    // Detect button press events
-    SubscribeToEvent(fovSlider, E_SLIDERCHANGED, [&](StringHash eventType, VariantMap &eventData) {
-
-        using namespace SliderChanged;
-        float newValue = eventData[P_VALUE].GetFloat() + 60.0f;
-        VariantMap data = GetEventDataMap();
-        StringVector command;
-        command.Push("fov");
-        command.Push(String(newValue));
-        data["Parameters"] = command;
-        SendEvent("FovChange", data);
-        
-    });
-
-#ifndef __ANDROID__
-    // Fullscreen
-    CreateSingleLine();
-    auto fullscreenToggle = CreateCheckbox(localization->Get("FULLSCREEN"));
-    fullscreenToggle->SetChecked(_graphicsSettings.fullscreen);
-    SubscribeToEvent(fullscreenToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-
-        _graphicsSettingsNew.fullscreen = enabled;
-    });
-#endif
-
-    // Frame Limiter
-    CreateSingleLine();
-    auto frameLimiterToggle = CreateCheckbox(localization->Get("FRAME_LIMITER"));
-    frameLimiterToggle->SetChecked(_graphicsSettings.frameLimiter);
-    SubscribeToEvent(frameLimiterToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-
-        _graphicsSettingsNew.frameLimiter = enabled;
-    });
-
-    // Shadows
-    CreateSingleLine();
-    auto shadowToggle = CreateCheckbox(localization->Get("ENABLE_SHADOWS"));
-    shadowToggle->SetChecked(_graphicsSettings.shadows);
-    SubscribeToEvent(shadowToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-
-        _graphicsSettingsNew.shadows = enabled;
-    });
-
-    // VSync
-    CreateSingleLine();
-    auto vsyncToggle = CreateCheckbox(localization->Get("VERTICAL_SYNC"));
-    vsyncToggle->SetChecked(_graphicsSettings.vsync);
-    SubscribeToEvent(vsyncToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-
-        _graphicsSettingsNew.vsync = enabled;
-    });
-
-    // Triple buffering
-    CreateSingleLine();
-    auto trippleBuffToggle = CreateCheckbox(localization->Get("TRIPLE_BUFFERING"));
-    trippleBuffToggle->SetChecked(_graphicsSettings.tripleBuffer);
-    SubscribeToEvent(trippleBuffToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-
-        _graphicsSettingsNew.tripleBuffer = enabled;
-    });
-
-#ifndef __ANDROID__
-    // Resolution
-    CreateSingleLine();
-    auto resolutionMenu = CreateMenu(localization->Get("RESOLUTION"), _availableResolutionNames);
-    resolutionMenu->SetSelection(_graphicsSettings.activeResolution);
-    SubscribeToEvent(resolutionMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        StringVector dimensions = _availableResolutionNames.At(selection).Split('x', false);
-        if (dimensions.Size() == 2) {
-            int width = ToInt(dimensions[0]);
-            int height = ToInt(dimensions[1]);
-            if (width > 0 && height > 0) {
-                _graphicsSettingsNew.width = width;
-                _graphicsSettingsNew.height = height;
-
-                _graphicsSettingsNew.activeResolution = selection;
-            }
+    SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, [&](StringHash eventType, VariantMap& eventData) {
+        RefreshControlsTab();
+        Input* input = GetSubsystem<Input>();
+        if (!input->IsMouseVisible()) {
+            input->SetMouseVisible(true);
         }
     });
-#endif
 
-    // Shadow quality
-    CreateSingleLine();
-    Vector<String> shadowQualityLevels;
-    shadowQualityLevels.Push("SHADOWQUALITY_SIMPLE_16BIT");
-    shadowQualityLevels.Push("SHADOWQUALITY_SIMPLE_24BIT");
-    shadowQualityLevels.Push("SHADOWQUALITY_PCF_16BIT");
-    shadowQualityLevels.Push("SHADOWQUALITY_PCF_24BIT");
-    shadowQualityLevels.Push("SHADOWQUALITY_VSM");
-    shadowQualityLevels.Push("SHADOWQUALITY_BLUR_VSM");
-
-    auto shadowQualityMenu = CreateMenu(localization->Get("SHADOW_QUALITY"), shadowQualityLevels);
-    shadowQualityMenu->SetSelection(_graphicsSettings.shadowQuality);
-    SubscribeToEvent(shadowQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        _graphicsSettingsNew.shadowQuality = selection;
+    SubscribeToEvent(MyEvents::E_STOP_INPUT_MAPPING, [&](StringHash eventType, VariantMap& eventData) {
+        RefreshControlsTab();
+        Input* input = GetSubsystem<Input>();
+        if (!input->IsMouseVisible()) {
+            input->SetMouseVisible(true);
+        }
     });
+}
 
+void SettingsWindow::RefreshControlsTab()
+{
+    auto controllerInput = GetSubsystem<ControllerInput>();
+    auto names = controllerInput->GetControlNames();
 
-    // Texture filter mode
-    CreateSingleLine();
-    Vector<String> textureFilterModes;
-    textureFilterModes.Push("FILTER_NEAREST");
-    textureFilterModes.Push("FILTER_BILINEAR");
-    textureFilterModes.Push("FILTER_ANISOTROPIC");
-    textureFilterModes.Push("FILTER_NEAREST_ANISOTROPIC");
-    textureFilterModes.Push("FILTER_DEFAULT");
-    textureFilterModes.Push("MAX_FILTERMODES");
-
-    auto textureFilterModeMenu = CreateMenu(localization->Get("TEXTURE_FILTER_MODE"), textureFilterModes);
-    textureFilterModeMenu->SetSelection(_graphicsSettings.textureFilterMode);
-    SubscribeToEvent(textureFilterModeMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        _graphicsSettingsNew.textureFilterMode = selection;
-    });
-
-
-    // Texture anistrophy
-    CreateSingleLine();
-    Vector<String> levels;
-    levels.Push("1");
-    levels.Push("2");
-    levels.Push("3");
-    levels.Push("4");
-    levels.Push("5");
-    levels.Push("6");
-    levels.Push("7");
-    levels.Push("8");
-    levels.Push("9");
-    levels.Push("10");
-    levels.Push("11");
-    levels.Push("12");
-    levels.Push("13");
-    levels.Push("14");
-    levels.Push("15");
-    levels.Push("16");
-
-    auto textureAnisotropyLevelMenu = CreateMenu(localization->Get("TEXTURE_ANISTROPY_LEVEL"), levels);
-    textureAnisotropyLevelMenu->SetSelection(_graphicsSettings.textureAnistropy);
-    SubscribeToEvent(textureAnisotropyLevelMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        _graphicsSettingsNew.textureAnistropy = selection;
-    });
-
-    // Texture quality
-    CreateSingleLine();
-    auto textureQualityMenu = CreateMenu(localization->Get("TEXTURE_QUALITY"), levels);
-    textureQualityMenu->SetSelection(_graphicsSettings.textureQuality);
-    SubscribeToEvent(textureQualityMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        _graphicsSettingsNew.textureQuality = selection;
-    });
-
-    // Multisample
-    CreateSingleLine();
-    auto multisampleMenu = CreateMenu(localization->Get("MULTISAMPLE"), levels);
-    multisampleMenu->SetSelection(_graphicsSettings.multisample);
-    SubscribeToEvent(multisampleMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
-
-        _graphicsSettingsNew.multisample = selection;
-    });
-
-    // PostProcessEffects
-    CreateSingleLine();
-    auto blurToggle = CreateCheckbox(localization->Get("ENABLE_BLUR"));
-    blurToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
-    SubscribeToEvent(blurToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "Blur", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto autoExposureToggle = CreateCheckbox(localization->Get("ENABLE_AUTO_EXPOSURE"));
-    autoExposureToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", true));
-    SubscribeToEvent(autoExposureToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "AutoExposure", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto bloomToggle = CreateCheckbox(localization->Get("ENABLE_BLOOM"));
-    bloomToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "Bloom", true));
-    SubscribeToEvent(bloomToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "Bloom", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto bloomHDRToggle = CreateCheckbox(localization->Get("ENABLE_BLOOM_HDR"));
-    bloomHDRToggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "BloomHDR", true));
-    SubscribeToEvent(bloomHDRToggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "BloomHDR", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto fxaa2Toggle = CreateCheckbox(localization->Get("ENABLE_FXAA2"));
-    fxaa2Toggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", true));
-    SubscribeToEvent(fxaa2Toggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "FXAA2", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto fxaa3Toggle = CreateCheckbox(localization->Get("ENABLE_FXAA3"));
-    fxaa3Toggle->SetChecked(GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", true));
-    SubscribeToEvent(fxaa3Toggle, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("postprocess", "FXAA3", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-        SendEvent("postprocess");
-    });
-
-    CreateSingleLine();
-    auto applyVideoSettings = CreateButton(localization->Get("APPLY"));
-
-    // Detect button press events
-    SubscribeToEvent(applyVideoSettings, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        SaveVideoSettings();
-    });
+    // Loop trough all of the controls and update their labels
+    for (auto it = names.Begin(); it != names.End(); ++it) {
+        int actionId = (*it).first_;
+        if (control_mappings_.Contains(actionId) && control_mappings_[actionId]) {
+            control_mappings_[actionId]->SetText(controllerInput->GetActionKeyName(actionId));
+        }
+    }
 }
 
 void SettingsWindow::CreateGameTab()
 {
     auto* localization = GetSubsystem<Localization>();
+    auto game_tab = tabs_->AddTab(localization->Get("GAME"));
+    game_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
-    CreateSingleLine();
-    Vector<String> languages;
+    // graphics tab
+    language_selection_ = new UIMultiOption(context_);
+    language_selection_->SetName("Language");
+    language_selection_->SetOptionName(localization->Get("LANGUAGE"));
+    language_selection_->SetStyleAuto();
+    language_selection_->SetTags({ "language" });
+
+    StringVector languages;
     for (unsigned int i = 0; i < localization->GetNumLanguages(); i++) {
         languages.Push(localization->GetLanguage(i));
     }
+    language_selection_->SetStrings(languages);
+    language_selection_->SetOptionIndex(localization->GetLanguageIndex());
+    game_tab->AddChild(language_selection_);
 
-    auto languageMenu = CreateMenu(localization->Get("LANGUAGE"), languages);
-    languageMenu->SetSelection(languages.IndexOf(GetGlobalVar("Language").GetString()));
-    SubscribeToEvent(languageMenu, E_ITEMSELECTED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace ItemSelected;
-        int selection = eventData[P_SELECTION].GetInt();
+    enable_mods_ = new UIBoolOption(context_);
+    enable_mods_->SetName("Mods");
+    enable_mods_->SetOptionName(localization->Get("MODS"));
+    enable_mods_->SetStyleAuto();
+    enable_mods_->SetTags({ "mods" });
+    enable_mods_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true));
+    game_tab->AddChild(enable_mods_);
 
-        auto* localization = GetSubsystem<Localization>();
-        Vector<String> languages;
-        for (unsigned int i = 0; i < localization->GetNumLanguages(); i++) {
-            languages.Push(localization->GetLanguage(i));
-        }
+    developer_console_ = new UIBoolOption(context_);
+    developer_console_->SetName("DeveloperConsole");
+    developer_console_->SetOptionName(localization->Get("DEVELOPER_CONSOLE"));
+    developer_console_->SetStyleAuto();
+    developer_console_->SetTags({ "developer_console" });
+    developer_console_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));
+    game_tab->AddChild(developer_console_);
 
-        GetSubsystem<ConfigManager>()->Set("engine", "Language", languages.At(selection));
-        GetSubsystem<ConfigManager>()->Save(true);
+    auto elm = new UIElement(context_);
+    elm->SetMinSize(100, 32);
+    elm->SetMaxHeight(30);
+    elm->SetVerticalAlignment(VA_TOP);
+    clear_achievements_ = new Button(context_);
+    clear_achievements_->SetFixedSize(200, 28);
 
-        VariantMap& data = GetEventDataMap();
-        data["Title"] = localization->Get("WARNING");
-        data["Message"] = localization->Get("RESTART_TO_APPLY");
-        data["Name"] = "PopupMessageWindow";
-        data["Type"] = "warning";
-        data["ClosePrevious"] = true;
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
-    });
+    auto btn_text = new Text(context_);
+    btn_text->SetText(localization->Get("CLEAR_ACHIEVEMENTS"));
+    clear_achievements_->AddChild(btn_text);
+    btn_text->SetAlignment(HA_CENTER, VA_CENTER);
 
-    // Load mods
-    CreateSingleLine();
-    auto loadMods = CreateCheckbox(localization->Get("LOAD_MODS"));
-    loadMods->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true));
-    SubscribeToEvent(loadMods, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("game", "LoadMods", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
+    elm->AddChild(clear_achievements_);
+    clear_achievements_->SetHorizontalAlignment(HA_RIGHT);
 
-        auto* localization = GetSubsystem<Localization>();
+    clear_achievements_->SetStyleAuto();
+    btn_text->SetStyleAuto();
+    elm->SetStyleAuto();
+    game_tab->AddChild(elm);
 
-        VariantMap& data = GetEventDataMap();
-        data["Title"] = localization->Get("WARNING");
-        data["Message"] = localization->Get("RESTART_TO_APPLY");
-        data["Name"] = "PopupMessageWindow";
-        data["Type"] = "warning";
-        data["ClosePrevious"] = true;
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
-    });
-
-    // Developer console
-    CreateSingleLine();
-    auto developerConsole = CreateCheckbox(localization->Get("DEVELOPER_CONSOLE"));
-    developerConsole->SetChecked(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));
-    SubscribeToEvent(developerConsole, E_TOGGLED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace Toggled;
-        bool enabled = eventData[P_STATE].GetBool();
-        GetSubsystem<ConfigManager>()->Set("game", "DeveloperConsole", enabled);
-        GetSubsystem<ConfigManager>()->Save(true);
-    });
-
-    CreateSingleLine();
-    auto clearAchievementsButton = CreateButton(localization->Get("CLEAR_ACHIEVEMENTS"));
-    SubscribeToEvent(clearAchievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(clear_achievements_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         GetSubsystem<Achievements>()->ClearAchievementsProgress();
+
+        VariantMap& data = GetEventDataMap();
+        data["Message"] = "Achievements cleared!";
+        SendEvent("ShowNotification", data);
     });
 }
 
-void SettingsWindow::SaveVideoSettings()
-{
-
-    _graphicsSettings = _graphicsSettingsNew;
-
-    Graphics* graphics = GetSubsystem<Graphics>();
-    graphics->SetMode(
-            _graphicsSettings.width,
-            _graphicsSettings.height,
-            _graphicsSettings.fullscreen,
-            false,
-            false,
-            false,
-            _graphicsSettings.vsync,
-            _graphicsSettings.tripleBuffer,
-            _graphicsSettings.multisample,
-            _graphicsSettings.monitor,
-            0
-    );
-
-    auto* renderer = GetSubsystem<Renderer>();
-    renderer->SetTextureFilterMode(TextureFilterMode(_graphicsSettings.textureFilterMode));
-    renderer->SetTextureAnisotropy(_graphicsSettings.textureAnistropy);
-    renderer->SetTextureQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
-    renderer->SetMaterialQuality(static_cast<MaterialQuality>(_graphicsSettings.textureQuality));
-    renderer->SetShadowQuality((ShadowQuality)_graphicsSettings.shadowQuality);
-    renderer->SetDrawShadows(_graphicsSettings.shadows);
-
-    GetSubsystem<Engine>()->SetMaxFps((_graphicsSettings.frameLimiter) ? 60 : 0);
-
-    GetSubsystem<ConfigManager>()->Set("engine", "WindowWidth", _graphicsSettingsNew.width);
-    GetSubsystem<ConfigManager>()->Set("engine", "WindowHeight", _graphicsSettingsNew.height);
-    GetSubsystem<ConfigManager>()->Set("engine", "VSync", (bool)_graphicsSettingsNew.vsync);
-    GetSubsystem<ConfigManager>()->Set("engine", "Fullscreen", (bool)_graphicsSettingsNew.fullscreen);
-    GetSubsystem<ConfigManager>()->Set("engine", "FrameLimiter", (bool)_graphicsSettingsNew.frameLimiter);
-    GetSubsystem<ConfigManager>()->Set("engine", "TripleBuffer", (bool)_graphicsSettingsNew.tripleBuffer);
-    GetSubsystem<ConfigManager>()->Set("engine", "Shadows", (bool)_graphicsSettingsNew.shadows);
-    GetSubsystem<ConfigManager>()->Set("engine", "Monitor", _graphicsSettingsNew.monitor);
-
-    GetSubsystem<ConfigManager>()->Set("engine", "ShadowQuality", _graphicsSettingsNew.shadowQuality);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureQuality", _graphicsSettingsNew.textureQuality);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureAnisotropy", _graphicsSettingsNew.textureAnistropy);
-    GetSubsystem<ConfigManager>()->Set("engine", "TextureFilterMode", _graphicsSettingsNew.textureFilterMode);
-    GetSubsystem<ConfigManager>()->Set("engine", "MultiSample", _graphicsSettingsNew.multisample);
-    GetSubsystem<ConfigManager>()->Save(true);
-
-    SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
-}
-
-void SettingsWindow::HandleControlsUpdated(StringHash eventType, VariantMap& eventData)
-{
-    Input* input = GetSubsystem<Input>();
-    if (!input->IsMouseVisible()) {
-        input->SetMouseVisible(true);
+void SettingsWindow::FillRates(int monitor) {
+    auto rates = GetFullscreenRefreshRates(monitor);
+    for (unsigned i = 0; i < rates.Size() / 2; i++) {
+        Swap(*(rates.Begin() + i), *(rates.Begin() + rates.Size() - 1 - i));
+    }
+    StringVector res;
+    for (auto r : rates) {
+        res.Push(ToString("%d", r));
     }
 
-    ChangeTab(CONTROLS);
+    opt_rate_->SetStrings(res);
+    opt_rate_->SetOptionIndex(res.Size() - 1);
 }
 
-void SettingsWindow::InitGraphicsSettings()
-{
-    _graphicsSettings.width = GetGlobalVar("WindowWidth").GetInt();
-    _graphicsSettings.height = GetGlobalVar("WindowHeight").GetInt();
-    _graphicsSettings.fullscreen = GetGlobalVar("Fullscreen").GetBool() ? 1 : 0;
-    _graphicsSettings.frameLimiter = GetGlobalVar("FrameLimiter").GetBool() ? 1 : 0;
-    _graphicsSettings.monitor = GetGlobalVar("Monitor").GetInt();
-    _graphicsSettings.vsync = GetGlobalVar("VSync").GetBool() ? 1 : 0;
-    _graphicsSettings.tripleBuffer = GetGlobalVar("TripleBuffer").GetBool() ? 1 : 0;
-    _graphicsSettings.shadows = GetGlobalVar("Shadows").GetBool() ? 1 : 0;
-    _graphicsSettings.shadowQuality = GetGlobalVar("ShadowQuality").GetInt();
-    _graphicsSettings.textureQuality = GetGlobalVar("TextureQuality").GetInt();
-    _graphicsSettings.textureAnistropy = GetGlobalVar("TextureAnisotropy").GetInt();
-    _graphicsSettings.textureFilterMode = GetGlobalVar("TextureFilterMode").GetInt();
-    _graphicsSettings.multisample = Max(GetGlobalVar("MultiSample").GetInt(), 0);
+void SettingsWindow::FillResolutions(int monitor, int rate) {
+    ResolutionVector resolutions = GetFullscreenResolutions(monitor, rate);
+    for (unsigned i = 0; i < resolutions.Size() / 2; i++) {
+        Swap(*(resolutions.Begin() + i), *(resolutions.Begin() + resolutions.Size() - 1 - i));
+    }
+    StringVector res;
+    for (auto r : resolutions) {
+        res.Push((r.ToString(false)));
+    }
 
-    String activeResolution = String(_graphicsSettings.width) + " x " + String(_graphicsSettings.height);
-    auto graphics = GetSubsystem<Graphics>();
+    opt_resolution_->SetStrings(res);
+    opt_resolution_->SetOptionIndex(res.Size() - 1);
+}
 
-    auto resolutions = graphics->GetResolutions(0);
-    for (auto it = resolutions.Begin(); it != resolutions.End(); ++it) {
-        if ((*it).x_ < 500 || (*it).y_ < 500) {
-            continue;
+void SettingsWindow::RefreshVideoOptions() {
+    refreshing_ = true;
+
+    Graphics* graphics = context_->GetSubsystem<Graphics>();
+    if (!graphics->GetFullscreen() && !graphics->GetBorderless())
+    {
+        windowed_resolution_ = graphics->GetSize();
+        windowed_position_ = graphics->GetWindowPosition();
+    }
+
+    btn_apply_->SetFocusMode(needs_apply_ ? FM_FOCUSABLE : FM_NOTFOCUSABLE);
+    btn_apply_->SetEnabled(needs_apply_);
+
+    int monitor = graphics->GetMonitor();
+
+    StringVector monitor_names;
+    for (int i = 0; i < GetMonitorCount(); i++) {
+        monitor_names.Push(SDL_GetDisplayName(i));
+    }
+
+    opt_monitor_->SetStrings(monitor_names);
+    opt_monitor_->SetOptionIndex(monitor);
+
+    FillRates(monitor);
+
+    int rate = -1;
+    rate = ToInt(opt_rate_->GetValue());
+    FillResolutions(monitor, rate);
+
+    RenderWindowMode mode = RWM_WINDOWED;
+    if (!graphics->GetFullscreen() && graphics->GetBorderless()) {
+        mode = RWM_FULLSCREEN_WINDOW;
+    } else
+        mode = RWM_FULLSCREEN;
+
+    opt_fullscreen_->SetOptionIndex((int)RWM_WINDOWED);
+
+    IntVector2 graphics_size = graphics->GetSize();
+
+    // find the current fullscreen resolution and set the resolution option to it
+    auto res_index = -1;
+    if (graphics->GetFullscreen()) {
+        int refreshrate = graphics->GetRefreshRate();
+        ResolutionVector resolutions = GetFullscreenResolutions(
+                opt_monitor_->GetOptionIndex(),
+                ToInt(opt_rate_->GetValue()));
+        // reverse resolutions to low -> high
+        for (unsigned i = 0; i < resolutions.Size() / 2; i++) {
+            Swap(*(resolutions.Begin() + i), *(resolutions.Begin() + resolutions.Size() - 1 - i));
         }
-        String name = String((*it).x_) + " x " + String((*it).y_);
-        if (!_availableResolutionNames.Contains(name)) {
-            _availableResolutionNames.Push(name);
-            if (activeResolution == name) {
-                _graphicsSettings.activeResolution = _availableResolutionNames.Size() - 1;
+
+        int i = 0;
+        for (auto it = resolutions.Begin(); it != resolutions.End(); ++it, ++i) {
+            if (it->width == graphics_size.x_ && it->height == graphics_size.y_ && it->refreshrate == refreshrate) {
+                res_index = i;
+                break;
             }
         }
     }
 
-    _graphicsSettingsNew = _graphicsSettings;
+    if (res_index != -1)
+        opt_resolution_->SetOptionIndex(res_index);
+
+
+    opt_vsync_->SetOptionValue(graphics->GetVSync());
+
+    opt_resizable_->SetOptionValue(graphics->GetResizable());
+
+    refreshing_ = false;
 }
 
-Button* SettingsWindow::CreateTabButton(const String& text)
+void SettingsWindow::ApplyVideoOptions()
 {
-    const int width = 120;
-    const int border = 4;
+    Graphics* graphics = context_->GetSubsystem<Graphics>();
 
-    auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    int fullscreen = opt_fullscreen_->GetOptionIndex();
 
-    auto* button = _baseWindow->CreateChild<Button>();
-    button->SetStyleAuto();
-    button->SetFixedWidth(width);
-    button->SetFixedHeight(30);
-    button->SetPosition(IntVector2(_tabs.Size() * (width + border) + border, 24));
-    button->SetAlignment(HA_LEFT, VA_TOP);
+    Resolution res;
 
-    auto* buttonText = button->CreateChild<Text>();
-    buttonText->SetFont(font, 12);
-    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-    buttonText->SetText(text);
 
-    _baseWindow->SetWidth((_tabs.Size() + 1) * (width + border) + border);
-    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
-
-    return button;
-}
-
-Button* SettingsWindow::CreateButton(const String& text)
-{
-    auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
-
-    auto* button = _activeLine->CreateChild<Button>();
-    button->SetStyleAuto();
-    button->SetFixedWidth(COLUMN_WIDTH);
-    button->SetHeight(30);
-
-    auto* buttonText = button->CreateChild<Text>("Label");
-    buttonText->SetFont(font, 12);
-    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
-    buttonText->SetText(text);
-
-    return button;
-}
-
-CheckBox* SettingsWindow::CreateCheckbox(const String& label)
-{
-    if (!_activeLine) {
-        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-        return nullptr;
+    // In fullscreen borderless window, resolution must be 0x0, Urho3D will apply accordingly
+    URHO3D_LOGINFOF("fullscreen %d", fullscreen);
+    if (fullscreen == RWM_WINDOWED) {
+        res = Resolution::FromString(opt_resolution_->GetValue());
+    } if (fullscreen == RWM_FULLSCREEN_WINDOW) {
+        res = Resolution(0, 0);
+    } else if (fullscreen == RWM_FULLSCREEN) {
+        res = Resolution::FromString(opt_resolution_->GetValue());
+        res.refreshrate = ToInt(opt_rate_->GetValue());
     }
 
-    auto *cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    graphics->SetMode(
+            res.width,
+            res.height,
+            fullscreen == 2,
+            fullscreen == 1,
+            true,
+            false,
+            !!opt_vsync_->GetOptionValue(),
+            false,
+            0,
+            opt_monitor_->GetOptionIndex(),
+            res.refreshrate
+    );
 
-    SharedPtr<Text> text(new Text(context_));
-    _activeLine->AddChild(text);
-    text->SetText(label);
-    text->SetStyleAuto();
-    text->SetFixedWidth(COLUMN_WIDTH);
-    text->SetFont(font, 12);
-
-    SharedPtr<CheckBox> box(new CheckBox(context_));
-    _activeLine->AddChild(box);
-    box->SetStyleAuto();
-
-    return box;
-}
-
-
-Text* SettingsWindow::CreateLabel(const String& text)
-{
-    if (!_activeLine) {
-        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-        return nullptr;
+    if (fullscreen == 0) {
+        graphics->SetWindowPosition(windowed_position_);
     }
 
-    auto *cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    SDL_RaiseWindow(graphics->GetWindow());
 
-    // Create log element to view latest logs from the system
-    auto *label = _activeLine->CreateChild<Text>();
-    label->SetFont(font, 12);
-    label->SetPosition(10, 30 + _tabElementCount * 30);
-    label->SetText(text);
-    label->SetFixedWidth(COLUMN_WIDTH);
+    GetSubsystem<ConfigManager>()->Set("video", "WindowMode", fullscreen);
+    GetSubsystem<ConfigManager>()->Set("video", "Width", res.width);
+    GetSubsystem<ConfigManager>()->Set("video", "Height", res.height);
+    GetSubsystem<ConfigManager>()->Set("video", "RefreshRate", res.refreshrate);
+    GetSubsystem<ConfigManager>()->Set("video", "VSync", opt_vsync_->GetOptionValue());
+    GetSubsystem<ConfigManager>()->Set("video", "Monitor", opt_monitor_->GetOptionIndex());
 
-    return label;
+    SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
+
 }
 
-Slider* SettingsWindow::CreateSlider(const String& text)
+void SettingsWindow::RefreshGraphicsOptions()
 {
-    if (!_activeLine) {
-        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-        return nullptr;
+    // mark as refreshing so options that are being read don't get applied
+    refreshing_ = true;
+    auto renderer = GetSubsystem<Renderer>();
+
+    opt_texture_quality_->SetOptionIndex((int)renderer->GetTextureQuality());
+    opt_material_quality_->SetOptionIndex((int)renderer->GetMaterialQuality());
+
+    if (renderer->GetDrawShadows()) {
+        opt_shadows_->SetOptionIndex(renderer->GetShadowMapSize() / 512);
+    } else
+        opt_shadows_->SetOptionIndex(0);
+
+    opt_shadow_quality_->SetOptionIndex((int)renderer->GetShadowQuality());
+    opt_occlusion_->SetOptionIndex(renderer->GetMaxOccluderTriangles() > 0 ? 1 : 0);
+    opt_instancing_->SetOptionIndex(renderer->GetDynamicInstancing() ? 1 : 0);
+    opt_specular_->SetOptionIndex(renderer->GetSpecularLighting() ? 1 : 0);
+    opt_hdr_->SetOptionIndex(renderer->GetHDRRendering() ? 1 : 0);
+
+    refreshing_ = false;
+}
+
+void SettingsWindow::ApplyGraphicsOptions()
+{
+    if (refreshing_)
+        return;
+
+    auto renderer = GetSubsystem<Renderer>();
+
+    renderer->SetTextureQuality((Urho3D::MaterialQuality)opt_texture_quality_->GetOptionIndex());
+    renderer->SetMaterialQuality((Urho3D::MaterialQuality)opt_material_quality_->GetOptionIndex());
+    renderer->SetDrawShadows(opt_shadows_->GetOptionIndex() != 0);
+    renderer->SetShadowMapSize(opt_shadows_->GetOptionIndex() * 512);
+    renderer->SetShadowQuality((ShadowQuality)opt_shadow_quality_->GetOptionIndex());
+    renderer->SetMaxOccluderTriangles(opt_occlusion_->GetOptionIndex() > 0 ? 5000 : 0);
+    renderer->SetDynamicInstancing(opt_instancing_->GetOptionIndex() > 0);
+    renderer->SetSpecularLighting(opt_specular_->GetOptionIndex() > 0);
+    renderer->SetHDRRendering(opt_hdr_->GetOptionIndex() > 0);
+
+    GetSubsystem<ConfigManager>()->Set("graphics", "TextureQuality", opt_texture_quality_->GetOptionIndex());
+    GetSubsystem<ConfigManager>()->Set("graphics", "MaterialQuality", opt_material_quality_->GetOptionIndex());
+    GetSubsystem<ConfigManager>()->Set("graphics", "DrawShadows", opt_shadows_->GetOptionIndex() != 0);
+    GetSubsystem<ConfigManager>()->Set("graphics", "ShadowMapSize", opt_shadows_->GetOptionIndex() * 512);
+    GetSubsystem<ConfigManager>()->Set("graphics", "ShadowQuality", opt_shadow_quality_->GetOptionIndex());
+    GetSubsystem<ConfigManager>()->Set("graphics", "MaxOccluderTriangles", opt_occlusion_->GetOptionIndex() > 0 ? 5000 : 0);
+    GetSubsystem<ConfigManager>()->Set("graphics", "DynamicInstancing", opt_instancing_->GetOptionIndex() > 0);
+    GetSubsystem<ConfigManager>()->Set("graphics", "SpecularLighting", opt_specular_->GetOptionIndex() > 0);
+    GetSubsystem<ConfigManager>()->Set("graphics", "HDRRendering", opt_hdr_->GetOptionIndex() > 0);
+}
+
+void SettingsWindow::HandleTabChanged(StringHash eventType, VariantMap& eventData) {
+    using namespace UITabChanged;
+    int index = eventData[P_INDEX].GetInt();
+
+    switch (index) {
+        case 0:
+            RefreshVideoOptions();
+            break;
+        case 1:
+            RefreshGraphicsOptions();
+            break;
+        default:
+            break;
+    }
+}
+
+void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& eventData)
+{
+    if (refreshing_)
+        return;
+
+    using namespace UIOptionChanged;
+    auto option = static_cast<UIOption*>(eventData[P_OPTION].GetPtr());
+    auto name = option->GetName();
+
+    if (name == "OptMonitor") {
+        int monitor = opt_monitor_->GetOptionIndex();
+        FillRates(monitor);
+        int rate = ToInt(opt_rate_->GetValue());
+        FillResolutions(monitor, rate);
+    } else if (name == "OptRate") {
+        int rate = ToInt(opt_rate_->GetValue());
+        int monitor = opt_monitor_->GetOptionIndex();
+        FillResolutions(monitor, rate);
     }
 
-    auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    needs_apply_ |= option->HasTag("video");
+    btn_apply_->SetFocusMode(needs_apply_ ? FM_FOCUSABLE : FM_NOTFOCUSABLE);
+    btn_apply_->SetEnabled(needs_apply_);
 
-    // Create text and slider below it
-    auto* sliderText = _activeLine->CreateChild<Text>();
-    sliderText->SetPosition(0, 0);
-    sliderText->SetWidth(50);
-    sliderText->SetFont(font, 12);
-    sliderText->SetText(text);
-    sliderText->SetFixedWidth(COLUMN_WIDTH);
+    if (option->HasTag("misc-video")) {
+        auto graphics = GetSubsystem<Graphics>();
+        SDL_SetWindowResizable(graphics->GetWindow(), opt_resizable_->GetOptionValue() ? SDL_TRUE : SDL_FALSE);
 
-    auto* slider = _activeLine->CreateChild<Slider>();
-    slider->SetStyleAuto();
-    slider->SetPosition(0, 0);
-    slider->SetSize(300, 30);
-    slider->SetFixedWidth(COLUMN_WIDTH);
-    // Use 0-1 range for controlling sound/music master volume
-    slider->SetRange(1.0f);
-    slider->SetRepeatRate(0.2);
+        auto engine = GetSubsystem<Engine>();
+        int fps_limit = 0;
+        if (opt_fpslimit_->GetOptionIndex() == 0) {
+            fps_limit = GetSubsystem<Engine>()->GetMaxFps();
+        } else if (opt_fpslimit_->GetOptionIndex() > 1) {
+            fps_limit = Clamp(ToInt(opt_fpslimit_->GetValue()), 30, 300);
+        } else if (opt_fpslimit_->GetOptionIndex() == 1) {
+            fps_limit = 0;
+        }
 
-    return slider;
-}
+        engine->SetMaxFps(fps_limit);
+        GetSubsystem<ConfigManager>()->Set("video", "ResizableWindow", opt_resizable_->GetOptionValue() ? true : false);
+        GetSubsystem<ConfigManager>()->Set("engine", "FPSLimit", fps_limit);
+        GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", gamma_->GetValue());
 
-DropDownList* SettingsWindow::CreateMenu(const String& label, Vector<String>& items)
-{
-    if (!_activeLine) {
-        URHO3D_LOGERROR("Call `CreateSingleLine` first before making any elements!");
-        return nullptr;
+        SendEvent("postprocess");
     }
 
-    auto* cache = GetSubsystem<ResourceCache>();
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
-
-    SharedPtr<Text> text(new Text(context_));
-    _activeLine->AddChild(text);
-    text->SetText(label);
-    text->SetStyleAuto();
-    text->SetFixedWidth(COLUMN_WIDTH);
-    text->SetFont(font, 12);
-
-    SharedPtr<DropDownList> list(new DropDownList(context_));
-    _activeLine->AddChild(list);
-    list->SetStyleAuto();
-    list->SetFixedWidth(COLUMN_WIDTH);
-
-    for (auto it = items.Begin(); it != items.End(); ++it)
-    {
-        SharedPtr<Text> item(new Text(context_));
-        list->AddItem(item);
-        item->SetText((*it));
-        item->SetStyleAuto();
-        item->SetFixedWidth(COLUMN_WIDTH);
-        item->SetFont(font, 12);
+    if (option->HasTag("graphics")) {
+        ApplyGraphicsOptions();
     }
 
-    return list;
+    // Audio settings
+    if (option->HasTag("audio")) {
+        String type = option->GetVar("AudioType").GetString();
+        URHO3D_LOGINFOF("Audio: %s", type.CString());
+        if (!type.Empty()) {
+            GetSubsystem<Audio>()->SetMasterGain(type, audio_settings_[type]->GetValue());
+            GetSubsystem<ConfigManager>()->Set("audio", type, audio_settings_[type]->GetValue());
+        }
+    }
+
+    // Controller settings
+    auto controllerInput = GetSubsystem<ControllerInput>();
+    if (option->HasTag("invert_mouse_x")) {
+        controllerInput->SetInvertX(invert_mouse_x->GetOptionValue(), ControllerType::MOUSE);
+        GetSubsystem<ConfigManager>()->Set("mouse", "InvertX", invert_mouse_x->GetOptionValue());
+        VariantMap& data = GetEventDataMap();
+        data["Message"] = "Invert mouse X!";
+        SendEvent("ShowNotification", data);
+    }
+    if (option->HasTag("invert_mouse_y")) {
+        controllerInput->SetInvertX(invert_mouse_y->GetOptionValue(), ControllerType::MOUSE);
+        GetSubsystem<ConfigManager>()->Set("mouse", "InvertY", invert_mouse_y->GetOptionValue());
+    }
+
+    if (option->HasTag("invert_joystick_x")) {
+        controllerInput->SetInvertX(invert_joystic_x->GetOptionValue(), ControllerType::JOYSTICK);
+        GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", invert_joystic_x->GetOptionValue());
+    }
+    if (option->HasTag("invert_joystick_y")) {
+        controllerInput->SetInvertX(invert_joystick_y->GetOptionValue(), ControllerType::JOYSTICK);
+        GetSubsystem<ConfigManager>()->Set("joystick", "InvertY", invert_joystick_y->GetOptionValue());
+    }
+    if (option->HasTag("multiple_controllers")) {
+        controllerInput->SetMultipleControllerSupport(multiple_controllers_->GetOptionValue());
+        GetSubsystem<ConfigManager>()->Set("joystick", "MultipleControllers", multiple_controllers_->GetOptionValue());
+    }
+
+    if (option->HasTag("joystick_as_first")) {
+        controllerInput->SetJoystickAsFirstController(joystick_as_first_->GetOptionValue());
+        GetSubsystem<ConfigManager>()->Set("joystick", "JoystickAsFirstController", joystick_as_first_->GetOptionValue());
+    }
+
+    if (option->HasTag("mouse_sensitivity")) {
+        controllerInput->SetSensitivityX(mouse_sensitivity->GetValue(), ControllerType::MOUSE);
+        controllerInput->SetSensitivityY(mouse_sensitivity->GetValue(), ControllerType::MOUSE);
+        GetSubsystem<ConfigManager>()->Set("mouse", "Sensitivity", mouse_sensitivity->GetValue());
+    }
+
+    if (option->HasTag("joystick_sensitivity_x")) {
+        controllerInput->SetSensitivityX(joystick_sensitivity_x->GetValue(), ControllerType::JOYSTICK);
+        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityX", joystick_sensitivity_x->GetValue());
+    }
+
+    if (option->HasTag("joystick_sensitivity_y")) {
+        controllerInput->SetSensitivityY(joystick_sensitivity_y->GetValue(), ControllerType::JOYSTICK);
+        GetSubsystem<ConfigManager>()->Set("joystick", "SensitivityY", joystick_sensitivity_y->GetValue());
+    }
+
+    if (option->HasTag("deadzone")) {
+        controllerInput->SetJoystickDeadzone(deadzone_->GetValue());
+        GetSubsystem<ConfigManager>()->Set("joystick", "Deadzone", deadzone_->GetValue());
+    }
+
+    // Game settings
+    if (option->HasTag("language")) {
+        GetSubsystem<ConfigManager>()->Set("game", "Language", language_selection_->GetValue());
+
+        auto* localization = GetSubsystem<Localization>();
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    }
+
+    if (option->HasTag("mods")) {
+        GetSubsystem<ConfigManager>()->Set("game", "LoadMods", enable_mods_->GetOptionValue());
+
+        auto* localization = GetSubsystem<Localization>();
+        VariantMap& data = GetEventDataMap();
+        data["Title"] = localization->Get("WARNING");
+        data["Message"] = localization->Get("RESTART_TO_APPLY");
+        data["Name"] = "PopupMessageWindow";
+        data["Type"] = "warning";
+        data["ClosePrevious"] = true;
+        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    }
+
+    if (option->HasTag("developer_console")) {
+        GetSubsystem<ConfigManager>()->Set("game", "DeveloperConsole", developer_console_->GetOptionValue());
+    }
+
+    GetSubsystem<ConfigManager>()->Save(true);
 }
 
-UIElement* SettingsWindow::CreateSingleLine()
+void SettingsWindow::HandleApply(StringHash eventType, VariantMap& eventData)
 {
-    SharedPtr<UIElement> container(new UIElement(context_));
-    container->SetAlignment(HA_LEFT, VA_TOP);
-    container->SetLayout(LM_HORIZONTAL, 20, IntRect(4, 4, 4, 4));
-    container->SetFixedWidth(_listView->GetWidth() - 20);
-    container->SetFixedHeight(30);
-    _listView->AddItem(container);
-
-    _activeLine = container;
-
-    _tabElementCount++;
-
-    return _activeLine;
+    ApplyVideoOptions();
+    needs_apply_ = false;
 }
+

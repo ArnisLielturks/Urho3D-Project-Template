@@ -86,6 +86,8 @@ void Notifications::CreateNewNotification(NotificationData data)
     messageElement->SetText(data.message);
     messageElement->SetTextEffect(TextEffect::TE_STROKE);
     messageElement->SetStyleAuto();
+    // Notification must appear on top of everything
+    messageElement->SetPriority(99999);
 
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
     messageElement->SetColor(data.color);

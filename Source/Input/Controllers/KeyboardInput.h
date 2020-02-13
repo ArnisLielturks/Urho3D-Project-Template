@@ -12,7 +12,7 @@ public:
     KeyboardInput(Context* context);
 
     virtual ~KeyboardInput();
-	virtual String GetActionKeyName(int action);
+	virtual String GetActionKeyName(int action) override;
 
 protected:
     virtual void Init();

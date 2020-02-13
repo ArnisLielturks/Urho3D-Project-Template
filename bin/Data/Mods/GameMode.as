@@ -1,4 +1,4 @@
-uint count = 0;
+int count = 0;
 Node@ ground = null;
 Vector3 targetGroundScale = Vector3(40, 40, 40);
 
@@ -61,7 +61,7 @@ void CreateCheckpoint()
 {
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
     float scale = targetGroundScale.x * 0.5;
-    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 0, Random(scale * 2) - scale), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 2.0, Random(scale * 2) - scale), Quaternion());
 }
 
 void UpdateBoxes()
@@ -78,11 +78,11 @@ void UpdateBoxes()
 void CreateObject()
 {
     if (count > 40) {
-        log.Info("Box limit reached");
+        log.Info("Box limit reached, current count=" + String(count));
         return;
     }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/DestroyCube.xml");
-    scene.InstantiateXML(xml.root, Vector3(Random(30.0f) - 15.0f, 2.0f, Random(30.0f) - 15.0f), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(30.0f) - 15.0f, 50.0f, Random(30.0f) - 15.0f), Quaternion());
     count++;
 }
 /**

@@ -177,7 +177,7 @@ void ModLoader::SubscribeConsoleCommands()
 {
     using namespace MyEvents::ConsoleCommandAdd;
 
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_NAME] = "reload_mods";
     data[P_EVENT] = "HandleReloadMods";
     data[P_DESCRIPTION] = "Reload all scripts";
@@ -203,7 +203,7 @@ void ModLoader::CheckAllMods()
         result.Push((*it));
     }
     #endif
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data["Mods"] = result;
     SendEvent("ModsLoaded", data);
 }

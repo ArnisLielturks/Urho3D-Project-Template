@@ -20,7 +20,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:27-windows bash /var/sample/build_windows.sh
+      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:30-windows bash /var/sample/build_windows.sh
       - run:
           name: Archiving
           command: |
@@ -46,7 +46,7 @@ jobs:
     machine: true
     steps:
     - checkout
-    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:25-linux bash /var/sample/build_linux.sh
+    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:29-linux bash /var/sample/build_linux.sh
     - run:
         name: Archiving
         command: |

@@ -7,6 +7,7 @@
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Math/MathDefs.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
@@ -43,14 +44,41 @@ void BaseLevel::SubscribeToBaseEvents()
             URHO3D_LOGERROR("Invalid number of parameters");
         }
     });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "clip", MyEvents::ConsoleCommandAdd::P_EVENT, "clip", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change camera far/near clip", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
+    SubscribeToEvent("clip", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() == 3) {
+            float near = ToFloat(params[1]);
+            float far = ToFloat(params[2]);
+            for (int i = 0; i < _cameras.Size(); i++) {
+                _cameras[i]->GetComponent<Camera>()->SetNearClip(near);
+                _cameras[i]->GetComponent<Camera>()->SetFarClip(far);
+                URHO3D_LOGINFOF("Updating camera %d, near=%f, far=%f", i, near, far);
+            }
+        }
+    });
+
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
         ApplyPostProcessEffects();
+    });
+
+    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        auto cache = GetSubsystem<ResourceCache>();
+        for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
+            auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
+            SharedPtr<RenderPath> effectRenderPath = viewport->GetRenderPath()->Clone();
+            effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+            effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
+
+            viewport->SetRenderPath(effectRenderPath);
+        }
     });
 }
 
 void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
 {
-    data_ = eventData;
+    _data = eventData;
     Init();
     SubscribeToEvents();
 }
@@ -74,7 +102,7 @@ void BaseLevel::SubscribeToEvents()
     SubscribeToEvent("FovChange", URHO3D_HANDLER(BaseLevel, HandleFovChange));
 
     using namespace MyEvents::ConsoleCommandAdd;
-    VariantMap data = GetEventDataMap();
+    VariantMap& data = GetEventDataMap();
     data[P_NAME] = "fov";
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
@@ -141,7 +169,9 @@ Vector<IntRect> BaseLevel::InitRects(int count)
 
         // 2 players - split vertically
     else if (count == 2) {
+        // Left
         rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight()));
+        // Right
         rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight()));
     }
 
@@ -156,10 +186,76 @@ Vector<IntRect> BaseLevel::InitRects(int count)
     }
     else if (count == 4) {
         // split screen into 4 rectangles
+        // Top left
         rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight() / 2));
+        // Top right
         rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+        // Bottom left
         rects.Push(IntRect(0, graphics->GetHeight() / 2, graphics->GetWidth() / 2, graphics->GetHeight()));
+        // Bottom right
         rects.Push(IntRect(graphics->GetWidth() / 2, graphics->GetHeight() / 2, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 5) {
+        // split screen into 5 rectangles
+        // Top left
+        rects.Push(IntRect(0, 0, graphics->GetWidth() / 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(graphics->GetWidth() / 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        int width = graphics->GetWidth() / 3;
+        int top = graphics->GetHeight() / 2;
+        // Bottom left
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        // Bottom middle
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        // Bottom right
+        rects.Push(IntRect(width * 2, top, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 6) {
+        // split screen into 5 rectangles
+        int width = graphics->GetWidth() / 3;
+        // Top left
+        rects.Push(IntRect(0, 0, width, graphics->GetHeight() / 2));
+        // Top middle
+        rects.Push(IntRect(width, 0, width * 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(width * 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        int top = graphics->GetHeight() / 2;
+        // Bottom left
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        // Bottom middle
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        // Bottom right
+        rects.Push(IntRect(width * 2, top, graphics->GetWidth(), graphics->GetHeight()));
+    } else if (count == 7) {
+        int width = graphics->GetWidth() / 3;
+        rects.Push(IntRect(0, 0, width, graphics->GetHeight() / 2));
+        // Top middle
+        rects.Push(IntRect(width, 0, width * 2, graphics->GetHeight() / 2));
+        // Top right
+        rects.Push(IntRect(width * 2, 0, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        width = graphics->GetWidth() / 4;
+        int top = graphics->GetHeight() / 2;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight()));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight()));
+    }
+    else if (count == 8) {
+        int width = graphics->GetWidth() / 4;
+        int top = 0;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight() / 2));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight() / 2));
+
+        top = graphics->GetHeight() / 2;
+        rects.Push(IntRect(0, top, width, graphics->GetHeight()));
+        rects.Push(IntRect(width, top, width * 2, graphics->GetHeight()));
+        rects.Push(IntRect(width * 2, top, width * 3, graphics->GetHeight()));
+        rects.Push(IntRect(width * 3, top, graphics->GetWidth(), graphics->GetHeight()));
     }
 
     return rects;
@@ -243,8 +339,8 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("ColorCorrection")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
         }
-        if (!effectRenderPath->IsAdded("Blur")) {
-            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Blur.xml"));
+        if (!effectRenderPath->IsAdded("SSAO")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
 
         effectRenderPath->SetEnabled("AutoExposure",
@@ -264,11 +360,10 @@ void BaseLevel::ApplyPostProcessEffects()
                             GAMMA_MAX_VALUE);
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
-        effectRenderPath->SetEnabled("Blur", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Blur", false));
-        effectRenderPath->SetShaderParameter("BlurRadius",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurRadius", 2.0f));
-        effectRenderPath->SetShaderParameter("BlurSigma",
-                                             GetSubsystem<ConfigManager>()->GetFloat("postprocess", "BlurSigma", 2.0f));
+        effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
+
+        effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
+        effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
 
         viewport->SetRenderPath(effectRenderPath);
     }

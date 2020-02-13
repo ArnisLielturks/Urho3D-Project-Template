@@ -38,7 +38,7 @@ jobs:
           command: |
             curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
             unzip butler.zip
-            ./butler push archive/ miegamicis/sandbox:windows-64bit
+            ./butler push archive/ miegamicis/sandbox:windows
       - store_artifacts:
           path: archive/build.zip
           destination: ProjectTemplate_Windows.zip
@@ -66,7 +66,7 @@ jobs:
         command: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:windows-64bit
+          ./butler push archive/ miegamicis/sandbox:linux
     - store_artifacts:
         path: archive/build.zip
         destination: ProjectTemplate_Linux.zip

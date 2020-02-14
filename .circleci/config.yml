@@ -10,7 +10,7 @@ jobs:
 #          - script-
     - run: ./android/script.sh
     - store_artifacts:
-        path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
+        path: ./Urho3D/android/launcher-app/build/outputs/apk/release/launcher-app-release-unsigned.apk
         destination: ProjectTemplate.apk
 #    - save_cache:
 #        key: script-{{ checksum "android/script.sh" }}

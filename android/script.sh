@@ -27,7 +27,7 @@ cp android/CMakeLists.txt Urho3D/Source/ProjectTemplate/
 rm -rf Urho3D/android/launcher-app
 
 # Copy our versions of the apps
-cp -r android/urho3d-lib/build.gradle.kts Urho3D/android/urho3d-lib/build.gradle.kts
+# cp -r android/urho3d-lib/build.gradle.kts Urho3D/android/urho3d-lib/build.gradle.kts
 cp -r android/launcher-app Urho3D/android/launcher-app
 
 cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project/
@@ -39,7 +39,7 @@ cd Urho3D
 ./script/dockerized.sh android ./gradlew build --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release
 
 # Finally do a check if the APK is there
-FILE=android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
+FILE=android/launcher-app/build/outputs/apk/release/launcher-app-release-unsigned.apk
 if test -f "$FILE"; then
     echo "$FILE exists"
 else

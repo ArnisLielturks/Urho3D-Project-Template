@@ -42,11 +42,6 @@ android {
         versionName = project.version.toString()
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
-            ndkBuild {
-                arguments (
-                    "-j4"
-                )
-            }
             cmake {
                 arguments.apply {
                     System.getenv("ANDROID_CCACHE")?.let { add("-DANDROID_CCACHE=$it") }

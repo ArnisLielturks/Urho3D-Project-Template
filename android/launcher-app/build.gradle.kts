@@ -120,7 +120,7 @@ afterEvaluate {
                 if (System.getenv("CI") != null) {
                     @Suppress("UnstableApiUsage")
                     timeout.set(Duration.ofMinutes(15))
-                }vi
+                }
             }
         }
     }

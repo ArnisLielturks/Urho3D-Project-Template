@@ -36,7 +36,7 @@ cd Urho3D
 
 # Run dockerized android build to genereate libProjectTemplate.so file
 # Release mode
-./script/dockerized.sh android ./gradlew build --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release
+./script/dockerized.sh android ./gradlew build --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release
 
 # Finally do a check if the APK is there
 FILE=android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk

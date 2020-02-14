@@ -11,11 +11,9 @@
 
 namespace Urho3D {
 
-    const char* UI_CATEGORY = "UICategory";
-
 // static
     void UIOption::RegisterObject(Context* context) {
-        context->RegisterFactory<UIOption>(UI_CATEGORY);
+        context->RegisterFactory<UIOption>();
 
         URHO3D_COPY_BASE_ATTRIBUTES(BorderImage);
         URHO3D_MIXED_ACCESSOR_ATTRIBUTE("Option Name", GetOptionName, SetOptionName, String, "", AM_DEFAULT);
@@ -74,7 +72,7 @@ namespace Urho3D {
 
 // static
     void UIBoolOption::RegisterObject(Context* context) {
-        context->RegisterFactory<UIBoolOption>(UI_CATEGORY);
+        context->RegisterFactory<UIBoolOption>();
 
         URHO3D_COPY_BASE_ATTRIBUTES(UIOption);
 
@@ -190,7 +188,7 @@ namespace Urho3D {
 
 // static
     void UIMultiOption::RegisterObject(Context* context) {
-        context->RegisterFactory<UIMultiOption>(UI_CATEGORY);
+        context->RegisterFactory<UIMultiOption>();
 
         URHO3D_COPY_BASE_ATTRIBUTES(UIOption);
 
@@ -340,7 +338,7 @@ namespace Urho3D {
 
 //static
     void UISliderOption::RegisterObject(Context* context) {
-        context->RegisterFactory<UISliderOption>(UI_CATEGORY);
+        context->RegisterFactory<UISliderOption>();
 
         URHO3D_COPY_BASE_ATTRIBUTES(UIOption);
 
@@ -435,7 +433,7 @@ namespace Urho3D {
 
 // static
     void UITabPanel::RegisterObject(Context* context) {
-        context->RegisterFactory<UITabPanel>(UI_CATEGORY);
+        context->RegisterFactory<UITabPanel>();
 
         URHO3D_COPY_BASE_ATTRIBUTES(BorderImage);
 

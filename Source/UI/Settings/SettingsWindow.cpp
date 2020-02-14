@@ -198,10 +198,10 @@ void SettingsWindow::InitWindow()
     window_->GetParent()->SetPriority(window_->GetParent()->GetPriority() + 1);
 
     // Set Window size and layout settings
-    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth());
-    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight());
-    window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth());
-    window_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight());
+    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
+    window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+    window_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
     window_->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
     window_->SetAlignment(HA_CENTER, VA_CENTER);
     window_->SetName("Window");

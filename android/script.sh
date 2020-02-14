@@ -27,7 +27,7 @@ cp android/CMakeLists.txt Urho3D/Source/ProjectTemplate/
 rm -rf Urho3D/android/launcher-app
 
 # Copy our versions of the apps
-#cp -r android/urho3d-lib Urho3D/android/urho3d-lib
+cp -r android/urho3d-lib/build.gradle.kts Urho3D/android/urho3d-lib/build.gradle.kts
 cp -r android/launcher-app Urho3D/android/launcher-app
 
 cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project/

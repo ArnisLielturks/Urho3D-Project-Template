@@ -43,6 +43,7 @@ android {
                 arguments.apply {
                     System.getenv("ANDROID_CCACHE")?.let { add("-DANDROID_CCACHE=$it") }
                     add("-DGRADLE_BUILD_DIR=$buildDir")
+                    add("-j 4")
                     // Pass along matching Gradle properties as CMake build options
                     addAll(listOf(
                             "URHO3D_LIB_TYPE",

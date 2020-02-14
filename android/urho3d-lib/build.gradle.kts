@@ -43,7 +43,9 @@ android {
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             ndkBuild {
-                arguments "-j4"
+                arguments (
+                    "-j4"
+                )
             }
             cmake {
                 arguments.apply {

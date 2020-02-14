@@ -42,11 +42,13 @@ android {
         versionName = project.version.toString()
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
+            ndkBuild {
+                arguments "-j8"
+            }
             cmake {
                 arguments.apply {
                     System.getenv("ANDROID_CCACHE")?.let { add("-DANDROID_CCACHE=$it") }
                     add("-DGRADLE_BUILD_DIR=$buildDir")
-                    add("-j 4")
                     // Pass along matching Gradle properties as CMake build options
                     addAll(
                         listOf(

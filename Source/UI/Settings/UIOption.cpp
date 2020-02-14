@@ -11,7 +11,7 @@
 
 namespace Urho3D {
 
-    extern const char* UI_CATEGORY;
+    const char* UI_CATEGORY = "UICategory";
 
 // static
     void UIOption::RegisterObject(Context* context) {

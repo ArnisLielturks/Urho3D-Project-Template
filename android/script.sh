@@ -35,6 +35,6 @@ cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project
 cd Urho3D
 
 # Run dockerized android build to genereate libProjectTemplate.so file
-./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P URHO3D_LUA=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
+./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
 
 cd ..

@@ -38,8 +38,12 @@ cd Urho3D
 # Release mode
 ./script/dockerized.sh android ./gradlew build --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release
 
+# Debug mode
+#./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
+
 # Finally do a check if the APK is there
-FILE=android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
+mv $(find . -name "*.apk") ./ProjectTemplate.apk
+FILE=ProjectTemplate.apk
 if test -f "$FILE"; then
     echo "$FILE exists"
 else
@@ -47,20 +51,5 @@ else
     # Mark our build as failed
     exit 1
 fi
-
-
-
-# Debug mode
-#./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
-
-# Finally do a check if the APK is there
-# FILE=android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk
-# if test -f "$FILE"; then
-#     echo "$FILE exists"
-# else
-#     echo "$FILE not found"
-#     # Mark our build as failed
-#     exit 1
-# fi
 
 cd ..

@@ -10,7 +10,7 @@ jobs:
 #          - script-
     - run: ./android/script.sh
     - store_artifacts:
-        path: ./Urho3D/ProjectTemplate.apk.apk
+        path: ./Urho3D/ProjectTemplate.apk
         destination: ProjectTemplate.apk
 #    - save_cache:
 #        key: script-{{ checksum "android/script.sh" }}

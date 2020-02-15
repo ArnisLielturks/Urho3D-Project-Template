@@ -193,7 +193,7 @@ void ModLoader::CheckAllMods()
 {
     Vector<String> result;
     #ifdef URHO3D_ANGELSCRIPT
-    result.Reserve(_asMods.Size() + _luaMods.Size());
+    result.Reserve(_asMods.Size());
     for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
         result.Push((*it)->GetName());
     }

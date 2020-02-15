@@ -94,7 +94,7 @@ workflows:
     - build_android
     - build_linux
     - build_windows
-    - build_packing
+    - build_packing:
       requires:
         - build_linux
         - build_windows

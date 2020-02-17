@@ -13,6 +13,7 @@
 #endif
 varying vec3 vNormal;
 varying vec4 vWorldPos;
+varying float vDepth;
 #ifdef VERTEXCOLOR
     varying vec4 vColor;
 #endif
@@ -48,6 +49,7 @@ void VS()
     gl_Position = GetClipPos(worldPos);
     vNormal = GetWorldNormal(modelMatrix);
     vWorldPos = vec4(worldPos, GetDepth(gl_Position));
+    vDepth = GetDepth(gl_Position);
 
     #ifdef VERTEXCOLOR
         vColor = iColor;
@@ -104,8 +106,32 @@ void VS()
     #endif
 }
 
+#ifdef COMPILEPS
+float AbsoluteDepth(float normalDepth) {
+    float clipLength = cFarClipPS - cNearClipPS;
+    return cNearClipPS + clipLength * normalDepth;
+}
+#endif
+
 void PS()
 {
+#ifdef FADE
+    const mat4 thresholdMatrix = mat4(
+        1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
+        13.0 / 17.0,  5.0 / 17.0, 15.0 / 17.0,  7.0 / 17.0,
+        4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
+        16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
+    );
+    int x = int(mod(vTexCoord.x * 1920.0, 4));
+    int y = int(mod(vTexCoord.y * 1080.0, 4));
+    float z = AbsoluteDepth(vDepth);
+    float threshold = 0.5;
+    float alpha = z / threshold - 0.5;
+    if (alpha - thresholdMatrix[x][y] < 0.0) {
+        discard;
+    }
+#endif
+
     // Get material diffuse albedo
     #ifdef DIFFMAP
         vec4 diffInput = texture2D(sDiffMap, vTexCoord.xy);

@@ -19,6 +19,8 @@ public:
 
     Image* GenerateImage(double frequency, int octaves, int seed);
 
+    Image* GetImage() const { return _generatedImage; };
+
     void Save();
 
 private:

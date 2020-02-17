@@ -5,4 +5,5 @@
     <texture unit="normal" name="Textures/BoxNormal.png" />
     <texture unit="specular" name="Textures/BoxSpec.png" />
     <texture unit="emissive" name="Textures/BoxAmbient.png" />
+    <shader psdefines="FADE" />
 </material>

@@ -69,15 +69,15 @@ void PS()
 
 #ifdef OCCLUDE
 
-    const float total_strength = 1.5;
+    const float total_strength = 1.0;
     const float base = 0.2;
 
-    const float area = 1.0;
+    const float area = 3.0;
     const float falloff = 0.01;
 
     vec2 noiseFactor = vec2(cScreenWidth / textureSize, cScreenHeight / textureSize);
 
-    const float radius = 0.60;
+    const float radius = 1.60;
 
     const int samples = 16;
     vec3 sample_sphere[samples] = vec3[samples](
@@ -101,7 +101,7 @@ void PS()
 
     for (int i = 0; i < samples; i++) {
         vec3 ray = radius_depth * reflect(sample_sphere[i], random);
-        vec3 hemi_ray = position + sign(dot(ray, normal)) * ray;
+        vec3 hemi_ray = position + max(0, dot(ray, normal)) * ray;
 
         float occ_depth = AbsoluteDepth(DecodeDepth(texture2D(sDepthBuffer, hemi_ray.xy).rgb));
         float difference = originalDepth - occ_depth;
@@ -180,7 +180,8 @@ void PS()
 #endif
 
 #ifdef OUTPUT
-        gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
+    gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
+//    gl_FragColor.rgb =  texture2D(sDepthBuffer, vTexCoord).rgb;
 #endif
 
 }

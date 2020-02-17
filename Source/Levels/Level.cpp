@@ -75,7 +75,7 @@ void Level::Init()
         _terrain->SetPatchSize(64);
         _terrain->SetSpacing(Vector3(1.0f, 0.1f, 1.0f));
         _terrain->SetSmoothing(true);
-        _terrain->SetHeightMap(cache->GetResource<Image>("Textures/HeightMap.png"));
+        _terrain->SetHeightMap(GetSubsystem<Generator>()->GetImage());
         _terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain.xml"));
         _terrain->SetOccluder(true);
         _terrain->SetCastShadows(true);

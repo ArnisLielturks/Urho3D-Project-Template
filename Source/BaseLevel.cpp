@@ -343,6 +343,11 @@ void BaseLevel::ApplyPostProcessEffects()
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
 
+//        if (!effectRenderPath->IsAdded("RayMarch")) {
+//            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/RayMarch.xml"));
+//            effectRenderPath->SetEnabled("RayMarch", true);
+//        }
+
         effectRenderPath->SetEnabled("AutoExposure",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", false));
         effectRenderPath->SetShaderParameter("AutoExposureAdaptRate",

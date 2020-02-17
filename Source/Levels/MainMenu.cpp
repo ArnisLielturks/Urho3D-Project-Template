@@ -83,7 +83,7 @@ void MainMenu::InitCamera()
 
     _cameraRotateNode = _scene->CreateChild("CameraRotate");
     _cameraRotateNode->AddChild(_cameras[0]);
-    _cameras[0]->SetPosition(Vector3(3, 3, 3));
+    _cameras[0]->SetPosition(Vector3(1, 1, 1));
     _cameras[0]->LookAt(Vector3(0, 0, 0));
 }
 
@@ -190,5 +190,5 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
     }
 
-    _cameraRotateNode->Yaw(timestep * 5);
+    _cameraRotateNode->Yaw(timestep * 10);
 }

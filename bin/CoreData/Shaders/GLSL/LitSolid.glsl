@@ -14,6 +14,7 @@
 varying vec3 vNormal;
 varying vec4 vWorldPos;
 varying float vDepth;
+uniform float cDissolvePercentage;
 #ifdef VERTEXCOLOR
     varying vec4 vColor;
 #endif
@@ -115,6 +116,14 @@ float AbsoluteDepth(float normalDepth) {
 
 void PS()
 {
+
+#ifdef DISSOLVE
+    vec4 noise = texture2D(sSpecMap, vTexCoord.xy);
+    if (noise.r <= cDissolvePercentage + sin(cElapsedTimePS)) {
+        discard;
+    }
+#endif
+
 #ifdef FADE
     const mat4 thresholdMatrix = mat4(
         1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,

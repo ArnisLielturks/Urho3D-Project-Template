@@ -2,17 +2,11 @@
 class Destroyer : ScriptObject
 {
     int lastHitPlayerId = -1;
-    Vector3 rotationSpeed = Vector3(0.1, 0.2, 0.3);
     void Start()
     {
         node.AddTag("Cube");
         // Subscribe physics collisions that concern this scene node
         SubscribeToEvent(node, "NodeCollisionStart", "HandleNodeCollision");
-    }
-
-    void SetRotationSpeed(const Vector3&in speed)
-    {
-        rotationSpeed = speed;
     }
 
     void HandleNodeCollision(StringHash eventType, VariantMap& eventData)
@@ -33,7 +27,8 @@ class Destroyer : ScriptObject
                 float contactImpulse = contacts.ReadFloat();
                 body.ApplyImpulse(contactNormal * contactImpulse * 2);
             }
-            node.scale = node.scale * 0.9;
+
+            node.scale -= Vector3(0.5, 0.5, 0.5);
 
             if (otherBody.node.name == "Player") {
                 lastHitPlayerId = otherBody.node.vars["Player"].GetInt();

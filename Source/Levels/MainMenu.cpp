@@ -4,11 +4,13 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Engine/Engine.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/Math/MathDefs.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
 #endif
@@ -83,7 +85,7 @@ void MainMenu::InitCamera()
 
     _cameraRotateNode = _scene->CreateChild("CameraRotate");
     _cameraRotateNode->AddChild(_cameras[0]);
-    _cameras[0]->SetPosition(Vector3(1, 1, 1));
+    _cameras[0]->SetPosition(Vector3(1, 2, 1));
     _cameras[0]->LookAt(Vector3(0, 0, 0));
 }
 
@@ -190,5 +192,12 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
         SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
     }
 
-    _cameraRotateNode->Yaw(timestep * 10);
+    static float elapsedTime = 0.0f;
+    elapsedTime += timestep;
+
+    float pos = 1.0 + Sin(elapsedTime * 20.0) + 1.0;
+    _cameras[0]->SetPosition(Vector3(pos, pos, pos));
+    _cameras[0]->LookAt(Vector3(0, 0, 0));
+
+    _cameraRotateNode->Yaw(timestep * 20);
 }

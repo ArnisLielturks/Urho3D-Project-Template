@@ -366,10 +366,6 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
         effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
-
-        effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
-        effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
-
         viewport->SetRenderPath(effectRenderPath);
     }
 }

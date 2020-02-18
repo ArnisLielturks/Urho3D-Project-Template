@@ -27,7 +27,7 @@ cp android/CMakeLists.txt Urho3D/Source/ProjectTemplate/
 rm -rf Urho3D/android/launcher-app
 
 # Copy our versions of the apps
-#cp -r android/urho3d-lib Urho3D/android/urho3d-lib
+# cp -r android/urho3d-lib/build.gradle.kts Urho3D/android/urho3d-lib/build.gradle.kts
 cp -r android/launcher-app Urho3D/android/launcher-app
 
 cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project/
@@ -35,6 +35,21 @@ cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project
 cd Urho3D
 
 # Run dockerized android build to genereate libProjectTemplate.so file
-./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
+# Release mode
+./script/dockerized.sh android ./gradlew build --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release
+
+# Debug mode
+#./script/dockerized.sh android ./gradlew --stacktrace -P URHO3D_LUA=0 -P URHO3D_LIB_TYPE=SHARED -P URHO3D_TOOLS=0 -P ANDROID_ABI=armeabi-v7a -P URHO3D_SAMPLES=0 -P CMAKE_BUILD_TYPE=Release assembleDebug
+
+# Finally do a check if the APK is there
+mv $(find ./android/launcher-app/build/outputs/apk/debug/ -name "*.apk") ./ProjectTemplate.apk
+FILE=ProjectTemplate.apk
+if test -f "$FILE"; then
+    echo "$FILE exists"
+else
+    echo "$FILE not found"
+    # Mark our build as failed
+    exit 1
+fi
 
 cd ..

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Urho3D/Scene/SplinePath.h>
+#include <Urho3D/Graphics/Terrain.h>
+#include <Urho3D/Graphics/Zone.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 
@@ -45,8 +47,10 @@ namespace Levels {
 
         bool _drawDebug;
 
-        SharedPtr<SplinePath> _path;
-
         HashMap<int, SharedPtr<Player>> _players;
+
+        SharedPtr<Terrain> _terrain;
+
+        SharedPtr<Zone> _defaultZone;
     };
 }

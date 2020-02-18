@@ -12,7 +12,7 @@ public:
     JoystickInput(Context* context);
 
     virtual ~JoystickInput();
-	virtual String GetActionKeyName(int action);
+	virtual String GetActionKeyName(int action) override;
 
     void SetJoystickAsFirstController(bool enabled);
 
@@ -21,7 +21,7 @@ public:
 	/**
      * Load joystick config from config.cfg file [joystick] block
      */
-    void LoadConfig();
+    void LoadConfig() override;
 
 protected:
     virtual void Init();

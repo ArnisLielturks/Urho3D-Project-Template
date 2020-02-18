@@ -6,7 +6,6 @@
 #include <Urho3D/Scene/ValueAnimation.h>
 #include "PopupMessageWindow.h"
 #include "../../MyEvents.h"
-#include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
 /// Construct.
@@ -37,6 +36,7 @@ void PopupMessageWindow::Create()
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetSize(300, 200);
     _baseWindow->BringToFront();
+    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1);
 
     _okButton = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
     _okButton->SetAlignment(HA_CENTER, VA_BOTTOM);

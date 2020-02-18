@@ -4,23 +4,23 @@ jobs:
     machine: true
     steps:
     - checkout
-    - restore_cache:
-        keys:
-          - script-{{ checksum "android/script.sh" }}
-          - script-
+#    - restore_cache:
+#        keys:
+#          - script-{{ checksum "android/script.sh" }}
+#          - script-
     - run: ./android/script.sh
     - store_artifacts:
-        path: ./Urho3D/android/launcher-app/build/outputs/apk/debug/
-        # destination: launcher-app-armeabi-v7a-debug.apk
-    - save_cache:
-        key: script-{{ checksum "android/script.sh" }}
-        paths:
-          - ./Urho3D
+        path: ./Urho3D/ProjectTemplate.apk
+        destination: ProjectTemplate.apk
+#    - save_cache:
+#        key: script-{{ checksum "android/script.sh" }}
+#        paths:
+#          - ./Urho3D
   build_windows:
     machine: true
     steps:
       - checkout
-      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:14 bash /var/sample/build_windows.sh
+      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:30-windows bash /var/sample/build_windows.sh
       - run:
           name: Archiving
           command: |
@@ -33,34 +33,20 @@ jobs:
             chmod -R 777 archive
             cd archive
             zip -r "build.zip" *  > /dev/null
+      - run:
+          name: Upload to itch.io
+          command: |
+            curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+            unzip butler.zip
+            ./butler push archive/ miegamicis/sandbox:windows
       - store_artifacts:
           path: archive/build.zip
           destination: ProjectTemplate_Windows.zip
-  build_windows_no_scripts:
-    machine: true
-    steps:
-      - checkout
-      - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:1-no-scripts bash /var/sample/build_windows.sh -DURHO3D_LUA=0 -DURHO3D_ANGELSCRIPT=0
-      - run:
-          name: Archiving
-          command: |
-            mkdir archive
-            cp build-windows/bin/ProjectTemplate.exe archive/ProjectTemplate.exe || true
-            cp build-windows/bin/ProjectTemplate_d.exe archive/ProjectTemplate_d.exe || true
-            cp -r bin/Data archive/Data
-            cp -r bin/CoreData archive/CoreData
-            rm -rf archive/Data/Saves/Achievements.json
-            chmod -R 777 archive
-            cd archive
-            zip -r "build.zip" *  > /dev/null
-      - store_artifacts:
-          path: archive/build.zip
-          destination: ProjectTemplate_Windows_no_scripts.zip
   build_linux:
     machine: true
     steps:
     - checkout
-    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:14 bash /var/sample/build_linux.sh
+    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:29-linux bash /var/sample/build_linux.sh
     - run:
         name: Archiving
         command: |
@@ -75,35 +61,15 @@ jobs:
           chmod a+x archive/ProjectTemplate.desktop
           cd archive
           zip -r "build.zip" *  > /dev/null
+    - run:
+        name: Upload to itch.io
+        command: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push archive/ miegamicis/sandbox:linux
     - store_artifacts:
         path: archive/build.zip
         destination: ProjectTemplate_Linux.zip
-  build_linux_no_scripts:
-    machine: true
-    steps:
-    - checkout
-    - run: docker run -it -v $(pwd):/var/sample arnislielturks/urho3d:1-no-scripts bash /var/sample/build_linux.sh -DURHO3D_LUA=0 -DURHO3D_ANGELSCRIPT=0
-    - run:
-        name: Archiving
-        command: |
-          mkdir archive
-          cp build/bin/ProjectTemplate archive/ProjectTemplate || true
-          cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
-          cp -r bin/Data archive/Data
-          cp -r bin/CoreData archive/CoreData
-          cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop
-          rm -rf archive/Data/Saves/Achievements.json
-          chmod -R 777 archive
-          chmod a+x archive/ProjectTemplate.desktop
-          cd archive
-          zip -r "build.zip" *  > /dev/null
-    - store_artifacts:
-        path: archive/build.zip
-        destination: ProjectTemplate_Linux_no_scripts.zip
-  artifact_publish:
-    machine: true
-    steps:
-      - run:
 workflows:
   version: 2
   build:
@@ -111,5 +77,3 @@ workflows:
     - build_android
     - build_linux
     - build_windows
-    - build_linux_no_scripts
-    - build_windows_no_scripts

@@ -37,9 +37,9 @@ Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
 
 # Prebuilt binaries
 Download almost latest builds from CI (list is updated manually):
-* Windows: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/637/artifacts?branch=master&tag=latest
-* Windows (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/638/artifacts?branch=master&tag=latest
-* Linux: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/636/artifacts?branch=master&tag=latest
-* Linux (no scripting support): https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/635/artifacts?branch=master&tag=latest
-* Android: https://circleci.com/api/v1.1/project/github/ArnisLielturks/Urho3D-Project-Template/639/artifacts?branch=master&tag=latest
 
+| OS | Link |
+| --- | --- |
+| Windows             | [Download](https://830-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows.zip) |
+| Linux               | [Download](https://828-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux.zip) |
+| Android             | [Download](https://730-138001494-gh.circle-artifacts.com/0/home/circleci/project/Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk) |

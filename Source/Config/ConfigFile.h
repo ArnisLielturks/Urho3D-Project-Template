@@ -47,9 +47,9 @@ public:
     }
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
-    virtual bool BeginLoad(Urho3D::Deserializer& source);
+    virtual bool BeginLoad(Urho3D::Deserializer& source) override;
     /// Save resource.
-    virtual bool Save(Urho3D::Serializer& dest) const;
+    virtual bool Save(Urho3D::Serializer& dest) const override;
     /// Smart Save resource, replacing only the values, keeping whitespacing and comments.
     virtual bool Save(Urho3D::Serializer& dest, bool smartSave) const;
 

@@ -3,6 +3,7 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Audio/SoundListener.h>
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Graphics/RenderPath.h>
@@ -307,6 +308,9 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
 
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetViewport(index, viewport);
+
+    auto cache = GetSubsystem<ResourceCache>();
+    viewport->SetRenderPath(cache->GetResource<XMLFile>("RenderPaths/ForwardDepth.xml"));
 
     _viewports[controllerIndex] = viewport;
     _cameras[controllerIndex] = cameraNode;

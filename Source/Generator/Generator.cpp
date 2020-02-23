@@ -121,19 +121,19 @@ void Generator::SubscribeToEvents()
 
 //
 
-//        image->SetSize(size, size, 4);
-//        SetRandomSeed(Time::GetSystemTime());
-//        for (int i = 0; i < size; i++) {
-//            for (int j = 0; j < size; j++) {
-//                float factor = 1.0;
-//                Color color(Random(0.0f, factor), Random(0.0f, factor), Random(0.0f, factor), 1.0);
-////                color.r_ += factor / 2.0f;
-////                color.g_ += factor / 2.0f;
-////                color.b_ += factor / 2.0f;
-//                image->SetPixel(i, j, color);
-//            }
-//        }
-//        image->SavePNG("Data/Textures/Noise.png");
+        image->SetSize(size, size, 4);
+        SetRandomSeed(Time::GetSystemTime());
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                float factor = 1.0;
+                Color color(Random(0.0f, factor), Random(0.0f, factor), Random(0.0f, factor), 1.0);
+//                color.r_ += factor / 2.0f;
+//                color.g_ += factor / 2.0f;
+//                color.b_ += factor / 2.0f;
+                image->SetPixel(i, j, color);
+            }
+        }
+        image->SavePNG("Data/Textures/Noise.png");
 
     });
 }

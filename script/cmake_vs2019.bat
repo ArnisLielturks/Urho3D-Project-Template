@@ -20,4 +20,4 @@
 :: THE SOFTWARE.
 ::
 
-@"%~dp0cmake_generic.bat" %* -G "Ninja"
+@"%~dp0cmake_generic.bat" %* -VS=16

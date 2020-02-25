@@ -10,6 +10,12 @@ varying vec2 vTexCoord;
 uniform vec2 cSSAOInvSize;
 uniform vec2 cBlurHInvSize;
 uniform vec2 cBlurVInvSize;
+uniform float cSSAOStrength;
+uniform float cSSAORadius;
+uniform float cSSAOBase;
+uniform float cSSAOArea;
+uniform float cSSAOFalloff;
+uniform float cSSAONoiseFactor;
 #endif
 
 void VS()
@@ -27,8 +33,8 @@ vec3 normalFromDepth(float depth, vec2 texcoords)
     vec2 offset1 = vec2(0.0, cSSAOInvSize.y);
     vec2 offset2 = vec2(cSSAOInvSize.x, 0.0);
 
-    float depth1 = texture2D(sDepthBuffer, texcoords + offset1).r;
-    float depth2 = texture2D(sDepthBuffer, texcoords + offset2).r;
+    float depth1 = DecodeDepth(texture2D(sDepthBuffer, texcoords + offset1).rgb) * cFarClipPS;
+    float depth2 = DecodeDepth(texture2D(sDepthBuffer, texcoords + offset2).rgb) * cFarClipPS;
 
 
     vec3 p1 = vec3(offset1, depth1 - depth);
@@ -52,6 +58,8 @@ vec3 reflection(vec3 v1,vec3 v2)
 void PS()
 {
 #ifdef OCCLUDE
+//    gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb * cFarClipPS;
+//    return;
     vec3 sample_sphere[16] = vec3[](
         vec3( 0.5381, 0.1856,-0.4319), vec3( 0.1379, 0.2486, 0.4430),
         vec3( 0.3371, 0.5679,-0.0057), vec3(-0.6999,-0.0451,-0.0019),
@@ -63,18 +71,12 @@ void PS()
         vec3( 0.0352,-0.0631, 0.5460), vec3(-0.4776, 0.2847,-0.0271)
     );
 
-    float m_Radius = 0.06;
-    float m_Intensity = 1.0f;
-    float m_Base = 0.15f;
-    float m_Area = 0.0075;
-    float m_Falloff = 0.000001;
-
-    vec3 random = normalize( texture2D(sDiffMap, vTexCoord * 16.0).rgb );
-    float depth = texture2D(sDepthBuffer, vTexCoord).r;
+    vec3 random = normalize( texture2D(sDiffMap, vTexCoord * cSSAONoiseFactor).rgb );
+    float depth = DecodeDepth(texture2D(sDepthBuffer, vTexCoord).rgb) * cFarClipPS;
     vec3 position = vec3(vTexCoord.x, vTexCoord.y,depth);
     vec3 normal = normalFromDepth(depth, vTexCoord);
 
-    float radiusDepth = m_Radius/depth;
+    float radiusDepth = cSSAORadius/depth;
     float occlusion = 0.0;
     int iterations = 16;
 
@@ -83,14 +85,14 @@ void PS()
         vec3 ray = radiusDepth * reflection(sample_sphere[j], random);
         vec3 hemiRay = position + sign(dot(ray, normal)) * ray;
 
-        float occDepth = texture2D(sDepthBuffer, clamp(hemiRay.xy, 0.0, 1.0)).r;
+        float occDepth = DecodeDepth(texture2D(sDepthBuffer, clamp(hemiRay.xy, 0.0, 1.0)).rgb) * cFarClipPS;
         float difference = depth - occDepth;
 
-        occlusion += step(m_Falloff, difference) * (1.0 - smoothstep(m_Falloff, m_Area, difference));
+        occlusion += step(cSSAOFalloff, difference) * (1.0 - smoothstep(cSSAOFalloff, cSSAOArea, difference));
     }
 
-    float ao = 1.0 - m_Intensity * occlusion * (1.0 / iterations);
-    float final = clamp(ao + m_Base, 0.0, 1.0);
+    float ao = 1.0 - cSSAOStrength * occlusion * (1.0 / iterations);
+    float final = clamp(ao + cSSAOBase, 0.0, 1.0);
 
     gl_FragColor = vec4(vec3(final), 1.0);
 #endif

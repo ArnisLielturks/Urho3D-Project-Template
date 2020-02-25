@@ -3,7 +3,6 @@
 #include "Transform.glsl"
 
 varying vec3 vTexCoord;
-varying vec4 vPosition;
 
 void VS()
 {
@@ -11,7 +10,6 @@ void VS()
     vec3 worldPos = GetWorldPos(modelMatrix);
     gl_Position = GetClipPos(worldPos);
     vTexCoord = vec3(GetTexCoord(iTexCoord), GetDepth(gl_Position));
-    vPosition = gl_Position;
 }
 
 void PS()
@@ -22,5 +20,5 @@ void PS()
             discard;
     #endif
 
-    gl_FragColor = vec4(vPosition.z / vPosition.w, 0.0, 0.0, 0.0);
+    gl_FragColor = vec4(EncodeDepth(vTexCoord.z), 1.0);
 }

@@ -1,0 +1,44 @@
+name: Builds
+
+on: [push, pull_request]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Linux
+        run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:29-linux bash /var/sample/build_linux.sh
+
+  build_windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Windows
+        run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:30-windows bash /var/sample/build_windows.sh
+
+  build_osx:
+    runs-on: macos-latest
+      steps:
+      - uses: actions/checkout@v2
+      - name: List XCode versions
+        run: ls -n /Applications/ | grep Xcode*
+      - name: List Packages
+        run: ls -n /Library/Developer/CommandLineTools
+      - name: Build Urho3D
+        run: |
+          export CPATH=`xcrun --show-sdk-path`/usr/include
+          git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1
+          cd Urho3D
+          ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0
+          cd build
+          make -j$(nproc)
+          export URHO3D_HOME=$(pwd)
+          cd ../..
+      - name: configure
+        run: |
+          export URHO3D_HOME=$(pwd)/Urho3D/build
+          export CPATH=`xcrun --show-sdk-path`/usr/include
+          ./script/cmake_generic.sh build
+          cd build
+            make -j$(nproc)

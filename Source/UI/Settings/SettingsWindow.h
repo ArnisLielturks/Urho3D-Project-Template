@@ -82,6 +82,7 @@ private:
     WeakPtr<UIMultiOption> opt_instancing_;
     WeakPtr<UIMultiOption> opt_specular_;
     WeakPtr<UIMultiOption> opt_hdr_;
+    WeakPtr<UIMultiOption> opt_ssao_;
 
     WeakPtr<UIMultiOption> language_selection_;
     WeakPtr<UIBoolOption> enable_mods_;

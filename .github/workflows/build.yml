@@ -57,7 +57,7 @@ jobs:
       id: cache
       with:
         path: ${{github.workspace}}/Urho3D
-        key: Urho3D
+        key: Urho3D-master
     - name: Download Urho3D
       if: steps.cache.outputs.cache-hit != 'true'
       run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1

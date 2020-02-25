@@ -61,7 +61,7 @@ jobs:
       id: cache
       with:
         path: Urho3D
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+        key: Urho3D
     - name: Download Urho3D
       if: steps.cache.outputs.cache-hit != 'true'
       run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1

@@ -71,7 +71,7 @@ jobs:
         make -j$(nproc)
     - name: Build project
       run: |
-        export URHO3D_HOME=${{github.workspace}}/Urho3D
+        export URHO3D_HOME="${{github.workspace}}/Urho3D"
         export CPATH=`xcrun --show-sdk-path`/usr/include
         ./script/cmake_generic.sh build
         cd build

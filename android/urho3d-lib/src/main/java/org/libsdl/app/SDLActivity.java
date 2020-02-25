@@ -467,14 +467,15 @@ public class SDLActivity extends Activity {
                 }
                 break;
             }
-            case 10:
-                {
-                    SDLActivity.SendServiceCommand(10, 1, "This message was triggered from Android Activity!");
-                }
             default:
-                if ((context instanceof SDLActivity) && !((SDLActivity) context).onUnhandledMessage(msg.arg1, msg.obj)) {
-                    Log.e(TAG, "error handling message, command is " + msg.arg1);
+                {
+                    // SDLActivity.SendServiceCommand(10, 1, "This message was triggered from Android Activity!");
+                    SDLActivity.onMessageReceivedFromGame(msg.arg1);
                 }
+            // default:
+            //     if ((context instanceof SDLActivity) && !((SDLActivity) context).onUnhandledMessage(msg.arg1, msg.obj)) {
+            //         Log.e(TAG, "error handling message, command is " + msg.arg1);
+            //     }
             }
         }
     }
@@ -843,6 +844,11 @@ public class SDLActivity extends Activity {
         // return selected value
 
         return messageboxSelection[0];
+    }
+
+    public void onMessageReceivedFromGame(int id)
+    {
+
     }
 
     @Override
@@ -1594,3 +1600,4 @@ class SDLClipboardHandler_Old implements
        mClipMgrOld.setText(string);
     }
 }
+

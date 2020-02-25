@@ -11,6 +11,7 @@
 #include "../MyEvents.h"
 #include "../Global.h"
 #include "../Messages/Achievements.h"
+#include "../AndroidEvents/ServiceCmd.h"
 
 using namespace Levels;
 using namespace Urho3D;
@@ -96,6 +97,16 @@ namespace Levels {
         _offset = GetSubsystem<Graphics>()->GetHeight() * 1.1 / GetSubsystem<UI>()->GetScale();
         _creditsBase->SetPosition(0, _offset);
         SubscribeToEvents();
+
+        GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_REWARDED, 1);
+
+        SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+            using namespace MyEvents::ServiceMessage;
+            int eventId = eventData[P_COMMAND].GetInt();
+            if (eventId == ANDROID_AD_REWARDED_LOADED) {
+                GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_REWARDED_SHOW, 1);
+            }
+        });
     }
 
     void Credits::SubscribeToEvents()

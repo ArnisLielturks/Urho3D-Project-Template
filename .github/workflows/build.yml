@@ -66,7 +66,7 @@ jobs:
         export CPATH=`xcrun --show-sdk-path`/usr/include
         cd ${{github.workspace}}/Urho3D
         git pull origin master
-        ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0
+        ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0 -DURHO3D_PLAYER=0
         cd build
         make -j$(nproc)
     - name: Build project

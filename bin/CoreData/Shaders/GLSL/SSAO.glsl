@@ -106,21 +106,6 @@ void PS()
 #endif
 
 #ifdef OUTPUT
-    if (vTexCoord.y < 0.4) {
-        gl_FragColor.rgb = texture2D(sDepthBuffer, vTexCoord).rgb;
-    } else {
-        if (vTexCoord.x < 0.33) {
-            gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
-        } else if (vTexCoord.x > 0.66) {
-            gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
-        } else {
-            float val = 0.33 + 0.33 * (sin(cElapsedTimePS) * 0.5 + 0.5);
-            if (vTexCoord.x > val) {
-                gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb;
-            } else {
-                gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
-            }
-        }
-    }
+    gl_FragColor.rgb = texture2D(sDiffMap, vTexCoord).rgb * texture2D(sDepthBuffer, vTexCoord).rgb;
 #endif
 }

@@ -53,14 +53,10 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: List XCode versions
-      run: ls -n /Applications/ | grep Xcode*
-    - name: List Packages
-      run: ls -n /Library/Developer/CommandLineTools
     - uses: actions/cache@v1
       id: cache
       with:
-        path: Urho3D
+        path: ~/Urho3D
         key: Urho3D
     - name: Download Urho3D
       if: steps.cache.outputs.cache-hit != 'true'

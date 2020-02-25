@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Project-Template/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
-[![Build Status](https://travis-ci.org/ArnisLielturks/Urho3D-Project-Template.svg?branch=master)](https://travis-ci.org/ArnisLielturks/Urho3D-Project-Template)
+![Builds](https://github.com/ArnisLielturks/Urho3D-Project-Template/workflows/Builds/badge.svg)
 
 # Urho3D-Project-Template
 App template with the following features:
@@ -28,8 +28,13 @@ make
 If everything worked, build/bin directory should contain `ProjectTemplate` executable.
 
 
-And of course here's the quick preview of how it should look in the end:
-![alt tag](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/preview.gif)
+### Few screenshots
+![MainMenu](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/MainMenu.png)
+![Settings](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Settings.png)
+![Achievements](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Achievements.png)
+![Credits](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Credits.png)
+![Loading](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Loading.png)
+![Level](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Level.png)
 
 
 # How to extend the functionality?

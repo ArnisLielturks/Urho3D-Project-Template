@@ -3,6 +3,7 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Audio/SoundListener.h>
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Graphics/RenderPath.h>
@@ -308,6 +309,9 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetViewport(index, viewport);
 
+    auto cache = GetSubsystem<ResourceCache>();
+    viewport->SetRenderPath(cache->GetResource<XMLFile>("RenderPaths/ForwardDepth.xml"));
+
     _viewports[controllerIndex] = viewport;
     _cameras[controllerIndex] = cameraNode;
 }
@@ -343,6 +347,11 @@ void BaseLevel::ApplyPostProcessEffects()
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
 
+//        if (!effectRenderPath->IsAdded("RayMarch")) {
+//            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/RayMarch.xml"));
+//            effectRenderPath->SetEnabled("RayMarch", true);
+//        }
+
         effectRenderPath->SetEnabled("AutoExposure",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "AutoExposure", false));
         effectRenderPath->SetShaderParameter("AutoExposureAdaptRate",
@@ -361,10 +370,6 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
         effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
-
-        effectRenderPath->SetShaderParameter("ScreenWidth", GetSubsystem<Graphics>()->GetWidth());
-        effectRenderPath->SetShaderParameter("ScreenHeight", GetSubsystem<Graphics>()->GetHeight());
-
         viewport->SetRenderPath(effectRenderPath);
     }
 }

@@ -1,0 +1,4 @@
+<renderpath>
+    <command type="quad" enabled="true" tag="RayMarch" vs="RayMarch" ps="RayMarch" output="viewport">
+    </command>
+</renderpath>

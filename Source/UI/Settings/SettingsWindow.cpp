@@ -467,6 +467,13 @@ void SettingsWindow::CreateGraphicsTab()
     opt_hdr_->SetTags({ "graphics" });
     opt_hdr_->SetStrings(options_bool);
 
+    opt_ssao_ = new UIMultiOption(context_);
+    opt_ssao_->SetName("OptSSAO");
+    opt_ssao_->SetOptionName("SSAO");
+    opt_ssao_->SetStyleAuto();
+    opt_ssao_->SetTags({ "misc-video" });
+    opt_ssao_->SetStrings(options_bool);
+
     graphics_tab->AddChild(opt_texture_quality_);
     graphics_tab->AddChild(opt_material_quality_);
     graphics_tab->AddChild(opt_shadows_);
@@ -475,6 +482,7 @@ void SettingsWindow::CreateGraphicsTab()
     graphics_tab->AddChild(opt_instancing_);
     graphics_tab->AddChild(opt_specular_);
     graphics_tab->AddChild(opt_hdr_);
+    graphics_tab->AddChild(opt_ssao_);
 }
 
 void SettingsWindow::CreateAudioTab()
@@ -956,6 +964,7 @@ void SettingsWindow::RefreshGraphicsOptions()
     opt_instancing_->SetOptionIndex(renderer->GetDynamicInstancing() ? 1 : 0);
     opt_specular_->SetOptionIndex(renderer->GetSpecularLighting() ? 1 : 0);
     opt_hdr_->SetOptionIndex(renderer->GetHDRRendering() ? 1 : 0);
+    opt_ssao_->SetOptionIndex(GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true) ? 1 : 0);
 
     refreshing_ = false;
 }
@@ -1046,6 +1055,7 @@ void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& event
         GetSubsystem<ConfigManager>()->Set("video", "ResizableWindow", opt_resizable_->GetOptionValue() ? true : false);
         GetSubsystem<ConfigManager>()->Set("engine", "FPSLimit", fps_limit);
         GetSubsystem<ConfigManager>()->Set("postprocess", "Gamma", gamma_->GetValue());
+        GetSubsystem<ConfigManager>()->Set("postprocess", "SSAO", opt_ssao_->GetOptionIndex() > 0);
 
         SendEvent("postprocess");
     }

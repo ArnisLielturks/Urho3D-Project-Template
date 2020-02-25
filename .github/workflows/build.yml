@@ -56,7 +56,7 @@ jobs:
     - uses: actions/cache@v1
       id: cache
       with:
-        path: ${GITHUB_WORKSPACE}/Urho3D
+        path: ${{GITHUB_WORKSPACE}}/Urho3D
         key: Urho3D
     - name: Download Urho3D
       if: steps.cache.outputs.cache-hit != 'true'
@@ -64,14 +64,14 @@ jobs:
     - name: Build Urho3D
       run: |
         export CPATH=`xcrun --show-sdk-path`/usr/include
-        cd $GITHUB_WORKSPACE/Urho3D
+        cd ${{GITHUB_WORKSPACE}}/Urho3D
         git pull origin master
         ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0
         cd build
         make -j$(nproc)
     - name: Build project
       run: |
-        export URHO3D_HOME=$GITHUB_WORKSPACE/Urho3D
+        export URHO3D_HOME=${{GITHUB_WORKSPACE}}/Urho3D
         export CPATH=`xcrun --show-sdk-path`/usr/include
         ./script/cmake_generic.sh build
         cd build

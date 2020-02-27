@@ -173,6 +173,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
+    public void onMessageReceivedFromGame(int id)
+    {
+
+    }
+
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -665,14 +670,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
                 break;
             }
-            case 10:
-                {
-                    SDLActivity.SendServiceCommand(10, 1, "This message was triggered from Android Activity!");
-                }
             default:
-                if ((context instanceof SDLActivity) && !((SDLActivity) context).onUnhandledMessage(msg.arg1, msg.obj)) {
-                    Log.e(TAG, "error handling message, command is " + msg.arg1);
-                }
+                ((SDLActivity) context).onMessageReceivedFromGame(msg.arg1);
             }
         }
     }

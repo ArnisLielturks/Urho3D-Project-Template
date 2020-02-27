@@ -20,3 +20,24 @@ static const String APPLICATION_FONT = "Fonts/Muli-Regular.ttf";
 static const float GAMMA_MAX_VALUE = 2.0f;
 
 static const String DOCUMENTS_DIR = "ProjectTemplate";
+
+/**
+ * Android ad events
+ */
+static const int ANDROID_AD_INITIALIZED = 10;
+
+static const int ANDROID_AD_LOAD_INTERSTITIAL = 20;
+static const int ANDROID_AD_SHOW_INTERSTITIAL = 21;
+static const int ANDROID_AD_INTERSTITIAL_LOADED = 22;
+static const int ANDROID_AD_SHOW_INTERSTITIAL_OPENED = 23;
+static const int ANDROID_AD_INTERSTITIAL_NOT_LOADED = 24;
+static const int ANDROID_AD_INTERSTITIAL_CLOSED = 25;
+
+static const int ANDROID_AD_LOAD_REWARDED = 30;
+static const int ANDROID_AD_REWARDED_SHOW = 31;
+static const int ANDROID_AD_REWARDED_LOADED = 32;
+static const int ANDROID_AD_REWARDED_FAILED_TO_LOAD = 33;
+static const int ANDROID_AD_REWARDED_OPENED = 34;
+static const int ANDROID_AD_REWARDED_CLOSED = 35;
+static const int ANDROID_AD_REWARDED_EARNED = 36;
+static const int ANDROID_AD_REWARDED_FAILED_TO_SHOW = 37;

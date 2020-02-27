@@ -161,7 +161,15 @@ void MainMenu::CreateUI()
     });
 
     // Test Communication between the sample and android activity
-    GetSubsystem<ServiceCmd>()->SendCmdMessage(10, 1);
+    GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_INTERSTITIAL, 1);
+
+    SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::ServiceMessage;
+        int eventId = eventData[P_COMMAND].GetInt();
+        if (eventId == ANDROID_AD_INTERSTITIAL_LOADED) {
+            GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_SHOW_INTERSTITIAL, 1);
+        }
+    });
 }
 
 Button* MainMenu::CreateButton(const String& text, int width, IntVector2 position)

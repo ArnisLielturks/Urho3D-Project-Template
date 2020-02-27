@@ -96,6 +96,8 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":android:urho3d-lib"))
     implementation(kotlin("stdlib-jdk8", embeddedKotlinVersion))
+    implementation("com.google.android.gms:play-services-ads:18.2.0")
+    implementation("androidx.annotation:annotation:1.1.0")
     testImplementation("junit:junit:4.12")
     androidTestImplementation("androidx.test:runner:1.2.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")

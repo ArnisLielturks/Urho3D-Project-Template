@@ -1,5 +1,6 @@
 #include "UIOption.h"
 #include <Urho3D/Core/Context.h>
+#include <Urho3D/Resource/Localization.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Core/StringUtils.h>
 #include <Urho3D/UI/UI.h>
@@ -85,14 +86,14 @@ namespace Urho3D {
             SharedPtr<Button> btn(new Button(context_));
             btn->SetName(i == 0 ? "BtnOff" : "BtnOn");
             btn->SetInternal(true);
-            btn->SetFixedSize(128, 32);
+            btn->SetFixedHeight(32);
             btn->SetVerticalAlignment(VA_CENTER);
             btn->SetFocusMode(FM_NOTFOCUSABLE);
 
             SharedPtr<BorderImage> status(new BorderImage(context_));
             status->SetName("Status");
             status->SetInternal(true);
-            status->SetColor(Color::RED);
+            status->SetColor(Color(0.2, 0.7, 0.2));
             status->SetFixedSize(16, 16);
             status->SetPosition(10, 0);
             status->SetVerticalAlignment(VA_CENTER);
@@ -100,9 +101,11 @@ namespace Urho3D {
             status->SetVisible(false);
             btn->AddChild(status);
 
+            auto* localization = GetSubsystem<Localization>();
+
             SharedPtr<Text> label(new Text(context_));
             label->SetInternal(true);
-            label->SetText(i == 0 ? "Off" : "On");
+            label->SetText(i == 0 ? localization->Get("OFF") : localization->Get("ON"));
             label->SetAlignment(HA_CENTER, VA_CENTER);
             btn->AddChild(label);
 
@@ -203,7 +206,7 @@ namespace Urho3D {
             SharedPtr<Button> btn(new Button(context_));
             btn->SetName(i == 0 ? "BtnLeft" : "BtnRight");
             btn->SetInternal(true);
-            btn->SetFixedSize(32, 32);
+            btn->SetFixedHeight(32);
             btn->SetVerticalAlignment(VA_CENTER);
             btn->SetFocusMode(FM_NOTFOCUSABLE);
 

@@ -3,5 +3,5 @@ function MOTDStart()
 end
 
 function MOTDStop()
-    
+
 end

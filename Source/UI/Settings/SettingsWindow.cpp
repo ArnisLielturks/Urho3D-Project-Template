@@ -198,10 +198,9 @@ void SettingsWindow::InitWindow()
     window_->GetParent()->SetPriority(window_->GetParent()->GetPriority() + 1);
 
     // Set Window size and layout settings
-    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
-    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
-    window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
-    window_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
+    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() * 0.8);
+    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale() * 0.8);
+    window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() * 0.8);
     window_->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
     window_->SetAlignment(HA_CENTER, VA_CENTER);
     window_->SetName("Window");
@@ -269,15 +268,15 @@ void SettingsWindow::CreateVideoTab()
     video_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     opt_fullscreen_ = new UIMultiOption(context_);
-    opt_fullscreen_->SetName(localization->Get("OPT_FULLSCREEN"));
+    opt_fullscreen_->SetName("OptFullscreen");
     opt_fullscreen_->SetOptionName(localization->Get("DISPLAY_MODE"));
     opt_fullscreen_->SetStyleAuto();
     opt_fullscreen_->SetTags({ "video" });
 
     StringVector fullscreen_options;
-    fullscreen_options.Push("Window");
-    fullscreen_options.Push("Borderless Window");
-    fullscreen_options.Push("Fullscreen");
+    fullscreen_options.Push(localization->Get("WINDOW"));
+    fullscreen_options.Push(localization->Get("BORDERLESS_WINDOW"));
+    fullscreen_options.Push(localization->Get("FULLSCREEN"));
     opt_fullscreen_->SetStrings(fullscreen_options);
 
     opt_monitor_ = new UIMultiOption(context_);
@@ -309,7 +308,7 @@ void SettingsWindow::CreateVideoTab()
     elm->SetMaxHeight(30);
     elm->SetVerticalAlignment(VA_TOP);
     btn_apply_ = new Button(context_);
-    btn_apply_->SetFixedSize(80, 28);
+    btn_apply_->SetFixedSize(100, 28);
 
     auto btn_text = new Text(context_);
     btn_text->SetText(localization->Get("APPLY"));
@@ -393,9 +392,9 @@ void SettingsWindow::CreateGraphicsTab()
     opt_texture_quality_->SetTags({ "graphics" });
 
     StringVector quality_options;
-    quality_options.Push("Low");
-    quality_options.Push("Medium");
-    quality_options.Push("High");
+    quality_options.Push(localization->Get("LOW"));
+    quality_options.Push(localization->Get("MEDIUM"));
+    quality_options.Push(localization->Get("HIGH"));
     opt_texture_quality_->SetStrings(quality_options);
 
     opt_material_quality_ = new UIMultiOption(context_);
@@ -412,10 +411,10 @@ void SettingsWindow::CreateGraphicsTab()
     opt_shadows_->SetTags({ "graphics" });
     {
         StringVector options;
-        options.Push("Off");
-        options.Push("Low");
-        options.Push("Medium");
-        options.Push("High");
+        options.Push(localization->Get("OFF"));
+        options.Push(localization->Get("LOW"));
+        options.Push(localization->Get("MEDIUM"));
+        options.Push(localization->Get("HIGH"));
         opt_shadows_->SetStrings(options);
     }
 
@@ -600,7 +599,7 @@ void SettingsWindow::CreateControllersTab()
 
         joystick_sensitivity_x = new UISliderOption(context_);
         joystick_sensitivity_x->SetName("Mouse");
-        joystick_sensitivity_x->SetOptionName(localization->Get("SENSITIVITY_X"));
+        joystick_sensitivity_x->SetOptionName(localization->Get("SENSITIVITY_X_AXIS"));
         joystick_sensitivity_x->SetRange(100.0f);
         joystick_sensitivity_x->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 2.0f));
         joystick_sensitivity_x->SetStyleAuto();
@@ -609,7 +608,7 @@ void SettingsWindow::CreateControllersTab()
 
         joystick_sensitivity_y = new UISliderOption(context_);
         joystick_sensitivity_y->SetName("Mouse");
-        joystick_sensitivity_y->SetOptionName(localization->Get("SENSITIVITY_Y"));
+        joystick_sensitivity_y->SetOptionName(localization->Get("SENSITIVITY_Y_AXIS"));
         joystick_sensitivity_y->SetRange(100.0f);
         joystick_sensitivity_y->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 2.0f));
         joystick_sensitivity_y->SetStyleAuto();

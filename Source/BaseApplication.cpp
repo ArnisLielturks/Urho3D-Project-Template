@@ -79,6 +79,11 @@ void BaseApplication::Start()
 #else
     ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
 #endif
+
+    // For high DPI we must increase the UI scale 2 times
+    if (GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false)) {
+        ui->SetScale(ui->GetScale() * 2.0);
+    }
     GetSubsystem<ConsoleHandler>()->Create();
 
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();

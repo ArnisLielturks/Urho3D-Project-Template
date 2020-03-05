@@ -39,12 +39,3 @@ If everything worked, build/bin directory should contain `ProjectTemplate` execu
 
 # How to extend the functionality?
 Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
-
-# Prebuilt binaries
-Download almost latest builds from CI (list is updated manually):
-
-| OS | Link |
-| --- | --- |
-| Windows             | [Download](https://830-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Windows.zip) |
-| Linux               | [Download](https://828-138001494-gh.circle-artifacts.com/0/ProjectTemplate_Linux.zip) |
-| Android             | [Download](https://730-138001494-gh.circle-artifacts.com/0/home/circleci/project/Urho3D/android/launcher-app/build/outputs/apk/debug/launcher-app-armeabi-v7a-debug.apk) |

@@ -7,7 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build Linux
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{github.workspace}}/Urho3D
+          key: Urho3D-android-${{runner.os}}
+      - name: Build
         run: ./android/script.sh
       - uses: actions/upload-artifact@v1
         with:
@@ -18,7 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build Linux
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{github.workspace}}/Urho3D-web
+          key: Urho3D-web-${{runner.os}}
+      - name: Build
         run: ./web/script.sh
       - name: Build archive
         run: |
@@ -37,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build Linux
+      - name: Build
         run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:29-linux bash /var/sample/build_linux.sh
       - name: Build archive
         run: |
@@ -61,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Build Windows
+      - name: Build
         run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:30-windows bash /var/sample/build_windows.sh
       - name: Build archive
         run: |

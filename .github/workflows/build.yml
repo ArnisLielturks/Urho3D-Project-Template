@@ -3,6 +3,18 @@ name: Builds
 on: [push, pull_request]
 
 jobs:
+  build_android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Linux
+        run: ./android/script.sh
+  build_web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Linux
+        run: ./web/script.sh
   build_linux:
     runs-on: ubuntu-latest
     steps:

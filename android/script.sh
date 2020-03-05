@@ -31,6 +31,7 @@ rm -rf Urho3D/android/launcher-app
 cp -r android/launcher-app Urho3D/android/launcher-app
 
 cp -r android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/android-project/
+cp -rf script/dockerized.sh Urho3D-web/script/dockerized.sh
 
 cd Urho3D
 

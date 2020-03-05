@@ -27,6 +27,7 @@ mkdir Urho3D-web/Source/ProjectTemplate
 cp -rf Source/* Urho3D-web/Source/ProjectTemplate/
 cp -rf web/application.html Urho3D-web/Source/ProjectTemplate/application.html
 cp -rf web/CMakeLists.txt Urho3D-web/Source/ProjectTemplate/CMakeLists.txt
+cp -rf script/dockerized.sh Urho3D-web/script/dockerized.sh
 
 #echo "add_subdirectory (\${CMAKE_CURRENT_SOURCE_DIR}/ProjectTemplate ProjectTemplate)" >>  Urho3D-web/Source/CMakeLists.txt
 

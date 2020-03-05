@@ -9,6 +9,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build Linux
         run: ./android/script.sh
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Build_Android.apk
+          path: Urho3D/ProjectTemplate.apk
 
   build_web:
     runs-on: ubuntu-latest
@@ -16,6 +20,18 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build Linux
         run: ./web/script.sh
+      - name: Build archive
+        run: |
+          mkdir archive
+          cp -r Urho3D-web/build/web/bin/ProjectTemplate* archive/
+          chmod -R 777 archive
+          chmod a+x archive/ProjectTemplate.desktop
+          cd archive
+          zip -r "build_web.zip" *  > /dev/null
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Build_Web.zip
+          path: archive/build_web.zip
 
   build_linux:
     runs-on: ubuntu-latest

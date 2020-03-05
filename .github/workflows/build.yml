@@ -33,7 +33,7 @@ jobs:
       - name: Build archive
         run: |
           mkdir archive
-          cp -r ${{github.workspace}}/Urho3D-web/build/web/bin/ProjectTemplate* archive/
+          cp -r Urho3D-web/build/web/bin/ProjectTemplate* archive/
           chmod -R 777 archive
           cd archive
           zip -r "build_web.zip" *  > /dev/null

@@ -138,4 +138,7 @@ endif ()
 # Urho3D game engine library
 add_subdirectory (Urho3D)
 
+# Urho3D tools
+add_subdirectory (Tools)
+
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/ProjectTemplate ProjectTemplate)

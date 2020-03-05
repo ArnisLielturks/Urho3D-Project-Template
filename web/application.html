@@ -34,10 +34,9 @@
         <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
     <div class="emscripten">
-        <input type="checkbox" id="resize">Resize canvas
-        <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
-        &nbsp;&nbsp;&nbsp;
-        <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)">
+        <!-- <input type="checkbox" id="resize">Resize canvas
+        <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer -->
+        <!-- <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)"> -->
         <input type="button" value="Fullscreen 2" onclick="viewFullScreen()">
     </div>
     <div class="emscripten_border">
@@ -69,7 +68,7 @@
       document.addEventListener("fullscreenchange", fullscreenHandler, false);
       document.addEventListener("mozfullscreenchange", fullscreenHandler, false);
       document.addEventListener("webkitfullscreenchange", fullscreenHandler, false);
-      document.addEventListener("MSFullscreenChange", fullscreenHandler, false)
+      document.addEventListener("MSFullscreenChange", fullscreenHandler, false);
 
       function viewFullScreen(show) {
         if (show === undefined) show = !isFullScreen();

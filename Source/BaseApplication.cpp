@@ -147,9 +147,9 @@ void BaseApplication::Start()
     context_->RegisterSubsystem(new Achievements(context_));
     context_->RegisterSubsystem(new Generator(context_));
 
-    #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
+#if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterSubsystem(new ModLoader(context_));
-    #endif
+#endif
 
     context_->RegisterSubsystem(new AudioManager(context_));
 

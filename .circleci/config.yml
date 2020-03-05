@@ -74,6 +74,6 @@ workflows:
   version: 2
   build:
     jobs:
-    - build_android
+#    - build_android
     - build_linux
-    - build_windows
+#    - build_windows

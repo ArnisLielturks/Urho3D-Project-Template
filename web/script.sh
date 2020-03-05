@@ -33,4 +33,6 @@ cp -rf script/dockerized.sh Urho3D-web/script/dockerized.sh
 
 cd Urho3D-web
 # Release mode
-./script/dockerized.sh web 
+./script/dockerized.sh web
+
+cd ..

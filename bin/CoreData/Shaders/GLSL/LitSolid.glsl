@@ -14,7 +14,11 @@
 varying vec3 vNormal;
 varying vec4 vWorldPos;
 varying float vDepth;
+
+#ifdef DISSOLVE
 uniform float cDissolvePercentage;
+#endif
+
 #ifdef VERTEXCOLOR
     varying vec4 vColor;
 #endif

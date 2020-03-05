@@ -27,7 +27,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 file(GLOB_RECURSE SRCS src/*.cpp)
 file(GLOB_RECURSE HDRS include/*.h)
 
-
 # Find Urho3D library
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
@@ -51,8 +50,9 @@ set(INCLUDE_DIRS include)
 # Setup target with resource copying
 setup_main_executable ()
 
-
 ADD_DEFINITIONS(
     -std=c++11 # Or -std=c++0x
     # Other flags
 )
+
+

@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include "ConfigFile.h"
 
-#include <Urho3D/Urho3D.h>
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Variant.h>
 #include <Urho3D/Resource/Resource.h>

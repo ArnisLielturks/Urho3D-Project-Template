@@ -234,8 +234,8 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_FULL_SCREEN, windowMode == 2);
     SetEngineParameter(EP_BORDERLESS, windowMode == 1);
 
-    SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("video", "Width", 800));
-    SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 600));
+    SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("video", "Width", 1280));
+    SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 720));
     SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("video", "VSync", true));
     SetEngineParameter(EP_REFRESH_RATE, GetSubsystem<ConfigManager>()->GetInt("video", "RefreshRate", 60));
     SetEngineParameter(EP_WINDOW_RESIZABLE, GetSubsystem<ConfigManager>()->GetBool("video", "ResizableWindow", false));
@@ -274,15 +274,15 @@ void BaseApplication::ApplyGraphicsSettings()
 {
     auto* renderer = GetSubsystem<Renderer>();
 
-    renderer->SetTextureQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "TextureQuality", MaterialQuality::QUALITY_MEDIUM));
-    renderer->SetMaterialQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "MaterialQuality", MaterialQuality::QUALITY_MEDIUM));
+    renderer->SetTextureQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "TextureQuality", MaterialQuality::QUALITY_HIGH));
+    renderer->SetMaterialQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "MaterialQuality", MaterialQuality::QUALITY_MAX));
     renderer->SetDrawShadows(GetSubsystem<ConfigManager>()->GetBool("graphics", "DrawShadows", true));
     renderer->SetShadowMapSize(GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowMapSize", 512));
     renderer->SetShadowQuality((ShadowQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowQuality", ShadowQuality::SHADOWQUALITY_PCF_16BIT));
     renderer->SetMaxOccluderTriangles(GetSubsystem<ConfigManager>()->GetInt("graphics", "MaxOccluderTriangles", 5000));
     renderer->SetDynamicInstancing(GetSubsystem<ConfigManager>()->GetBool("graphics", "DynamicInstancing", true));
     renderer->SetSpecularLighting(GetSubsystem<ConfigManager>()->GetBool("graphics", "SpecularLighting", true));
-    renderer->SetHDRRendering(GetSubsystem<ConfigManager>()->GetBool("graphics", "HDRRendering", true));
+    renderer->SetHDRRendering(GetSubsystem<ConfigManager>()->GetBool("graphics", "HDRRendering", false));
 }
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)

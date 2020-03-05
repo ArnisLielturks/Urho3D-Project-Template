@@ -9,6 +9,7 @@
 #include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Math/MathDefs.h>
+#include <Urho3D/Graphics/GraphicsEvents.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
@@ -62,6 +63,10 @@ void BaseLevel::SubscribeToBaseEvents()
 
     SubscribeToEvent("postprocess", [&](StringHash eventType, VariantMap& eventData) {
         ApplyPostProcessEffects();
+    });
+
+    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
+        SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
     });
 
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
@@ -359,8 +364,8 @@ void BaseLevel::ApplyPostProcessEffects()
                                                                                      0.1f));
         effectRenderPath->SetEnabled("Bloom", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Bloom", false));
         effectRenderPath->SetEnabled("BloomHDR", GetSubsystem<ConfigManager>()->GetBool("postprocess", "BloomHDR", false));
-        effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", true));
-        effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", true));
+        effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", false));
+        effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", false));
         effectRenderPath->SetEnabled("GammaCorrection",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", true));
         effectRenderPath->SetEnabled("ColorCorrection",
@@ -369,7 +374,7 @@ void BaseLevel::ApplyPostProcessEffects()
                             GAMMA_MAX_VALUE);
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
-        effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", true));
+        effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", false));
         viewport->SetRenderPath(effectRenderPath);
     }
 }

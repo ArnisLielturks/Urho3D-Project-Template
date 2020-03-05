@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+      .emscripten { 
+        padding-right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        display: block; 
+      }
+      textarea.emscripten { 
+        font-family: monospace; width: 80%; 
+      }
+      div.emscripten { 
+        text-align: center; 
+      }
+      div.emscripten_border { 
+        border: none; 
+      }
+      #canvas {
+        width: 1024px;
+        height: 768px;
+      }
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+      canvas.emscripten { 
+        border: none; 
+      }
+    </style>
+  </head>
+  <body>
+    <div class="emscripten" id="status">Downloading...</div>
+    <div id="container" style="display: none;">
+        <div class="emscripten">
+          <progress value="0" max="100" id="progress" hidden=1></progress>  
+        </div>
+        <div class="emscripten">
+          <input type="checkbox" id="resize">Resize canvas
+          <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
+          &nbsp;&nbsp;&nbsp;
+          <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)">
+        </div>
+        <div class="emscripten_border">
+          <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        </div>
+        <textarea class="emscripten" id="output" rows="45" style="border: none;"></textarea>
+    </div>
+    <script type='text/javascript'>
+      const CANVAS_WIDTH = 1024;
+      const CANVAS_HEIGHT = 768;
+      var canvasElement = document.getElementById('canvas');
+      var devicePixelRatio = window.devicePixelRatio || 1;
+
+      // Set initial values for our canvas, emscripten uses both properties to do canvas resizing and by default they are not set
+      canvasElement.widthNative  = CANVAS_WIDTH * devicePixelRatio;
+      canvasElement.heightNative = CANVAS_HEIGHT * devicePixelRatio;
+
+      function fullscreenHandler(event) {
+        setTimeout(() => {
+            if (document.fullscreenElement) {
+              console.log('Fulscreen mode on');
+              // Resize our canvas to fit the full screen
+              Module.canvas.width = Module.rendererSize.width;
+              Module.canvas.height = Module.rendererSize.height;
+              canvasElement.style.width = screen.width + 'px';
+              canvasElement.style.height = screen.height + 'px';
+            } else {
+              console.log('Fulscreen mode off');
+              // Revert canvas to it's original size
+              console.log('Restorig canvas original size', CANVAS_WIDTH * devicePixelRatio, CANVAS_HEIGHT * devicePixelRatio);
+              Browser.updateCanvasDimensions(Module.canvas, Module.rendererSize.width, Module.rendererSize.height);
+              canvasElement.style.width = CANVAS_WIDTH + 'px';
+              canvasElement.style.height = CANVAS_HEIGHT + 'px';
+            }
+            canvasElement.focus();
+        }, 500);
+        console.log('fullscreenHandler', event);
+      }
+
+      document.addEventListener("fullscreenchange", fullscreenHandler, false);
+      document.addEventListener("mozfullscreenchange", fullscreenHandler, false);
+      document.addEventListener("webkitfullscreenchange", fullscreenHandler, false);
+      document.addEventListener("MSFullscreenChange", fullscreenHandler, false)
+
+      function ready() {
+        document.getElementById('container').style.display = 'block';
+      }
+
+      // connect to canvas
+      var Module = {
+        preRun: [],
+        postRun: [],
+        rendererSize: {
+          width: CANVAS_WIDTH * devicePixelRatio,
+          height: CANVAS_HEIGHT * devicePixelRatio,
+          aspectRatio: CANVAS_WIDTH / CANVAS_HEIGHT,
+        },
+        print: (function() {
+          var element = document.getElementById('output');
+          element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            element.value += text + "\n";
+            element.scrollTop = element.scrollHeight; // focus on bottom
+          };
+        })(),
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.log(text);
+          }
+        },
+        // Urho3D called method
+        SetRendererSize: function(width, height) {
+          this.rendererSize.width  = width;
+          this.rendererSize.height = height;
+          this.rendererSize.aspectRatio = width / height;
+        },
+        canvas: canvasElement,
+        setStatus: function(text) {
+          if (text === 'Running...') {
+            ready();
+          }
+          if (Module.setStatus.interval) clearInterval(Module.setStatus.interval);
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var statusElement = document.getElementById('status');
+          var progressElement = document.getElementById('progress');
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+          }
+          statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+    </script>     
+    {{{ SCRIPT }}}
+  </body>
+</html>

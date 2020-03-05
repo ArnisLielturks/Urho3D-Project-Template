@@ -3,8 +3,15 @@
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Engine/EngineDefs.h>
 #include <Urho3D/Graphics/Renderer.h>
+#include <Urho3D/Graphics/GraphicsEvents.h>
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Resource/Localization.h>
+
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/emscripten.h>
+#endif
+
+
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -47,7 +54,11 @@ BaseApplication::BaseApplication(Context* context) :
 #ifdef __ANDROID__
     _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
 #else
+#ifdef __EMSCRIPTEN__
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
+#else
+    _configurationFile = "Data/Config/config.cfg";
+#endif
 #endif
 
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
@@ -69,6 +80,20 @@ void BaseApplication::Setup()
 {
     context_->RegisterSubsystem(new ConsoleHandler(context_));
     LoadINIConfig(_configurationFile);
+
+    #if defined(__EMSCRIPTEN__)
+    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace ScreenMode;
+        int width = eventData[P_WIDTH].GetInt();
+        int height = eventData[P_HEIGHT].GetInt();
+
+        URHO3D_LOGINFOF("Screen size changed %dx%d", width, height);
+
+        EM_ASM({
+            Module.SetRendererSize($0, $1);
+        }, width, height);
+    });
+    #endif
 }
 
 void BaseApplication::Start()

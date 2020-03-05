@@ -57,6 +57,14 @@ void ControllerInput::LoadConfig()
 {
     GetSubsystem<ConfigManager>();
 
+#ifdef __EMSCRIPTEN__
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_W, CTRL_FORWARD);
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_S, CTRL_BACK);
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_A, CTRL_LEFT);
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_D, CTRL_RIGHT);
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_SPACE, CTRL_JUMP);
+    _inputHandlers[ControllerType::KEYBOARD]->SetKeyToAction(KEY_LSHIFT, CTRL_SPRINT);
+#endif
 	for (auto it = _controlMapNames.Begin(); it != _controlMapNames.End(); ++it) {
 		String controlName = (*it).second_;
 		controlName.Replace(" ", "_");

@@ -1,53 +1,53 @@
 <!doctype html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Emscripten-Generated Code</title>
     <style>
-      .emscripten { 
-        padding-right: 0; 
-        margin-left: auto; 
-        margin-right: auto; 
-        display: block; 
+      .emscripten {
+        padding-right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
       }
-      textarea.emscripten { 
-        font-family: monospace; width: 80%; 
+      textarea.emscripten {
+        font-family: monospace; width: 80%;
       }
-      div.emscripten { 
-        text-align: center; 
+      div.emscripten {
+        text-align: center;
       }
-      div.emscripten_border { 
-        border: none; 
+      div.emscripten_border {
+        border: none;
       }
       #canvas {
         width: 1024px;
         height: 768px;
       }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { 
-        border: none; 
+      canvas.emscripten {
+        border: none;
       }
     </style>
-  </head>
-  <body>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div id="container" style="display: none;">
-        <div class="emscripten">
-          <progress value="0" max="100" id="progress" hidden=1></progress>  
-        </div>
-        <div class="emscripten">
-          <input type="checkbox" id="resize">Resize canvas
-          <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
-          &nbsp;&nbsp;&nbsp;
-          <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)">
-        </div>
-        <div class="emscripten_border">
-          <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-        </div>
-        <textarea class="emscripten" id="output" rows="45" style="border: none;"></textarea>
+</head>
+<body>
+<div class="emscripten" id="status">Downloading...</div>
+<div id="container" style="display: none;">
+    <div class="emscripten">
+        <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
-    <script type='text/javascript'>
+    <div class="emscripten">
+        <input type="checkbox" id="resize">Resize canvas
+        <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
+        &nbsp;&nbsp;&nbsp;
+        <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)">
+    </div>
+    <div class="emscripten_border">
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    </div>
+    <textarea class="emscripten" id="output" rows="45" style="border: none;"></textarea>
+</div>
+<script type='text/javascript'>
 
       // Urho3D fullscreen canvas handling
       const CANVAS_WIDTH = 1024;
@@ -90,6 +90,10 @@
         document.getElementById('container').style.display = 'block';
       }
 
+      function updateCanvasStyle() {
+        canvasElement.style.height = (CANVAS_WIDTH / Module.rendererSize.aspectRatio) + 'px';
+      }
+
       // connect to canvas
       var Module = {
         preRun: [],
@@ -123,9 +127,11 @@
         },
         // Urho3D called method
         SetRendererSize: function(width, height) {
+          console.log('Engine renderer size changed to', width, height);
           this.rendererSize.width  = width;
           this.rendererSize.height = height;
           this.rendererSize.aspectRatio = width / height;
+          updateCanvasStyle();
         },
         canvas: canvasElement,
         setStatus: function(text) {
@@ -155,7 +161,7 @@
         }
       };
       Module.setStatus('Downloading...');
-    </script>     
-    {{{ SCRIPT }}}
-  </body>
+    </script>
+{{{ SCRIPT }}}
+</body>
 </html>

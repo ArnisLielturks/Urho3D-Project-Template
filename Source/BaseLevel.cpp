@@ -367,7 +367,7 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", false));
         effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", false));
         effectRenderPath->SetEnabled("GammaCorrection",
-                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", true));
+                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", false));
         effectRenderPath->SetEnabled("ColorCorrection",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "ColorCorrection", false));
         float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f), 0.05f,

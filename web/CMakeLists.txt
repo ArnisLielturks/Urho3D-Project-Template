@@ -15,3 +15,4 @@ endif()
 # Setup target with resource copying
 setup_main_executable ()
 
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")

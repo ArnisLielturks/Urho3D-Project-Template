@@ -11,9 +11,6 @@
         margin-right: auto;
         display: block;
       }
-      textarea.emscripten {
-        font-family: monospace; width: 80%;
-      }
       div.emscripten {
         text-align: center;
       }
@@ -41,11 +38,11 @@
         <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
         &nbsp;&nbsp;&nbsp;
         <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)">
+        <input type="button" value="Fullscreen 2" onclick="viewFullScreen()">
     </div>
     <div class="emscripten_border">
         <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
-    <textarea class="emscripten" id="output" rows="45" style="border: none;"></textarea>
 </div>
 <script type='text/javascript'>
 
@@ -55,30 +52,18 @@
       var canvasElement = document.getElementById('canvas');
       var devicePixelRatio = window.devicePixelRatio || 1;
 
-      // Set initial values for our canvas, emscripten uses both properties to do canvas resizing and by default they are not set
-      canvasElement.widthNative  = CANVAS_WIDTH * devicePixelRatio;
-      canvasElement.heightNative = CANVAS_HEIGHT * devicePixelRatio;
-
       function fullscreenHandler(event) {
-        setTimeout(() => {
-            if (document.fullscreenElement) {
-              console.log('Fulscreen mode on');
-              // Resize our canvas to fit the full screen
-              Module.canvas.width = Module.rendererSize.width;
-              Module.canvas.height = Module.rendererSize.height;
-              canvasElement.style.width = screen.width + 'px';
-              canvasElement.style.height = screen.height + 'px';
-            } else {
-              console.log('Fulscreen mode off');
-              // Revert canvas to it's original size
-              console.log('Restorig canvas original size', CANVAS_WIDTH * devicePixelRatio, CANVAS_HEIGHT * devicePixelRatio);
-              Browser.updateCanvasDimensions(Module.canvas, Module.rendererSize.width, Module.rendererSize.height);
-              canvasElement.style.width = CANVAS_WIDTH + 'px';
-              canvasElement.style.height = CANVAS_HEIGHT + 'px';
-            }
-            canvasElement.focus();
-        }, 500);
         console.log('fullscreenHandler', event);
+        // setTimeout(() => {
+            if (isFullScreen()) {
+              console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width, screen.height);
+              Module.JSCanvasSize(screen.width, screen.height);
+            } else {
+              console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
+              Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+            }
+            // canvasElement.focus();
+        // }, 500);
       }
 
       document.addEventListener("fullscreenchange", fullscreenHandler, false);
@@ -86,12 +71,30 @@
       document.addEventListener("webkitfullscreenchange", fullscreenHandler, false);
       document.addEventListener("MSFullscreenChange", fullscreenHandler, false)
 
-      function ready() {
-        document.getElementById('container').style.display = 'block';
+      function viewFullScreen(show) {
+        if (show === undefined) show = !isFullScreen();
+        if (show) {
+          if (canvasElement.requestFullscreen) canvasElement.requestFullscreen();
+          else if (canvasElement.webkitRequestFullScreen) canvasElement.webkitRequestFullScreen();
+          else if (canvasElement.mozRequestFullScreen) canvasElement.mozRequestFullScreen();
+          else if (canvasElement.msRequestFullscreen) canvasElement.msRequestFullscreen();
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+          else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+          else if (document.msExitFullscreen) document.msExitFullscreen();
+        }
       }
 
-      function updateCanvasStyle() {
-        canvasElement.style.height = (CANVAS_WIDTH / Module.rendererSize.aspectRatio) + 'px';
+      function isFullScreen() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      }
+
+      function ready() {
+        document.getElementById('container').style.display = 'block';
+        setTimeout(() => {
+          Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+        }, 100);
       }
 
       // connect to canvas
@@ -104,8 +107,6 @@
           aspectRatio: CANVAS_WIDTH / CANVAS_HEIGHT,
         },
         print: (function() {
-          var element = document.getElementById('output');
-          element.value = ''; // clear browser cache
           return function(text) {
             if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
             // These replacements are necessary if you render to raw HTML
@@ -113,8 +114,9 @@
             //text = text.replace(/</g, "&lt;");
             //text = text.replace(/>/g, "&gt;");
             //text = text.replace('\n', '<br>', 'g');
-            element.value += text + "\n";
-            element.scrollTop = element.scrollHeight; // focus on bottom
+            // element.value += text + "\n";
+            // element.scrollTop = element.scrollHeight; // focus on bottom
+            console.log(text);
           };
         })(),
         printErr: function(text) {
@@ -131,7 +133,18 @@
           this.rendererSize.width  = width;
           this.rendererSize.height = height;
           this.rendererSize.aspectRatio = width / height;
-          updateCanvasStyle();
+
+          if (isFullScreen()) {
+            return;
+          }
+
+          if (this.canvas.width === width && this.canvas.height === height) {
+            return;
+          }
+          console.log('Updating canvas accordingly', this.canvas.width, 'to', width, 'and', this.canvas.height, 'to', height);
+          this.canvas.width = width;
+          this.canvas.height = height;
+          this.canvas.style.height = (CANVAS_WIDTH / Module.rendererSize.aspectRatio) + 'px';
         },
         canvas: canvasElement,
         setStatus: function(text) {

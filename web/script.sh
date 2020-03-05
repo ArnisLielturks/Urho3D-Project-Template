@@ -28,8 +28,8 @@ cp -rf Source/* Urho3D-web/Source/ProjectTemplate/
 cp -rf web/application.html Urho3D-web/Source/ProjectTemplate/application.html
 cp -rf web/CMakeLists.txt Urho3D-web/Source/ProjectTemplate/CMakeLists.txt
 
-echo "add_subdirectory (\${CMAKE_CURRENT_SOURCE_DIR}/ProjectTemplate ProjectTemplate)" >>  Urho3D-web/Source/CMakeLists.txt
+#echo "add_subdirectory (\${CMAKE_CURRENT_SOURCE_DIR}/ProjectTemplate ProjectTemplate)" >>  Urho3D-web/Source/CMakeLists.txt
 
 cd Urho3D-web
 # Release mode
-./script/dockerized.sh web
+./script/dockerized.sh web 

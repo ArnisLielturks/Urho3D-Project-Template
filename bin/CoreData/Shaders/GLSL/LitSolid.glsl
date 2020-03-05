@@ -123,7 +123,7 @@ void PS()
 
 #ifdef DISSOLVE
     vec4 noise = texture2D(sSpecMap, vTexCoord.xy);
-    if (noise.r <= cDissolvePercentage + sin(cElapsedTimePS)) {
+    if (noise.r <= cDissolvePercentage) {
         discard;
     }
 #endif

@@ -30,6 +30,10 @@ public:
      */
     virtual void Stop() override;
 
+#if defined(__EMSCRIPTEN__)
+    static void JSCanvasSize(int width, int height);
+#endif
+
 private:
 
     /**

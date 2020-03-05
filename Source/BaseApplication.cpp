@@ -6,12 +6,7 @@
 #include <Urho3D/Graphics/GraphicsEvents.h>
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Resource/Localization.h>
-
-#if defined(__EMSCRIPTEN__)
-#include <emscripten/emscripten.h>
-#endif
-
-
+#include <Urho3D/Graphics/Graphics.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -25,6 +20,12 @@
 
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
+#endif
+
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
+static const BaseApplication *app;
 #endif
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -43,6 +44,10 @@ BaseApplication::BaseApplication(Context* context) :
 
     #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();
+    #endif
+
+    #if defined(__EMSCRIPTEN__)
+    app = this;
     #endif
 
     context_->RegisterFactory<WindowManager>();
@@ -95,6 +100,19 @@ void BaseApplication::Setup()
     });
     #endif
 }
+
+#if defined(__EMSCRIPTEN__)
+void BaseApplication::JSCanvasSize(int width, int height)
+{
+    URHO3D_LOGINFOF("JSCanvasSize: %dx%d", width, height);
+    app->GetSubsystem<Graphics>()->SetMode(width, height);
+}
+
+using namespace emscripten;
+EMSCRIPTEN_BINDINGS(Module) {
+    function("JSCanvasSize", &BaseApplication::JSCanvasSize);
+}
+#endif
 
 void BaseApplication::Start()
 {

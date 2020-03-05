@@ -8,13 +8,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Linux
-        run: ./android/script.sh
+        run: |
+          export COMPOSE_INTERACTIVE_NO_CLI=1
+          ./android/script.sh
+
   build_web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Build Linux
-        run: ./web/script.sh
+        run: |
+          export COMPOSE_INTERACTIVE_NO_CLI=1
+          ./web/script.sh
+
   build_linux:
     runs-on: ubuntu-latest
     steps:

@@ -13,7 +13,12 @@
 #endif
 varying vec3 vNormal;
 varying vec4 vWorldPos;
+
+#ifndef WEBGL
+#ifdef FADE
 varying float vDepth;
+#endif
+#endif
 
 #ifdef DISSOLVE
 uniform float cDissolvePercentage;
@@ -54,7 +59,12 @@ void VS()
     gl_Position = GetClipPos(worldPos);
     vNormal = GetWorldNormal(modelMatrix);
     vWorldPos = vec4(worldPos, GetDepth(gl_Position));
+
+    #ifndef WEBGL
+    #ifdef FADE
     vDepth = GetDepth(gl_Position);
+    #endif
+    #endif
 
     #ifdef VERTEXCOLOR
         vColor = iColor;
@@ -112,10 +122,15 @@ void VS()
 }
 
 #ifdef COMPILEPS
+#ifndef WEBGL
+#ifdef FADE
 float AbsoluteDepth(float normalDepth) {
     float clipLength = cFarClipPS - cNearClipPS;
     return cNearClipPS + clipLength * normalDepth;
 }
+#endif
+#endif
+
 #endif
 
 void PS()
@@ -128,6 +143,7 @@ void PS()
     }
 #endif
 
+#ifndef WEBGL
 #ifdef FADE
     const mat4 thresholdMatrix = mat4(
         1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
@@ -135,14 +151,15 @@ void PS()
         4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
         16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
     );
-    int x = int(mod(vTexCoord.x * 1920.0, 4));
-    int y = int(mod(vTexCoord.y * 1080.0, 4));
+    int x = int(mod(vTexCoord.x * 1920.0, 4.0));
+    int y = int(mod(vTexCoord.y * 1080.0, 4.0));
     float z = AbsoluteDepth(vDepth);
     float threshold = 0.5;
     float alpha = z / threshold - 0.5;
     if (alpha - thresholdMatrix[x][y] < 0.0) {
         discard;
     }
+#endif
 #endif
 
     // Get material diffuse albedo

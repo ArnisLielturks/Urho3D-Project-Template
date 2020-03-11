@@ -39,7 +39,7 @@ endif ()
 project (Urho3D-Launcher)
 
 # Set CMake modules search path
-set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules)
+set (CMAKE_MODULE_PATH ../../../CMake/Modules)
 
 # Include UrhoCommon.cmake module after setting project name
 include (UrhoCommon)

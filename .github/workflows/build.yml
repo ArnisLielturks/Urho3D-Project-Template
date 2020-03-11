@@ -13,7 +13,15 @@ jobs:
           path: ${{github.workspace}}/Urho3D
           key: Urho3D-android-${{runner.os}}
       - name: Build
-        run: ./android/script.sh
+        run: ./BuildConfig/android/script.sh
+      - name: Upload to itch.io
+        if: github.ref == 'refs/heads/master'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push Urho3D/ProjectTemplate.apk miegamicis/sandbox:android --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Android.apk
@@ -29,49 +37,123 @@ jobs:
           path: ${{github.workspace}}/Urho3D-web
           key: Urho3D-web-${{runner.os}}
       - name: Build
-        run: ./web/script.sh
+        run: ./BuildConfig/web/script.sh
       - name: Build archive
         run: |
           mkdir archive
           cp -r Urho3D-web/build/web/bin/ProjectTemplate* archive/
+          mv archive/ProjectTemplate.html archive/index.html
           chmod -R 777 archive
-          cd archive
-          zip -r "build_web.zip" *  > /dev/null
+          zip -r "build_web.zip" archive/*  > /dev/null
+      - name: Upload to itch.io
+        if: github.ref == 'refs/heads/master'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push archive miegamicis/sandbox:web --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
       - uses: actions/upload-artifact@v1
         with:
-          name: Build_Web.zip
-          path: archive/build_web.zip
+          name: Build_Web
+          path: build_web.zip
 
   build_linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{github.workspace}}/Urho3D
+          key: Urho3D-linux-${{runner.os}}
       - name: Build
-        run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:29-linux bash /var/sample/build_linux.sh
+        run: ./BuildConfig/linux/script.sh
       - name: Build archive
         run: |
           mkdir archive
-          cp build/bin/ProjectTemplate archive/ProjectTemplate || true
-          cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
+          cp Urho3D/build/native/bin/ProjectTemplate archive/ProjectTemplate || true
           cp -r bin/Data archive/Data
           cp -r bin/CoreData archive/CoreData
           cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
           chmod a+x archive/ProjectTemplate.desktop
-          cd archive
-          zip -r "build_linux.zip" *  > /dev/null
+          zip -r "build_linux.zip" archive/*  > /dev/null
+      - name: Upload to itch.io
+        if: github.ref == 'refs/heads/master'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push archive/ miegamicis/sandbox:linux --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
       - uses: actions/upload-artifact@v1
         with:
-          name: Build_Linux.zip
-          path: archive/build_linux.zip
+          name: Build_Linux
+          path: build_linux.zip
 
   build_windows:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{github.workspace}}/Urho3D
+          key: Urho3D-windows-${{runner.os}}
       - name: Build
-        run: docker run -v $(pwd):/var/sample arnislielturks/urho3d:30-windows bash /var/sample/build_windows.sh
+        run: ./BuildConfig/mingw/script.sh
+      - name: Build archive
+        run: |
+          mkdir archive
+          cp Urho3D/build/mingw/bin/ProjectTemplate archive/ProjectTemplate || true
+          cp -r bin/Data archive/Data
+          cp -r bin/CoreData archive/CoreData
+          rm -rf archive/Data/Saves/Achievements.json
+          chmod -R 777 archive
+          zip -r "build_windows.zip" archive/*  > /dev/null
+      - name: Upload to itch.io
+        if: github.ref == 'refs/heads/master'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push archive/ miegamicis/sandbox:windows --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Build_Windows
+          path: build_windows.zip
+
+  build_osx:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        id: cache
+        with:
+          path: ${{github.workspace}}/Urho3D
+          key: Urho3D-${{runner.os}}
+      - name: Download Urho3D
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1
+      - name: Build Urho3D
+        run: |
+          export CPATH=`xcrun --show-sdk-path`/usr/include
+          cd ${{github.workspace}}/Urho3D
+          git pull origin master
+          ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0 -DURHO3D_PLAYER=0
+          cd build
+          make -j$(nproc)
+      - name: Build project
+        run: |
+          export URHO3D_HOME="${{github.workspace}}/Urho3D/build"
+          export CPATH=`xcrun --show-sdk-path`/usr/include
+          ./script/cmake_generic.sh build
+          cd build
+          make -j$(nproc)
+          cd ..
       - name: Build archive
         run: |
           mkdir archive
@@ -81,54 +163,17 @@ jobs:
           cp -r bin/CoreData archive/CoreData
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
-          cd archive
-          zip -r "build_windows.zip" *  > /dev/null
+          zip -r "build_osx.zip" archive/*  > /dev/null
+      - name: Upload to itch.io
+        if: github.ref == 'refs/heads/master'
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push archive/ miegamicis/sandbox:macos --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
       - uses: actions/upload-artifact@v1
         with:
-          name: Build_Windows.zip
-          path: archive/build_windows.zip
-
-  build_osx:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v1
-      id: cache
-      with:
-        path: ${{github.workspace}}/Urho3D
-        key: Urho3D-${{runner.os}} 
-    - name: Download Urho3D
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1
-    - name: Build Urho3D
-      run: |
-        export CPATH=`xcrun --show-sdk-path`/usr/include
-        cd ${{github.workspace}}/Urho3D
-        git pull origin master
-        ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0 -DURHO3D_PLAYER=0
-        cd build
-        make -j$(nproc)
-    - name: Build project
-      run: |
-        export URHO3D_HOME="${{github.workspace}}/Urho3D/build"
-        export CPATH=`xcrun --show-sdk-path`/usr/include
-        ./script/cmake_generic.sh build
-        cd build
-        make -j$(nproc)
-        cd ..
-    - name: Build archive
-      run: |
-        mkdir archive
-        cp build/bin/ProjectTemplate archive/ProjectTemplate || true
-        cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
-        cp -r bin/Data archive/Data
-        cp -r bin/CoreData archive/CoreData
-        rm -rf archive/Data/Saves/Achievements.json
-        chmod -R 777 archive
-        cd archive
-        zip -r "build_osx.zip" *  > /dev/null
-    - uses: actions/upload-artifact@v1
-      with:
-        name: Build_OSX.zip
-        path: archive/build_osx.zip
+          name: Build_OSX
+          path: build_osx.zip
 

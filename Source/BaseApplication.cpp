@@ -3,10 +3,12 @@
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Engine/EngineDefs.h>
 #include <Urho3D/Graphics/Renderer.h>
-#include <Urho3D/Graphics/GraphicsEvents.h>
+#include <Urho3D/Core/Context.h>
 #include <Urho3D/Audio/Audio.h>
 #include <Urho3D/Resource/Localization.h>
 #include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Input/Input.h>
+#include <Urho3D/IO/PackageFile.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -23,9 +25,10 @@
 #endif
 
 #if defined(__EMSCRIPTEN__)
+#include <Urho3D/Graphics/GraphicsEvents.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
-static const BaseApplication *app;
+static const Context *appContext;
 #endif
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -47,7 +50,7 @@ BaseApplication::BaseApplication(Context* context) :
     #endif
 
     #if defined(__EMSCRIPTEN__)
-    app = this;
+    appContext = context;
     #endif
 
     context_->RegisterFactory<WindowManager>();
@@ -71,7 +74,6 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
-    // SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, URHO3D_HANDLER(BaseApplication, HandleServiceMessage));
 
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
@@ -102,10 +104,12 @@ void BaseApplication::Setup()
 }
 
 #if defined(__EMSCRIPTEN__)
-void BaseApplication::JSCanvasSize(int width, int height)
+void BaseApplication::JSCanvasSize(int width, int height, bool fullscreen, float scale)
 {
     URHO3D_LOGINFOF("JSCanvasSize: %dx%d", width, height);
-    app->GetSubsystem<Graphics>()->SetMode(width, height);
+    appContext->GetSubsystem<Graphics>()->SetMode(width, height);
+    UI* ui = appContext->GetSubsystem<UI>();
+    ui->SetScale(scale);
 }
 
 using namespace emscripten;
@@ -121,6 +125,11 @@ void BaseApplication::Start()
     ui->SetScale(1.8);
 #else
     ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 1.0));
+#endif
+
+#ifdef __APPLE__
+    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 2.0));
+    GetSubsystem<ConfigManager>()->Set("engine", "HighDPI", true);
 #endif
 
     // TODO detect highDPI first
@@ -240,6 +249,14 @@ void BaseApplication::RegisterConsoleCommands()
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
         GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
     });
+
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "mouse_visible", MyEvents::ConsoleCommandAdd::P_EVENT, "#mouse_visible", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle mouse visible");
+    SubscribeToEvent("#mouse_visible", [&](StringHash eventType, VariantMap& eventData) {
+        Input* input = GetSubsystem<Input>();
+        if (input->IsMouseVisible()) {
+            input->SetMouseVisible(!input->IsMouseVisible());
+        }
+    });
 }
 
 void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
@@ -350,10 +367,16 @@ void BaseApplication::LoadTranslationFiles()
     // Get all translation files in the Data/Translations folder
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Translations"), String("*.json"), SCAN_FILES, true);
 
-#ifdef __ANDROID__
-    result.Push("EN.json");
-    result.Push("LV.json");
-#endif
+    // Get all the translations from packages
+    auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
+    for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
+        auto files = (*it)->GetEntryNames();
+        for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
+            if ((*it2).StartsWith("Translations/") && (*it2).EndsWith(".json") && (*it2).Split('/')  .Size() == 2) {
+                result.Push((*it2).Split('/').At(1));
+            }
+        }
+    }
 
     for (auto it = result.Begin(); it != result.End(); ++it) {
         String file = (*it);
@@ -374,23 +397,4 @@ void BaseApplication::LoadTranslationFiles()
 
     // Finally set the application language
     localization->SetLanguage(GetSubsystem<ConfigManager>()->GetString("game", "Language", "EN"));
-}
-
-void BaseApplication::HandleServiceMessage(StringHash eventType, VariantMap& eventData)
-{
-    using namespace MyEvents::ServiceMessage;
-
-    int cmd    = eventData[P_COMMAND].GetInt();
-    int stat   = eventData[P_STATUS].GetInt();
-    String msg = eventData[P_MESSAGE].GetString();
-
-    String str=!msg.Empty()?msg:" ";
-
-    VariantMap& data = GetEventDataMap();
-    data["Title"] = "From Android";
-    data["Message"] = str;
-    data["Name"] = "PopupMessageWindow";
-    data["Type"] = "warning";
-    data["ClosePrevious"] = true;
-    SendEvent(MyEvents::E_OPEN_WINDOW, data);
 }

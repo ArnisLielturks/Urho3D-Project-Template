@@ -5,6 +5,5 @@
     <texture unit="normal" name="Textures/BoxNormal.png" />
     <texture unit="specular" name="Textures/Noise.png" />
     <texture unit="emissive" name="Textures/BoxAmbient.png" />
-    <shader psdefines="FADE DISSOLVE" />
-    <parameter name="DissolvePercentage" value="0.0" />
+    <shader psdefines="FADE" /> 
 </material>

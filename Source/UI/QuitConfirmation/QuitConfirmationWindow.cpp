@@ -6,7 +6,6 @@
 #include <Urho3D/UI/Text.h>
 #include "QuitConfirmationWindow.h"
 #include "../../MyEvents.h"
-#include "../../Audio/AudioManagerDefs.h"
 #include "../../Global.h"
 
 static const int BUTTON_WIDTH = 150;

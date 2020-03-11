@@ -2,7 +2,6 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/Log.h>
-#include <Urho3D/Math/MathDefs.h>
 #include "Generator.h"
 #include "../Global.h"
 #include "PerlinNoise.h"

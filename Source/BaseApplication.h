@@ -31,7 +31,7 @@ public:
     virtual void Stop() override;
 
 #if defined(__EMSCRIPTEN__)
-    static void JSCanvasSize(int width, int height);
+    static void JSCanvasSize(int width, int height, bool fullscreen, float scale);
 #endif
 
 private:
@@ -65,8 +65,6 @@ private:
      * Add global config
      */
     void HandleAddConfig(StringHash eventType, VariantMap& eventData);
-
-    void HandleServiceMessage(StringHash eventType, VariantMap& eventData);
 
     /**
      * Subscribe to console commands

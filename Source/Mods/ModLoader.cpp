@@ -116,7 +116,7 @@ void ModLoader::LoadLuaMods()
         auto files = (*it)->GetEntryNames();
         for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
             if ((*it2).StartsWith("Mods/") && (*it2).EndsWith(".lua") && (*it2).Split('/')  .Size() == 2) {
-                _luaMods.Push((*it2));
+                _luaMods.Push((*it2).Split('/').At(1));
             }
         }
     }

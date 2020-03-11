@@ -53,11 +53,9 @@
 <body>
 <div class="centered">
     <div class="emscripten" id="status">Downloading...</div>
+    <progress value="10" max="100" id="progress" hidden></progress>
 </div>
 <div id="container">
-    <div class="emscripten">
-        <progress value="0" max="100" id="progress" hidden=0></progress>
-    </div>
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1 style="display: none;"></canvas>
     <div class="emscripten fulscreen-container" id="fullscreen" style="display: none;">
         <input type="button" value="Go Fullscreen" onclick="viewFullScreen()">

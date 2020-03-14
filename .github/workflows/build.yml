@@ -190,7 +190,7 @@ jobs:
           git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D
           cd Urho3D
           echo "Running cmake"
-          script/cmake_vs2019.bat build -DURHO3D_LIB_TYPE=STATIC
+          script/cmake_vs2019.bat build -DURHO3D_LIB_TYPE=STATIC -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0 -DURHO3D_PLAYER=0
           echo "Going to build dir"
           cd build
           echo "building"

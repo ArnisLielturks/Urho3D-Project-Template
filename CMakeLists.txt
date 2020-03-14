@@ -33,7 +33,7 @@ find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
 set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL)
 if (OpenSSL_FOUND)
     message(STATUS "OpenSSL found ${OPENSSL_INCLUDE_DIR}")
     message(STATUS "OpenSSL libs: ${OPENSSL_LIBRARIES}")

@@ -14,10 +14,8 @@
 varying vec3 vNormal;
 varying vec4 vWorldPos;
 
-#ifndef WEBGL
-#ifdef FADE
+#if !defined(WEBGL) && defined(FADE)
 varying float vDepth;
-#endif
 #endif
 
 #ifdef DISSOLVE
@@ -60,10 +58,8 @@ void VS()
     vNormal = GetWorldNormal(modelMatrix);
     vWorldPos = vec4(worldPos, GetDepth(gl_Position));
 
-    #ifndef WEBGL
-    #ifdef FADE
-    vDepth = GetDepth(gl_Position);
-    #endif
+    #if !defined(WEBGL) && defined(FADE)
+    vDepth = gl_Position.z;
     #endif
 
     #ifdef VERTEXCOLOR
@@ -90,7 +86,7 @@ void VS()
         #endif
 
         #ifdef SPOTLIGHT
-            // Spotlight projection: transform from world space to projector texture coordinates
+            // Spotlight projection: transform from world space to pr#ojector texture coordinates
             vSpotPos = projWorldPos * cLightMatrices[0];
         #endif
     
@@ -121,46 +117,30 @@ void VS()
     #endif
 }
 
-#ifdef COMPILEPS
-#ifndef WEBGL
-#ifdef FADE
-float AbsoluteDepth(float normalDepth) {
-    float clipLength = cFarClipPS - cNearClipPS;
-    return cNearClipPS + clipLength * normalDepth;
-}
-#endif
-#endif
-
-#endif
-
 void PS()
 {
+    #ifdef DISSOLVE
+        vec4 noise = texture2D(sSpecMap, vTexCoord.xy);
+        if (noise.r <= cDissolvePercentage) {
+            discard;
+        }
+    #endif
 
-#ifdef DISSOLVE
-    vec4 noise = texture2D(sSpecMap, vTexCoord.xy);
-    if (noise.r <= cDissolvePercentage) {
-        discard;
-    }
-#endif
-
-#ifndef WEBGL
-#ifdef FADE
-    const mat4 thresholdMatrix = mat4(
-        1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
-        13.0 / 17.0,  5.0 / 17.0, 15.0 / 17.0,  7.0 / 17.0,
-        4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
-        16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
-    );
-    int x = int(mod(vTexCoord.x * 1920.0, 4.0));
-    int y = int(mod(vTexCoord.y * 1080.0, 4.0));
-    float z = AbsoluteDepth(vDepth);
-    float threshold = 0.5;
-    float alpha = z / threshold - 0.5;
-    if (alpha - thresholdMatrix[x][y] < 0.0) {
-        discard;
-    }
-#endif
-#endif
+    #if !defined(WEBGL) && defined(FADE)
+        const mat4 thresholdMatrix = mat4(
+            1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
+            13.0 / 17.0,  5.0 / 17.0, 15.0 / 17.0,  7.0 / 17.0,
+            4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
+            16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
+        );
+        int x = int(mod(vTexCoord.x * 1920.0, 4.0));
+        int y = int(mod(vTexCoord.y * 1080.0, 4.0));
+        float threshold = 0.2;
+        float alpha = vDepth / threshold - 0.5;
+        if (alpha - thresholdMatrix[x][y] < 0.0) {
+            discard;
+        }
+    #endif
 
     // Get material diffuse albedo
     #ifdef DIFFMAP

@@ -208,11 +208,4 @@ namespace MyEvents
         URHO3D_PARAM(P_STATUS, Status);   // int
         URHO3D_PARAM(P_MESSAGE, Message); // String
     }
-
-#if defined(__EMSCRIPTEN__)
-    URHO3D_EVENT(E_WEB_FULLSCREEN, WebFullscreen)
-    {
-        URHO3D_PARAM(P_FULLSCREEN, Fullscreen); // int
-    }
-#endif
 }

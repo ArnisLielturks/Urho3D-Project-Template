@@ -11,43 +11,43 @@
             margin: 0px;
             overflow: hidden;
         }
-      .emscripten {
-        padding-right: 0;
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-      }
-      div.emscripten {
-        text-align: center;
-      }
-      .fulscreen-container {
-        width: 100%;
-        position: absolute;
-        text-align: center;
-      }
-      div.emscripten_border {
-        border: none;
-      }
-      #canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #000;
-        border: 0px;
-      }
-      canvas.emscripten {
-        border: none;
-      }
-      .centered {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        -moz-transform: translateX(-50%) translateY(-50%);
-        -webkit-transform: translateX(-50%) translateY(-50%);
-        transform: translateX(-50%) translateY(-50%);
-    }
+        .emscripten {
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        div.emscripten {
+            text-align: center;
+        }
+        .fulscreen-container {
+            width: 100%;
+            position: absolute;
+            text-align: center;
+        }
+        div.emscripten_border {
+            border: none;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            border: 0px;
+        }
+        canvas.emscripten {
+            border: none;
+        }
+        .centered {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
     </style>
 </head>
 <body>
@@ -63,120 +63,120 @@
 </div>
 <script type='text/javascript'>
 
-      // Urho3D fullscreen canvas handling
-      var canvasElement = document.getElementById('canvas');
-      var devicePixelRatio = window.devicePixelRatio || 1;
-      const CANVAS_WIDTH = window.screen.availWidth * devicePixelRatio;
-      const CANVAS_HEIGHT = window.screen.availHeight * devicePixelRatio;
+    // Urho3D fullscreen canvas handling
+    var canvasElement = document.getElementById('canvas');
+    var devicePixelRatio = window.devicePixelRatio || 1;
+    const CANVAS_WIDTH = window.screen.availWidth * devicePixelRatio;
+    const CANVAS_HEIGHT = window.screen.availHeight * devicePixelRatio;
 
-      function fullscreenHandler(event) {
+    function fullscreenHandler(event) {
         console.log('fullscreenHandler', event);
         if (isFullScreen()) {
-          console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width * devicePixelRatio, screen.height * devicePixelRatio);
-          Module.JSCanvasSize(screen.width * devicePixelRatio, screen.height * devicePixelRatio, true, devicePixelRatio);
+            console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width * devicePixelRatio, screen.height * devicePixelRatio);
+            Module.JSCanvasSize(screen.width * devicePixelRatio, screen.height * devicePixelRatio, true, devicePixelRatio);
         } else {
-          console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
-          Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
+            console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
+            Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
         }
-      }
+    }
 
-      document.addEventListener("fullscreenchange", fullscreenHandler, false);
-      document.addEventListener("mozfullscreenchange", fullscreenHandler, false);
-      document.addEventListener("webkitfullscreenchange", fullscreenHandler, false);
-      document.addEventListener("MSFullscreenChange", fullscreenHandler, false);
+    document.addEventListener("fullscreenchange", fullscreenHandler, false);
+    document.addEventListener("mozfullscreenchange", fullscreenHandler, false);
+    document.addEventListener("webkitfullscreenchange", fullscreenHandler, false);
+    document.addEventListener("MSFullscreenChange", fullscreenHandler, false);
 
-      function viewFullScreen(show) {
+    function viewFullScreen(show) {
         if (show === undefined) show = !isFullScreen();
         if (show) {
-          if (canvasElement.requestFullscreen) canvasElement.requestFullscreen();
-          else if (canvasElement.webkitRequestFullScreen) canvasElement.webkitRequestFullScreen();
-          else if (canvasElement.mozRequestFullScreen) canvasElement.mozRequestFullScreen();
-          else if (canvasElement.msRequestFullscreen) canvasElement.msRequestFullscreen();
+            if (canvasElement.requestFullscreen) canvasElement.requestFullscreen();
+            else if (canvasElement.webkitRequestFullScreen) canvasElement.webkitRequestFullScreen();
+            else if (canvasElement.mozRequestFullScreen) canvasElement.mozRequestFullScreen();
+            else if (canvasElement.msRequestFullscreen) canvasElement.msRequestFullscreen();
         } else {
-          if (document.exitFullscreen) document.exitFullscreen();
-          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-          else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-          else if (document.msExitFullscreen) document.msExitFullscreen();
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
         }
-      }
+    }
 
-      function isFullScreen() {
+    function isFullScreen() {
         return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-      }
+    }
 
-      function ready() {
+    function ready() {
         document.getElementById('canvas').style.display = 'block';
         document.getElementById('fullscreen').style.display = 'block';
         setTimeout(() => {
-          Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
+            Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
         }, 100);
-      }
+    }
 
-      // connect to canvas
-      var Module = {
+    // connect to canvas
+    var Module = {
         preRun: [],
         postRun: [],
         rendererSize: {
-          width: CANVAS_WIDTH * devicePixelRatio,
-          height: CANVAS_HEIGHT * devicePixelRatio,
-          aspectRatio: CANVAS_WIDTH / CANVAS_HEIGHT,
+            width: CANVAS_WIDTH * devicePixelRatio,
+            height: CANVAS_HEIGHT * devicePixelRatio,
+            aspectRatio: CANVAS_WIDTH / CANVAS_HEIGHT,
         },
         print: (function() {
-          return function(text) {
-            console.log(text);
-          };
+            return function(text) {
+                console.log(text);
+            };
         })(),
         printErr: function(text) {
-          console.log('PrintErr', text);
+            console.log('PrintErr', text);
         },
         // Urho3D called method
         SetRendererSize: function(width, height) {
-          console.log('Engine renderer size changed to', width, height);
-          this.rendererSize.width  = width;
-          this.rendererSize.height = height;
-          this.rendererSize.aspectRatio = width / height;
+            console.log('Engine renderer size changed to', width, height);
+            this.rendererSize.width  = width;
+            this.rendererSize.height = height;
+            this.rendererSize.aspectRatio = width / height;
 
-          if (isFullScreen()) {
-            return;
-          }
+            if (isFullScreen()) {
+                return;
+            }
 
-          if (this.canvas.width === width && this.canvas.height === height) {
-            return;
-          }
-          console.log('Updating canvas accordingly', this.canvas.width, 'to', width, 'and', this.canvas.height, 'to', height);
-          this.canvas.width = width;
-          this.canvas.height = height;
-          this.canvas.style.height = (CANVAS_WIDTH / Module.rendererSize.aspectRatio) + 'px';
+            if (this.canvas.width === width && this.canvas.height === height) {
+                return;
+            }
+            console.log('Updating canvas accordingly', this.canvas.width, 'to', width, 'and', this.canvas.height, 'to', height);
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.canvas.style.height = (CANVAS_WIDTH / Module.rendererSize.aspectRatio) + 'px';
         },
         canvas: canvasElement,
         setStatus: function(text) {
-          if (text === 'Running...') {
-            ready();
-          }
-          if (Module.setStatus.interval) clearInterval(Module.setStatus.interval);
-          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-          var statusElement = document.getElementById('status');
-          var progressElement = document.getElementById('progress');
-          if (m) {
-            text = m[1];
-            progressElement.value = parseInt(m[2])*100;
-            progressElement.max = parseInt(m[4])*100;
-            progressElement.hidden = false;
-          } else {
-            progressElement.value = null;
-            progressElement.max = null;
-            progressElement.hidden = true;
-          }
-          statusElement.innerHTML = text;
+            if (text === 'Running...') {
+                ready();
+            }
+            if (Module.setStatus.interval) clearInterval(Module.setStatus.interval);
+            var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+            var statusElement = document.getElementById('status');
+            var progressElement = document.getElementById('progress');
+            if (m) {
+                text = m[1];
+                progressElement.value = parseInt(m[2])*100;
+                progressElement.max = parseInt(m[4])*100;
+                progressElement.hidden = false;
+            } else {
+                progressElement.value = null;
+                progressElement.max = null;
+                progressElement.hidden = true;
+            }
+            statusElement.innerHTML = text;
         },
         totalDependencies: 0,
         monitorRunDependencies: function(left) {
-          this.totalDependencies = Math.max(this.totalDependencies, left);
-          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            this.totalDependencies = Math.max(this.totalDependencies, left);
+            Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
         }
-      };
-      Module.setStatus('Downloading...');
-    </script>
+    };
+    Module.setStatus('Downloading...');
+</script>
 {{{ SCRIPT }}}
 </body>
 </html>

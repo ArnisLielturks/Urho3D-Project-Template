@@ -1,5 +1,6 @@
 # Set project name
 project (ProjectTemplate)
+
 # Set minimum version
 cmake_minimum_required (VERSION 2.8.6)
 if (COMMAND cmake_policy)
@@ -31,6 +32,14 @@ file(GLOB_RECURSE HDRS include/*.h)
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+find_package(OpenSSL REQUIRED)
+if (OpenSSL_FOUND)
+    message(STATUS "OpenSSL found ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OpenSSL libs: ${OPENSSL_LIBRARIES}")
+    set(ABSOLUTE_PATH_LIBS ${OPENSSL_LIBRARIES})
+endif ()
+
 if (URHO3D_ANGELSCRIPT)
  add_definitions(-DURHO3D_ANGELSCRIPT=1)
 endif()
@@ -49,6 +58,10 @@ set(INCLUDE_DIRS include)
 
 # Setup target with resource copying
 setup_main_executable ()
+
+if (MSVC)
+    target_link_libraries(ProjectTemplate Setupapi.lib)
+endif()
 
 ADD_DEFINITIONS(
     -std=c++11 # Or -std=c++0x

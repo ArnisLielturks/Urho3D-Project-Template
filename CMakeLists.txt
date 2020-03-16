@@ -30,7 +30,7 @@ find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
 # HTTPS support
-set(URHO3D_SSL 1)
+#set(URHO3D_SSL 1)
 
 if (URHO3D_ANGELSCRIPT)
  add_definitions(-DURHO3D_ANGELSCRIPT=1)

@@ -180,11 +180,11 @@ jobs:
     runs-on: [windows-latest]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        id: cache
-        with:
-          path: ${{github.workspace}}/Urho3D
-          key: Urho3D-native-${{github.ref}}
+#      - uses: actions/cache@v1
+#        id: cache
+#        with:
+#          path: ${{github.workspace}}/Urho3D
+#          key: Urho3D-native-${{github.ref}}
       - name: Build Urho3D
         run: |
           git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D

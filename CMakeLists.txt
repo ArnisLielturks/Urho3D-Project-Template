@@ -55,5 +55,3 @@ endif()
 ADD_DEFINITIONS(
     -std=c++11
 )
-
-

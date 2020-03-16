@@ -132,12 +132,6 @@ void ModLoader::LoadLuaMods()
             URHO3D_LOGINFO("Loading LUA method " + scriptNameTrimmed + "Start");
             luaScript->ExecuteFunction(scriptNameTrimmed + "Start");
         }
-        /*SharedPtr<LuaScript> scriptFile(GetSubsystem<ResourceCache>()->GetResource<LuaScript>(GetSubsystem<FileSystem>()->GetProgramDir() + "/Data/Mods/" + (*it)));
-        if (scriptFile && scriptFile->ExecuteFunction("Start")) {
-            URHO3D_LOGINFO("Mod " + (*it) + " succesfully loaded!");
-        }*/
-        //_mods.Push(scriptFile);
-        //_scriptMap["Mods/" + (*it)] = scriptFile;
     }
 
     GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
@@ -161,7 +155,6 @@ void ModLoader::Reload()
 {
     #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
-        //_mods.Clear();
         for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
             if ((*it)) {
                 (*it)->Execute("void Stop()");

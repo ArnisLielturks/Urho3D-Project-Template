@@ -36,9 +36,6 @@ Object(context)
     SubscribeToEvent("ChangeLevelConsole", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
 
-        const Variant value = GetSubsystem<Engine>()->GetGlobalVar(params[0]);
-
-        // Only show variable
         if (params.Size() != 2) {
             URHO3D_LOGERROR("Invalid number of parameters!");
         } else {

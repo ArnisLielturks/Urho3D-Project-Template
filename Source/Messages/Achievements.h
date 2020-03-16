@@ -165,5 +165,4 @@ private:
      * Current achievement progress
      */
     HashMap<String, int> _progress;
-
 };

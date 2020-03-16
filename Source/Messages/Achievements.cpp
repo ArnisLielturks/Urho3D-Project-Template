@@ -22,7 +22,6 @@ void SaveProgressAsync(const WorkItem* item, unsigned threadIndex)
     achievementHandler->SaveProgress();
 }
 
-/// Construct.
 Achievements::Achievements(Context* context) :
     Object(context),
     _showAchievements(false)

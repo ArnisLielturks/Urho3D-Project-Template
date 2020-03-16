@@ -25,20 +25,12 @@ include (UrhoCommon)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
-file(GLOB_RECURSE SRCS src/*.cpp)
-file(GLOB_RECURSE HDRS include/*.h)
-
 # Find Urho3D library
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
-set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL)
-if (OpenSSL_FOUND)
-    message(STATUS "OpenSSL found ${OPENSSL_INCLUDE_DIR}")
-    message(STATUS "OpenSSL libs: ${OPENSSL_LIBRARIES}")
-    set(ABSOLUTE_PATH_LIBS ${OPENSSL_LIBRARIES})
-endif ()
+# HTTPS support
+set(URHO3D_SSL 1)
 
 if (URHO3D_ANGELSCRIPT)
  add_definitions(-DURHO3D_ANGELSCRIPT=1)
@@ -53,9 +45,6 @@ set (TARGET_NAME ProjectTemplate)
 
 define_source_files (GLOB_CPP_PATTERNS Source/*.c* GLOB_H_PATTERNS Source/*.h* RECURSE GROUP)
 
-#set(INCLUDE_DIRS include rapidjson/include)
-set(INCLUDE_DIRS include)
-
 # Setup target with resource copying
 setup_main_executable ()
 
@@ -64,8 +53,7 @@ if (MSVC)
 endif()
 
 ADD_DEFINITIONS(
-    -std=c++11 # Or -std=c++0x
-    # Other flags
+    -std=c++11
 )
 
 

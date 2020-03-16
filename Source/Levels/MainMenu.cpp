@@ -4,20 +4,17 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/Graphics/Model.h>
-#include <Urho3D/Engine/Engine.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Resource/XMLFile.h>
-#include <Urho3D/Math/MathDefs.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
 #endif
 #include "MainMenu.h"
 #include "../Global.h"
 #include "../MyEvents.h"
-#include "../Audio/AudioManagerDefs.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
 

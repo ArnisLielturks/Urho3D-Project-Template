@@ -29,5 +29,5 @@ private:
     SharedPtr<Window> _baseWindow;
 
     Button* CreateButton(const String& text, int width, IntVector2 position);
-    Text* CreateLabel(const String& text);
+    Text* CreateLabel(const String& text, int fontSize);
 };

@@ -1,16 +1,18 @@
-[![CircleCI](https://circleci.com/gh/ArnisLielturks/Urho3D-Project-Template/tree/master.svg?style=svg)](https://circleci.com/gh/ArnisLielturks/Urho3D-Empty-Project/tree/master)
 ![Builds](https://github.com/ArnisLielturks/Urho3D-Project-Template/workflows/Builds/badge.svg)
 
 # Urho3D-Project-Template
 App template with the following features:
+* Continuous integration with artifact publishing to itch.io (Android, OSX, Windows, Linux, WEB)
 * Level management
 * UI Window management
 * LUA/AS mods with hot-reload
 * Sound management
-* Controll mapping and input management
+* Controller handling with input mapping
 * Splitscreen support
 * Achievement logic
-* and many other features
+* Console command management
+* INI configuration file loading/saving
+* Settings window to configure all aspect of the engine
 
 ## How to build
 Make sure that the URHO3D_HOME environment variable is set and points to the right directory. Build this the same way how you would build Urho3D engine itself

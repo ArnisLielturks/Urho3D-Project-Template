@@ -172,7 +172,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     if (_node->GetPosition().y_ < -30) {
         ResetPosition();
         VariantMap& data = GetEventDataMap();
-        data["Player"] = _controllerId;
+        data["Player"]   = _controllerId;
         SendEvent("FallOffTheMap", data);
     }
 

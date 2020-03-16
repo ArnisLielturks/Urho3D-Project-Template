@@ -67,5 +67,4 @@ private:
     bool _onGround;
 
     Terrain* _terrain;
-
 };

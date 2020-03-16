@@ -128,7 +128,7 @@ void BaseApplication::Start()
 #endif
 
 #ifdef __APPLE__
-    ui->SetScale(GetSubsystem<ConfigManager>()->GetFloat("engine", "UIScale", 2.0));
+    ui->SetScale(2.0);
     GetSubsystem<ConfigManager>()->Set("engine", "HighDPI", true);
 #endif
 

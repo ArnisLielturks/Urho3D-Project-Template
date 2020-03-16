@@ -34,13 +34,12 @@ void PopupMessageWindow::Create()
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(300, 200);
+    _baseWindow->SetLayoutMode(LM_VERTICAL);
+    _baseWindow->SetLayoutSpacing(10);
+    _baseWindow->SetLayoutBorder(IntRect(10, 10, 10, 10));
+    _baseWindow->SetWidth(300);
     _baseWindow->BringToFront();
     _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1);
-
-    _okButton = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
-    _okButton->SetAlignment(HA_CENTER, VA_BOTTOM);
-    _okButton->SetPosition(0, -20);
 
     Color color = Color::GREEN;
     if (_data.Contains("Type")) {
@@ -61,16 +60,17 @@ void PopupMessageWindow::Create()
 
     _baseWindow->SetObjectAnimation(animation);
 
-    auto title = CreateLabel(_data["Title"].GetString());
-    title->SetAlignment(HA_CENTER, VA_TOP);
-    title->SetPosition(0, 10);
-    title->SetFontSize(16);
+    auto title = CreateLabel(_data["Title"].GetString(), 16);
+//    title->SetAlignment(HA_CENTER, VA_TOP);
+//    title->SetPosition(0, 10);
 
-    auto message = CreateLabel(_data["Message"].GetString());
-    message->SetAlignment(HA_CENTER, VA_CENTER);
+    auto message = CreateLabel(_data["Message"].GetString(), 12);
+//    message->SetAlignment(HA_CENTER, VA_CENTER);
     //message->SetPosition(0, 10);
-    message->SetFontSize(12);
 
+    _okButton = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
+//    _okButton->SetAlignment(HA_CENTER, VA_BOTTOM);
+//    _okButton->SetPosition(0, -20);
 
     SubscribeToEvent(_okButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
@@ -104,11 +104,14 @@ Button* PopupMessageWindow::CreateButton(const String& text, int width, IntVecto
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* button = _baseWindow->CreateChild<Button>();
+    auto* uiElement = _baseWindow->CreateChild<UIElement>();
+    uiElement->SetFixedHeight(30);
+
+    auto* button = uiElement->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedWidth(width);
     button->SetFixedHeight(30);
-    button->SetPosition(position);
+    button->SetHorizontalAlignment(HA_CENTER);
 
     auto* buttonText = button->CreateChild<Text>();
     buttonText->SetFont(font, 12);
@@ -118,17 +121,25 @@ Button* PopupMessageWindow::CreateButton(const String& text, int width, IntVecto
     return button;
 }
 
-Text* PopupMessageWindow::CreateLabel(const String& text)
+Text* PopupMessageWindow::CreateLabel(const String& text, int fontSize)
 {
     auto *cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
+    auto* uiElement = _baseWindow->CreateChild<UIElement>();
+    uiElement->SetMinHeight(30);
+
     // Create log element to view latest logs from the system
-    auto *label = _baseWindow->CreateChild<Text>();
-    label->SetFont(font, 12);
-    label->SetWidth(_baseWindow->GetWidth() - 20);
+    auto *label = uiElement->CreateChild<Text>();
+    label->SetFont(font, fontSize);
     label->SetWordwrap(true);
+    label->SetWidth(uiElement->GetWidth());
     label->SetText(text);
+    label->SetHorizontalAlignment(HA_CENTER);
+    label->SetTextEffect(TE_SHADOW);
+    label->SetTextAlignment(HA_CENTER);
+
+    uiElement->SetFixedHeight(label->GetHeight());
 
     return label;
 }

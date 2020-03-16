@@ -1165,4 +1165,3 @@ void SettingsWindow::HandleApply(StringHash eventType, VariantMap& eventData)
     ApplyVideoOptions();
     needs_apply_ = false;
 }
-

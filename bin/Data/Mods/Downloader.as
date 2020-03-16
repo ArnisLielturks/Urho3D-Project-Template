@@ -8,6 +8,8 @@ void Start()
     data["Name"] = "Downloading avatar";
     data["Event"] = "DownloadImages";
     SendEvent("RegisterLoadingStep", data);
+
+    DownloadImageAgain();
 }
 
 void Stop()
@@ -36,7 +38,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (httpRequest is null) {
         SetRandomSeed(time.systemTime);
         uint randomNumber = Random(1000);
-        String url = "http://www.gravatar.com/avatar/" + String(randomNumber) + "?s=100&d=retro&r=g";
+        String url = "https://www.gravatar.com/avatar/" + String(randomNumber) + "?s=100&d=retro&r=g";
         log.Info("Downloading avatar from: " + url);
         httpRequest = network.MakeHttpRequest(url);
     }
@@ -50,7 +52,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         else if (httpRequest.state == HTTP_ERROR)
         {
             UnsubscribeFromEvent("Update");
-
+            log.Error("HTTP Error");
             // Let the loading system know that we finished our work
             VariantMap data;
             data["Event"] = "DownloadImages";

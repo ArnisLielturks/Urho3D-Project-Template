@@ -184,7 +184,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D
-          key: Urho3D-native-${{runner.os}}
+          key: Urho3D-native-${{github.ref}}
       - name: Build Urho3D
         run: |
           git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D

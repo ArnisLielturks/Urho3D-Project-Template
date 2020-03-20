@@ -38,7 +38,7 @@ class Destroyer : ScriptObject
                 VariantMap data;
 
                 data["Type"] = SOUND_EFFECT;
-                data["SoundFile"] = "Data/Sounds/achievement.wav";
+                data["SoundFile"] = "Sounds/achievement.wav";
                 SendEvent("PlaySound", data);
 
                 data["Player"] = lastHitPlayerId;
@@ -50,7 +50,7 @@ class Destroyer : ScriptObject
             } else {
                 VariantMap data;
                 data["Type"] = SOUND_EFFECT;
-                data["SoundFile"] = "Data/Sounds/kick.wav";
+                data["SoundFile"] = "Sounds/kick.wav";
                 SendEvent("PlaySound", data);
             }
         }
@@ -62,7 +62,7 @@ class Destroyer : ScriptObject
         if (node.position.y < -10) {
             VariantMap data;
             data["Type"] = SOUND_EFFECT;
-            data["SoundFile"] = "Data/Sounds/achievement.wav";
+            data["SoundFile"] = "Sounds/achievement.wav";
             SendEvent("PlaySound", data);
 
             data["Player"] = lastHitPlayerId;

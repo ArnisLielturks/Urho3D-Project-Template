@@ -34,13 +34,51 @@ void NewGameSettingsWindow::Init()
 
 void NewGameSettingsWindow::Create()
 {
+    auto* localization = GetSubsystem<Localization>();
+
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
     _baseWindow->BringToFront();
 
+    // Create Window 'titlebar' container
+    UIElement* titleBar =_baseWindow->CreateChild<UIElement>();
+    titleBar->SetVerticalAlignment(VA_TOP);
+    titleBar->SetLayoutMode(LM_HORIZONTAL);
+    titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));
+
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
+    // Create the Window title Text
+    auto* windowTitle = new Text(context_);
+    windowTitle->SetName("WindowTitle");
+    windowTitle->SetText(localization->Get("NEW_GAME"));
+    windowTitle->SetFont(font, 14);
+
+    // Create the Window's close button
+    auto* buttonClose = new Button(context_);
+    buttonClose->SetName("CloseButton");
+    buttonClose->SetHorizontalAlignment(HA_RIGHT);
+
+    // Add the controls to the title bar
+    titleBar->AddChild(windowTitle);
+    titleBar->AddChild(buttonClose);
+
+    // Apply styles
+    windowTitle->SetStyleAuto();
+    buttonClose->SetStyle("CloseButton");
+
+    SubscribeToEvent(buttonClose, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "NewGameSettingsWindow";
+        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+    });
+
     CreateLevelSelection();
+
+    titleBar->SetFixedSize(_levelSelection->GetWidth(), 24);
 }
 
 void NewGameSettingsWindow::SubscribeToEvents()

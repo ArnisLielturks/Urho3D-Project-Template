@@ -61,7 +61,6 @@ void ConsoleHandler::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleHandler, HandleKeyDown));
     SubscribeToEvent(E_CONSOLECOMMAND, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommand));
     SubscribeToEvent(MyEvents::E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandAdd));
-    SubscribeToEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGE, URHO3D_HANDLER(ConsoleHandler, HandleConsoleGlobalVariableChange));
 
     VariantMap data;
     data["ConsoleCommandName"]        = "help";
@@ -104,7 +103,7 @@ void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     if (GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true)) {
         using namespace KeyDown;
         int key = eventData[P_KEY].GetInt();
-        if (key == KEY_F2) {
+        if (key == KEY_F1) {
             _console->Toggle();
         }
     } else {
@@ -153,37 +152,39 @@ void ConsoleHandler::ParseCommand(String input)
     if (input.Empty()) {
         return;
     }
-    StringVector commands = input.Split(' ', false);
-    String command = commands[0];
+    StringVector params = input.Split(' ', false);
+    String command = params[0];
     if (_registeredConsoleCommands.Contains(command)) {
         VariantMap data;
-        data["Parameters"] = commands;
+        data["Parameters"] = params;
 
         // Call the actual event and pass all the parameters
         SendEvent(_registeredConsoleCommands[command].eventToCall, data);
     } else {
-        URHO3D_LOGERRORF("Command '%s' not registered", command.CString());
+        if (GetGlobalVar(command) != Variant::EMPTY) {
+            HandleConsoleGlobalVariableChange(params);
+        } else {
+            URHO3D_LOGERRORF("Command '%s' not registered", command.CString());
+        }
     }
 }
 
 void ConsoleHandler::HandleConsoleCommandHelp(StringHash eventType, VariantMap& eventData)
 {
     URHO3D_LOGINFO("");
-    URHO3D_LOGINFO("###### All available (registered) commands ######");
-    URHO3D_LOGINFO("#");
+    URHO3D_LOGINFO("------- All available (registered) commands -------");
+    URHO3D_LOGINFO("-");
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         SingleConsoleCommand info = (*it).second_;
-        URHO3D_LOGINFOF("# '%s' => '%s': %s", info.command.CString(), info.eventToCall.CString(), info.description.CString());
+        URHO3D_LOGINFOF("- '%s' => '%s': %s", info.command.CString(), info.eventToCall.CString(), info.description.CString());
     }
-    URHO3D_LOGINFO("#");
-    URHO3D_LOGINFO("#########################");
+    URHO3D_LOGINFO("-");
+    URHO3D_LOGINFO("---------------------------------------------------");
     URHO3D_LOGINFO("");
 }
 
-void ConsoleHandler::HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData)
+void ConsoleHandler::HandleConsoleGlobalVariableChange(StringVector params)
 {
-    StringVector params = eventData["Parameters"].GetStringVector();
-
     const Variant value = GetSubsystem<Engine>()->GetGlobalVar(params[0]);
 
     // Only show variable
@@ -204,7 +205,7 @@ void ConsoleHandler::HandleConsoleGlobalVariableChange(StringHash eventType, Var
         if (value.GetType() == VAR_DOUBLE) {
             stringValue = String(value.GetDouble());
         }
-        URHO3D_LOGINFO("Global variable '" + params[0] + "' = " + stringValue);
+        URHO3D_LOGINFO(params[0] + " = " + stringValue);
         return;
     }
 
@@ -246,13 +247,15 @@ void ConsoleHandler::HandleConsoleGlobalVariableChange(StringHash eventType, Var
             SetGlobalVar(params[0],newFloatVal);
             newValue = String(newFloatVal);
         }
-        URHO3D_LOGINFO("Changed global variable '" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
+        URHO3D_LOGINFO("Global variable changed'" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
 
-        // Let others know that configuration was updated, to allow game tweaking accordingly
+        // Let the system know that variable was changed
         using namespace MyEvents::ConsoleGlobalVariableChanged;
         VariantMap& data = GetEventDataMap();
-        data[P_NAME] = params[0];
-        data[P_VALUE] = newValue;
+        data[P_NAME]     = params[0];
+        data[P_VALUE]    = newValue;
+
+        SendEvent("global_variable_changed_" + params[0], data);
         SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
     }
 }

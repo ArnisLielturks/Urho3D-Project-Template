@@ -42,8 +42,8 @@ void CreateSprite(String image, float velocity, Vector2 position)
 void CreateUI()
 {
     // Get rendering window size as floats
-    float width = graphics.width;
-    float height = graphics.height;
+    float width = graphics.width / ui.scale;
+    float height = graphics.height / ui.scale;
 
     // get files in directory
     Array<String> textures = fileSystem.ScanDir(fileSystem.programDir + "/Data/Textures/Achievements", "", SCAN_FILES, false);

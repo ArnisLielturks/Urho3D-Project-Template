@@ -9,6 +9,7 @@
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/PackageFile.h>
+//#include <Urho3D/UI/Cursor.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -26,9 +27,12 @@
 
 #if defined(__EMSCRIPTEN__)
 #include <Urho3D/Graphics/GraphicsEvents.h>
+#include <Urho3D/Input/InputEvents.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
 static const Context *appContext;
+static bool mouseVisible;
+static unsigned int mouseMode;
 #endif
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
@@ -62,6 +66,7 @@ BaseApplication::BaseApplication(Context* context) :
 #ifdef __ANDROID__
     _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
 #else
+
 #ifdef __EMSCRIPTEN__
     _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
 #else
@@ -100,6 +105,21 @@ void BaseApplication::Setup()
             Module.SetRendererSize($0, $1);
         }, width, height);
     });
+
+    SubscribeToEvent(E_MOUSEVISIBLECHANGED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace MouseVisibleChanged;
+        mouseVisible = eventData[P_VISIBLE].GetBool();
+        URHO3D_LOGINFOF("mouseVisible = %d", mouseVisible);
+
+        EM_ASM({
+            Module.SetMouseVisible($0);
+        }, mouseVisible);
+    });
+    SubscribeToEvent(E_MOUSEMODECHANGED, [&](StringHash eventType, VariantMap &eventData) {
+        using namespace MouseModeChanged;
+        mouseMode = eventData[P_MODE].GetUInt();
+        URHO3D_LOGINFOF("mouseMode = %u", mouseMode);
+    });
     #endif
 }
 
@@ -110,17 +130,40 @@ void BaseApplication::JSCanvasSize(int width, int height, bool fullscreen, float
     appContext->GetSubsystem<Graphics>()->SetMode(width, height);
     UI* ui = appContext->GetSubsystem<UI>();
     ui->SetScale(scale);
+//    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
+}
+
+void BaseApplication::JSMouseFocus()
+{
+    auto input = appContext->GetSubsystem<Input>();
+    input->SetMouseVisible(mouseVisible);
+    input->SetMouseMode(static_cast<MouseMode>(mouseMode));
+//    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
+    EM_ASM({
+        Module.SetMouseVisible($0);
+    }, mouseVisible);
+    URHO3D_LOGINFOF("Mouse mode changed visibility = %d, mouseMode = %u", mouseVisible, mouseMode);
 }
 
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(Module) {
     function("JSCanvasSize", &BaseApplication::JSCanvasSize);
+    function("JSMouseFocus", &BaseApplication::JSMouseFocus);
 }
 #endif
 
 void BaseApplication::Start()
 {
     UI* ui = GetSubsystem<UI>();
+    auto cache = GetSubsystem<ResourceCache>();
+//    XMLFile* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+//    if(!GetSubsystem<UI>()->GetCursor())
+//        GetSubsystem<UI>()->SetCursor(new Cursor(context_));
+//    GetSubsystem<UI>()->GetCursor()->SetStyleAuto(style);
+//    GetSubsystem<UI>()->GetCursor()->SetShape(CursorShape::CS_NORMAL);
+//    GetSubsystem<UI>()->GetCursor()->SetVisible(true);
+//    GetSubsystem<UI>()->GetCursor()->SetPosition(GetSubsystem<Input>()->GetMousePosition());
+//#if defined(__EMSCRIPTEN__)
 #ifdef __ANDROID__
     ui->SetScale(1.8);
 #else
@@ -140,7 +183,6 @@ void BaseApplication::Start()
     GetSubsystem<ConsoleHandler>()->Create();
 
     DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
-    auto* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     debugHud->SetDefaultStyle(xmlFile);
 
@@ -268,6 +310,21 @@ void BaseApplication::SubscribeToEvents()
 {
     SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
     SubscribeToEvent(MyEvents::E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
+
+    SubscribeToEvent(MyEvents::E_MAPPED_CONTROL_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::MappedControlReleased;
+        int action = eventData[P_ACTION].GetInt();
+        if (action == CTRL_SCREENSHOT) {
+            Graphics *graphics = GetSubsystem<Graphics>();
+            Image screenshot(context_);
+            graphics->TakeScreenShot(screenshot);
+            // Here we save in the Data folder with date and time appended
+            screenshot.SavePNG(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Screenshot_" +
+                               Time::GetTimeStamp().Replaced(':', '_').Replaced('.', '_').Replaced(' ', '_') + ".png");
+
+            SendEvent("ScreenshotTaken");
+        }
+    });
 }
 
 void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventData)
@@ -275,13 +332,6 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
         _globalSettings[paramName] = paramName;
-
-        using namespace MyEvents::ConsoleCommandAdd;
-        VariantMap& data = GetEventDataMap();
-        data[P_NAME]        = paramName;
-        data[P_EVENT]       = "ConsoleGlobalVariableChange";
-        data[P_DESCRIPTION] = "Show/Change global variable value";
-        SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
     }
 }
 
@@ -305,7 +355,7 @@ void BaseApplication::LoadINIConfig(String filename)
     GetSubsystem<Engine>()->SetMaxFps(GetSubsystem<ConfigManager>()->GetInt("engine", "FPSLimit", 60));
     SetEngineParameter(EP_HIGH_DPI, GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false));
     SetEngineParameter(EP_WINDOW_TITLE, "ProjectTemplate");
-    SetEngineParameter(EP_WINDOW_ICON, "Data/Textures/UrhoIcon.png");
+    SetEngineParameter(EP_WINDOW_ICON, "Textures/UrhoIcon.png");
 
     // Logs
     SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "ProjectTemplate.log"));
@@ -350,13 +400,6 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
     _globalSettings[parameter] = parameter;
-
-    using namespace MyEvents::ConsoleCommandAdd;
-    VariantMap& data = GetEventDataMap();
-    data[P_NAME] = parameter;
-    data[P_EVENT] = "ConsoleGlobalVariableChange";
-    data[P_DESCRIPTION] = "Show/Change global variable value";
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 }
 
 void BaseApplication::LoadTranslationFiles()

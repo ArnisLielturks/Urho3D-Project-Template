@@ -63,7 +63,7 @@ private:
     /**
      * Handle configuration change via console
      */
-    void HandleConsoleGlobalVariableChange(StringHash eventType, VariantMap& eventData);
+    void HandleConsoleGlobalVariableChange(StringVector params);
 
     /**
      * Registered console commands

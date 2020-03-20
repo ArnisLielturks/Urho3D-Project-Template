@@ -107,6 +107,8 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
         if (!(*it).second_.finished) {
 
+            //TODO: implement fix for web builds as the loading steps might take longer to execute
+            // due to the inactive browsers tabs where game is running in the background
             // Handle loading steps which take too much time to execute
             if ((*it).second_.ackSent && (*it).second_.ackTimer.GetMSec(false) > LOADING_STEP_MAX_EXECUTION_TIME + LOADING_STEP_ACK_MAX_TIME) {
                 (*it).second_.finished = true;

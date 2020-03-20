@@ -122,7 +122,7 @@ namespace Levels {
         if (input->IsMouseVisible()) {
             input->SetMouseVisible(false);
         }
-        if (input->GetKeyDown(KEY_ESCAPE)) {
+        if (input->GetKeyDown(KEY_SPACE)) {
             UnsubscribeFromEvent(E_UPDATE);
             HandleEndCredits(true);
         }

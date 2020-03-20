@@ -278,23 +278,25 @@ void Achievements::SaveProgress()
             file.GetRoot()[id.ToString()] = (*achievement).current;
         }
     }
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
     file.SaveFile(directory + "/Achievements.json");
+#elif defined(__EMSCRIPTEN__)
+    //TODO: implement local storage utilization for web
 #else
     file.SaveFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif
-
-    //URHO3D_LOGINFO("Achievement progress saving done!");
 }
 
 void Achievements::LoadProgress()
 {
     JSONFile configFile(context_);
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
     configFile.LoadFile(directory + "/Achievements.json");
+#elif defined(__EMSCRIPTEN__)
+    //TODO: implement achievement progress loading
 #else
     configFile.LoadFile(GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Saves/Achievements.json");
 #endif

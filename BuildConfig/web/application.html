@@ -36,6 +36,7 @@
             height: 100%;
             background-color: #000;
             border: 0px;
+            cursor: pointer !important;
         }
         canvas.emscripten {
             border: none;
@@ -71,12 +72,14 @@
 
         // Detect fullscreen change and resize canvas resolution accordingly
         function fullscreenHandler(event) {
-            if (isFullScreen()) {
-                console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width * devicePixelRatio, screen.height * devicePixelRatio);
-                Module.JSCanvasSize(screen.width * devicePixelRatio, screen.height * devicePixelRatio, true, devicePixelRatio);
-            } else {
-                console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
-                Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
+            if (Module['JSCanvasSize']) {
+                if (isFullScreen()) {
+                    console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width * devicePixelRatio, screen.height * devicePixelRatio);
+                    Module.JSCanvasSize(screen.width * devicePixelRatio, screen.height * devicePixelRatio, true, devicePixelRatio);
+                } else {
+                    console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
+                    Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
+                }
             }
         }
 
@@ -90,6 +93,12 @@
             CANVAS_WIDTH = (screen.availWidth - (window.outerWidth - window.innerWidth)) * devicePixelRatio;
             CANVAS_HEIGHT = (screen.availHeight - (window.outerHeight - window.innerHeight)) * devicePixelRatio;
             fullscreenHandler(evt);
+        });
+
+        canvasElement.addEventListener('click', function (evt) {
+            console.log('Regaining focus to canvas');
+            canvasElement.focus();
+            Module.JSMouseFocus();
         });
 
         // Enter the fullscreen mode
@@ -141,6 +150,8 @@
                 aspectRatio: CANVAS_WIDTH / CANVAS_HEIGHT,
             },
             canvas: canvasElement,
+            // Disable custom emscripten pointer lock handling
+            elementPointerLock: false,
 
             print: function (text) {
                 console.log(text);
@@ -148,6 +159,21 @@
 
             printErr: function(text) {
                 console.error(text);
+            },
+
+            // Urho3D called method to tell the canvas to grab the mouse
+            SetMouseVisible: function(visible) {
+                console.log('SetMouseVisible', visible);
+                // if (visible) {
+                //     canvasElement.style.cursor = 'default !important';
+                //     document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock;
+                //     document.exitPointerLock();
+                //
+                // } else {
+                //     canvasElement.style.cursor = 'none !important';
+                //     canvasElement.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+                //     canvasElement.requestPointerLock();
+                // }
             },
 
             // Urho3D called method which tells the canvas the current renderer resolution

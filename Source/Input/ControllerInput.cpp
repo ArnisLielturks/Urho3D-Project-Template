@@ -35,6 +35,8 @@ ControllerInput::ControllerInput(Context* context) :
 	_controlMapNames[CTRL_ACTION]   = "Primary action";
 	_controlMapNames[CTRL_SPRINT]   = "Sprint";
 	_controlMapNames[CTRL_UP]       = "Move up";
+	_controlMapNames[CTRL_SCREENSHOT] = "Take screenshot";
+
 	Init();
 }
 
@@ -327,6 +329,21 @@ void ControllerInput::SetActionState(int action, bool active, int index)
 {
 	if (!_multipleControllerSupport) {
 		index = 0;
+	}
+
+	// Mapped control is about to change, send out events
+	if (_controls[index].IsDown(action) != active) {
+	    if (active) {
+            using namespace MyEvents::MappedControlPressed;
+            VariantMap &data = GetEventDataMap();
+            data[P_ACTION] = action;
+            SendEvent(MyEvents::E_MAPPED_CONTROL_PRESSED, data);
+        } else {
+            using namespace MyEvents::MappedControlReleased;
+            VariantMap &data = GetEventDataMap();
+            data[P_ACTION] = action;
+            SendEvent(MyEvents::E_MAPPED_CONTROL_RELEASED, data);
+	    }
 	}
 	_controls[index].Set(action, active);
 }

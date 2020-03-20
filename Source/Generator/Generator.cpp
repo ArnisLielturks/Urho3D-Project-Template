@@ -7,7 +7,6 @@
 #include "PerlinNoise.h"
 #include "../MyEvents.h"
 
-
 Generator::Generator(Context* context) :
     Object(context)
 {

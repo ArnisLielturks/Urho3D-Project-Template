@@ -77,7 +77,7 @@ void UpdateBoxes()
 
 void CreateObject()
 {
-    if (count > 40) {
+    if (count > 20) {
         log.Info("Box limit reached, current count=" + String(count));
         return;
     }

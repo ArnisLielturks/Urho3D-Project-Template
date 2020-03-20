@@ -31,7 +31,15 @@ public:
     virtual void Stop() override;
 
 #if defined(__EMSCRIPTEN__)
+    /**
+     * HTML canvas size was changed, we must resize our rendered
+     */
     static void JSCanvasSize(int width, int height, bool fullscreen, float scale);
+
+    /**
+     * HTML canvas has gained focus, update our mouse handling properly
+     */
+    static void JSMouseFocus();
 #endif
 
 private:

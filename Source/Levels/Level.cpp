@@ -307,7 +307,6 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 {
     int key = eventData["Key"].GetInt();
 
-    // Toggle console by pressing F1
     if (key == KEY_TAB && !_showScoreboard) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
@@ -315,7 +314,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         _showScoreboard = true;
     }
 
-    if (key == KEY_ESCAPE) {
+    if (key == KEY_P) {
         UnsubscribeToEvents();
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
@@ -329,7 +328,6 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
 {
     int key = eventData["Key"].GetInt();
 
-    // Toggle console by pressing F1
     if (key == KEY_TAB && _showScoreboard) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";

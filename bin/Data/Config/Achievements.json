@@ -78,5 +78,11 @@
 		"Image": "Textures/Achievements/falling.png",
 		"Message": "Fall of the map",
 		"Threshold": 1
+	},
+	{
+		"Event": "ScreenshotTaken",
+		"Image": "Textures/Achievements/photo-camera.png",
+		"Message": "Take a picture",
+		"Threshold": 1
 	}
 ]

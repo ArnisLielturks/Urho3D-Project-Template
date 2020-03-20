@@ -40,18 +40,11 @@ namespace MyEvents
 		URHO3D_PARAM(P_OVERWRITE, Overwrite); // bool - should we overwrite existing handler
 	}
 
-    // Change global system variable
-	URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGE, ConsoleGlobalVariableChange)
-	{
-		URHO3D_PARAM(P_NAME, GlobalVariableName); // string - global variable name
-		URHO3D_PARAM(P_VALUE, GlobalVariableValue); // string - new value
-	}
-
     // When global variable is changed
 	URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGED, ConsoleGlobalVariableChanged)
 	{
-		URHO3D_PARAM(P_NAME, GlobalVariableName); // string - global variable name
-		URHO3D_PARAM(P_VALUE, GlobalVariableValue); // string - new value
+		URHO3D_PARAM(P_NAME, Name);  // string - global variable name
+		URHO3D_PARAM(P_VALUE, Value); // string - new value
 	}
 
     // Add new global variable which should be saved in the config files
@@ -94,6 +87,16 @@ namespace MyEvents
 	{
 		URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
 	}
+
+    URHO3D_EVENT(E_MAPPED_CONTROL_PRESSED, MappedControlPressed)
+    {
+        URHO3D_PARAM(P_ACTION, Action); // int
+    }
+
+    URHO3D_EVENT(E_MAPPED_CONTROL_RELEASED, MappedControlReleased)
+    {
+        URHO3D_PARAM(P_ACTION, Action); // int
+    }
 
 	// controller/joystick removed
 	URHO3D_EVENT(E_CONTROLLER_REMOVED, ControllerRemoved)

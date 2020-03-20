@@ -193,7 +193,7 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
     float timestep = eventData[P_TIMESTEP].GetFloat();
-    if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
+    if (GetSubsystem<Input>()->GetKeyPress(KEY_BACKSPACE)) {
         SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
     }
 

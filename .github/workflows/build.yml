@@ -21,7 +21,7 @@ jobs:
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push Urho3D/ProjectTemplate.apk miegamicis/sandbox:android --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push Urho3D/ProjectTemplate.apk miegamicis/sandbox:android --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Android.apk
@@ -52,7 +52,7 @@ jobs:
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push archive miegamicis/sandbox:web --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push archive miegamicis/sandbox:web --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Web
@@ -87,7 +87,7 @@ jobs:
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:linux --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push archive/ miegamicis/sandbox:linux --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Linux
@@ -120,7 +120,7 @@ jobs:
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:windows --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push archive/ miegamicis/sandbox:windows --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Windows

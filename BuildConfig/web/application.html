@@ -77,6 +77,10 @@
                     console.log('Fulscreen mode on, setting JSCanvasSize to', screen.width * devicePixelRatio, screen.height * devicePixelRatio);
                     Module.JSCanvasSize(screen.width * devicePixelRatio, screen.height * devicePixelRatio, true, devicePixelRatio);
                 } else {
+                    if (document.referrer.includes('itch.io')) {
+                        CANVAS_WIDTH = parseInt(window.getComputedStyle(canvasElement).getPropertyValue('width')) * devicePixelRatio;
+                        CANVAS_HEIGHT = parseInt(window.getComputedStyle(canvasElement).getPropertyValue('height')) * devicePixelRatio;
+                    }
                     console.log('Fulscreen mode off, setting JSCanvasSize to', CANVAS_WIDTH, CANVAS_HEIGHT);
                     Module.JSCanvasSize(CANVAS_WIDTH, CANVAS_HEIGHT, false, devicePixelRatio);
                 }

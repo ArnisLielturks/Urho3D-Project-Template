@@ -204,3 +204,30 @@ jobs:
           cd build
           cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
           .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\ProjectTemplate.sln /p:Configuration=Release
+
+  upload_artifacts:
+    runs-on: ubuntu-latest
+    needs: [build_android, build_web, build_linux, build_windows, build_osx]
+    steps:
+      - uses: actions/download-artifact@v1
+        name: Download Android build
+        with:
+          name: Build_Android.apk
+      - uses: actions/download-artifact@v1
+        name: Download Web build
+        with:
+          name: Build_Web
+      - uses: actions/download-artifact@v1
+        name: Download Linux build
+        with:
+          name: Build_Linux
+      - uses: actions/download-artifact@v1
+        name: Download Windows build
+        with:
+          name: Build_Windows
+      - uses: actions/download-artifact@v1
+        name: Download OSX build
+        with:
+          name: Build_OSX
+      - name: Build project
+        run: ls -la ./

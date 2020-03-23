@@ -4,7 +4,7 @@ Vector3 targetGroundScale = Vector3(40, 40, 40);
 
 void Start()
 {
-	SubscribeToEvent("LoadGamemode", "HandleLoadGameMode");
+    SubscribeToEvent("LoadGamemode", "HandleLoadGameMode");
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
@@ -94,7 +94,7 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     data["Event"] = "LoadGamemode";
 
     ground = scene.GetChild("Ground", true);
-    
+
     // Sent event to let the system know that we will handle this loading step
     SendEvent("AckLoadingStep", data);
 

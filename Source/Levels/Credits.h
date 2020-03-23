@@ -9,7 +9,7 @@ namespace Levels {
     {
         URHO3D_OBJECT(Credits, BaseLevel);
 
-	public:
+    public:
         /// Construct.
         Credits(Context* context);
 
@@ -40,33 +40,33 @@ namespace Levels {
         /**
          * Create single text line
          */
-		void CreateSingleLine(String content, int fontSize);
+        void CreateSingleLine(String content, int fontSize);
 
-		/**
-		 * Create single image line
-		 */
-		void CreateImageLine(const String& image, int size);
+        /**
+         * Create single image line
+         */
+        void CreateImageLine(const String& image, int size);
 
-		/**
-		 * Handle credits scrolling
-		 */
-		void HandleUpdate(StringHash eventType, VariantMap& eventData);
+        /**
+         * Handle credits scrolling
+         */
+        void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-		/**
-		 * Credits window lifetime timer
-		 */
+        /**
+         * Credits window lifetime timer
+         */
         Timer _timer;
 
         /**
          * Credits view content
          */
-		Vector<SharedPtr<UIElement>> _credits;
+        Vector<SharedPtr<UIElement>> _credits;
 
-		/**
-		 * Credits base UI view
-		 */
-		SharedPtr<UIElement> _creditsBase;
+        /**
+         * Credits base UI view
+         */
+        SharedPtr<UIElement> _creditsBase;
 
-		float _offset;
+        float _offset;
     };
 }

@@ -12,7 +12,7 @@ public:
     KeyboardInput(Context* context);
 
     virtual ~KeyboardInput();
-	virtual String GetActionKeyName(int action) override;
+    virtual String GetActionKeyName(int action) override;
 
 protected:
     virtual void Init();
@@ -20,6 +20,6 @@ protected:
 private:
     void SubscribeToEvents();
 
-	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+    void HandleKeyDown(StringHash eventType, VariantMap& eventData);
+    void HandleKeyUp(StringHash eventType, VariantMap& eventData);
 };

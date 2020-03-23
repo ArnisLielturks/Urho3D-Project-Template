@@ -60,11 +60,11 @@ private:
     /**
      * Subscribe to console commands to allow sound playing via console commands
      */
-	void SubscribeConsoleCommands();
+    void SubscribeConsoleCommands();
 
-	/**
-	 * Listen for any button clicks
-	 */
+    /**
+     * Listen for any button clicks
+     */
     void HandleButtonClick(StringHash eventType, VariantMap& eventData);
 
     /**

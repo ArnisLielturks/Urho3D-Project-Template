@@ -133,15 +133,15 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Splash::HandleEndSplash()
 {
-	UnsubscribeFromEvent(E_UPDATE);
-	VariantMap& data = GetEventDataMap();
+    UnsubscribeFromEvent(E_UPDATE);
+    VariantMap& data = GetEventDataMap();
     _logoIndex++;
-	if (_logoIndex >= _logos.Size()) {
+    if (_logoIndex >= _logos.Size()) {
         data["Name"] = "MainMenu";
     } else {
-	    // We still have logos to show, inform next Splash screen to use the next logo from the `_logos` vector
+        // We still have logos to show, inform next Splash screen to use the next logo from the `_logos` vector
         data["Name"] = "Splash";
         data["LogoIndex"] = _logoIndex;
-	}
+    }
     SendEvent(MyEvents::E_SET_LEVEL, data);
 }

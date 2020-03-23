@@ -46,18 +46,18 @@ void AudioManager::SubscribeToEvents()
     SubscribeToEvent(E_TOGGLED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
 
     SubscribeToEvent("ConsolePlaySound", URHO3D_HANDLER(AudioManager, HandleConsolePlaySound));
-	SubscribeConsoleCommands();
+    SubscribeConsoleCommands();
 }
 
 void AudioManager::SubscribeConsoleCommands()
 {
     using namespace MyEvents::ConsoleCommandAdd;
 
-	VariantMap& data = GetEventDataMap();
-	data[P_NAME] = "play_sound";
-	data[P_EVENT] = "ConsolePlaySound";
-	data[P_DESCRIPTION] = "Play sound effect";
-	SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    VariantMap& data = GetEventDataMap();
+    data[P_NAME] = "play_sound";
+    data[P_EVENT] = "ConsolePlaySound";
+    data[P_DESCRIPTION] = "Play sound effect";
+    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
 }
 
 void AudioManager::HandlePlaySound(StringHash eventType, VariantMap& eventData)

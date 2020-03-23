@@ -47,7 +47,7 @@ void Start()
 
 void Stop()
 {
-	log.Info("GlobalConfigChanger.ass STOP");
+    log.Info("GlobalConfigChanger.ass STOP");
 }
 
 /**

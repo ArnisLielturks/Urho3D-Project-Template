@@ -9,7 +9,7 @@ void Start()
 
 void Stop()
 {
-	log.Info("LevelLoader.as STOP");
+    log.Info("LevelLoader.as STOP");
 }
 
 /**

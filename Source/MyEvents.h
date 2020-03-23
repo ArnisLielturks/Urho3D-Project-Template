@@ -14,7 +14,7 @@ namespace MyEvents
     URHO3D_EVENT(E_OPEN_WINDOW, OpenWindow)
     {
         URHO3D_PARAM(P_NAME, Name); // string - window object name
-		URHO3D_PARAM(P_CLOSE_PREVIOUS, ClosePrevious); // bool - Close window first if it was already opened
+        URHO3D_PARAM(P_CLOSE_PREVIOUS, ClosePrevious); // bool - Close window first if it was already opened
     }
     // Close UI Window
     URHO3D_EVENT(E_CLOSE_WINDOW, CloseWindow)
@@ -32,20 +32,20 @@ namespace MyEvents
     }
 
     // Add new console command
-	URHO3D_EVENT(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd)
-	{
-		URHO3D_PARAM(P_NAME, ConsoleCommandName); // string - command name
-		URHO3D_PARAM(P_EVENT, ConsoleCommandEvent); // string - event to call when command entered
-		URHO3D_PARAM(P_DESCRIPTION, ConsoleCommandDescription); // string - short description of the command
-		URHO3D_PARAM(P_OVERWRITE, Overwrite); // bool - should we overwrite existing handler
-	}
+    URHO3D_EVENT(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd)
+    {
+        URHO3D_PARAM(P_NAME, ConsoleCommandName); // string - command name
+        URHO3D_PARAM(P_EVENT, ConsoleCommandEvent); // string - event to call when command entered
+        URHO3D_PARAM(P_DESCRIPTION, ConsoleCommandDescription); // string - short description of the command
+        URHO3D_PARAM(P_OVERWRITE, Overwrite); // bool - should we overwrite existing handler
+    }
 
     // When global variable is changed
-	URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGED, ConsoleGlobalVariableChanged)
-	{
-		URHO3D_PARAM(P_NAME, Name);  // string - global variable name
-		URHO3D_PARAM(P_VALUE, Value); // string - new value
-	}
+    URHO3D_EVENT(E_CONSOLE_GLOBAL_VARIABLE_CHANGED, ConsoleGlobalVariableChanged)
+    {
+        URHO3D_PARAM(P_NAME, Name);  // string - global variable name
+        URHO3D_PARAM(P_VALUE, Value); // string - new value
+    }
 
     // Add new global variable which should be saved in the config files
     URHO3D_EVENT(E_ADD_CONFIG, AddConfig)
@@ -61,32 +61,32 @@ namespace MyEvents
     }
 
     // Start mapping key to specific action
-	URHO3D_EVENT(E_START_INPUT_MAPPING, StartInputMapping)
-	{
-		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // string or int - action name or ID
-	}
+    URHO3D_EVENT(E_START_INPUT_MAPPING, StartInputMapping)
+    {
+        URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // string or int - action name or ID
+    }
 
-	// Start mapping key to specific action
-	URHO3D_EVENT(E_STOP_INPUT_MAPPING, StopInputMapping)
-	{
-		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // int - action ID
-	}
+    // Start mapping key to specific action
+    URHO3D_EVENT(E_STOP_INPUT_MAPPING, StopInputMapping)
+    {
+        URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // int - action ID
+    }
 
     // When mapping was finished
     URHO3D_EVENT(E_INPUT_MAPPING_FINISHED, InputMappingFinished)
-	{
+    {
         URHO3D_PARAM(P_CONTROLLER, Controller); // string - keyboard, mouse, joystick - which controller was used to do the mapping
-		URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // int - action ID
+        URHO3D_PARAM(P_CONTROL_ACTION, ControlAction); // int - action ID
         URHO3D_PARAM(P_ACTION_NAME, ActionName); // string - action name
         URHO3D_PARAM(P_KEY, Key); // int - key ID, relative to P_CONTROLLEr
         URHO3D_PARAM(P_KEY_NAME, KeyName); // string - key name
-	}
+    }
 
-	// New controller/joystick added
-	URHO3D_EVENT(E_CONTROLLER_ADDED, ControllerAdded)
-	{
-		URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
-	}
+    // New controller/joystick added
+    URHO3D_EVENT(E_CONTROLLER_ADDED, ControllerAdded)
+    {
+        URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
+    }
 
     URHO3D_EVENT(E_MAPPED_CONTROL_PRESSED, MappedControlPressed)
     {
@@ -98,38 +98,38 @@ namespace MyEvents
         URHO3D_PARAM(P_ACTION, Action); // int
     }
 
-	// controller/joystick removed
-	URHO3D_EVENT(E_CONTROLLER_REMOVED, ControllerRemoved)
-	{
-		URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
-	}
+    // controller/joystick removed
+    URHO3D_EVENT(E_CONTROLLER_REMOVED, ControllerRemoved)
+    {
+        URHO3D_PARAM(P_INDEX, Index); // string or int - controller id
+    }
 
     // play sound
-	URHO3D_EVENT(E_PLAY_SOUND, PlaySound)
-	{
-		URHO3D_PARAM(P_INDEX, Index); // string or int - sound id
+    URHO3D_EVENT(E_PLAY_SOUND, PlaySound)
+    {
+        URHO3D_PARAM(P_INDEX, Index); // string or int - sound id
         URHO3D_PARAM(P_TYPE, Type); // string - sound type - Master / Effect / Ambient / Voice / Music
         URHO3D_PARAM(P_SOUND_FILE, SoundFile); // string - full path to sound file, not needed when Index is used
-	}
+    }
 
     // stop sound
-	URHO3D_EVENT(E_STOP_SOUND, StopSound)
-	{
-		URHO3D_PARAM(P_INDEX, Index); // int - sound id
+    URHO3D_EVENT(E_STOP_SOUND, StopSound)
+    {
+        URHO3D_PARAM(P_INDEX, Index); // int - sound id
         URHO3D_PARAM(P_TYPE, Type); // string - sound type - Master / Effect / Ambient / Voice / Music
-	}
+    }
 
     // stop all sounds in progress
-	URHO3D_EVENT(E_STOP_ALL_SOUNDS, StopAllSounds)
-	{
-	}
+    URHO3D_EVENT(E_STOP_ALL_SOUNDS, StopAllSounds)
+    {
+    }
 
     // Level changing started
-	URHO3D_EVENT(E_LEVEL_CHANGING_STARTED, LevelChangingStarted)
-	{
+    URHO3D_EVENT(E_LEVEL_CHANGING_STARTED, LevelChangingStarted)
+    {
         URHO3D_PARAM(P_FROM, From); // string
         URHO3D_PARAM(P_TO, To); // string
-	}
+    }
 
     // When the new level is actually created, before the fade effect goes away
     URHO3D_EVENT(E_LEVEL_CHANGING_IN_PROGRESS, LevelChangingInProgress)
@@ -139,24 +139,24 @@ namespace MyEvents
     }
 
     // Level changing finished
-	URHO3D_EVENT(E_LEVEL_CHANGING_FINISHED, LevelChangingFinished)
-	{
+    URHO3D_EVENT(E_LEVEL_CHANGING_FINISHED, LevelChangingFinished)
+    {
         URHO3D_PARAM(P_FROM, From); // string - previous level
         URHO3D_PARAM(P_TO, To); // string - new level
-	}
+    }
 
-	// Level changing finished
-	URHO3D_EVENT(E_NEW_ACHIEVEMENT, NewAchievement)
-	{
-		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
-		URHO3D_PARAM(P_IMAGE, Image); // string - Texture to use for achievement
-	}
+    // Level changing finished
+    URHO3D_EVENT(E_NEW_ACHIEVEMENT, NewAchievement)
+    {
+        URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
+        URHO3D_PARAM(P_IMAGE, Image); // string - Texture to use for achievement
+    }
 
-	// Achievement has been unlocked
-	URHO3D_EVENT(E_ACHIEVEMENT_UNLOCKED, AchievementUnlocked)
-	{
-		URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
-	}
+    // Achievement has been unlocked
+    URHO3D_EVENT(E_ACHIEVEMENT_UNLOCKED, AchievementUnlocked)
+    {
+        URHO3D_PARAM(P_MESSAGE, Message); // string - achievement title
+    }
 
     // Register new achievement
     URHO3D_EVENT(E_ADD_ACHIEVEMENT, AddAchievement)
@@ -179,20 +179,20 @@ namespace MyEvents
     {
     }
 
-	// Register new loading step in the loading screen
-	URHO3D_EVENT(E_REGISTER_LOADING_STEP, RegisterLoadingStep)
-	{
-		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
-		URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
-	}
+    // Register new loading step in the loading screen
+    URHO3D_EVENT(E_REGISTER_LOADING_STEP, RegisterLoadingStep)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+        URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
+    }
 
-	// ACK event to mark loading step as valid
-	URHO3D_EVENT(E_ACK_LOADING_STEP, AckLoadingStep)
-	{
-		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
-	}
+    // ACK event to mark loading step as valid
+    URHO3D_EVENT(E_ACK_LOADING_STEP, AckLoadingStep)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+    }
 
-	// Loading step progress update
+    // Loading step progress update
     URHO3D_EVENT(E_LOADING_STEP_PROGRESS, LoadingStepProgress)
     {
         URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
@@ -200,10 +200,10 @@ namespace MyEvents
     }
 
     // Load step loading finished event
-	URHO3D_EVENT(E_LOADING_STEP_FINISHED, LoadingStepFinished)
-	{
-		URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
-	}
+    URHO3D_EVENT(E_LOADING_STEP_FINISHED, LoadingStepFinished)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
+    }
 
     URHO3D_EVENT(E_SERVICE_MESSAGE, ServiceMessage)
     {

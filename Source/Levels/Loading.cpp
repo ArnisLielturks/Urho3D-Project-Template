@@ -148,9 +148,9 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
 {
-	UnsubscribeFromEvent(E_UPDATE);
+    UnsubscribeFromEvent(E_UPDATE);
 
-	// Forward event data to the next level
+    // Forward event data to the next level
     _data["Name"] = "Level";
     SendEvent(MyEvents::E_SET_LEVEL, _data);
 }

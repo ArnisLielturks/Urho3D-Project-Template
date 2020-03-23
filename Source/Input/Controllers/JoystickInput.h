@@ -12,13 +12,13 @@ public:
     JoystickInput(Context* context);
 
     virtual ~JoystickInput();
-	virtual String GetActionKeyName(int action) override;
+    virtual String GetActionKeyName(int action) override;
 
     void SetJoystickAsFirstController(bool enabled);
 
-	bool GetJoystickAsFirstController();
+    bool GetJoystickAsFirstController();
 
-	/**
+    /**
      * Load joystick config from config.cfg file [joystick] block
      */
     void LoadConfig() override;
@@ -29,16 +29,16 @@ protected:
 private:
     void SubscribeToEvents();
 
-	void HandleJoystickConnected(StringHash eventType, VariantMap& eventData);
-	void HandleJoystickDisconnected(StringHash eventType, VariantMap& eventData);
+    void HandleJoystickConnected(StringHash eventType, VariantMap& eventData);
+    void HandleJoystickDisconnected(StringHash eventType, VariantMap& eventData);
 
-	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
-	void HandleAxisMove(StringHash eventType, VariantMap& eventData);
-	void HandleHatMove(StringHash eventType, VariantMap& eventData);
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleKeyDown(StringHash eventType, VariantMap& eventData);
+    void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+    void HandleAxisMove(StringHash eventType, VariantMap& eventData);
+    void HandleHatMove(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-	HashMap<int, Vector2> _axisPosition;
+    HashMap<int, Vector2> _axisPosition;
 
     bool _joystickAsFirstController;
 

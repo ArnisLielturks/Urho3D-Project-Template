@@ -12,11 +12,11 @@ public:
     MouseInput(Context* context);
 
     virtual ~MouseInput();
-	virtual String GetActionKeyName(int action) override;
+    virtual String GetActionKeyName(int action) override;
 
-	/**
-	 * Load mouse config from config.cfg file [mouse] block
-	 */
+    /**
+     * Load mouse config from config.cfg file [mouse] block
+     */
     virtual void LoadConfig() override;
 
 protected:
@@ -25,8 +25,8 @@ protected:
 private:
     void SubscribeToEvents();
 
-	void HandleKeyDown(StringHash eventType, VariantMap& eventData);
-	void HandleKeyUp(StringHash eventType, VariantMap& eventData);
-	void HandleMouseMove(StringHash eventType, VariantMap& eventData);
-	void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleKeyDown(StringHash eventType, VariantMap& eventData);
+    void HandleKeyUp(StringHash eventType, VariantMap& eventData);
+    void HandleMouseMove(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
 };

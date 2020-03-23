@@ -8,7 +8,7 @@ namespace Levels {
     {
         URHO3D_OBJECT(Splash, BaseLevel);
 
-	public:
+    public:
         /// Construct.
         Splash(Context* context);
 
@@ -34,9 +34,9 @@ namespace Levels {
          */
         void HandleEndSplash();
 
-		/**
-		 * Timer to check splash screen lifetime
-		 */
+        /**
+         * Timer to check splash screen lifetime
+         */
         Timer _timer;
 
         /**

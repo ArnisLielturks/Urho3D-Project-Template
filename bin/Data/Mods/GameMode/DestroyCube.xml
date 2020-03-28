@@ -23,6 +23,5 @@
         <attribute name="Delayed Method Calls" value="0" />
         <attribute name="Script File" value="ScriptFile;Mods/GameMode/Destroyer.as" />
         <attribute name="Class Name" value="Destroyer" />
-        <attribute name="rotationSpeed" value="0.1 0.2 0.3" />
     </component>
 </node>

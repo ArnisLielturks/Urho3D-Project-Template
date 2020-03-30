@@ -199,7 +199,7 @@ jobs:
           ls -lah ./
           curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push Build_Android.apk/ ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER} 
+          ./butler push Build_Android.apk ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER} 
           ./butler push Build_Linux/ ${PROJECT_NAME}:linux --userversion ${GITHUB_RUN_NUMBER}
           ./butler push Build_OSX/ ${PROJECT_NAME}:macos --userversion ${GITHUB_RUN_NUMBER}
           ./butler push Build_Web/ ${PROJECT_NAME}:web --userversion ${GITHUB_RUN_NUMBER}

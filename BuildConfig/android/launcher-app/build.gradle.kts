@@ -35,7 +35,7 @@ android {
     defaultConfig {
         minSdkVersion(18)
         targetSdkVersion(29)
-        applicationId = "com.github.urho3d.launcher"
+        applicationId = "com.github.arnislielturks.project_template"
         versionCode = 1
         versionName = project.version.toString()
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"

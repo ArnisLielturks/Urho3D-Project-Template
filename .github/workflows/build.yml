@@ -11,21 +11,13 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D
-          key: Urho3D-android-${{runner.os}}
+          key: Urho3D-${{runner.os}}-android
       - name: Build
         run: ./BuildConfig/android/script.sh
-      - name: Upload to itch.io
-        if: github.ref == 'refs/heads/master'
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push Urho3D/ProjectTemplate.apk miegamicis/sandbox:android --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Android.apk
-          path: Urho3D/ProjectTemplate.apk
+          path: ProjectTemplate.apk
 
   build_web:
     runs-on: ubuntu-latest
@@ -35,7 +27,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D-web
-          key: Urho3D-web-${{runner.os}}
+          key: Urho3D-${{runner.os}}-web
       - name: Build
         run: ./BuildConfig/web/script.sh
       - name: Build archive
@@ -45,14 +37,6 @@ jobs:
           mv archive/ProjectTemplate.html archive/index.html
           chmod -R 777 archive
           zip -r "build_web.zip" archive/*  > /dev/null
-      - name: Upload to itch.io
-        if: github.ref == 'refs/heads/master'
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push archive miegamicis/sandbox:web --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Web
@@ -66,7 +50,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D
-          key: Urho3D-linux-${{runner.os}}
+          key: Urho3D-${{runner.os}}-linux
       - name: Build
         run: ./BuildConfig/linux/script.sh
       - name: Build archive
@@ -80,14 +64,6 @@ jobs:
           chmod -R 777 archive
           chmod a+x archive/ProjectTemplate.desktop
           zip -r "build_linux.zip" archive/*  > /dev/null
-      - name: Upload to itch.io
-        if: github.ref == 'refs/heads/master'
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:linux --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Linux
@@ -101,7 +77,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D
-          key: Urho3D-windows-${{runner.os}}
+          key: Urho3D-${{runner.os}}-windows
       - name: Build
         run: ./BuildConfig/mingw/script.sh
       - name: Build archive
@@ -113,14 +89,6 @@ jobs:
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
           zip -r "build_windows.zip" archive/*  > /dev/null
-      - name: Upload to itch.io
-        if: github.ref == 'refs/heads/master'
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:windows --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Windows
@@ -134,7 +102,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D
-          key: Urho3D-${{runner.os}}
+          key: Urho3D-${{runner.os}}-osx
       - name: Download Urho3D
         if: steps.cache.outputs.cache-hit != 'true'
         run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1
@@ -164,18 +132,11 @@ jobs:
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
           zip -r "build_osx.zip" archive/*  > /dev/null
-      - name: Upload to itch.io
-        if: github.ref == 'refs/heads/master'
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-        run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push archive/ miegamicis/sandbox:macos --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD) | true
       - uses: actions/upload-artifact@v1
         with:
           name: Build_OSX
           path: build_osx.zip
+
   build_windows_native:
     runs-on: [windows-latest]
     steps:
@@ -208,6 +169,7 @@ jobs:
   upload_artifacts:
     runs-on: ubuntu-latest
     needs: [build_android, build_web, build_linux, build_windows, build_osx]
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/download-artifact@v1
         name: Download Android build
@@ -229,5 +191,16 @@ jobs:
         name: Download OSX build
         with:
           name: Build_OSX
-      - name: Build project
-        run: ls -la ./
+      - name: Upload all builds
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          PROJECT_NAME: miegamicis/sandbox
+        run: |
+          ls -lah ./
+          curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push Build_Android.apk/ ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push Build_Linux/ ${PROJECT_NAME}:linux --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push Build_OSX/ ${PROJECT_NAME}:macos --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push Build_Web/ ${PROJECT_NAME}:web --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)
+          ./butler push Build_Windows/ ${PROJECT_NAME}:windows --userversion ${GITHUB_RUN_NUMBER}.$(git rev-parse --short HEAD)

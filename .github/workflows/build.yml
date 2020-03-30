@@ -197,7 +197,7 @@ jobs:
           PROJECT_NAME: miegamicis/sandbox
         run: |
           ls -lah ./
-          curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
           ./butler push Build_Android.apk ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER} 
           ./butler push Build_Linux/ ${PROJECT_NAME}:linux --userversion ${GITHUB_RUN_NUMBER}

@@ -3,6 +3,7 @@
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Graphics/Viewport.h>
+#include <Urho3D/Graphics/Zone.h>
 #include "MyEvents.h"
 
 using namespace Urho3D;
@@ -84,4 +85,6 @@ protected:
      * mapped against specific controller
      */
     HashMap<int, SharedPtr<Node>> _cameras;
+
+    SharedPtr<Zone> _defaultZone;
 };

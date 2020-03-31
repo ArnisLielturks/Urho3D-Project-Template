@@ -1,5 +1,4 @@
 #include <Urho3D/UI/UI.h>
-#include <Urho3D/Engine/Engine.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Core/CoreEvents.h>
@@ -19,7 +18,8 @@
 using namespace Urho3D;
 
 LevelManager::LevelManager(Context* context) :
-Object(context)
+Object(context),
+currentLevel_("NONE")
 {
     // Register all classes
     RegisterAllFactories();

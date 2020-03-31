@@ -3,7 +3,11 @@
         "Map": "Scenes/Flat.xml",
         "Name": "Flatland",
         "Description": "Map consists of a simple plane",
-        "Image": "Textures/Avatar.png"
+        "Image": "Textures/Avatar.png",
+        "Commands": [
+            "ambient_light 1 1 1",
+            "fog 1 10"
+        ]
     },
     {
         "Map": "Scenes/Terrain.xml",

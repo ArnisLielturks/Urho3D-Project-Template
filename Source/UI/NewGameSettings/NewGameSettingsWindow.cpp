@@ -10,9 +10,8 @@
 #include "../../MyEvents.h"
 #include "../../Global.h"
 
-static const int BUTTON_WIDTH = 150;
 static const int BUTTON_HEIGHT = 40;
-static const int MARGIN = 30;
+static const int MARGIN = 10;
 static const int IMAGE_SIZE = 200;
 
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
@@ -46,7 +45,8 @@ void NewGameSettingsWindow::Create()
     UIElement* titleBar =_baseWindow->CreateChild<UIElement>();
     titleBar->SetVerticalAlignment(VA_TOP);
     titleBar->SetLayoutMode(LM_HORIZONTAL);
-    titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));
+    titleBar->SetLayoutBorder(IntRect(0, 4, 0, 4));
+    titleBar->SetFixedHeight(32);
 
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
@@ -127,6 +127,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
         auto button = CreateButton(mapView, "", IMAGE_SIZE, IntVector2(0, 0));
         button->SetFixedHeight(IMAGE_SIZE);
         button->SetVar("Map", (*it).map);
+        button->SetVar("Commands", (*it).commands);
         button->SetStyle("MapSelection");
 
         SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
@@ -136,6 +137,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
             VariantMap& data = GetEventDataMap();
             data["Name"] = "Loading";
             data["Map"] = button->GetVar("Map");
+            data["Commands"] = button->GetVar("Commands");
             SendEvent(MyEvents::E_SET_LEVEL, data);
         });
 
@@ -185,6 +187,16 @@ Vector<MapInfo> NewGameSettingsWindow::LoadMaps()
                 map.name        = mapInfo["Name"].GetString();
                 map.description = mapInfo["Description"].GetString();
                 map.image       = mapInfo["Image"].GetString();
+
+                if (mapInfo.Contains("Commands") && mapInfo["Commands"].IsArray()) {
+                    for (int c = 0; c < mapInfo["Commands"].Size(); c++) {
+                        JSONValue command = mapInfo["Commands"][c];
+                        if (command.IsString()) {
+                            map.commands.Push(mapInfo["Commands"][c].GetString());
+                            URHO3D_LOGINFOF("Adding map command %s", map.commands[map.commands.Size() - 1].CString());
+                        }
+                    }
+                }
                 maps.Push(map);
             }
             else {

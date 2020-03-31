@@ -36,11 +36,10 @@ jobs:
           cp -r Urho3D-web/build/web/bin/ProjectTemplate* archive/
           mv archive/ProjectTemplate.html archive/index.html
           chmod -R 777 archive
-          zip -r "build_web.zip" archive/*  > /dev/null
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Web
-          path: build_web.zip
+          path: archive/
 
   build_linux:
     runs-on: ubuntu-latest
@@ -63,11 +62,10 @@ jobs:
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
           chmod a+x archive/ProjectTemplate.desktop
-          zip -r "build_linux.zip" archive/*  > /dev/null
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Linux
-          path: build_linux.zip
+          path: archive/
 
   build_windows:
     runs-on: ubuntu-latest
@@ -88,11 +86,10 @@ jobs:
           cp -r bin/CoreData archive/CoreData
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
-          zip -r "build_windows.zip" archive/*  > /dev/null
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Windows
-          path: build_windows.zip
+          path: archive/
 
   build_osx:
     runs-on: macos-latest
@@ -131,11 +128,10 @@ jobs:
           cp -r bin/CoreData archive/CoreData
           rm -rf archive/Data/Saves/Achievements.json
           chmod -R 777 archive
-          zip -r "build_osx.zip" archive/*  > /dev/null
       - uses: actions/upload-artifact@v1
         with:
           name: Build_OSX
-          path: build_osx.zip
+          path: archive/
 
   build_windows_native:
     runs-on: [windows-latest]

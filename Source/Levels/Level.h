@@ -50,7 +50,5 @@ namespace Levels {
         HashMap<int, SharedPtr<Player>> _players;
 
         SharedPtr<Terrain> _terrain;
-
-        SharedPtr<Zone> _defaultZone;
     };
 }

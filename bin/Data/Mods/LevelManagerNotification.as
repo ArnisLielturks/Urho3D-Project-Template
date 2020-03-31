@@ -21,6 +21,6 @@ void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
     String levelName = eventData["To"].GetString();
 
     VariantMap data;
-    data["Message"] = "Level '" + levelName + "' loaded!";
+    data["Message"] = "LevelManager transfered from '" + previousLevelName + "' to '" + levelName + "'!";
     SendEvent("ShowNotification", data);
 }

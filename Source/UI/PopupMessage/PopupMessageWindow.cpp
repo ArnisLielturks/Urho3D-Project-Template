@@ -61,16 +61,10 @@ void PopupMessageWindow::Create()
     _baseWindow->SetObjectAnimation(animation);
 
     auto title = CreateLabel(_data["Title"].GetString(), 16);
-//    title->SetAlignment(HA_CENTER, VA_TOP);
-//    title->SetPosition(0, 10);
 
     auto message = CreateLabel(_data["Message"].GetString(), 12);
-//    message->SetAlignment(HA_CENTER, VA_CENTER);
-    //message->SetPosition(0, 10);
 
     _okButton = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
-//    _okButton->SetAlignment(HA_CENTER, VA_BOTTOM);
-//    _okButton->SetPosition(0, -20);
 
     SubscribeToEvent(_okButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();

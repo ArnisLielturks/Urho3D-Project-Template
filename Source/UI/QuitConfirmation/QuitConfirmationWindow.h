@@ -27,5 +27,5 @@ private:
     SharedPtr<Button> _noButton;
     SharedPtr<Window> _baseWindow;
 
-    Button* CreateButton(const String& text, int width, IntVector2 position);
+    Button* CreateButton(const String& text);
 };

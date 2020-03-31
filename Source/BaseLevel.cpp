@@ -10,6 +10,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Math/MathDefs.h>
 #include <Urho3D/Graphics/GraphicsEvents.h>
+#include <Urho3D/Engine/EngineEvents.h>
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
@@ -87,6 +88,28 @@ void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
     _data = eventData;
     Init();
     SubscribeToEvents();
+
+    if (_scene) {
+        Node *zoneNode = _scene->CreateChild("Zone", LOCAL);
+        _defaultZone = zoneNode->CreateComponent<Zone>();
+        _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+        _defaultZone->SetAmbientColor(Color(0.3f, 0.3f, 0.3f));
+        _defaultZone->SetFogStart(50.0f);
+        _defaultZone->SetFogEnd(300.0f);
+
+        if (_data.Contains("Commands")) {
+            URHO3D_LOGINFO("Calling map commands");
+            StringVector commands = _data["Commands"].GetStringVector();
+            for (auto it = commands.Begin(); it != commands.End(); ++it) {
+                using namespace ConsoleCommand;
+                SendEvent(
+                        E_CONSOLECOMMAND,
+                        P_ID, "0",
+                        P_COMMAND, (*it)
+                );
+            }
+        }
+    }
 }
 
 void BaseLevel::Run()
@@ -114,6 +137,54 @@ void BaseLevel::SubscribeToEvents()
     data[P_DESCRIPTION] = "Show/Change camera fov";
     data[P_OVERWRITE] = true;
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "ambient_light",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#ambient_light",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
+        if (!_scene) {
+            URHO3D_LOGWARNING("No scene to update");
+            return;
+        }
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 4) {
+            URHO3D_LOGERROR("ambient_light expects 3 float values: r g b ");
+            return;
+        }
+
+        const float r = ToFloat(params[1]);
+        const float g = ToFloat(params[2]);
+        const float b = ToFloat(params[3]);
+        _defaultZone->SetAmbientColor(Color(r, g, b));
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "fog",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#fog",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
+        if (!_scene) {
+            URHO3D_LOGWARNING("No scene to update");
+            return;
+        }
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() < 3) {
+            URHO3D_LOGERROR("fog expects 2 parameters: fog_start fog_end ");
+            return;
+        }
+
+        const float start = ToFloat(params[1]);
+        const float end = ToFloat(params[2]);
+        _defaultZone->SetFogStart(start);
+        _defaultZone->SetFogEnd(end);
+    });
 }
 
 void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
@@ -351,6 +422,9 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("SSAO")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/SSAO.xml"));
         }
+        if (!effectRenderPath->IsAdded("Toon")) {
+            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/Toon.xml"));
+        }
 
 //        if (!effectRenderPath->IsAdded("RayMarch")) {
 //            effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/RayMarch.xml"));
@@ -367,7 +441,7 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", false));
         effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", false));
         effectRenderPath->SetEnabled("GammaCorrection",
-                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", false));
+                                     GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", true));
         effectRenderPath->SetEnabled("ColorCorrection",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "ColorCorrection", false));
         float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f), 0.05f,
@@ -375,6 +449,8 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetShaderParameter("Gamma", gamma);
 
         effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", false));
+
+        effectRenderPath->SetEnabled("Toon", true);
         viewport->SetRenderPath(effectRenderPath);
     }
 }

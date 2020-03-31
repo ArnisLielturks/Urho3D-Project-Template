@@ -3,6 +3,7 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Texture2D.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/IO/Log.h>
 #include "Notifications.h"
@@ -34,7 +35,7 @@ void Notifications::Init()
     // Set spline tension
     positionAnimation->SetSplineTension(0.7f);
     positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
-    positionAnimation->SetKeyFrame(6.0f, IntVector2(-10, -500));
+    positionAnimation->SetKeyFrame(7.0f, IntVector2(-10, -500));
     notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
     opacityAnimation = new ValueAnimation(context_);
@@ -80,27 +81,30 @@ void Notifications::CreateNewNotification(NotificationData data)
     float fontSize = 16.0f;
     auto* cache = GetSubsystem<ResourceCache>();
 
+    SharedPtr<BorderImage> messageContainer(GetSubsystem<UI>()->GetRoot()->CreateChild<BorderImage>());
+    // Notification must appear on top of everything
+    messageContainer->SetPriority(99999);
+    messageContainer->SetTexture(cache->GetResource<Texture2D>("Textures/Gray.png"));
+    messageContainer->SetObjectAnimation(notificationAnimation);
+    messageContainer->SetLayout(LM_HORIZONTAL, 0, IntRect(8, 8, 8, 8));
+    // Align Text center-screen
+    messageContainer->SetHorizontalAlignment(HA_RIGHT);
+    messageContainer->SetVerticalAlignment(VA_BOTTOM);
+    messageContainer->SetVar("Lifetime", 6.0f);
+
     // Construct new Text object
-    SharedPtr<Text> messageElement(GetSubsystem<UI>()->GetRoot()->CreateChild<Text>());
+    SharedPtr<Text> messageElement(messageContainer->CreateChild<Text>());
     // Set String to display
     messageElement->SetText(data.message);
     messageElement->SetTextEffect(TextEffect::TE_STROKE);
     messageElement->SetStyleAuto();
-    // Notification must appear on top of everything
-    messageElement->SetPriority(99999);
+    messageElement->SetUseDerivedOpacity(true);
 
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
     messageElement->SetColor(data.color);
     messageElement->SetFont(font, fontSize);
 
-    // Align Text center-screen
-    messageElement->SetHorizontalAlignment(HA_RIGHT);
-    messageElement->SetVerticalAlignment(VA_BOTTOM);
-
-    messageElement->SetObjectAnimation(notificationAnimation);
-    messageElement->SetVar("Lifetime", 6.0f);
-
-    _messages.Push(messageElement);
+    _messages.Push(messageContainer);
 
     _timer.Reset();
 }

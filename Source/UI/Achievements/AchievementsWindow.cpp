@@ -56,7 +56,7 @@ void AchievementsWindow::Create()
 
     // Create Window 'titlebar' container
     _titleBar =_baseWindow->CreateChild<UIElement>();
-    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 24);
+    _titleBar->SetFixedSize(_baseWindow->GetWidth(), 32);
     _titleBar->SetVerticalAlignment(VA_TOP);
     _titleBar->SetLayoutMode(LM_HORIZONTAL);
     _titleBar->SetLayoutBorder(IntRect(4, 4, 4, 4));

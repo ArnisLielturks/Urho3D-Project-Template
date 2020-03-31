@@ -7,7 +7,6 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/CoreEvents.h>
-#include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Resource/XMLFile.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
@@ -62,11 +61,6 @@ void MainMenu::CreateScene()
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
         InitCamera();
     });
-
-    auto* zone = _scene->CreateComponent<Zone>();
-    zone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
-    zone->SetFogStart(1.0f);
-    zone->SetFogEnd(20.0f);
 
 #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
@@ -193,7 +187,7 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
     float timestep = eventData[P_TIMESTEP].GetFloat();
-    if (GetSubsystem<Input>()->GetKeyPress(KEY_BACKSPACE)) {
+    if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
         SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
     }
 

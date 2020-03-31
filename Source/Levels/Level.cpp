@@ -86,13 +86,6 @@ void Level::Init()
         shape->SetTerrain();
     }
 
-    Node* zoneNode = _scene->CreateChild("Zone", LOCAL);
-    _defaultZone = zoneNode->CreateComponent<Zone>();
-    _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
-    _defaultZone->SetAmbientColor(Color(0.1f, 0.1f, 0.1f));
-    _defaultZone->SetFogStart(100.0f);
-    _defaultZone->SetFogEnd(300.0f);
-
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
@@ -173,46 +166,6 @@ void Level::SubscribeToEvents()
             return;
         }
         _drawDebug = !_drawDebug;
-    });
-
-    SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "ambient_light",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#ambient_light",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() < 4) {
-            URHO3D_LOGERROR("ambient_light expects 3 float values: r g b ");
-            return;
-        }
-
-        const float r = ToFloat(params[1]);
-        const float g = ToFloat(params[2]);
-        const float b = ToFloat(params[3]);
-        _defaultZone->SetAmbientColor(Color(r, g, b));
-    });
-
-    SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "fog",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#fog",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() < 3) {
-            URHO3D_LOGERROR("fog expects 2 parameters: fog_start fog_end ");
-            return;
-        }
-
-        const float start = ToFloat(params[1]);
-        const float end = ToFloat(params[2]);
-        _defaultZone->SetFogStart(start);
-        _defaultZone->SetFogEnd(end);
     });
 }
 
@@ -314,7 +267,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         _showScoreboard = true;
     }
 
-    if (key == KEY_P) {
+    if (key == KEY_ESCAPE) {
         UnsubscribeToEvents();
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";

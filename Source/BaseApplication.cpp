@@ -378,6 +378,8 @@ void BaseApplication::LoadINIConfig(String filename)
     audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());
     audio->SetMasterGain(SOUND_VOICE, engine_->GetGlobalVar("Voice").GetFloat());
     audio->SetMasterGain(SOUND_MUSIC, engine_->GetGlobalVar("Music").GetFloat());
+
+    GetSubsystem<Log>()->SetTimeStamp(GetSubsystem<ConfigManager>()->GetBool("engine", "LogTimestamp", true));
 }
 
 void BaseApplication::ApplyGraphicsSettings()

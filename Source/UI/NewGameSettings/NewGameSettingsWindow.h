@@ -9,6 +9,7 @@ struct MapInfo {
     String name;
     String description;
     String image;
+    StringVector commands;
 };
 
 class NewGameSettingsWindow : public BaseWindow

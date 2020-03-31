@@ -43,8 +43,8 @@
         <attribute name="Hover Image Offset" value="0 16" />
     </element>
     <element type="CloseButton" style="Button" auto="false">    <!-- non-auto style is shown explicitly in the Editor's style drop down list for user selection -->
-        <attribute name="Min Size" value="16 16" />
-        <attribute name="Max Size" value="16 16" />
+        <attribute name="Min Size" value="24 24" />
+        <attribute name="Max Size" value="24 24" />
         <attribute name="Image Rect" value="144 0 160 16" />
         <attribute name="Focus Mode" value="NotFocusable" />
     </element>

@@ -13,7 +13,6 @@
 #include "PopupMessage/PopupMessageWindow.h"
 #include "Settings/UIOption.h"
 
-/// Construct.
 WindowManager::WindowManager(Context* context) :
     Object(context)
 {
@@ -30,7 +29,6 @@ void WindowManager::RegisterAllFactories()
 {
     // Register all available windows
     context_->RegisterFactory<BaseWindow>();
-//    context_->RegisterFactory<SettingsWindow>();
     context_->RegisterFactory<ScoreboardWindow>();
     context_->RegisterFactory<AchievementsWindow>();
     context_->RegisterFactory<QuitConfirmationWindow>();
@@ -40,6 +38,7 @@ void WindowManager::RegisterAllFactories()
     context_->RegisterFactory<PopupMessageWindow>();
     context_->RegisterFactory<PopupMessageWindow>();
 
+    // Custom UI elements
     UIOption::RegisterObject(context_);
     UIMultiOption::RegisterObject(context_);
     UIBoolOption::RegisterObject(context_);
@@ -118,13 +117,11 @@ bool WindowManager::IsWindowOpen(String windowName)
         if ((*it)->GetType() == StringHash(windowName)) {
             BaseWindow* window = (*it)->Cast<BaseWindow>();
             if ((*it).Refs()) {
-                URHO3D_LOGINFO(" WINDOW " + windowName + " IS ACTIVE");
                 return true;
             }
         }
     }
 
-    URHO3D_LOGINFO(" WINDOW " + windowName + " NOT ACTIVE");
     return false;
 }
 

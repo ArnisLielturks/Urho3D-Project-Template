@@ -8,10 +8,6 @@
 #include "../../MyEvents.h"
 #include "../../Global.h"
 
-static const int BUTTON_WIDTH = 150;
-static const int BUTTON_HEIGHT = 40;
-static const int BUTTON_MARGIN = 30;
-
 QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
     BaseWindow(context)
 {
@@ -43,13 +39,24 @@ void QuitConfirmationWindow::Create()
     _baseWindow = CreateOverlay()->CreateChild<Window>();
     _baseWindow->SetStyleAuto();
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(BUTTON_WIDTH * 2 + BUTTON_MARGIN * 3, BUTTON_HEIGHT + BUTTON_MARGIN * 2);
+    _baseWindow->SetWidth(300);
+    _baseWindow->SetMinHeight(50);
+    _baseWindow->SetLayout(LM_VERTICAL, 10, IntRect(10, 10, 10, 10));
     _baseWindow->BringToFront();
     _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1000);
 
-    _yesButton = CreateButton(localization->Get("YES"), BUTTON_WIDTH, IntVector2(BUTTON_MARGIN, 0));
-    _yesButton->SetAlignment(HA_LEFT, VA_CENTER);
+    SharedPtr<UIElement> titleContainer(_baseWindow->CreateChild<UIElement>());
+    titleContainer->SetLayoutMode(LM_HORIZONTAL);
+    auto title = titleContainer->CreateChild<Text>();
+    title->SetStyleAuto();
+    title->SetText(localization->Get("ARE_YOU_SURE"));
+    title->SetTextAlignment(HA_CENTER);
+    title->SetFontSize(24);
 
+    SharedPtr<UIElement> buttonsContainer(_baseWindow->CreateChild<UIElement>());
+    buttonsContainer->SetLayout(LM_HORIZONTAL, 10);
+
+    _yesButton = CreateButton(localization->Get("YES"));
     SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
 
@@ -58,35 +65,37 @@ void QuitConfirmationWindow::Create()
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    _noButton = CreateButton(localization->Get("NO"), BUTTON_WIDTH, IntVector2(-BUTTON_MARGIN, 0));
-    _noButton->SetAlignment(HA_RIGHT, VA_CENTER);
-
+    _noButton = CreateButton(localization->Get("NO"));
     SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(MyEvents::E_CLOSE_WINDOW, data);
     });
+
+    buttonsContainer->AddChild(_yesButton);
+    buttonsContainer->AddChild(_noButton);
+    _baseWindow->UpdateLayout();
 }
 
 void QuitConfirmationWindow::SubscribeToEvents()
 {
 }
 
-Button* QuitConfirmationWindow::CreateButton(const String& text, int width, IntVector2 position)
+Button* QuitConfirmationWindow::CreateButton(const String& text)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* button = _baseWindow->CreateChild<Button>();
+    auto* button = new Button(context_);
     button->SetStyleAuto();
-    button->SetFixedWidth(width);
-    button->SetFixedHeight(BUTTON_HEIGHT);
-    button->SetPosition(position);
+    button->SetFixedWidth(150);
+    button->SetFixedHeight(40);
 
     auto* buttonText = button->CreateChild<Text>();
     buttonText->SetFont(font, 16);
-    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
     buttonText->SetText(text);
+    buttonText->SetAlignment(HA_CENTER, VA_CENTER);
+    buttonText->SetTextAlignment(HA_CENTER);
 
     return button;
 }

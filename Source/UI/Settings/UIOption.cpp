@@ -473,6 +473,7 @@ namespace Urho3D {
         body_->SetStyle("Window");
         //header_->SetStyle("UITabHeader");
         //body_->SetStyle("UITabBody");
+        SetLayoutSpacing(4);
 
         SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(UITabPanel, HandleKeyPress));
     }
@@ -529,7 +530,7 @@ namespace Urho3D {
         return ret;
     }
 
-    UIElement* UITabPanel::AddTab(const String& name) {
+    ListView* UITabPanel::AddTab(const String& name) {
         int tab_index = tabs_.Size();
         bool enabled = current_tab_ == tab_index;
 
@@ -552,10 +553,14 @@ namespace Urho3D {
         tab.text->SetAlignment(HA_CENTER, VA_CENTER);
         tab.button->AddChild(tab.text);
 
-        tab.page = new UIElement(context_);
+        tab.page = new ListView(context_);
         tab.page->SetInternal(true);
         tab.page->SetVisible(enabled);
         tab.page->SetColor(Color::RED);
+        tab.page->SetStyleAuto();
+        tab.page->SetHighlightMode(HM_NEVER);
+        tab.page->SetLayoutBorder(IntRect(0, 0, 0, 0));
+        tab.page->SetFocusMode(FM_NOTFOCUSABLE);
 
         body_->AddChild(tab.page);
 
@@ -568,7 +573,7 @@ namespace Urho3D {
         //tab.button->SetStyle("UITabButton");
 
         return tab.page.Get();
-    }
+    }\
 
     void UITabPanel::RemoveTab(const String& name) {
         auto index = -1;

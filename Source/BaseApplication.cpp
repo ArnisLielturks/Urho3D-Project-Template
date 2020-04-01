@@ -93,64 +93,64 @@ void BaseApplication::Setup()
     context_->RegisterSubsystem(new ConsoleHandler(context_));
     LoadINIConfig(_configurationFile);
 
-    #if defined(__EMSCRIPTEN__)
-    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace ScreenMode;
-        int width = eventData[P_WIDTH].GetInt();
-        int height = eventData[P_HEIGHT].GetInt();
-
-        URHO3D_LOGINFOF("Screen size changed %dx%d", width, height);
-
-        EM_ASM({
-            Module.SetRendererSize($0, $1);
-        }, width, height);
-    });
-
-    SubscribeToEvent(E_MOUSEVISIBLECHANGED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace MouseVisibleChanged;
-        mouseVisible = eventData[P_VISIBLE].GetBool();
-        URHO3D_LOGINFOF("mouseVisible = %d", mouseVisible);
-
-        EM_ASM({
-            Module.SetMouseVisible($0);
-        }, mouseVisible);
-    });
-    SubscribeToEvent(E_MOUSEMODECHANGED, [&](StringHash eventType, VariantMap &eventData) {
-        using namespace MouseModeChanged;
-        mouseMode = eventData[P_MODE].GetUInt();
-        URHO3D_LOGINFOF("mouseMode = %u", mouseMode);
-    });
-    #endif
+//    #if defined(__EMSCRIPTEN__)
+//    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
+//        using namespace ScreenMode;
+//        int width = eventData[P_WIDTH].GetInt();
+//        int height = eventData[P_HEIGHT].GetInt();
+//
+//        URHO3D_LOGINFOF("Screen size changed %dx%d", width, height);
+//
+//        EM_ASM({
+//            Module.SetRendererSize($0, $1);
+//        }, width, height);
+//    });
+//
+//    SubscribeToEvent(E_MOUSEVISIBLECHANGED, [&](StringHash eventType, VariantMap &eventData) {
+//        using namespace MouseVisibleChanged;
+//        mouseVisible = eventData[P_VISIBLE].GetBool();
+//        URHO3D_LOGINFOF("mouseVisible = %d", mouseVisible);
+//
+//        EM_ASM({
+//            Module.SetMouseVisible($0);
+//        }, mouseVisible);
+//    });
+//    SubscribeToEvent(E_MOUSEMODECHANGED, [&](StringHash eventType, VariantMap &eventData) {
+//        using namespace MouseModeChanged;
+//        mouseMode = eventData[P_MODE].GetUInt();
+//        URHO3D_LOGINFOF("mouseMode = %u", mouseMode);
+//    });
+//    #endif
 }
 
-#if defined(__EMSCRIPTEN__)
-void BaseApplication::JSCanvasSize(int width, int height, bool fullscreen, float scale)
-{
-    URHO3D_LOGINFOF("JSCanvasSize: %dx%d", width, height);
-    appContext->GetSubsystem<Graphics>()->SetMode(width, height);
-    UI* ui = appContext->GetSubsystem<UI>();
-    ui->SetScale(scale);
-//    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
-}
-
-void BaseApplication::JSMouseFocus()
-{
-    auto input = appContext->GetSubsystem<Input>();
-    input->SetMouseVisible(mouseVisible);
-    input->SetMouseMode(static_cast<MouseMode>(mouseMode));
-//    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
-    EM_ASM({
-        Module.SetMouseVisible($0);
-    }, mouseVisible);
-    URHO3D_LOGINFOF("Mouse mode changed visibility = %d, mouseMode = %u", mouseVisible, mouseMode);
-}
-
-using namespace emscripten;
-EMSCRIPTEN_BINDINGS(Module) {
-    function("JSCanvasSize", &BaseApplication::JSCanvasSize);
-    function("JSMouseFocus", &BaseApplication::JSMouseFocus);
-}
-#endif
+//#if defined(__EMSCRIPTEN__)
+//void BaseApplication::JSCanvasSize(int width, int height, bool fullscreen, float scale)
+//{
+//    URHO3D_LOGINFOF("JSCanvasSize: %dx%d", width, height);
+//    appContext->GetSubsystem<Graphics>()->SetMode(width, height);
+//    UI* ui = appContext->GetSubsystem<UI>();
+//    ui->SetScale(scale);
+////    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
+//}
+//
+//void BaseApplication::JSMouseFocus()
+//{
+//    auto input = appContext->GetSubsystem<Input>();
+//    input->SetMouseVisible(mouseVisible);
+//    input->SetMouseMode(static_cast<MouseMode>(mouseMode));
+////    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
+//    EM_ASM({
+//        Module.SetMouseVisible($0);
+//    }, mouseVisible);
+//    URHO3D_LOGINFOF("Mouse mode changed visibility = %d, mouseMode = %u", mouseVisible, mouseMode);
+//}
+//
+//using namespace emscripten;
+//EMSCRIPTEN_BINDINGS(Module) {
+//    function("JSCanvasSize", &BaseApplication::JSCanvasSize);
+//    function("JSMouseFocus", &BaseApplication::JSMouseFocus);
+//}
+//#endif
 
 void BaseApplication::Start()
 {

@@ -198,8 +198,7 @@ void SettingsWindow::InitWindow()
     window_->GetParent()->SetPriority(window_->GetParent()->GetPriority() + 1);
 
     // Set Window size and layout settings
-    window_->SetMinWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() * 0.8);
-    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale() * 0.8);
+    window_->SetMinHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale() * 0.7);
     window_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() * 0.8);
     window_->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
     window_->SetAlignment(HA_CENTER, VA_CENTER);
@@ -265,7 +264,6 @@ void SettingsWindow::CreateVideoTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto video_tab = tabs_->AddTab(localization->Get("VIDEO"));
-    video_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     opt_fullscreen_ = new UIMultiOption(context_);
     opt_fullscreen_->SetName("OptFullscreen");
@@ -365,15 +363,15 @@ void SettingsWindow::CreateVideoTab()
     gamma_->SetStyleAuto();
     gamma_->SetTags({"misc-video"});
 
-    video_tab->AddChild(opt_fullscreen_);
-    video_tab->AddChild(opt_monitor_);
-    video_tab->AddChild(opt_resolution_);
-    video_tab->AddChild(opt_rate_);
-    video_tab->AddChild(opt_vsync_);
-    video_tab->AddChild(elm);
-    video_tab->AddChild(opt_resizable_);
-    video_tab->AddChild(opt_fpslimit_);
-    video_tab->AddChild(gamma_);
+    video_tab->AddItem(opt_fullscreen_);
+    video_tab->AddItem(opt_monitor_);
+    video_tab->AddItem(opt_resolution_);
+    video_tab->AddItem(opt_rate_);
+    video_tab->AddItem(opt_vsync_);
+    video_tab->AddItem(elm);
+    video_tab->AddItem(opt_resizable_);
+    video_tab->AddItem(opt_fpslimit_);
+    video_tab->AddItem(gamma_);
 
     SubscribeToEvent(btn_apply_, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleApply));
 }
@@ -382,7 +380,6 @@ void SettingsWindow::CreateGraphicsTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto graphics_tab = tabs_->AddTab(localization->Get("GRAPHICS"));
-    graphics_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     // graphics tab
     opt_texture_quality_ = new UIMultiOption(context_);
@@ -473,22 +470,21 @@ void SettingsWindow::CreateGraphicsTab()
     opt_ssao_->SetTags({ "misc-video" });
     opt_ssao_->SetStrings(options_bool);
 
-    graphics_tab->AddChild(opt_texture_quality_);
-    graphics_tab->AddChild(opt_material_quality_);
-    graphics_tab->AddChild(opt_shadows_);
-    graphics_tab->AddChild(opt_shadow_quality_);
-    graphics_tab->AddChild(opt_occlusion_);
-    graphics_tab->AddChild(opt_instancing_);
-    graphics_tab->AddChild(opt_specular_);
-    graphics_tab->AddChild(opt_hdr_);
-    graphics_tab->AddChild(opt_ssao_);
+    graphics_tab->AddItem(opt_texture_quality_);
+    graphics_tab->AddItem(opt_material_quality_);
+    graphics_tab->AddItem(opt_shadows_);
+    graphics_tab->AddItem(opt_shadow_quality_);
+    graphics_tab->AddItem(opt_occlusion_);
+    graphics_tab->AddItem(opt_instancing_);
+    graphics_tab->AddItem(opt_specular_);
+    graphics_tab->AddItem(opt_hdr_);
+    graphics_tab->AddItem(opt_ssao_);
 }
 
 void SettingsWindow::CreateAudioTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto audio_tab = tabs_->AddTab(localization->Get("AUDIO"));
-    audio_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     audio_settings_[SOUND_MASTER] = new UISliderOption(context_);
     audio_settings_[SOUND_MASTER]->SetName("Master");
@@ -498,7 +494,7 @@ void SettingsWindow::CreateAudioTab()
     audio_settings_[SOUND_MASTER]->SetStyleAuto();
     audio_settings_[SOUND_MASTER]->SetTags({"audio"});
     audio_settings_[SOUND_MASTER]->SetVar("AudioType", SOUND_MASTER);
-    audio_tab->AddChild(audio_settings_[SOUND_MASTER]);
+    audio_tab->AddItem(audio_settings_[SOUND_MASTER]);
 
     audio_settings_[SOUND_EFFECT] = new UISliderOption(context_);
     audio_settings_[SOUND_EFFECT]->SetName("Master");
@@ -508,7 +504,7 @@ void SettingsWindow::CreateAudioTab()
     audio_settings_[SOUND_EFFECT]->SetStyleAuto();
     audio_settings_[SOUND_EFFECT]->SetTags({"audio"});
     audio_settings_[SOUND_EFFECT]->SetVar("AudioType", SOUND_EFFECT);
-    audio_tab->AddChild(audio_settings_[SOUND_EFFECT]);
+    audio_tab->AddItem(audio_settings_[SOUND_EFFECT]);
 
     audio_settings_[SOUND_AMBIENT] = new UISliderOption(context_);
     audio_settings_[SOUND_AMBIENT]->SetName("Master");
@@ -518,7 +514,7 @@ void SettingsWindow::CreateAudioTab()
     audio_settings_[SOUND_AMBIENT]->SetStyleAuto();
     audio_settings_[SOUND_AMBIENT]->SetTags({"audio"});
     audio_settings_[SOUND_AMBIENT]->SetVar("AudioType", SOUND_AMBIENT);
-    audio_tab->AddChild(audio_settings_[SOUND_AMBIENT]);
+    audio_tab->AddItem(audio_settings_[SOUND_AMBIENT]);
 
     audio_settings_[SOUND_VOICE] = new UISliderOption(context_);
     audio_settings_[SOUND_VOICE]->SetName("Master");
@@ -528,7 +524,7 @@ void SettingsWindow::CreateAudioTab()
     audio_settings_[SOUND_VOICE]->SetStyleAuto();
     audio_settings_[SOUND_VOICE]->SetTags({"audio"});
     audio_settings_[SOUND_VOICE]->SetVar("AudioType", SOUND_VOICE);
-    audio_tab->AddChild(audio_settings_[SOUND_VOICE]);
+    audio_tab->AddItem(audio_settings_[SOUND_VOICE]);
 
     audio_settings_[SOUND_MUSIC] = new UISliderOption(context_);
     audio_settings_[SOUND_MUSIC]->SetName("Master");
@@ -538,34 +534,33 @@ void SettingsWindow::CreateAudioTab()
     audio_settings_[SOUND_MUSIC]->SetStyleAuto();
     audio_settings_[SOUND_MUSIC]->SetTags({"audio"});
     audio_settings_[SOUND_MUSIC]->SetVar("AudioType", SOUND_MUSIC);
-    audio_tab->AddChild(audio_settings_[SOUND_MUSIC]);
+    audio_tab->AddItem(audio_settings_[SOUND_MUSIC]);
 }
 
 void SettingsWindow::CreateControllersTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto controllers_tab = tabs_->AddTab(localization->Get("CONTROLLERS"));
-    controllers_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     {
         auto label = new Text(context_);
         label->SetStyleAuto();
         label->SetText(localization->Get("MOUSE"));
-        controllers_tab->AddChild(label);
+        controllers_tab->AddItem(label);
 
         invert_mouse_x = new UIBoolOption(context_);
         invert_mouse_x->SetOptionName(localization->Get("INVERT_X_AXIS"));
         invert_mouse_x->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX", false));
         invert_mouse_x->SetTags({"invert_mouse_x"});
         invert_mouse_x->SetStyleAuto();
-        controllers_tab->AddChild(invert_mouse_x);
+        controllers_tab->AddItem(invert_mouse_x);
 
         invert_mouse_y = new UIBoolOption(context_);
         invert_mouse_y->SetOptionName(localization->Get("INVERT_Y_AXIS"));
         invert_mouse_y->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY", false));
         invert_mouse_y->SetTags({"invert_mouse_y"});
         invert_mouse_y->SetStyleAuto();
-        controllers_tab->AddChild(invert_mouse_y);
+        controllers_tab->AddItem(invert_mouse_y);
 
         mouse_sensitivity = new UISliderOption(context_);
         mouse_sensitivity->SetName("Mouse");
@@ -574,28 +569,28 @@ void SettingsWindow::CreateControllersTab()
         mouse_sensitivity->SetValue(GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 2.0f));
         mouse_sensitivity->SetStyleAuto();
         mouse_sensitivity->SetTags({"mouse_sensitivity"});
-        controllers_tab->AddChild(mouse_sensitivity);
+        controllers_tab->AddItem(mouse_sensitivity);
     }
 
     {
         auto label = new Text(context_);
         label->SetStyleAuto();
         label->SetText(localization->Get("JOYSTICK"));
-        controllers_tab->AddChild(label);
+        controllers_tab->AddItem(label);
 
         invert_joystic_x = new UIBoolOption(context_);
         invert_joystic_x->SetOptionName(localization->Get("INVERT_X_AXIS"));
         invert_joystic_x->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false));
         invert_joystic_x->SetTags({"invert_joystick_x"});
         invert_joystic_x->SetStyleAuto();
-        controllers_tab->AddChild(invert_joystic_x);
+        controllers_tab->AddItem(invert_joystic_x);
 
         invert_joystick_y = new UIBoolOption(context_);
         invert_joystick_y->SetOptionName(localization->Get("INVERT_Y_AXIS"));
         invert_joystick_y->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false));
         invert_joystick_y->SetTags({"invert_joystick_y"});
         invert_joystick_y->SetStyleAuto();
-        controllers_tab->AddChild(invert_joystick_y);
+        controllers_tab->AddItem(invert_joystick_y);
 
         joystick_sensitivity_x = new UISliderOption(context_);
         joystick_sensitivity_x->SetName("Mouse");
@@ -604,7 +599,7 @@ void SettingsWindow::CreateControllersTab()
         joystick_sensitivity_x->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 2.0f));
         joystick_sensitivity_x->SetStyleAuto();
         joystick_sensitivity_x->SetTags({"joystick_sensitivity_x"});
-        controllers_tab->AddChild(joystick_sensitivity_x);
+        controllers_tab->AddItem(joystick_sensitivity_x);
 
         joystick_sensitivity_y = new UISliderOption(context_);
         joystick_sensitivity_y->SetName("Mouse");
@@ -613,7 +608,7 @@ void SettingsWindow::CreateControllersTab()
         joystick_sensitivity_y->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 2.0f));
         joystick_sensitivity_y->SetStyleAuto();
         joystick_sensitivity_y->SetTags({"joystick_sensitivity_y"});
-        controllers_tab->AddChild(joystick_sensitivity_y);
+        controllers_tab->AddItem(joystick_sensitivity_y);
 
         deadzone_ = new UISliderOption(context_);
         deadzone_->SetName("Mouse");
@@ -622,7 +617,7 @@ void SettingsWindow::CreateControllersTab()
         deadzone_->SetValue(GetSubsystem<ConfigManager>()->GetFloat("joystick", "Deadzone", 0.5f));
         deadzone_->SetStyleAuto();
         deadzone_->SetTags({"deadzone"});
-        controllers_tab->AddChild(deadzone_);
+        controllers_tab->AddItem(deadzone_);
     }
 
     {
@@ -631,14 +626,14 @@ void SettingsWindow::CreateControllersTab()
         multiple_controllers_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "MultipleControllers", true));
         multiple_controllers_->SetTags({"multiple_controllers"});
         multiple_controllers_->SetStyleAuto();
-        controllers_tab->AddChild(multiple_controllers_);
+        controllers_tab->AddItem(multiple_controllers_);
 
         joystick_as_first_ = new UIBoolOption(context_);
         joystick_as_first_->SetOptionName(localization->Get("JOYSTICK_AS_FIRST_CONTROLLER"));
         joystick_as_first_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "JoystickAsFirstController", true));
         joystick_as_first_->SetTags({"joystick_as_first"});
         joystick_as_first_->SetStyleAuto();
-        controllers_tab->AddChild(joystick_as_first_);
+        controllers_tab->AddItem(joystick_as_first_);
     }
 }
 
@@ -646,7 +641,6 @@ void SettingsWindow::CreateControlsTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto controls_tab = tabs_->AddTab(localization->Get("CONTROLS"));
-    controls_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     auto controllerInput = GetSubsystem<ControllerInput>();
     auto names = controllerInput->GetControlNames();
@@ -672,7 +666,7 @@ void SettingsWindow::CreateControlsTab()
         control_mappings_[actionId]->SetText(controllerInput->GetActionKeyName(actionId));
         control_mappings_[actionId]->SetAlignment(HA_CENTER, VA_CENTER);
 
-        controls_tab->AddChild(control);
+        controls_tab->AddItem(control);
 
 
         // Detect button press events
@@ -732,7 +726,6 @@ void SettingsWindow::CreateGameTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto game_tab = tabs_->AddTab(localization->Get("GAME"));
-    game_tab->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
 
     // graphics tab
     language_selection_ = new UIMultiOption(context_);
@@ -747,7 +740,7 @@ void SettingsWindow::CreateGameTab()
     }
     language_selection_->SetStrings(languages);
     language_selection_->SetOptionIndex(localization->GetLanguageIndex());
-    game_tab->AddChild(language_selection_);
+    game_tab->AddItem(language_selection_);
 
     enable_mods_ = new UIBoolOption(context_);
     enable_mods_->SetName("Mods");
@@ -755,7 +748,7 @@ void SettingsWindow::CreateGameTab()
     enable_mods_->SetStyleAuto();
     enable_mods_->SetTags({ "mods" });
     enable_mods_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true));
-    game_tab->AddChild(enable_mods_);
+    game_tab->AddItem(enable_mods_);
 
     developer_console_ = new UIBoolOption(context_);
     developer_console_->SetName("DeveloperConsole");
@@ -763,7 +756,7 @@ void SettingsWindow::CreateGameTab()
     developer_console_->SetStyleAuto();
     developer_console_->SetTags({ "developer_console" });
     developer_console_->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("game", "DeveloperConsole", true));
-    game_tab->AddChild(developer_console_);
+    game_tab->AddItem(developer_console_);
 
     auto elm = new UIElement(context_);
     elm->SetMinSize(100, 32);
@@ -783,7 +776,7 @@ void SettingsWindow::CreateGameTab()
     clear_achievements_->SetStyleAuto();
     btn_text->SetStyleAuto();
     elm->SetStyleAuto();
-    game_tab->AddChild(elm);
+    game_tab->AddItem(elm);
 
     SubscribeToEvent(clear_achievements_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         GetSubsystem<Achievements>()->ClearAchievementsProgress();

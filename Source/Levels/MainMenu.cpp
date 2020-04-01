@@ -16,12 +16,10 @@
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
+#include "../Input/ControllerInput.h"
 
 using namespace Levels;
 
-const static int BUTTON_WIDTH = 250;
-const static int BUTTON_HEIGHT = 50;
-const static int BUTTON_SPACING = 10;
 const static int BUTTON_FONT_SIZE = 20;
 
     /// Construct.
@@ -105,9 +103,13 @@ void MainMenu::CreateUI()
     }
     auto* localization = GetSubsystem<Localization>();
 
-    int marginBottom = -4 * (BUTTON_HEIGHT + BUTTON_SPACING) - BUTTON_SPACING;
-    _newGameButton = CreateButton(localization->Get("NEW_GAME"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
-    _newGameButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    _buttonsContainer = GetSubsystem<UI>()->GetRoot()->CreateChild<UIElement>();
+    _buttonsContainer->SetFixedWidth(300);
+    _buttonsContainer->SetLayout(LM_VERTICAL, 10);
+    _buttonsContainer->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    _buttonsContainer->SetPosition(-10, -10);
+
+    _newGameButton = CreateButton(localization->Get("NEW_GAME"));
     SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
@@ -115,41 +117,35 @@ void MainMenu::CreateUI()
 
     });
 
-    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
-    _settingsButton = CreateButton(localization->Get("SETTINGS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
-    _settingsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    _settingsButton = CreateButton(localization->Get("SETTINGS"));
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
-    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
-    _achievementsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"));
     SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
 
-    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
-    _creditsButton = CreateButton(localization->Get("CREDITS"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
-    _creditsButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    _creditsButton = CreateButton(localization->Get("CREDITS"));
     SubscribeToEvent(_creditsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Credits";
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
-    marginBottom += BUTTON_HEIGHT + BUTTON_SPACING;
-    _exitButton = CreateButton(localization->Get("EXIT"), BUTTON_WIDTH, IntVector2(-BUTTON_SPACING, marginBottom));
-    _exitButton->SetAlignment(HA_RIGHT, VA_BOTTOM);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    _exitButton = CreateButton(localization->Get("EXIT"));
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     });
+#endif
 
     // Test Communication between the sample and android activity
     GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_INTERSTITIAL, 1);
@@ -163,16 +159,14 @@ void MainMenu::CreateUI()
     });
 }
 
-Button* MainMenu::CreateButton(const String& text, int width, IntVector2 position)
+Button* MainMenu::CreateButton(const String& text)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* button = GetSubsystem<UI>()->GetRoot()->CreateChild<Button>();
+    auto* button = _buttonsContainer->CreateChild<Button>();
     button->SetStyleAuto();
-    button->SetFixedWidth(width);
-    button->SetFixedHeight(BUTTON_HEIGHT);
-    button->SetPosition(position);
+    button->SetFixedHeight(50);
     button->SetFocusMode(FM_FOCUSABLE);
 
     auto* buttonText = button->CreateChild<Text>();
@@ -187,8 +181,10 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
     float timestep = eventData[P_TIMESTEP].GetFloat();
-    if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
-        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+    if (!GetSubsystem<ControllerInput>()->IsMappingInProgress()) {
+        if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
+            SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+        }
     }
 
     static float elapsedTime = 0.0f;

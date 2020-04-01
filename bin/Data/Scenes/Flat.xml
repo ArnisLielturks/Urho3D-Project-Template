@@ -33,7 +33,7 @@
         <attribute name="Variables" />
         <component type="StaticModel" id="3">
             <attribute name="Model" value="Model;Models/Plane.mdl" />
-            <attribute name="Material" value="Material;Materials/StoneTiled.xml" />
+            <attribute name="Material" value="Material;Materials/Ground.xml" />
         </component>
         <component type="RigidBody" id="23">
             <attribute name="Physics Position" value="0 0.0792121 0" />

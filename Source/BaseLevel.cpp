@@ -450,7 +450,7 @@ void BaseLevel::ApplyPostProcessEffects()
 
         effectRenderPath->SetEnabled("SSAO", GetSubsystem<ConfigManager>()->GetBool("postprocess", "SSAO", false));
 
-        effectRenderPath->SetEnabled("Toon", true);
+        effectRenderPath->SetEnabled("Toon", GetSubsystem<ConfigManager>()->GetBool("postprocess", "Toon", false));
         viewport->SetRenderPath(effectRenderPath);
     }
 }

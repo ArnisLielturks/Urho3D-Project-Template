@@ -229,4 +229,11 @@ private:
      * Currently active action for input mapping
      */
     int _activeAction;
+
+    /**
+     * Timer to detect how long ago the input mapping has been stopped by the KEY_ESCAPE press
+     * IsMappingInProgress() returns true in those cases for very small amount of time to avoid duplicate
+     * KEY_ESCAPE pressing handling
+     */
+    Timer _mappingTimer;
 };

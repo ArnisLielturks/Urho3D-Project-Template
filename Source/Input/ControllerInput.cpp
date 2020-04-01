@@ -197,6 +197,7 @@ void ControllerInput::StopInputMapping()
 
     SendEvent(MyEvents::E_STOP_INPUT_MAPPING, data);
 
+    _mappingTimer.Reset();
 }
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
@@ -373,7 +374,7 @@ void ControllerInput::SetMultipleControllerSupport(bool enabled)
 
 bool ControllerInput::IsMappingInProgress()
 {
-    return _activeAction >= 0;
+    return _activeAction >= 0 || _mappingTimer.GetMSec(false) < 20;
 }
 
 void ControllerInput::SetJoystickAsFirstController(bool enabled)

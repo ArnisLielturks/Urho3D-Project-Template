@@ -2,6 +2,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Texture2D.h>
 #include <Urho3D/Graphics/Graphics.h>
+#include <Urho3D/Graphics/GraphicsEvents.h>
 #include <Urho3D/Scene/ObjectAnimation.h>
 #include <Urho3D/Scene/ValueAnimation.h>
 #include <Urho3D/Core/CoreEvents.h>
@@ -178,5 +179,12 @@ void Loading::CreateProgressBar()
         animation->AddAttributeAnimation("Color", colorAnimation);
 
         _loadingBar->SetObjectAnimation(animation);
+
+        // Reposition loading bar when screen is resized (mostly for web platform)
+        SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
+            auto *graphics = GetSubsystem<Graphics>();
+            auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
+            _loadingBar->SetPosition(10, height - 30);
+        });
     }
 }

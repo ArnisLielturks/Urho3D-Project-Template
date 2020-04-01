@@ -6,6 +6,7 @@
 #include <Urho3D/UI/BorderImage.h>
 #include <Urho3D/UI/Button.h>
 #include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/ListView.h>
 #include <Urho3D/UI/Slider.h>
 #include <Urho3D/Core/Object.h>
 
@@ -144,7 +145,7 @@ namespace Urho3D {
 
         unsigned GetTabCount() const { return tabs_.Size(); }
 
-        UIElement* AddTab(const String& name);
+        ListView* AddTab(const String& name);
         void RemoveTab(const String& name);
         void RemoveTab(int index);
         void RemoveAllTabs();
@@ -158,7 +159,7 @@ namespace Urho3D {
             String name;
             SharedPtr<Button> button;
             SharedPtr<Text> text;
-            SharedPtr<UIElement> page;
+            SharedPtr<ListView> page;
         };
         Vector<Tab> tabs_;
 

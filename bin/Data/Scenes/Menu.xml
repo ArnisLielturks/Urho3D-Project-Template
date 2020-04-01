@@ -31,7 +31,7 @@
         <attribute name="Variables" />
         <component type="StaticModel" id="16777228">
             <attribute name="Model" value="Model;Models/Plane.mdl" />
-            <attribute name="Material" value="Material;Materials/StoneTiled.xml" />
+            <attribute name="Material" value="Material;Materials/Ground.xml" />
         </component>
         <component type="CollisionShape" id="16777285">
             <attribute name="Shape Type" value="TriangleMesh" />

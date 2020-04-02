@@ -27,7 +27,7 @@ jobs:
         id: cache
         with:
           path: ${{github.workspace}}/Urho3D-web
-          key: Urho3D-${{runner.os}}-web
+          key: Urho3D-${{runner.os}}-Web
       - name: Build
         run: ./BuildConfig/web/script.sh
       - name: Build archive

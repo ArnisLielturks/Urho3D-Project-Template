@@ -36,6 +36,3 @@ cd Urho3D-web
 ./script/dockerized.sh web
 
 cd ..
-
-# append our JS fix at the end of generated emscript JS file
-cat BuildConfig/web/input_fix.js >> Urho3D-web/build/web/bin/ProjectTemplate.js

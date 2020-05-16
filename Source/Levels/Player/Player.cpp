@@ -15,12 +15,13 @@
 #include "../../MyEvents.h"
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
+#include "../../BehaviourTree/BehaviourTree.h"
 
 static bool SHOW_LABELS = true;
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
 
-Player::Player(Context* context) :
+Player::Player(Context* context):
     Object(context)
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
@@ -76,12 +77,31 @@ Player::Player(Context* context) :
     });
 }
 
+Player::~Player()
+{
+    UpdatePlayerList(true);
+}
+
 void Player::RegisterObject(Context* context)
 {
     context->RegisterFactory<Player>();
 }
 
-void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrain)
+void Player::UpdatePlayerList(bool remove)
+{
+    VariantMap players = GetGlobalVar("Players").GetVariantMap();
+    if (remove) {
+        players.Erase(String(_controllerId));
+    } else {
+        VariantMap data;
+        data["Name"] = "Player " + String(_controllerId);
+        data["Score"] = 0;
+        players[String(_controllerId)] = data;
+    }
+    SetGlobalVar("Players", players);
+}
+
+void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 {
     SetControllerId(controllerId);
 
@@ -90,6 +110,7 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrai
     // Create the scene node & visual representation. This will be a replicated object
     _node = scene->CreateChild("Player");
     _node->SetVar("Player", _controllerId);
+
     _node->SetPosition(Vector3(0, 2, 0));
     _node->SetScale(0.5f);
 
@@ -111,21 +132,15 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrai
     auto* shape = _node->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
 
-    // Create a random colored point light at the ball so that can see better where is going
-    auto* light = _node->CreateComponent<Light>();
-    light->SetRange(20.0f);
-    light->SetColor(Color(0.5f + Random(0.5f), 0.5f + Random(0.5f), 0.5f + Random(0.5f)));
-    light->SetCastShadows(false);
-
     _label = scene->CreateChild("Label");
 
     auto text3D = _label->CreateComponent<Text3D>();
-    text3D->SetText("Player " + String(_controllerId + 1));
     text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
     text3D->SetColor(Color::GRAY);
     text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
     text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
     text3D->SetViewMask(~(1 << _controllerId));
+    SetLabel();
 
     if (!SHOW_LABELS) {
         _label->SetEnabled(false);
@@ -136,6 +151,8 @@ void Player::CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrai
     _terrain = terrain;
 
     ResetPosition();
+
+    UpdatePlayerList();
 }
 
 void Player::ResetPosition()
@@ -164,20 +181,63 @@ Node* Player::GetNode()
     return _node.Get();
 }
 
+void Player::SetLabel()
+{
+    if (_isControlled) {
+        _label->GetComponent<Text3D>()->SetText("Player " + String(_controllerId + 1));
+    } else {
+        _label->GetComponent<Text3D>()->SetText("Bot " + String(_controllerId));
+    }
+}
+
+void Player::SetControllable(bool value)
+{
+    _isControlled = value;
+    if (_isControlled) {
+        if (GetNode()->HasComponent<BehaviourTree>()) {
+            GetNode()->RemoveComponent<BehaviourTree>();
+        }
+    } else {
+        if (!GetNode()->HasComponent<BehaviourTree>()) {
+            GetNode()->CreateComponent<BehaviourTree>();
+            GetNode()->GetComponent<BehaviourTree>()->Init("Config/Behaviour.json");
+        }
+    }
+    SetLabel();
+}
+
 void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 {
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
+    if (_serverConnection) {
+        _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+        return;
+    }
 
     if (_node->GetPosition().y_ < -30) {
         ResetPosition();
-        VariantMap& data = GetEventDataMap();
-        data["Player"]   = _controllerId;
-        SendEvent("FallOffTheMap", data);
+
+        if (_isControlled) {
+            VariantMap &data = GetEventDataMap();
+            data["Player"] = _controllerId;
+            SendEvent("FallOffTheMap", data);
+        }
     }
 
+    Controls controls;
     float movementSpeed = MOVE_TORQUE;
-    Controls controls = GetSubsystem<ControllerInput>()->GetControls(_controllerId);
+
+    if (_isControlled) {
+        if (_connection) {
+            controls = _connection->GetControls();
+        } else {
+            controls = GetSubsystem<ControllerInput>()->GetControls(_controllerId);
+        }
+    } else {
+        controls = GetNode()->GetComponent<BehaviourTree>()->GetControls();
+    }
+
     if (controls.IsDown(CTRL_SPRINT)) {
         movementSpeed *= 2;
     }
@@ -230,4 +290,14 @@ void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
                 _onGround = true;
         }
     }
+}
+
+void Player::SetClientConnection(Connection* connection)
+{
+    _connection = connection;
+}
+
+void Player::SetServerConnection(Connection *connection)
+{
+    _serverConnection = connection;
 }

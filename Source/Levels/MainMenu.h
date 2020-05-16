@@ -39,6 +39,7 @@ namespace Levels {
         SharedPtr<Button> _exitButton;
         SharedPtr<Node> _cameraRotateNode;
         SharedPtr<UIElement> _buttonsContainer;
+        List<SharedPtr<Button>> _dynamicButtons;
 
         Button* CreateButton(const String& text);
     };

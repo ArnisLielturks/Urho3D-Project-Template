@@ -97,7 +97,12 @@ void Level::Init()
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
         _players[(*it)] = new Player(context_);
         _players[(*it)]->CreateNode(_scene, (*it), _terrain);
+        _players[(*it)]->SetControllable(true);
     }
+
+    _players[100] = new Player(context_);
+    _players[100]->CreateNode(_scene, 100, _terrain);
+    _players[100]->SetControllable(false);
 }
 
 void Level::StartAudio()
@@ -185,6 +190,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     if (!_players.Contains(controllerIndex)) {
         _players[controllerIndex] = new Player(context_);
         _players[controllerIndex]->CreateNode(_scene, controllerIndex, _terrain);
+        _players[controllerIndex]->SetControllable(true);
     }
 }
 

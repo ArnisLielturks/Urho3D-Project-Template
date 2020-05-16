@@ -114,8 +114,21 @@ void MainMenu::CreateUI()
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
-
     });
+
+    // Load dynamic buttons
+    VariantMap buttons = GetGlobalVar("MenuButtons").GetVariantMap();
+    for (auto it = buttons.Begin(); it != buttons.End(); ++it) {
+        VariantMap item = (*it).second_.GetVariantMap();
+        SharedPtr<Button> button(CreateButton(item["Name"].GetString()));
+        button->SetVar("EventToCall", item["Event"].GetString());
+        _dynamicButtons.Push(button);
+        SubscribeToEvent(_dynamicButtons.Back(), E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+            using namespace Released;
+            Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
+            SendEvent(button->GetVar("EventToCall").GetString());
+        });
+    }
 
     _settingsButton = CreateButton(localization->Get("SETTINGS"));
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {

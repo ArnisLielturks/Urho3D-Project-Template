@@ -23,7 +23,7 @@ void Start()
     SetGlobalVar("MyTestVariable", 123.21);
 
     VariantMap loadConfigData;
-    loadConfigData["Filepath"] = "Data/Mods/Helpers/Config.json";
+    loadConfigData["Filepath"] = "Mods/Helpers/Config.json";
     loadConfigData["Prefix"] = "Debugger_";
     // Load custom config file
     SendEvent("LoadConfig", loadConfigData);

@@ -352,8 +352,6 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         return;
     }
 
-    SetGlobalVar("Players", playerIndexes.Size());
-
     for (unsigned int i = 0; i < playerIndexes.Size(); i++) {
         CreateSingleCamera(i, playerIndexes.Size(), playerIndexes.At(i));
     }
@@ -413,9 +411,13 @@ void BaseLevel::ApplyPostProcessEffects()
         if (!effectRenderPath->IsAdded("FXAA3")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/FXAA3.xml"));
         }
+
+#if !defined(__EMSCRIPTEN__)
         if (!effectRenderPath->IsAdded("GammaCorrection")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/GammaCorrection.xml"));
         }
+#endif
+
         if (!effectRenderPath->IsAdded("ColorCorrection")) {
             effectRenderPath->Append(cache->GetResource<XMLFile>("PostProcess/ColorCorrection.xml"));
         }
@@ -440,8 +442,12 @@ void BaseLevel::ApplyPostProcessEffects()
         effectRenderPath->SetEnabled("BloomHDR", GetSubsystem<ConfigManager>()->GetBool("postprocess", "BloomHDR", false));
         effectRenderPath->SetEnabled("FXAA2", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA2", false));
         effectRenderPath->SetEnabled("FXAA3", GetSubsystem<ConfigManager>()->GetBool("postprocess", "FXAA3", false));
+
+#if !defined(__EMSCRIPTEN__)
         effectRenderPath->SetEnabled("GammaCorrection",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "GammaCorrection", true));
+#endif
+
         effectRenderPath->SetEnabled("ColorCorrection",
                                      GetSubsystem<ConfigManager>()->GetBool("postprocess", "ColorCorrection", false));
         float gamma = Clamp(GAMMA_MAX_VALUE - GetSubsystem<ConfigManager>()->GetFloat("postprocess", "Gamma", 1.0f), 0.05f,

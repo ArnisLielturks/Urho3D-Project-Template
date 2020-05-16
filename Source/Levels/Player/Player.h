@@ -5,6 +5,7 @@
 #include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Input/Controls.h>
 #include <Urho3D/Graphics/Terrain.h>
+#include <Urho3D/Network/Connection.h>
 
 using namespace Urho3D;
 
@@ -14,13 +15,14 @@ class Player : public Object
 
 public:
     explicit Player(Context* context);
+    ~Player();
 
     static void RegisterObject(Context* context);
 
     /**
      * Create player controlled node
      */
-    void CreateNode(Scene* scene, unsigned int controllerId, Terrain* terrain);
+    void CreateNode(Scene* scene, int controllerId, Terrain* terrain);
 
     /**
      * Set controller ID to know which controller is controlling this player
@@ -31,10 +33,21 @@ public:
      * Get created player node
      */
     Node* GetNode();
+
+    /**
+     * Set if this instance can be controleld with the user input
+     */
+    void SetControllable(bool value);
+
+    void SetClientConnection(Connection* connection);
+    void SetServerConnection(Connection* connection);
+
 private:
 
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
+
+    void UpdatePlayerList(bool remove = false);
 
     /**
      * Detect when player is on the ground or not
@@ -45,11 +58,13 @@ private:
     SharedPtr<Node> _node;
 
     void ResetPosition();
+
+    void SetLabel();
     
     /**
      * Controller ID
      */
-    unsigned int _controllerId;
+    int _controllerId;
 
     /**
      * 3D Text player label node
@@ -67,4 +82,9 @@ private:
     bool _onGround;
 
     Terrain* _terrain;
+
+    Connection* _connection{nullptr};
+    Connection* _serverConnection{nullptr};
+
+    bool _isControlled{false};
 };

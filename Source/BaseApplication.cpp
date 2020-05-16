@@ -9,6 +9,7 @@
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/PackageFile.h>
+
 //#include <Urho3D/UI/Cursor.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
@@ -20,6 +21,7 @@
 #include "Global.h"
 #include "Generator/Generator.h"
 #include "AndroidEvents/ServiceCmd.h"
+#include "BehaviourTree/BehaviourTree.h"
 
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
@@ -62,6 +64,8 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<ConsoleHandler>();
     context_->RegisterFactory<SceneManager>();
     context_->RegisterFactory<Generator>();
+
+    BehaviourTree::RegisterFactory(context_);
 
 #ifdef __ANDROID__
     _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";

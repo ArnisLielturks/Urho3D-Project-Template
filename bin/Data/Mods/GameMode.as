@@ -129,12 +129,21 @@ void UpdatePlayerScore(int playerId, int points)
     if (playerId < 0) {
         return;
     }
-    String playerScoreId = "Player" + String(playerId) + "Score";
-    int newScore = GetGlobalVar(playerScoreId).GetInt() + points;
-    if (newScore < 0) {
-        newScore = 0;
+    VariantMap players = GetGlobalVar("Players").GetVariantMap();
+    VariantMap playerData = players[String(playerId)].GetVariantMap();
+    int score = playerData["Score"].GetInt() + points;
+    if (score < 0) {
+        score = 0;
     }
-    SetGlobalVar(playerScoreId, newScore);
+    playerData["Score"] = score;
+    players[playerId] = playerData;
+    SetGlobalVar("Players", players);
+    // String playerScoreId = "Player" + String(playerId) + "Score";
+    // int newScore = GetGlobalVar(playerScoreId).GetInt() + points;
+    // if (newScore < 0) {
+    //     newScore = 0;
+    // }
+    // SetGlobalVar(playerScoreId, newScore);
     SendEvent("PlayerScoresUpdated");
 
     VariantMap data;

@@ -1,0 +1,10 @@
+{
+  "type": "Selector",
+  "name": "rootNode",
+  "services": [
+  ],
+  "childNodes": [
+  ],
+  "decorators": [
+  ]
+}

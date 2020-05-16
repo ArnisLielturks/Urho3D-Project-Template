@@ -77,7 +77,9 @@ void ScoreboardWindow::CreatePlayerScores()
         score->SetTextEffect(TextEffect::TE_SHADOW);
     }
 
-    for (unsigned int i = 0; i < GetGlobalVar("Players").GetInt(); i++) {
+    VariantMap players = GetGlobalVar("Players").GetVariantMap();
+    for (auto it = players.Begin(); it != players.End(); ++it) {
+        VariantMap playerData = (*it).second_.GetVariantMap();
         auto container = _baseWindow->CreateChild<UIElement>();
         container->SetAlignment(HA_LEFT, VA_TOP);
         container->SetLayout(LM_HORIZONTAL, 20);
@@ -88,7 +90,7 @@ void ScoreboardWindow::CreatePlayerScores()
         // Create log element to view latest logs from the system
         auto name = container->CreateChild<Text>();
         name->SetFont(font, 14);
-        name->SetText("Player" + String(i));
+        name->SetText(playerData["Name"].GetString());
         name->SetFixedWidth(200);
         name->SetColor(Color::GREEN);
         name->SetTextEffect(TextEffect::TE_SHADOW);
@@ -96,7 +98,7 @@ void ScoreboardWindow::CreatePlayerScores()
         // Create log element to view latest logs from the system
         auto score = container->CreateChild<Text>();
         score->SetFont(font, 14);
-        score->SetText(String(GetGlobalVar("Player" + String(i) + "Score").GetInt()));
+        score->SetText(String(playerData["Score"].GetInt()));
         score->SetFixedWidth(100);
         score->SetColor(Color::GREEN);
         score->SetTextEffect(TextEffect::TE_SHADOW);

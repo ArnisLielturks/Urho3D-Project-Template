@@ -24,6 +24,8 @@ public:
      */
     void CreateNode(Scene* scene, int controllerId, Terrain* terrain);
 
+    void FindNode(Scene* scene, int id);
+
     /**
      * Set controller ID to know which controller is controlling this player
      */

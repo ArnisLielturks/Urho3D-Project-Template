@@ -9,9 +9,12 @@
 #include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/Physics/RigidBody.h>
 #include <Urho3D/Resource/Image.h>
-#include "../Generator/Generator.h"
+#include <Urho3D/Network/NetworkEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Network/Network.h>
+
+#include "../Generator/Generator.h"
 #include "Level.h"
 #include "../MyEvents.h"
 #include "../Global.h"
@@ -96,13 +99,23 @@ void Level::Init()
 
     for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
         _players[(*it)] = new Player(context_);
-        _players[(*it)]->CreateNode(_scene, (*it), _terrain);
+        if (_data.Contains("ClientId")) {
+            // We are the client, we have to lookup the node on the received scene
+            _players[(*it)]->FindNode(_scene, _data["ClientId"].GetInt());
+        } else {
+            _players[(*it)]->CreateNode(_scene, (*it), _terrain);
+        }
         _players[(*it)]->SetControllable(true);
+        if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
+            _players[(*it)]->SetServerConnection(GetSubsystem<Network>()->GetServerConnection());
+        }
     }
 
-    _players[100] = new Player(context_);
-    _players[100]->CreateNode(_scene, 100, _terrain);
-    _players[100]->SetControllable(false);
+    if (!_data.Contains("ConnectServer")) {
+        _players[100] = new Player(context_);
+        _players[100]->CreateNode(_scene, 100, _terrain);
+        _players[100]->SetControllable(false);
+    }
 }
 
 void Level::StartAudio()
@@ -123,7 +136,7 @@ void Level::StopAllAudio()
 void Level::CreateScene()
 {
     if (!_scene->HasComponent<PhysicsWorld>()) {
-        _scene->CreateComponent<PhysicsWorld>(LOCAL);
+        _scene->CreateComponent<PhysicsWorld>(REPLICATED);
     }
 }
 
@@ -151,6 +164,11 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
     SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Level, HandlePostRenderUpdate));
+
+    SubscribeToEvent(E_CLIENTCONNECTED, URHO3D_HANDLER(Level, HandleClientConnected));
+    SubscribeToEvent(E_CLIENTDISCONNECTED, URHO3D_HANDLER(Level, HandleClientDisconnected));
+    SubscribeToEvent(E_SERVERCONNECTED, URHO3D_HANDLER(Level, HandleServerConnected));
+    SubscribeToEvent(E_SERVERDISCONNECTED, URHO3D_HANDLER(Level, HandleServerDisconnected));
 
     SubscribeToEvent(MyEvents::E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
     SubscribeToEvent(MyEvents::E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
@@ -315,4 +333,44 @@ void Level::HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventDa
     auto* controllerInput = GetSubsystem<ControllerInput>();
     Vector<int> controlIndexes = controllerInput->GetControlIndexes();
     InitViewports(controlIndexes);
+}
+
+void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
+{
+    using namespace ClientConnected;
+
+    // When a client connects, assign to scene to begin scene replication
+    auto* newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    newConnection->SetScene(_scene);
+    URHO3D_LOGINFO("Client connected");
+    _remotePlayers[newConnection] = new Player(context_);
+    _remotePlayers[newConnection]->CreateNode(_scene, 0, _terrain);
+    _remotePlayers[newConnection]->SetControllable(true);
+    _remotePlayers[newConnection]->SetClientConnection(newConnection);
+
+    using namespace MyEvents::RemoteClientId;
+    VariantMap data;
+    data[P_ID] = _remotePlayers[newConnection]->GetNode()->GetID();
+    URHO3D_LOGINFOF("Sending out remote client id %d", _remotePlayers[newConnection]->GetNode()->GetID());
+    newConnection->SendRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID, true, data);
+}
+
+void Level::HandleClientDisconnected(StringHash eventType, VariantMap& eventData)
+{
+    URHO3D_LOGINFO("Client disconnected");
+    using namespace ClientDisconnected;
+
+    // When a client connects, assign to scene to begin scene replication
+    auto* connection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
+    _remotePlayers.Erase(connection);
+}
+
+void Level::HandleServerConnected(StringHash eventType, VariantMap& eventData)
+{
+
+}
+
+void Level::HandleServerDisconnected(StringHash eventType, VariantMap& eventData)
+{
+
 }

@@ -3,6 +3,7 @@
 #include <Urho3D/Scene/SplinePath.h>
 #include <Urho3D/Graphics/Terrain.h>
 #include <Urho3D/Graphics/Zone.h>
+#include <Urho3D/Network/Connection.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 
@@ -43,11 +44,17 @@ namespace Levels {
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
 
+        void HandleClientConnected(StringHash eventType, VariantMap& eventData);
+        void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
+        void HandleServerConnected(StringHash eventType, VariantMap& eventData);
+        void HandleServerDisconnected(StringHash eventType, VariantMap& eventData);
+
         bool _showScoreboard;
 
         bool _drawDebug;
 
         HashMap<int, SharedPtr<Player>> _players;
+        HashMap<Connection*, SharedPtr<Player>> _remotePlayers;
 
         SharedPtr<Terrain> _terrain;
     };

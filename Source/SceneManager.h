@@ -34,7 +34,7 @@ public:
     /**
      * Currently active scene
      */
-    Scene* GetActiveScene() { return _activeScene; }
+    SharedPtr<Scene>& GetActiveScene() { return _activeScene; }
 
     /**
      * Scene loading progress

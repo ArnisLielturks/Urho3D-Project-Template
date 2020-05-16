@@ -7,6 +7,10 @@
 #include <Urho3D/Scene/ValueAnimation.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Input/Input.h>
+#include <Urho3D/Network/Network.h>
+#include <Urho3D/Network/NetworkEvents.h>
+#include <Urho3D/Resource/Localization.h>
+#include <Urho3D/IO/Log.h>
 #include "Loading.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
@@ -15,7 +19,8 @@
 
 using namespace Levels;
 
-    /// Construct.
+const int SERVER_PORT = 4545;
+
 Loading::Loading(Context* context) :
     BaseLevel(context)
 {
@@ -38,6 +43,54 @@ void Loading::Init()
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
+
+    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID);
+    if (_data.Contains("StartServer") && _data["StartServer"].GetBool()) {
+        SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
+                  MyEvents::RegisterLoadingStep::P_NAME, "Starting server",
+                  MyEvents::RegisterLoadingStep::P_EVENT, "StartServer");
+        SubscribeToEvent("StartServer", [&](StringHash eventType, VariantMap &eventData) {
+            SendEvent(MyEvents::E_ACK_LOADING_STEP,
+                      MyEvents::RegisterLoadingStep::P_EVENT, "StartServer");
+            GetSubsystem<Network>()->StartServer(SERVER_PORT);
+
+            SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
+                      MyEvents::RegisterLoadingStep::P_EVENT, "StartServer");
+        });
+    }
+
+    if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
+        // Register our loading step
+        SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
+                  MyEvents::RegisterLoadingStep::P_NAME, "Connecting to server",
+                  MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
+        SubscribeToEvent("ConnectServer", [&](StringHash eventType, VariantMap &eventData) {
+            SendEvent(MyEvents::E_ACK_LOADING_STEP,
+                      MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
+            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+        });
+        SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace MyEvents::RemoteClientId;
+            _data["ClientId"] = eventData[P_ID];
+            URHO3D_LOGINFOF("ClientID %d", eventData["ID"].GetInt());
+            SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
+                      MyEvents::LoadingStepFinished::P_EVENT, "ConnectServer");
+        });
+        SubscribeToEvent(E_SERVERCONNECTED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace MyEvents::LoadingStepProgress;
+            SendEvent(MyEvents::E_LOADING_STEP_PROGRESS,
+                      MyEvents::LoadingStepProgress::P_EVENT, "ConnectServer",
+                MyEvents::LoadingStepProgress::P_PROGRESS, 0.5f);
+        });
+        SubscribeToEvent(E_CONNECTFAILED, [&](StringHash eventType, VariantMap &eventData) {
+            using namespace MyEvents::LoadingStepCriticalFail;
+            auto localization = GetSubsystem<Localization>();
+            VariantMap& data = GetEventDataMap();
+            data[P_DESCRIPTION] = localization->Get("CANNOT_CONNECT_TO_SERVER");
+            SendEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, data);
+        });
+    }
 
     if (_data.Contains("Map")) {
         GetSubsystem<SceneManager>()->LoadScene(_data["Map"].GetString());

@@ -40,6 +40,7 @@ void NewGameSettingsWindow::Create()
     _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
     _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
     _baseWindow->BringToFront();
+    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1000);
 
     // Create Window 'titlebar' container
     UIElement* titleBar =_baseWindow->CreateChild<UIElement>();
@@ -78,6 +79,9 @@ void NewGameSettingsWindow::Create()
 
     CreateLevelSelection();
 
+    _startServer = CreateCheckbox("Start server");
+    _connectServer = CreateCheckbox("Connect to server");
+
     titleBar->SetFixedSize(_levelSelection->GetWidth(), 24);
 }
 
@@ -85,6 +89,17 @@ void NewGameSettingsWindow::SubscribeToEvents()
 {
 }
 
+CheckBox* NewGameSettingsWindow::CreateCheckbox(const String& label)
+{
+    UIElement* options = _baseWindow->CreateChild<UIElement>();
+    options->SetLayout(LayoutMode::LM_HORIZONTAL, MARGIN);
+    Text* labelElement = options->CreateChild<Text>();
+    labelElement->SetStyleAuto();
+    labelElement->SetText(label);
+    CheckBox* checkBox = options->CreateChild<CheckBox>();
+    checkBox->SetStyleAuto();
+    return checkBox;
+}
 
 Button* NewGameSettingsWindow::CreateButton(UIElement *parent, const String& text, int width, IntVector2 position)
 {
@@ -138,6 +153,8 @@ void NewGameSettingsWindow::CreateLevelSelection()
             data["Name"] = "Loading";
             data["Map"] = button->GetVar("Map");
             data["Commands"] = button->GetVar("Commands");
+            data["StartServer"] = _startServer->IsChecked();
+            data["ConnectServer"] = _connectServer->IsChecked() ? "127.0.0.1" : String::EMPTY;
             SendEvent(MyEvents::E_SET_LEVEL, data);
         });
 

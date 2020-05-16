@@ -155,6 +155,11 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     UpdatePlayerList();
 }
 
+void Player::FindNode(Scene* scene, int id)
+{
+    _node = scene->GetNode(id);
+}
+
 void Player::ResetPosition()
 {
     Vector3 position = GetNode()->GetWorldPosition();
@@ -183,6 +188,9 @@ Node* Player::GetNode()
 
 void Player::SetLabel()
 {
+    if (!_label) {
+        return;
+    }
     if (_isControlled) {
         _label->GetComponent<Text3D>()->SetText("Player " + String(_controllerId + 1));
     } else {
@@ -265,7 +273,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 
 void Player::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
-    _label->SetPosition(_node->GetPosition() + Vector3::UP * 0.2);
+    if (_label) {
+        _label->SetPosition(_node->GetPosition() + Vector3::UP * 0.2);
+    }
 }
 
 void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)

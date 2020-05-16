@@ -25,6 +25,14 @@ SceneManager::SceneManager(Context* context) :
         targetProgress(0)
 {
     SubscribeToEvent(MyEvents::E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
+    SubscribeToEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, [&](StringHash eventType, VariantMap &eventData) {
+        UnsubscribeFromEvent(E_UPDATE);
+        using namespace MyEvents::LoadingStepCriticalFail;
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "MainMenu";
+        data["Message"] = eventData[P_DESCRIPTION];
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
 }
 
 SceneManager::~SceneManager()
@@ -120,8 +128,11 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             }
             if (!(*it).second_.ackSent) {
 
+                if (_loadingStatus != (*it).second_.name) {
+                    _loadingStatus = (*it).second_.name;
+                    return;
+                }
                 // Send out event to start this loading step
-                _loadingStatus = (*it).second_.name;
                 SendEvent((*it).second_.event);
 
                 // We register that start event was sent out, loading step must send back ACK message

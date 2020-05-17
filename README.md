@@ -41,3 +41,4 @@ If everything worked, build/bin directory should contain `ProjectTemplate` execu
 
 # How to extend the functionality?
 Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
+

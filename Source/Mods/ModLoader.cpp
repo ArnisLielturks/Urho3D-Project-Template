@@ -72,7 +72,9 @@ void ModLoader::LoadASMods()
     URHO3D_LOGINFO("Total AS mods found: " + String(result.Size()));
 
     auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
-    GetSubsystem<DebugHud>()->SetAppStats("Package files", packageFiles.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Package files", packageFiles.Size());
+    }
     for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
         auto files = (*it)->GetEntryNames();
         for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
@@ -98,7 +100,9 @@ void ModLoader::LoadASMods()
         }
     }
 
-    GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", _asMods.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", _asMods.Size());
+    }
     #endif
 }
 
@@ -134,7 +138,9 @@ void ModLoader::LoadLuaMods()
         }
     }
 
-    GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
+    }
     #endif
 }
 

@@ -9,6 +9,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/IO/FileSystem.h>
+
 #include "Achievements.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../MyEvents.h"
@@ -206,7 +207,9 @@ void Achievements::LoadAchievementList()
             }
         }
 
-        GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
+        if (GetSubsystem<DebugHud>()) {
+            GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
+        }
     }
     else {
         URHO3D_LOGERROR("Data/Config/Achievements.json must be an array");
@@ -363,7 +366,9 @@ void Achievements::AddAchievement(String message,
 
     SubscribeToEvent(eventName, URHO3D_HANDLER(Achievements, HandleRegisteredEvent));
 
-    GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Total achievements loaded", CountAchievements());
+    }
 }
 
 void Achievements::HandleAddAchievement(StringHash eventType, VariantMap& eventData)

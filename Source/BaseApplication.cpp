@@ -184,11 +184,12 @@ void BaseApplication::Start()
 //    if (GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false)) {
 //        ui->SetScale(ui->GetScale() * 2.0);
 //    }
-    GetSubsystem<ConsoleHandler>()->Create();
-
-    DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
-    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-    debugHud->SetDefaultStyle(xmlFile);
+    if (!GetSubsystem<Engine>()->IsHeadless()) {
+        GetSubsystem<ConsoleHandler>()->Create();
+        DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();
+        XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
+        debugHud->SetDefaultStyle(xmlFile);
+    }
 
     cache->SetAutoReloadResources(true);
     ui->GetRoot()->SetDefaultStyle(cache->GetResource<XMLFile>("UI/DefaultStyle.xml"));
@@ -225,7 +226,13 @@ void BaseApplication::Start()
 
     // Initialize the first level from the config file
     VariantMap& eventData = GetEventDataMap();
-    eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
+    if (GetSubsystem<ConfigManager>()->GetBool("dedicated_server", "enabled", false)) {
+        eventData["Name"] = "Loading";
+        eventData["StartServer"] = true;
+        eventData["Map"] = GetSubsystem<ConfigManager>()->GetString("dedicated_server", "map", "Scenes/Flat.xml");
+    } else {
+        eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
+    }
     SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
     LoadTranslationFiles();
@@ -293,7 +300,9 @@ void BaseApplication::RegisterConsoleCommands()
 
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
-        GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
+        if (GetSubsystem<DebugHud>()) {
+            GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
+        }
     });
 
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "mouse_visible", MyEvents::ConsoleCommandAdd::P_EVENT, "#mouse_visible", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle mouse visible");
@@ -348,6 +357,9 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_FULL_SCREEN, windowMode == 2);
     SetEngineParameter(EP_BORDERLESS, windowMode == 1);
 
+    // Dedicated server - headless mode
+    SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("dedicated_server", "enabled", false));
+
     SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("video", "Width", 1280));
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 720));
     SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("video", "VSync", true));
@@ -389,16 +401,23 @@ void BaseApplication::LoadINIConfig(String filename)
 void BaseApplication::ApplyGraphicsSettings()
 {
     auto* renderer = GetSubsystem<Renderer>();
-
-    renderer->SetTextureQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "TextureQuality", MaterialQuality::QUALITY_HIGH));
-    renderer->SetMaterialQuality((Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "MaterialQuality", MaterialQuality::QUALITY_MAX));
-    renderer->SetDrawShadows(GetSubsystem<ConfigManager>()->GetBool("graphics", "DrawShadows", true));
-    renderer->SetShadowMapSize(GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowMapSize", 512));
-    renderer->SetShadowQuality((ShadowQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowQuality", ShadowQuality::SHADOWQUALITY_PCF_16BIT));
-    renderer->SetMaxOccluderTriangles(GetSubsystem<ConfigManager>()->GetInt("graphics", "MaxOccluderTriangles", 5000));
-    renderer->SetDynamicInstancing(GetSubsystem<ConfigManager>()->GetBool("graphics", "DynamicInstancing", true));
-    renderer->SetSpecularLighting(GetSubsystem<ConfigManager>()->GetBool("graphics", "SpecularLighting", true));
-    renderer->SetHDRRendering(GetSubsystem<ConfigManager>()->GetBool("graphics", "HDRRendering", false));
+    if (renderer) {
+        renderer->SetTextureQuality(
+                (Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "TextureQuality",
+                                                                                MaterialQuality::QUALITY_HIGH));
+        renderer->SetMaterialQuality(
+                (Urho3D::MaterialQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "MaterialQuality",
+                                                                                MaterialQuality::QUALITY_MAX));
+        renderer->SetDrawShadows(GetSubsystem<ConfigManager>()->GetBool("graphics", "DrawShadows", true));
+        renderer->SetShadowMapSize(GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowMapSize", 512));
+        renderer->SetShadowQuality((ShadowQuality) GetSubsystem<ConfigManager>()->GetInt("graphics", "ShadowQuality",
+                                                                                         ShadowQuality::SHADOWQUALITY_PCF_16BIT));
+        renderer->SetMaxOccluderTriangles(
+                GetSubsystem<ConfigManager>()->GetInt("graphics", "MaxOccluderTriangles", 5000));
+        renderer->SetDynamicInstancing(GetSubsystem<ConfigManager>()->GetBool("graphics", "DynamicInstancing", true));
+        renderer->SetSpecularLighting(GetSubsystem<ConfigManager>()->GetBool("graphics", "SpecularLighting", true));
+        renderer->SetHDRRendering(GetSubsystem<ConfigManager>()->GetBool("graphics", "HDRRendering", false));
+    }
 }
 
 void BaseApplication::SetEngineParameter(String parameter, Variant value)

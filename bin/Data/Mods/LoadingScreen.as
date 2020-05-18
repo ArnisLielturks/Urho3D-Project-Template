@@ -41,6 +41,9 @@ void CreateSprite(String image, float velocity, Vector2 position)
 }
 void CreateUI()
 {
+    if (graphics is null) {
+        return;
+    }
     // Get rendering window size as floats
     float width = graphics.width / ui.scale;
     float height = graphics.height / ui.scale;

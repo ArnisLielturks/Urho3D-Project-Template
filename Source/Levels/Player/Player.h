@@ -31,6 +31,10 @@ public:
      */
     void SetControllerId(unsigned int id);
 
+    int GetControllerId() { return _controllerId; }
+
+    void SetRemotePlayerId(int id);
+
     /**
      * Get created player node
      */
@@ -67,6 +71,8 @@ private:
      * Controller ID
      */
     int _controllerId;
+
+    int _remotePlayerId;
 
     /**
      * 3D Text player label node

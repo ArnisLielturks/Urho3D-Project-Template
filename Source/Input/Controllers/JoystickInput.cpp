@@ -75,7 +75,9 @@ void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         controllerInput->SetActionState(_mappedKeyToControl[key], true, joystick);
     }
 
-    GetSubsystem<DebugHud>()->SetAppStats("Key " + String(key), true);
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Key " + String(key), true);
+    }
 }
 
 void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
@@ -97,7 +99,10 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
         auto* controllerInput = GetSubsystem<ControllerInput>();
         controllerInput->SetActionState(_mappedKeyToControl[key], false, joystick);
     }
-    GetSubsystem<DebugHud>()->SetAppStats("JoyKey " + String(key), false);
+
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("JoyKey " + String(key), false);
+    }
 }
 
 void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
@@ -111,7 +116,9 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
     int buttonId = eventData[P_AXIS].GetInt();
     float position = eventData[P_POSITION].GetFloat();
 
-    GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
+    }
 
     if (Abs(position) < _deadzone) {
         position = 0.0f;
@@ -172,7 +179,9 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
     int id = eventData[P_JOYSTICKID].GetInt();
     float position = eventData[P_POSITION].GetFloat();
 
-    GetSubsystem<DebugHud>()->SetAppStats("JoyHatMove" + String(buttonId), position);
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("JoyHatMove" + String(buttonId), position);
+    }
 
     if (buttonId == 0) {
         if (_invertX) {

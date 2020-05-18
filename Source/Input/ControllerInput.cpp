@@ -52,7 +52,9 @@ void ControllerInput::Init()
     // there must be at least one controller available at start
     _controls[0] = Controls();
 
-    GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    }
 }
 
 void ControllerInput::LoadConfig()
@@ -285,7 +287,9 @@ void ControllerInput::CreateController(int controllerIndex)
     data[P_INDEX]              = controllerIndex;
     SendEvent(MyEvents::E_CONTROLLER_ADDED, data);
 
-    GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    }
 }
 
 void ControllerInput::DestroyController(int controllerIndex)
@@ -303,7 +307,9 @@ void ControllerInput::DestroyController(int controllerIndex)
         data[P_INDEX] = controllerIndex;
         SendEvent(MyEvents::E_CONTROLLER_REMOVED, data);
     }
-    GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
+    }
 }
 
 HashMap<int, String> ControllerInput::GetControlNames()

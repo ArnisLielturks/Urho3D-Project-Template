@@ -79,7 +79,9 @@ void NewGameSettingsWindow::Create()
 
     CreateLevelSelection();
 
+#ifndef __EMSCRIPTEN__
     _startServer = CreateCheckbox("Start server");
+#endif
     _connectServer = CreateCheckbox("Connect to server");
 
     titleBar->SetFixedSize(_levelSelection->GetWidth(), 24);
@@ -153,8 +155,10 @@ void NewGameSettingsWindow::CreateLevelSelection()
             data["Name"] = "Loading";
             data["Map"] = button->GetVar("Map");
             data["Commands"] = button->GetVar("Commands");
+#ifndef __EMSCRIPTEN__
             data["StartServer"] = _startServer->IsChecked();
-            data["ConnectServer"] = _connectServer->IsChecked() ? "127.0.0.1" : String::EMPTY;
+#endif
+            data["ConnectServer"] = _connectServer->IsChecked() && !_startServer->IsChecked() ? "127.0.0.1" : String::EMPTY;
             SendEvent(MyEvents::E_SET_LEVEL, data);
         });
 

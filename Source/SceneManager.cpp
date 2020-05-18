@@ -3,6 +3,7 @@
 #include <Urho3D/Scene/SceneEvents.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/IO/IOEvents.h>
+
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
 #endif
@@ -49,7 +50,9 @@ void SceneManager::LoadScene(const String& filename)
     _activeScene->LoadAsyncXML(xmlFile);
     _loadingStatus = "Loading scene";
 
-    GetSubsystem<DebugHud>()->SetAppStats("Scene manager map", filename);
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Scene manager map", filename);
+    }
     URHO3D_LOGINFO("Scene manager loading scene: " + filename);
 
     SubscribeToEvent(_activeScene, E_ASYNCLOADPROGRESS, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingProgress));
@@ -192,7 +195,9 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
     URHO3D_LOGINFO("Registering new loading step: " + step.name + "; " + step.event);
     _loadingSteps[step.event] = step;
 
-    GetSubsystem<DebugHud>()->SetAppStats("Loading steps", _loadingSteps.Size());
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Loading steps", _loadingSteps.Size());
+    }
 }
 
 void SceneManager::HandleLoadingStepAck(StringHash eventType, VariantMap& eventData)

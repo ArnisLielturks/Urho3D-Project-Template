@@ -64,6 +64,7 @@ void BehaviourTree::FixedUpdate(float timeStep)
 
 void BehaviourTree::SubscribeToEvents()
 {
+    _controls.Set(CTRL_FORWARD, true);
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD,
             MyEvents::ConsoleCommandAdd::P_NAME, "behaviour_debug",
             MyEvents::ConsoleCommandAdd::P_EVENT, "#behaviour_debug",

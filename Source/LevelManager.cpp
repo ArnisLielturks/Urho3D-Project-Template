@@ -70,6 +70,10 @@ void LevelManager::HandleSetLevelQueue(StringHash eventType, VariantMap& eventDa
         fade_status_ = 0;
     }
 
+    if (eventData["Name"].GetString().Empty()) {
+        URHO3D_LOGERROR("Level manager failed to push level to queue, level name empty!");
+        return;
+    }
     // Push to queue
     level_queue_.Push(eventData["Name"].GetString());
     data_ = eventData;
@@ -148,7 +152,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             auto* localization = GetSubsystem<Localization>();
             VariantMap& eventData = GetEventDataMap();
             eventData["Name"] = "MainMenu";
-            eventData["Message"] = localization->Get("LEVEL_NOT_EXIST") + " :" + level_queue_.Front();
+            eventData["Message"] = localization->Get("LEVEL_NOT_EXIST") + " : " + level_queue_.Front();
             SendEvent(MyEvents::E_SET_LEVEL, eventData);
 
             level_queue_.PopFront();
@@ -159,7 +163,9 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         currentLevel_ = level_queue_.Front();
         SetGlobalVar("CurrentLevel", currentLevel_);
 
-        GetSubsystem<DebugHud>()->SetAppStats("Current level", currentLevel_);
+        if (GetSubsystem<DebugHud>()) {
+            GetSubsystem<DebugHud>()->SetAppStats("Current level", currentLevel_);
+        }
 
         // Add a new fade layer
         AddFadeLayer();
@@ -229,19 +235,21 @@ void LevelManager::AddFadeLayer()
         fade_window_.Reset();
     }
     fade_window_ = new Window(context_);
-    // Make the window a child of the root element, which fills the whole screen.
-    GetSubsystem<UI>()->GetRoot()->AddChild(fade_window_);
-    fade_window_->SetSize(GetSubsystem<Graphics>()->GetWidth(), GetSubsystem<Graphics>()->GetHeight());
-    fade_window_->SetLayout(LM_FREE);
-    // Urho has three layouts: LM_FREE, LM_HORIZONTAL and LM_VERTICAL.
-    // In LM_FREE the child elements of this window can be arranged freely.
-    // In the other two they are arranged as a horizontal or vertical list.
+    if (GetSubsystem<Graphics>()) {
+        // Make the window a child of the root element, which fills the whole screen.
+        GetSubsystem<UI>()->GetRoot()->AddChild(fade_window_);
+        fade_window_->SetSize(GetSubsystem<Graphics>()->GetWidth(), GetSubsystem<Graphics>()->GetHeight());
+        fade_window_->SetLayout(LM_FREE);
+        // Urho has three layouts: LM_FREE, LM_HORIZONTAL and LM_VERTICAL.
+        // In LM_FREE the child elements of this window can be arranged freely.
+        // In the other two they are arranged as a horizontal or vertical list.
 
-    // Center this window in it's parent element.
-    fade_window_->SetAlignment(HA_CENTER, VA_CENTER);
-    // Black color
-    fade_window_->SetColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
-    // Make it topmost
-    fade_window_->BringToFront();
-    fade_window_->SetPriority(1000);
+        // Center this window in it's parent element.
+        fade_window_->SetAlignment(HA_CENTER, VA_CENTER);
+        // Black color
+        fade_window_->SetColor(Color(0.0f, 0.0f, 0.0f, 1.0f));
+        // Make it topmost
+        fade_window_->BringToFront();
+        fade_window_->SetPriority(1000);
+    }
 }

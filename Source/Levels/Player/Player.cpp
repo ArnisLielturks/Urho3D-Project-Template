@@ -80,6 +80,7 @@ Player::Player(Context* context):
 Player::~Player()
 {
     UpdatePlayerList(true);
+    _node->Remove();
 }
 
 void Player::RegisterObject(Context* context)
@@ -89,6 +90,10 @@ void Player::RegisterObject(Context* context)
 
 void Player::UpdatePlayerList(bool remove)
 {
+    if (_serverConnection) {
+        return;
+    }
+
     VariantMap players = GetGlobalVar("Players").GetVariantMap();
     if (remove) {
         players.Erase(String(_controllerId));
@@ -181,6 +186,11 @@ void Player::SetControllerId(unsigned int id)
     _controllerId = id;
 }
 
+void Player::SetRemotePlayerId(int id)
+{
+    _remotePlayerId = id;
+}
+
 Node* Player::GetNode()
 {
     return _node.Get();
@@ -192,7 +202,7 @@ void Player::SetLabel()
         return;
     }
     if (_isControlled) {
-        _label->GetComponent<Text3D>()->SetText("Player " + String(_controllerId + 1));
+        _label->GetComponent<Text3D>()->SetText("Player " + String(_controllerId));
     } else {
         _label->GetComponent<Text3D>()->SetText("Bot " + String(_controllerId));
     }

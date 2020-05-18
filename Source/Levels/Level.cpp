@@ -13,7 +13,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
-
+#include <Urho3D/Engine/Engine.h>
 #include "../Generator/Generator.h"
 #include "Level.h"
 #include "../MyEvents.h"
@@ -25,6 +25,8 @@
 
 using namespace Levels;
 
+static int REMOTE_PLAYER_ID = 1000;
+
 Level::Level(Context* context) :
     BaseLevel(context),
     _showScoreboard(false),
@@ -35,6 +37,13 @@ Level::Level(Context* context) :
 
 Level::~Level()
 {
+    _remotePlayers.Clear();
+    if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
+        GetSubsystem<Network>()->StopServer();
+    }
+    if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+        GetSubsystem<Network>()->Disconnect();
+    }
     StopAllAudio();
 }
 
@@ -70,7 +79,6 @@ void Level::Init()
     CreateUI();
 
     if (_data.Contains("Map") && _data["Map"].GetString() == "Scenes/Terrain.xml") {
-
         auto cache = GetSubsystem<ResourceCache>();
         Node *terrainNode = _scene->CreateChild("Terrain");
         terrainNode->SetPosition(Vector3(0.0f, -0.0f, 0.0f));
@@ -97,17 +105,26 @@ void Level::Init()
         input->SetMouseVisible(false);
     }
 
-    for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-        _players[(*it)] = new Player(context_);
-        if (_data.Contains("ClientId")) {
-            // We are the client, we have to lookup the node on the received scene
-            _players[(*it)]->FindNode(_scene, _data["ClientId"].GetInt());
-        } else {
-            _players[(*it)]->CreateNode(_scene, (*it), _terrain);
-        }
-        _players[(*it)]->SetControllable(true);
-        if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
-            _players[(*it)]->SetServerConnection(GetSubsystem<Network>()->GetServerConnection());
+    if (!GetSubsystem<Engine>()->IsHeadless()) {
+        for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
+            _players[(*it)] = new Player(context_);
+            using namespace MyEvents::RemoteClientId;
+            if (_data.Contains(P_NODE_ID) && _data.Contains(P_PLAYER_ID)) {
+                // We are the client, we have to lookup the node on the received scene
+                _players[(*it)]->FindNode(_scene, _data[P_NODE_ID].GetInt());
+                _players[(*it)]->SetControllerId((*it));
+            } else {
+                _players[(*it)]->CreateNode(_scene, (*it), _terrain);
+            }
+            _players[(*it)]->SetControllable(true);
+            if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
+                _players[(*it)]->SetServerConnection(GetSubsystem<Network>()->GetServerConnection());
+                VectorBuffer msg;
+                msg.WriteString("");
+                GetSubsystem<Network>()->GetServerConnection()->SendMessage(
+                        MyEvents::RemoteMessages::MSG_ASK_PLAYER_LIST, true, true, msg);
+                URHO3D_LOGINFO("Asking server for player list");
+            }
         }
     }
 
@@ -189,6 +206,76 @@ void Level::SubscribeToEvents()
             return;
         }
         _drawDebug = !_drawDebug;
+    });
+
+    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE);
+    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE);
+
+    SubscribeToEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::RemotePlayerScoreUpdate;
+        String playerId = String(eventData[P_ID].GetInt());
+        VariantMap players = GetGlobalVar("Players").GetVariantMap();
+        VariantMap playerData = players[playerId].GetVariantMap();
+        playerData["Score"] = eventData[P_SCORE].GetInt();
+        players[playerId] = playerData;
+        SetGlobalVar("Players", players);
+
+        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
+    });
+
+    SubscribeToEvent(MyEvents::E_PLAYER_SCORE_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::PlayerScoreChanged;
+        String playerId = String(eventData[P_ID].GetInt());
+        int score = eventData[P_SCORE].GetInt();
+
+        VariantMap players = GetGlobalVar("Players").GetVariantMap();
+        VariantMap playerData = players[playerId].GetVariantMap();
+        int currentScore = playerData["Score"].GetInt();
+        currentScore += score;
+        if (currentScore < 0) {
+            currentScore = 0;
+        }
+        playerData["Score"] = currentScore;
+        players[playerId] = playerData;
+        SetGlobalVar("Players", players);
+
+        VariantMap& data = GetEventDataMap();
+        data[MyEvents::RemotePlayerScoreUpdate::P_ID] = eventData[P_ID].GetInt();
+        data[MyEvents::RemotePlayerScoreUpdate::P_SCORE] = currentScore;
+        GetSubsystem<Network>()->BroadcastRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE, true, data);
+
+        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
+    });
+
+    SubscribeToEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::RemoteAllPlayerScoreUpdate;
+        SetGlobalVar("Players", eventData[P_DATA].GetVariantMap());
+
+        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
+    });
+
+    SubscribeToEvent(E_NETWORKMESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+        auto* network = GetSubsystem<Network>();
+
+        using namespace NetworkMessage;
+
+        int msgID = eventData[P_MESSAGEID].GetInt();
+        if (msgID == MyEvents::RemoteMessages::MSG_ASK_PLAYER_LIST) {
+            const PODVector<unsigned char> &data = eventData[P_DATA].GetBuffer();
+            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+            MemoryBuffer msg(data);
+            String text = msg.ReadString();
+
+            // If we are the server, prepend the sender's IP address and port and echo to everyone
+            // If we are a client, just display the message
+            if (network->IsServerRunning()) {
+                URHO3D_LOGINFO("Client asked for player list, sending him it");
+                auto *sender = static_cast<Connection *>(eventData[P_CONNECTION].GetPtr());
+                VariantMap& data = GetEventDataMap();
+                data[P_DATA] = GetGlobalVar("Players").GetVariantMap();
+                sender->SendRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE, true, data);
+            }
+        }
     });
 }
 
@@ -342,15 +429,16 @@ void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
     // When a client connects, assign to scene to begin scene replication
     auto* newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
     newConnection->SetScene(_scene);
-    URHO3D_LOGINFO("Client connected");
+    URHO3D_LOGINFO("Level::HandleClientConnected");
     _remotePlayers[newConnection] = new Player(context_);
-    _remotePlayers[newConnection]->CreateNode(_scene, 0, _terrain);
-    _remotePlayers[newConnection]->SetControllable(true);
     _remotePlayers[newConnection]->SetClientConnection(newConnection);
+    _remotePlayers[newConnection]->CreateNode(_scene, REMOTE_PLAYER_ID++, _terrain);
+    _remotePlayers[newConnection]->SetControllable(true);
 
     using namespace MyEvents::RemoteClientId;
     VariantMap data;
-    data[P_ID] = _remotePlayers[newConnection]->GetNode()->GetID();
+    data[P_NODE_ID] = _remotePlayers[newConnection]->GetNode()->GetID();
+    data[P_PLAYER_ID] = _remotePlayers[newConnection]->GetControllerId();
     URHO3D_LOGINFOF("Sending out remote client id %d", _remotePlayers[newConnection]->GetNode()->GetID());
     newConnection->SendRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID, true, data);
 }
@@ -372,5 +460,10 @@ void Level::HandleServerConnected(StringHash eventType, VariantMap& eventData)
 
 void Level::HandleServerDisconnected(StringHash eventType, VariantMap& eventData)
 {
-
+    _players.Clear();
+    auto localization = GetSubsystem<Localization>();
+    VariantMap data;
+    data["Name"] = "MainMenu";
+    data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
+    SendEvent(MyEvents::E_SET_LEVEL, data);
 }

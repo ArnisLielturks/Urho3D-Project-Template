@@ -11,6 +11,7 @@
 #include <Urho3D/Network/NetworkEvents.h>
 #include <Urho3D/Resource/Localization.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Engine/Engine.h>
 #include "Loading.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
@@ -67,12 +68,17 @@ void Loading::Init()
         SubscribeToEvent("ConnectServer", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
-            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+#ifdef __EMSCRIPTEN__
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+#else
+            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+#endif
         });
         SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
             using namespace MyEvents::RemoteClientId;
-            _data["ClientId"] = eventData[P_ID];
+            _data[P_NODE_ID] = eventData[P_NODE_ID];
+            _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
             URHO3D_LOGINFOF("ClientID %d", eventData["ID"].GetInt());
             SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
                       MyEvents::LoadingStepFinished::P_EVENT, "ConnectServer");
@@ -116,6 +122,10 @@ void Loading::CreateUI()
     sprite->SetTexture(decalTex);
 
     auto* graphics = GetSubsystem<Graphics>();
+
+    if (!graphics) {
+        return;
+    }
 
     // Get rendering window size as floats
     auto width = (float)graphics->GetWidth();
@@ -182,18 +192,23 @@ void Loading::SubscribeToEvents()
 
 void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
+
     Input* input = GetSubsystem<Input>();
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
 
     float progress = GetSubsystem<SceneManager>()->GetProgress();
-    _status->SetText(String((int)(progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
 
-    if (_loadingBar) {
-        _loadingBar->SetWidth(progress * (GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() - 20));
+    if (!GetSubsystem<Engine>()->IsHeadless()) {
+        _status->SetText(
+                String((int) (progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
+
+        if (_loadingBar) {
+            _loadingBar->SetWidth(
+                    progress * (GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() - 20));
+        }
     }
-
     if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);

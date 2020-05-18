@@ -8,6 +8,7 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Resource/XMLFile.h>
+#include <Urho3D/Engine/Engine.h>
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>
 #endif
@@ -72,6 +73,10 @@ void MainMenu::InitCamera()
     CreateSingleCamera();
     ApplyPostProcessEffects();
 
+    if (GetSubsystem<Engine>()->IsHeadless()) {
+        return;
+    }
+
     _cameraRotateNode = _scene->CreateChild("CameraRotate");
     _cameraRotateNode->AddChild(_cameras[0]);
     _cameras[0]->SetPosition(Vector3(1, 2, 1));
@@ -80,6 +85,9 @@ void MainMenu::InitCamera()
 
 void MainMenu::SubscribeToEvents()
 {
+    if (GetSubsystem<Engine>()->IsHeadless()) {
+        return;
+    }
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MainMenu, HandleUpdate));
 }
 

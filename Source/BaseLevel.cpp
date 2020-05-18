@@ -6,9 +6,8 @@
 #include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Audio/SoundListener.h>
 #include <Urho3D/Audio/Audio.h>
-#include <Urho3D/Graphics/RenderPath.h>
 #include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/Math/MathDefs.h>
+#include <Urho3D/Engine/Engine.h>
 #include <Urho3D/Graphics/GraphicsEvents.h>
 #include <Urho3D/Engine/EngineEvents.h>
 #include "BaseLevel.h"
@@ -344,6 +343,9 @@ Vector<IntRect> BaseLevel::InitRects(int count)
 void BaseLevel::InitViewports(Vector<int> playerIndexes)
 {
     Renderer* renderer = GetSubsystem<Renderer>();
+    if (!renderer) {
+        return;
+    }
     renderer->SetNumViewports(playerIndexes.Size());
     _viewports.Clear();
     _cameras.Clear();
@@ -361,6 +363,9 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
 
 void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerIndex)
 {
+    if (GetSubsystem<Engine>()->IsHeadless()) {
+        return;
+    }
     Vector<IntRect> rects = InitRects(totalCount);
 
     // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
@@ -392,6 +397,10 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
 
 void BaseLevel::ApplyPostProcessEffects()
 {
+    if (GetSubsystem<Engine>()->IsHeadless()) {
+        return;
+    }
+
     auto cache = GetSubsystem<ResourceCache>();
     for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
         auto viewport = GetSubsystem<Renderer>()->GetViewport(i);

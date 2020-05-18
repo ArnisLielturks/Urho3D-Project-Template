@@ -59,6 +59,10 @@ void Stop()
 
 void CreateCheckpoint()
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
     float scale = targetGroundScale.x * 0.5;
     scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 2.0, Random(scale * 2) - scale), Quaternion());
@@ -66,6 +70,10 @@ void CreateCheckpoint()
 
 void UpdateBoxes()
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     Array<Node@>@ cubes = scene.GetChildrenWithTag("Cube", true);
     for (int i = 0; i < cubes.length; i++)
     {
@@ -77,6 +85,11 @@ void UpdateBoxes()
 
 void CreateObject()
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
+
     if (count > 20) {
         log.Info("Box limit reached, current count=" + String(count));
         return;
@@ -111,6 +124,10 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
 
 void HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     if (ground is null) {
         return;
     }
@@ -126,27 +143,19 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
 
 void UpdatePlayerScore(int playerId, int points)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     if (playerId < 0) {
         return;
     }
-    VariantMap players = GetGlobalVar("Players").GetVariantMap();
-    VariantMap playerData = players[String(playerId)].GetVariantMap();
-    int score = playerData["Score"].GetInt() + points;
-    if (score < 0) {
-        score = 0;
-    }
-    playerData["Score"] = score;
-    players[playerId] = playerData;
-    SetGlobalVar("Players", players);
-    // String playerScoreId = "Player" + String(playerId) + "Score";
-    // int newScore = GetGlobalVar(playerScoreId).GetInt() + points;
-    // if (newScore < 0) {
-    //     newScore = 0;
-    // }
-    // SetGlobalVar(playerScoreId, newScore);
-    SendEvent("PlayerScoresUpdated");
 
     VariantMap data;
+    data["ID"] = playerId;
+    data["Score"] = points;
+    SendEvent("PlayerScoreChanged", data);
+
     data["Message"] = "Player [" + String(playerId) + "] got " + String(points) + " points!";
     if (points < 0) {
         data["Message"] = "Player [" + String(playerId) + "] lost " + String(Abs(points)) + " points!";
@@ -157,6 +166,10 @@ void UpdatePlayerScore(int playerId, int points)
 
 void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     int playerId = eventData["Player"].GetInt();
 
     count--;
@@ -169,6 +182,10 @@ void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
 
 void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     int playerId = eventData["Player"].GetInt();
 
     UpdatePlayerScore(playerId, 5);
@@ -191,6 +208,10 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
 
 void HandleBoxDropped(StringHash eventType, VariantMap& eventData)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     int playerId = eventData["Player"].GetInt();
 
     UpdatePlayerScore(playerId, 2);
@@ -198,6 +219,10 @@ void HandleBoxDropped(StringHash eventType, VariantMap& eventData)
 
 void HandleFallOfMap(StringHash eventType, VariantMap& eventData)
 {
+    Connection@ serverConnection = network.serverConnection;
+    if (serverConnection !is null) {
+        return;
+    }
     int playerId = eventData["Player"].GetInt();
 
     UpdatePlayerScore(playerId, -20);

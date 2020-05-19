@@ -230,6 +230,11 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     if (_serverConnection) {
         _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+
+        if (_timer.GetMSec(false) > 1000) {
+            URHO3D_LOGINFOF("Packet in %d, packets out %d", _serverConnection->GetPacketsInPerSec(), _serverConnection->GetPacketsOutPerSec());
+            _timer.Reset();
+        }
         return;
     }
 

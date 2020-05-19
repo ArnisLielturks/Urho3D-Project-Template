@@ -134,6 +134,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     // Release old level
     if (fade_status_ == 2) {
         // We can not create new level here, or it may cause errors, we have to create it at the next update point.
+        SendEvent(MyEvents::E_LEVEL_BEFORE_DESTROY);
         level_ = SharedPtr<Object>();
         fade_status_++;
 

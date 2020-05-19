@@ -10,7 +10,6 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/PackageFile.h>
 
-//#include <Urho3D/UI/Cursor.h>
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
@@ -22,6 +21,7 @@
 #include "Generator/Generator.h"
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
+#include "State/State.h"
 
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
@@ -50,6 +50,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Notifications>();
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
+    State::RegisterObject(context_);
 
     #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();
@@ -80,6 +81,7 @@ BaseApplication::BaseApplication(Context* context) :
 
     ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
     context_->RegisterSubsystem(configManager);
+    context_->RegisterSubsystem(new State(context_));
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));

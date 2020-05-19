@@ -8,12 +8,12 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/Physics/RigidBody.h>
-#include <Urho3D/Resource/Image.h>
 #include <Urho3D/Network/NetworkEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Engine/Engine.h>
+#include <Urho3D/IO/MemoryBuffer.h>
 #include "../Generator/Generator.h"
 #include "Level.h"
 #include "../MyEvents.h"
@@ -37,13 +37,6 @@ Level::Level(Context* context) :
 
 Level::~Level()
 {
-    _remotePlayers.Clear();
-    if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
-        GetSubsystem<Network>()->StopServer();
-    }
-    if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
-        GetSubsystem<Network>()->Disconnect();
-    }
     StopAllAudio();
 }
 
@@ -275,6 +268,17 @@ void Level::SubscribeToEvents()
                 data[P_DATA] = GetGlobalVar("Players").GetVariantMap();
                 sender->SendRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE, true, data);
             }
+        }
+    });
+
+    SubscribeToEvent(MyEvents::E_LEVEL_BEFORE_DESTROY, [&](StringHash eventType, VariantMap& eventData) {
+        _remotePlayers.Clear();
+        UnsubscribeFromEvent(E_SERVERDISCONNECTED);
+        if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
+            GetSubsystem<Network>()->StopServer();
+        }
+        if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+            GetSubsystem<Network>()->Disconnect();
         }
     });
 }

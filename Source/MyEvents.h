@@ -145,6 +145,11 @@ namespace MyEvents
         URHO3D_PARAM(P_TO, To); // string - new level
     }
 
+    // Called before the level is destroyed
+    URHO3D_EVENT(E_LEVEL_BEFORE_DESTROY, LevelBeforeDestroy)
+    {
+    }
+
     // Level changing finished
     URHO3D_EVENT(E_NEW_ACHIEVEMENT, NewAchievement)
     {

@@ -29,7 +29,13 @@ void HandleDownloadImages(StringHash eventType, VariantMap& eventData)
     // Sent event to let the system know that we will handle this loading step
     SendEvent("AckLoadingStep", data);
 
-    SubscribeToEvent("Update", "HandleUpdate");
+    if (GetPlatform() == "Web") {
+        VariantMap data;
+        data["Event"] = "DownloadImages";
+        SendEvent("LoadingStepFinished", data);
+    } else {
+        SubscribeToEvent("Update", "HandleUpdate");
+    }
 }
 
 void HandleUpdate(StringHash eventType, VariantMap& eventData)

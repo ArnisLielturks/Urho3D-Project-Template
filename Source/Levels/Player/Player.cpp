@@ -81,6 +81,7 @@ Player::~Player()
 {
     UpdatePlayerList(true);
     _node->Remove();
+    _label->Remove();
 }
 
 void Player::RegisterObject(Context* context)

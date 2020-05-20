@@ -92,7 +92,7 @@ void CreateObject()
 
     int limit = 20;
     if (network.serverRunning) {
-        limit = 1;
+        limit = 4;
     }
     if (count > limit) {
         log.Info("Box limit reached, current count=" + String(count));
@@ -115,7 +115,7 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     // Sent event to let the system know that we will handle this loading step
     SendEvent("AckLoadingStep", data);
 
-    for (uint i = 0; i < 1; i++) {
+    for (uint i = 0; i < 4; i++) {
         CreateObject();
     }
     CreateCheckpoint();

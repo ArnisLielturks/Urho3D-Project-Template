@@ -25,6 +25,9 @@ void Start()
     animationList.Push("Mods/Character/Bot_RunRight.ani");
     animationMovementSpeed.Push(Vector3(320.0f, 0, 0.0f));
 
+    animationList.Push("Mods/Character/Bot_Walk.ani");
+    animationMovementSpeed.Push(Vector3(0.0f, 0, 160.0f));
+
     animationList.Push("Mods/Character/Bot_Fall.ani");
     animationMovementSpeed.Push(Vector3(0, 0, 0.0f));
 
@@ -151,7 +154,7 @@ void CreateCharacter()
     body.mass = 40.0f;
     body.angularFactor = Vector3::ZERO;
     CollisionShape@ shape = characterNode.CreateComponent("CollisionShape");
-    shape.SetCapsule(60.0f, 200.0f, Vector3(0.0f, 85.0f, 0.0f));
+    shape.SetCapsule(60.0f, 180.0f, Vector3(0.0f, 105.0f, 0.0f));
 
     // AnimationState@ state = modelObject.AddAnimationState(walkAnimation);
     // // Enable full blending weight and looping

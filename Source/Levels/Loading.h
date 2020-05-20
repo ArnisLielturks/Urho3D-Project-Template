@@ -32,6 +32,8 @@ namespace Levels {
          */
         void CreateProgressBar();
 
+        void UpdateStatusMesage();
+
         /**
          * Finish loading and move to next level
          */
@@ -46,5 +48,7 @@ namespace Levels {
          * Loading bar UI element
          */
         SharedPtr<Sprite> _loadingBar;
+
+        String _statusMessage;
     };
 }

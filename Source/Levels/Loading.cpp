@@ -68,12 +68,12 @@ void Loading::Init()
         SubscribeToEvent("ConnectServer", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
-//#ifdef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
-//#else
-//            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
-//#endif
+#else
+            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+#endif
         });
         SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
             using namespace MyEvents::RemoteClientId;
@@ -97,6 +97,21 @@ void Loading::Init()
             SendEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, data);
         });
     }
+
+    _statusMessage = GetSubsystem<SceneManager>()->GetStatusMessage();
+    SubscribeToEvent(MyEvents::E_LOADING_STATUS_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MyEvents::LoadingStatusUpdate;
+        _statusMessage = eventData[P_NAME].GetString();
+        UpdateStatusMesage();
+    });
+
+    SubscribeToEvent(E_SERVERDISCONNECTED, [&](StringHash eventType, VariantMap& eventData) {
+        auto localization = GetSubsystem<Localization>();
+        VariantMap data;
+        data["Name"] = "MainMenu";
+        data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    });
 
     if (_data.Contains("Map")) {
         GetSubsystem<SceneManager>()->LoadScene(_data["Map"].GetString());
@@ -190,6 +205,16 @@ void Loading::SubscribeToEvents()
     SubscribeToEvent(StringHash("EndLoading"), URHO3D_HANDLER(Loading, HandleEndLoading));
 }
 
+void Loading::UpdateStatusMesage()
+{
+    float progress = GetSubsystem<SceneManager>()->GetProgress();
+    if (!GetSubsystem<Engine>()->IsHeadless()) {
+        _status->SetText(
+                String((int) (progress * 100)) + "% "
+                                                 "" + _statusMessage + "...");
+    }
+}
+
 void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
 
@@ -201,8 +226,7 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     float progress = GetSubsystem<SceneManager>()->GetProgress();
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
-        _status->SetText(
-                String((int) (progress * 100)) + "% " + GetSubsystem<SceneManager>()->GetStatusMessage() + "...");
+        UpdateStatusMesage();
 
         if (_loadingBar) {
             _loadingBar->SetWidth(

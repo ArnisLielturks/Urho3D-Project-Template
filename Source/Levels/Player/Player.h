@@ -95,6 +95,4 @@ private:
     Connection* _serverConnection{nullptr};
 
     bool _isControlled{false};
-
-    Timer _timer;
 };

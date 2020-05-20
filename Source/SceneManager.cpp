@@ -133,6 +133,12 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
                 if (_loadingStatus != (*it).second_.name) {
                     _loadingStatus = (*it).second_.name;
+                    // Delay loading step execution till the next frame
+                    // to allow the status to be updated
+                    using namespace MyEvents::LoadingStatusUpdate;
+                    VariantMap data;
+                    data[P_NAME] = (*it).second_.name;
+                    SendEvent(MyEvents::E_LOADING_STATUS_UPDATE, data);
                     return;
                 }
                 // Send out event to start this loading step

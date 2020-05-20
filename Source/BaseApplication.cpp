@@ -303,7 +303,7 @@ void BaseApplication::RegisterConsoleCommands()
     SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
         if (GetSubsystem<DebugHud>()) {
-            GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_STATS);
+            GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_ALL);
         }
     });
 

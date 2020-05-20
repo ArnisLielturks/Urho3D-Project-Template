@@ -122,9 +122,9 @@ void Level::Init()
     }
 
     if (!_data.Contains("ConnectServer")) {
-        _players[100] = new Player(context_);
-        _players[100]->CreateNode(_scene, 100, _terrain);
-        _players[100]->SetControllable(false);
+//        _players[100] = new Player(context_);
+//        _players[100]->CreateNode(_scene, 100, _terrain);
+//        _players[100]->SetControllable(false);
     }
 }
 
@@ -210,6 +210,7 @@ void Level::SubscribeToEvents()
         VariantMap players = GetGlobalVar("Players").GetVariantMap();
         VariantMap playerData = players[playerId].GetVariantMap();
         playerData["Score"] = eventData[P_SCORE].GetInt();
+        playerData["ID"] = eventData[P_ID].GetInt();
         players[playerId] = playerData;
         SetGlobalVar("Players", players);
 
@@ -229,6 +230,7 @@ void Level::SubscribeToEvents()
             currentScore = 0;
         }
         playerData["Score"] = currentScore;
+        playerData["ID"] = eventData[P_ID].GetInt();
         players[playerId] = playerData;
         SetGlobalVar("Players", players);
 

@@ -17,16 +17,18 @@ class Checkpoint : ScriptObject
 
         if (otherBody.mass > 0.0f)
         {
-            VariantMap data;
-            int playerId = otherBody.node.vars["Player"].GetInt();
-            data["Player"] = playerId;
-            SendEvent("CheckpointReached", data);
+            if (otherBody.node.vars.Contains("Player")) {
+                VariantMap data;
+                int playerId = otherBody.node.vars["Player"].GetInt();
+                data["Player"] = playerId;
+                SendEvent("CheckpointReached", data);
 
-            data["Type"] = SOUND_EFFECT;
-            data["SoundFile"] = "Data/Sounds/checkpoint.wav";
-            SendEvent("PlaySound", data);
+                data["Type"] = SOUND_EFFECT;
+                data["SoundFile"] = "Data/Sounds/checkpoint.wav";
+                SendEvent("PlaySound", data);
 
-            node.Remove();
+                node.Remove();
+            }
         }
     }
 

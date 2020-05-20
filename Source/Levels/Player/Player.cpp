@@ -81,7 +81,9 @@ Player::~Player()
 {
     UpdatePlayerList(true);
     _node->Remove();
-    _label->Remove();
+    if (_label) {
+        _label->Remove();
+    }
 }
 
 void Player::RegisterObject(Context* context)
@@ -100,8 +102,8 @@ void Player::UpdatePlayerList(bool remove)
         players.Erase(String(_controllerId));
     } else {
         VariantMap data;
-        data["Name"] = "Player " + String(_controllerId);
         data["Score"] = 0;
+        data["ID"] = _controllerId;
         players[String(_controllerId)] = data;
     }
     SetGlobalVar("Players", players);
@@ -133,12 +135,11 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     _rigidBody->SetLinearDamping(0.8f);
     _rigidBody->SetAngularDamping(0.8f);
     _rigidBody->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND);
-    _rigidBody->SetCollisionEventMode(CollisionEventMode::COLLISION_ALWAYS);
 
     auto* shape = _node->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
 
-    _label = scene->CreateChild("Label");
+    _label = scene->CreateChild("Label", LOCAL);
 
     auto text3D = _label->CreateComponent<Text3D>();
     text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
@@ -231,11 +232,6 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     if (_serverConnection) {
         _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
-
-        if (_timer.GetMSec(false) > 1000) {
-            URHO3D_LOGINFOF("Packet in %d, packets out %d", _serverConnection->GetPacketsInPerSec(), _serverConnection->GetPacketsOutPerSec());
-            _timer.Reset();
-        }
         return;
     }
 

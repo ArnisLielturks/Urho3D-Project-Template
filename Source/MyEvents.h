@@ -217,12 +217,21 @@ namespace MyEvents
         URHO3D_PARAM(P_DESCRIPTION, Description); // string - event to call to start loading process
     }
 
+    // Called when new loading step is about to start
+    URHO3D_EVENT(E_LOADING_STATUS_UPDATE, LoadingStatusUpdate)
+    {
+        URHO3D_PARAM(P_NAME, Name); // string - loading step name
+    }
+
     URHO3D_EVENT(E_SERVICE_MESSAGE, ServiceMessage)
     {
         URHO3D_PARAM(P_COMMAND, Command); // int
         URHO3D_PARAM(P_STATUS, Status);   // int
         URHO3D_PARAM(P_MESSAGE, Message); // String
     }
+
+
+    // Network events
 
     URHO3D_EVENT(E_REMOTE_CLIENT_ID, RemoteClientId)
     {

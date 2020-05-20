@@ -211,9 +211,9 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
     static float elapsedTime = 0.0f;
     elapsedTime += timestep;
 
-    float pos = 1.0 + Sin(elapsedTime * 20.0) + 1.0;
+    float pos = 2.0 + Sin(elapsedTime * 20.0) + 1.0;
     _cameras[0]->SetPosition(Vector3(pos, pos, pos));
     _cameras[0]->LookAt(Vector3(0, 0, 0));
 
-    _cameraRotateNode->Yaw(timestep * 20);
+    _cameraRotateNode->Yaw(timestep * 10);
 }

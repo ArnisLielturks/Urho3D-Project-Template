@@ -90,7 +90,11 @@ void CreateObject()
         return;
     }
 
-    if (count > 20) {
+    int limit = 20;
+    if (network.serverRunning) {
+        limit = 1;
+    }
+    if (count > limit) {
         log.Info("Box limit reached, current count=" + String(count));
         return;
     }
@@ -111,7 +115,7 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
     // Sent event to let the system know that we will handle this loading step
     SendEvent("AckLoadingStep", data);
 
-    for (uint i = 0; i < 30; i++) {
+    for (uint i = 0; i < 1; i++) {
         CreateObject();
     }
     CreateCheckpoint();
@@ -173,9 +177,7 @@ void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
     int playerId = eventData["Player"].GetInt();
 
     count--;
-    for (uint i = 0; i < 2; i++) {
-        CreateObject();
-    }
+    CreateObject();
 
     UpdatePlayerScore(playerId, 1);
 }

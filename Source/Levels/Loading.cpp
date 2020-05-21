@@ -75,8 +75,8 @@ void Loading::Init()
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
 #ifdef __EMSCRIPTEN__
-            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
-//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
             GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());

@@ -51,6 +51,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
     State::RegisterObject(context_);
+    LevelManager::RegisterObject(context_);
 
     #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();

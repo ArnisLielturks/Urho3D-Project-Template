@@ -12,8 +12,8 @@ namespace Levels {
     public:
         /// Construct.
         Credits(Context* context);
-
         virtual ~Credits();
+        static void RegisterObject(Context* context);
 
     protected:
         void Init () override;

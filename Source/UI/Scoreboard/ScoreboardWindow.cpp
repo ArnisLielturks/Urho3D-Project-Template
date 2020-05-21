@@ -3,8 +3,8 @@
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/Font.h>
 #include "ScoreboardWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
+#include "../../Levels/Player/PlayerEvents.h"
 
 /// Construct.
 ScoreboardWindow::ScoreboardWindow(Context* context) :
@@ -40,7 +40,7 @@ void ScoreboardWindow::Create()
 
 void ScoreboardWindow::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_PLAYER_SCORES_UPDATED, URHO3D_HANDLER(ScoreboardWindow, HandleScoresUpdated));
+    SubscribeToEvent(PlayerEvents::E_PLAYER_SCORES_UPDATED, URHO3D_HANDLER(ScoreboardWindow, HandleScoresUpdated));
 }
 
 void ScoreboardWindow::HandleScoresUpdated(StringHash eventType, VariantMap& eventData)

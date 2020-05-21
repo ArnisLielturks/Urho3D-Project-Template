@@ -23,6 +23,11 @@ ExitGame::~ExitGame()
 {
 }
 
+void ExitGame::RegisterObject(Context* context)
+{
+    context->RegisterFactory<ExitGame>();
+}
+
 void ExitGame::Init()
 {
     // Disable achievement showing for this level

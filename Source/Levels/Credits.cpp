@@ -7,6 +7,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Texture2D.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/Core/Context.h>
 #include "Credits.h"
 #include "../MyEvents.h"
 #include "../Global.h"
@@ -28,6 +29,11 @@ namespace Levels {
 
     Credits::~Credits()
     {
+    }
+
+    void Credits::RegisterObject(Context* context)
+    {
+        context->RegisterFactory<Credits>();
     }
 
     void Credits::Init()

@@ -20,6 +20,7 @@ namespace Levels {
         void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
         void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
         void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
+        static void RegisterObject(Context* context);
 
     protected:
         virtual void Init () override;
@@ -31,19 +32,19 @@ namespace Levels {
 
         void SubscribeToEvents();
         void UnsubscribeToEvents();
-
+        void RegisterConsoleCommands();
         void StartAudio();
         void StopAllAudio();
 
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
         void HandleWindowClosed(StringHash eventType, VariantMap& eventData);
-
+        void HandleBeforeLevelDestroy(StringHash eventType, VariantMap& eventData);
         void HandleControllerConnected(StringHash eventType, VariantMap& eventData);
         void HandleControllerDisconnected(StringHash eventType, VariantMap& eventData);
 
         void HandleVideoSettingsChanged(StringHash eventType, VariantMap& eventData);
-
+        void HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventData);
         void HandleClientConnected(StringHash eventType, VariantMap& eventData);
         void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
         void HandleServerConnected(StringHash eventType, VariantMap& eventData);

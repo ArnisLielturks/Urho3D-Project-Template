@@ -13,10 +13,9 @@ namespace Levels {
     URHO3D_OBJECT(MainMenu, BaseLevel);
 
     public:
-        /// Construct.
         MainMenu(Context* context);
-
         ~MainMenu();
+        static void RegisterObject(Context* context);
 
     protected:
         void Init () override;

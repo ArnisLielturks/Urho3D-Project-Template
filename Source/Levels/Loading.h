@@ -13,8 +13,8 @@ namespace Levels {
     public:
         /// Construct.
         Loading(Context* context);
-
         virtual ~Loading();
+        static void RegisterObject(Context* context);
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:

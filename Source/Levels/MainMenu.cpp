@@ -33,6 +33,11 @@ MainMenu::~MainMenu()
 {
 }
 
+void MainMenu::RegisterObject(Context* context)
+{
+    context->RegisterFactory<MainMenu>();
+}
+
 void MainMenu::Init()
 {
     // Disable achievement showing for this level

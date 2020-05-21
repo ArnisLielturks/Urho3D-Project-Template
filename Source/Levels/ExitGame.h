@@ -10,8 +10,8 @@ namespace Levels {
     public:
         /// Construct.
         ExitGame(Context* context);
-
         virtual ~ExitGame();
+        static void RegisterObject(Context* context);
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:

@@ -21,8 +21,6 @@ LevelManager::LevelManager(Context* context) :
 Object(context),
 currentLevel_("NONE")
 {
-    // Register all classes
-    RegisterAllFactories();
 
     // Listen to set level event
     SubscribeToEvent(MyEvents::E_SET_LEVEL, URHO3D_HANDLER(LevelManager, HandleSetLevelQueue));
@@ -50,16 +48,17 @@ LevelManager::~LevelManager()
 {
 }
 
-
-void LevelManager::RegisterAllFactories()
+void LevelManager::RegisterObject(Context* context)
 {
-    // Register classes
-    context_->RegisterFactory<Levels::Splash>();
-    context_->RegisterFactory<Levels::Level>();
-    context_->RegisterFactory<Levels::MainMenu>();
-    context_->RegisterFactory<Levels::ExitGame>();
-    context_->RegisterFactory<Levels::Loading>();
-    context_->RegisterFactory<Levels::Credits>();
+    context->RegisterFactory<LevelManager>();
+
+    Levels::Splash::RegisterObject(context);
+    Levels::Level::RegisterObject(context);
+    Levels::MainMenu::RegisterObject(context);
+    Levels::ExitGame::RegisterObject(context);
+    Levels::Loading::RegisterObject(context);
+    Levels::Credits::RegisterObject(context);
+
 }
 
 void LevelManager::HandleSetLevelQueue(StringHash eventType, VariantMap& eventData)

@@ -22,6 +22,7 @@
 #include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
 #include "../Messages/Achievements.h"
+#include "Player/PlayerEvents.h"
 
 using namespace Levels;
 
@@ -32,12 +33,17 @@ Level::Level(Context* context) :
     _showScoreboard(false),
     _drawDebug(false)
 {
-    Player::RegisterObject(context);
 }
 
 Level::~Level()
 {
     StopAllAudio();
+}
+
+void Level::RegisterObject(Context* context)
+{
+    context->RegisterFactory<Level>();
+    Player::RegisterObject(context);
 }
 
 void Level::Init()
@@ -112,11 +118,6 @@ void Level::Init()
             _players[(*it)]->SetControllable(true);
             if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
                 _players[(*it)]->SetServerConnection(GetSubsystem<Network>()->GetServerConnection());
-                VectorBuffer msg;
-                msg.WriteString("");
-                GetSubsystem<Network>()->GetServerConnection()->SendMessage(
-                        MyEvents::RemoteMessages::MSG_ASK_PLAYER_LIST, true, true, msg);
-                URHO3D_LOGINFO("Asking server for player list");
             }
         }
     }
@@ -185,12 +186,25 @@ void Level::SubscribeToEvents()
 
     SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
 
+    SubscribeToEvent(PlayerEvents::E_SET_PLAYER_CAMERA_TARGET, URHO3D_HANDLER(Level, HandlePlayerTargetChanged));
+
+
+//    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE);
+//    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE);
+
+    RegisterConsoleCommands();
+
+    SubscribeToEvent(MyEvents::E_LEVEL_BEFORE_DESTROY, URHO3D_HANDLER(Level, HandleBeforeLevelDestroy));
+}
+
+void Level::RegisterConsoleCommands()
+{
     SendEvent(
-        MyEvents::E_CONSOLE_COMMAND_ADD,
-        MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry",
-        MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry",
-        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
-        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#debug_geometry", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
@@ -200,93 +214,28 @@ void Level::SubscribeToEvents()
         }
         _drawDebug = !_drawDebug;
     });
+}
 
-    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE);
-    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE);
-
-    SubscribeToEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace MyEvents::RemotePlayerScoreUpdate;
-        String playerId = String(eventData[P_ID].GetInt());
-        VariantMap players = GetGlobalVar("Players").GetVariantMap();
-        VariantMap playerData = players[playerId].GetVariantMap();
-        playerData["Score"] = eventData[P_SCORE].GetInt();
-        playerData["ID"] = eventData[P_ID].GetInt();
-        players[playerId] = playerData;
-        SetGlobalVar("Players", players);
-
-        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
-    });
-
-    SubscribeToEvent(MyEvents::E_PLAYER_SCORE_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace MyEvents::PlayerScoreChanged;
-        String playerId = String(eventData[P_ID].GetInt());
-        int score = eventData[P_SCORE].GetInt();
-
-        VariantMap players = GetGlobalVar("Players").GetVariantMap();
-        VariantMap playerData = players[playerId].GetVariantMap();
-        int currentScore = playerData["Score"].GetInt();
-        currentScore += score;
-        if (currentScore < 0) {
-            currentScore = 0;
-        }
-        playerData["Score"] = currentScore;
-        playerData["ID"] = eventData[P_ID].GetInt();
-        players[playerId] = playerData;
-        SetGlobalVar("Players", players);
-
-        VariantMap& data = GetEventDataMap();
-        data[MyEvents::RemotePlayerScoreUpdate::P_ID] = eventData[P_ID].GetInt();
-        data[MyEvents::RemotePlayerScoreUpdate::P_SCORE] = currentScore;
-        GetSubsystem<Network>()->BroadcastRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE, true, data);
-
-        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
-    });
-
-    SubscribeToEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace MyEvents::RemoteAllPlayerScoreUpdate;
-        SetGlobalVar("Players", eventData[P_DATA].GetVariantMap());
-
-        SendEvent(MyEvents::E_PLAYER_SCORES_UPDATED);
-    });
-
-    SubscribeToEvent(E_NETWORKMESSAGE, [&](StringHash eventType, VariantMap& eventData) {
-        auto* network = GetSubsystem<Network>();
-
-        using namespace NetworkMessage;
-
-        int msgID = eventData[P_MESSAGEID].GetInt();
-        if (msgID == MyEvents::RemoteMessages::MSG_ASK_PLAYER_LIST) {
-            const PODVector<unsigned char> &data = eventData[P_DATA].GetBuffer();
-            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
-            MemoryBuffer msg(data);
-            String text = msg.ReadString();
-
-            // If we are the server, prepend the sender's IP address and port and echo to everyone
-            // If we are a client, just display the message
-            if (network->IsServerRunning()) {
-                URHO3D_LOGINFO("Client asked for player list, sending him it");
-                auto *sender = static_cast<Connection *>(eventData[P_CONNECTION].GetPtr());
-                VariantMap& data = GetEventDataMap();
-                data[P_DATA] = GetGlobalVar("Players").GetVariantMap();
-                sender->SendRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE, true, data);
-            }
-        }
-    });
-
-    SubscribeToEvent(MyEvents::E_LEVEL_BEFORE_DESTROY, [&](StringHash eventType, VariantMap& eventData) {
-        _remotePlayers.Clear();
-        UnsubscribeFromEvent(E_SERVERDISCONNECTED);
-        if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
-            GetSubsystem<Network>()->StopServer();
-        }
-        if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
-            GetSubsystem<Network>()->Disconnect();
-        }
-    });
+void Level::HandleBeforeLevelDestroy(StringHash eventType, VariantMap& eventData)
+{
+    _remotePlayers.Clear();
+    UnsubscribeFromEvent(E_SERVERDISCONNECTED);
+    if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
+        GetSubsystem<Network>()->StopServer();
+    }
+    if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+        GetSubsystem<Network>()->Disconnect();
+    }
 }
 
 void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
 {
+    // TODO: allow to play splitscreen when connected to server
+    if (GetSubsystem<Network>()->GetServerConnection()) {
+        URHO3D_LOGWARNING("Local splitscreen multiplayer is not yet supported in the network mode");
+        return;
+    }
+
     using namespace MyEvents::ControllerAdded;
     int controllerIndex = eventData[P_INDEX].GetInt();
 
@@ -307,6 +256,10 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
 
 void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& eventData)
 {
+    if (GetSubsystem<Network>()->GetServerConnection()) {
+        return;
+    }
+
     using namespace MyEvents::ControllerRemoved;
     int controllerIndex = eventData[P_INDEX].GetInt();
 
@@ -365,10 +318,10 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
         if (_cameras[playerId]) {
             Quaternion rotation(controls.pitch_, controls.yaw_, 0.0f);
             _cameras[playerId]->SetRotation(rotation);
-            const float CAMERA_DISTANCE = 1.5f;
 
+            Node* target = (*it).second_->GetCameraTarget();
             // Move camera some distance away from the ball
-            _cameras[playerId]->SetPosition((*it).second_->GetNode()->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * CAMERA_DISTANCE);
+            _cameras[playerId]->SetPosition(target->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * (*it).second_->GetCameraDistance());
         }
     }
 }
@@ -472,4 +425,23 @@ void Level::HandleServerDisconnected(StringHash eventType, VariantMap& eventData
     data["Name"] = "MainMenu";
     data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
     SendEvent(MyEvents::E_SET_LEVEL, data);
+}
+
+void Level::HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventData)
+{
+    using namespace PlayerEvents::SetPlayerCameraTarget;
+    int playerId = eventData[P_ID].GetInt();
+    Node* targetNode = nullptr;
+    float cameraDistance = 1.5f;
+    if (eventData.Contains(P_NODE)) {
+        targetNode = static_cast<Node*>(eventData[P_NODE].GetPtr());
+    }
+    if (eventData.Contains(P_DISTANCE)) {
+        cameraDistance = eventData[P_DISTANCE].GetFloat();
+    }
+    if (_players.Contains(playerId)) {
+        _players[playerId]->SetCameraTarget(targetNode);
+        _players[playerId]->SetCameraDistance(cameraDistance);
+    }
+
 }

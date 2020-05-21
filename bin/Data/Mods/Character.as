@@ -9,7 +9,7 @@ Array<String> animationList;
 Array<Vector3> animationMovementSpeed;
 int activeAnimation = 0;
 Timer timer;
-Timer timer2;
+Timer followCameraTimer;
 
 void Start()
 {
@@ -22,14 +22,26 @@ void Start()
     animationList.Push("Mods/Character/Bot_RunLeft.ani");
     animationMovementSpeed.Push(Vector3(-320.0f, 0, 0.0f));
 
+    animationList.Push("Mods/Character/Bot_RunBack.ani");
+    animationMovementSpeed.Push(Vector3(0, 0, -320.0f));
+
     animationList.Push("Mods/Character/Bot_RunRight.ani");
     animationMovementSpeed.Push(Vector3(320.0f, 0, 0.0f));
 
     animationList.Push("Mods/Character/Bot_Walk.ani");
     animationMovementSpeed.Push(Vector3(0.0f, 0, 160.0f));
 
-    animationList.Push("Mods/Character/Bot_Fall.ani");
-    animationMovementSpeed.Push(Vector3(0, 0, 0.0f));
+    animationList.Push("Mods/Character/Bot_WalkLeft.ani");
+    animationMovementSpeed.Push(Vector3(-160.0f, 0, 0));
+
+    animationList.Push("Mods/Character/Bot_WalkBack.ani");
+    animationMovementSpeed.Push(Vector3(0.0f, 0, -120.0f));
+
+    animationList.Push("Mods/Character/Bot_WalkRight.ani");
+    animationMovementSpeed.Push(Vector3(160.0f, 0, 0));
+
+    // animationList.Push("Mods/Character/Bot_Fall.ani");
+    // animationMovementSpeed.Push(Vector3(0, 0, 0.0f));
 
     CreateCharacter();
 
@@ -116,27 +128,11 @@ void CreateCharacter()
     }
 
     RemoveCharacter();
-    // Node@ modelNode = scene.CreateChild();
-    // modelNode.AddTag("Character");
-    // modelNode.position = Vector3(0, 0.0, 0);
-    // modelNode.scale = Vector3(scale, scale, scale);
-
-    // AnimatedModel@ modelObject = modelNode.CreateComponent("AnimatedModel");
-    // modelObject.model = cache.GetResource("Model", "Mods/Character/Bot.mdl");
-    // modelObject.ApplyMaterialList();
-    // // modelObject.material = cache.GetResource("Material", "Materials/Wood.xml");
-    // modelObject.castShadows = true;
-    // modelObject.updateInvisible = true;
-
 
     characterNode = scene.CreateChild();
     characterNode.AddTag("Character");
     characterNode.position = Vector3(0, 1, 0);
     characterNode.scale = Vector3(scale, scale, scale);
-
-    // StaticModel@ boxObject = characterNode.CreateComponent("StaticModel");
-    // boxObject.model = cache.GetResource("Model", "Models/Box.mdl");
-    // boxObject.material = cache.GetResource("Material", "Materials/Stone.xml");
 
     AnimatedModel@ modelObject = characterNode.CreateComponent("AnimatedModel");
     modelObject.model = cache.GetResource("Model", "Mods/Character/Bot.mdl");
@@ -144,10 +140,6 @@ void CreateCharacter()
     modelObject.castShadows = true;
     modelObject.updateInvisible = true;
 
-
-    // Create an AnimationState for a walk animation. Its time position will need to be manually updated to advance the
-    // animation, The alternative would be to use an AnimationController component which updates the animation automatically,
-    // but we need to update the model's position manually in any case
     animCtrl = characterNode.CreateComponent("AnimationController");
 
     body = characterNode.CreateComponent("RigidBody");
@@ -156,20 +148,18 @@ void CreateCharacter()
     CollisionShape@ shape = characterNode.CreateComponent("CollisionShape");
     shape.SetCapsule(60.0f, 180.0f, Vector3(0.0f, 105.0f, 0.0f));
 
-    // AnimationState@ state = modelObject.AddAnimationState(walkAnimation);
-    // // Enable full blending weight and looping
-    // state.weight = 1.0f;
-    // state.looped = true;
-    // state.time = Random(walkAnimation.length);
-
-    // Create our Mover script object that will move & animate the model during each frame's update. Here we use a shortcut
-    // script-only API function, CreateScriptObject, which creates a ScriptInstance component into the scene node, then uses
-    // it to instantiate the object (using the script file & class name provided)
-    // Mover@ mover = cast<Mover>(modelNode.CreateScriptObject(scriptFile, "Mover"));
-    // mover.SetParameters(MODEL_MOVE_SPEED, MODEL_ROTATE_SPEED, bounds);
     SubscribeToEvent("Update", "HandleUpdate");
 
     ChangeAnimation(0);
+
+    // Tell the player's camera to follow this character for some amount of time
+    VariantMap data;
+    data["ID"] = 0;
+    data["Node"] = characterNode;
+    data["Distance"] = 3.0f;
+    SendEvent("SetPlayerCameraTarget", data);
+
+    followCameraTimer.Reset();
 }
 
 /**
@@ -194,15 +184,19 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     // position.z -= timestep;
     // modelNode.position = position;
 
-    if (timer.GetMSec(false) > 5000) {
+    if (timer.GetMSec(false) > 3000) {
         ChangeAnimation(++activeAnimation);
         timer.Reset();
     }
 
-    if (timer2.GetMSec(false) > 20000) {
-        timer2.Reset();
+    if (followCameraTimer.GetMSec(false) > 2000) {
+        // Reset player camera to follow player controlled node instead
+        VariantMap data;
+        data["ID"] = 0;
+        SendEvent("SetPlayerCameraTarget", data);
     }
 }
+
 
 /**
  * Show notification with the level that was loaded

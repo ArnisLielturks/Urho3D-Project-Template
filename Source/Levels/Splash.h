@@ -11,9 +11,8 @@ namespace Levels {
     public:
         /// Construct.
         Splash(Context* context);
-
         virtual ~Splash();
-
+        static void RegisterObject(Context* context);
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
     protected:

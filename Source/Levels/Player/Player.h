@@ -48,11 +48,18 @@ public:
     void SetClientConnection(Connection* connection);
     void SetServerConnection(Connection* connection);
 
+    void SetCameraTarget(Node* target);
+    Node* GetCameraTarget();
+
+    void SetCameraDistance(float distance);
+    float GetCameraDistance();
+
 private:
 
+    bool IsCameraTargetSet();
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
-
+    void RegisterConsoleCommands();
     void UpdatePlayerList(bool remove = false);
 
     /**
@@ -62,6 +69,9 @@ private:
 
     RigidBody* _rigidBody;
     SharedPtr<Node> _node;
+
+    WeakPtr<Node> _cameraTarget;
+    float _cameraDistance{1.5f};
 
     void ResetPosition();
 

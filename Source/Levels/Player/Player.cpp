@@ -16,6 +16,7 @@
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
 #include "../../BehaviourTree/BehaviourTree.h"
+#include "PlayerState.h"
 
 static bool SHOW_LABELS = true;
 static float MOVE_TORQUE = 20.0f;
@@ -26,55 +27,7 @@ Player::Player(Context* context):
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Player, HandlePostUpdate));
-
-    SendEvent(
-        MyEvents::E_CONSOLE_COMMAND_ADD,
-        MyEvents::ConsoleCommandAdd::P_NAME, "show_labels",
-        MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels",
-        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#show_labels", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() != 2) {
-            URHO3D_LOGERROR("Invalid number of arguments!");
-            return;
-        }
-        SHOW_LABELS = ToBool(params[1]);
-        _label->SetEnabled(SHOW_LABELS);
-    });
-
-    SendEvent(
-        MyEvents::E_CONSOLE_COMMAND_ADD,
-        MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed",
-        MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed",
-        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#movement_speed", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() != 2) {
-            URHO3D_LOGERROR("Invalid number of arguments!");
-            return;
-        }
-        MOVE_TORQUE = ToFloat(params[1]);
-    });
-
-    SendEvent(
-        MyEvents::E_CONSOLE_COMMAND_ADD,
-        MyEvents::ConsoleCommandAdd::P_NAME, "jump_force",
-        MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force",
-        MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-        MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#jump_force", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() != 2) {
-            URHO3D_LOGERROR("Invalid number of arguments!");
-            return;
-        }
-        JUMP_FORCE = ToFloat(params[1]);
-    });
+    RegisterConsoleCommands();
 }
 
 Player::~Player()
@@ -89,6 +42,59 @@ Player::~Player()
 void Player::RegisterObject(Context* context)
 {
     context->RegisterFactory<Player>();
+    PlayerState::RegisterObject(context);
+}
+
+void Player::RegisterConsoleCommands()
+{
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "show_labels",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#show_labels", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        SHOW_LABELS = ToBool(params[1]);
+        _label->SetEnabled(SHOW_LABELS);
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#movement_speed", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        MOVE_TORQUE = ToFloat(params[1]);
+    });
+
+    SendEvent(
+            MyEvents::E_CONSOLE_COMMAND_ADD,
+            MyEvents::ConsoleCommandAdd::P_NAME, "jump_force",
+            MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force",
+            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#jump_force", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        JUMP_FORCE = ToFloat(params[1]);
+    });
 }
 
 void Player::UpdatePlayerList(bool remove)
@@ -117,6 +123,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 
     // Create the scene node & visual representation. This will be a replicated object
     _node = scene->CreateChild("Player");
+    _node->CreateComponent<PlayerState>(REPLICATED);
     _node->SetVar("Player", _controllerId);
 
     _node->SetPosition(Vector3(0, 2, 0));
@@ -214,11 +221,11 @@ void Player::SetControllable(bool value)
 {
     _isControlled = value;
     if (_isControlled) {
-        if (GetNode()->HasComponent<BehaviourTree>()) {
+        if (GetNode() && GetNode()->HasComponent<BehaviourTree>()) {
             GetNode()->RemoveComponent<BehaviourTree>();
         }
     } else {
-        if (!GetNode()->HasComponent<BehaviourTree>()) {
+        if (GetNode() && !GetNode()->HasComponent<BehaviourTree>()) {
             GetNode()->CreateComponent<BehaviourTree>();
             GetNode()->GetComponent<BehaviourTree>()->Init("Config/Behaviour.json");
         }
@@ -231,7 +238,12 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     if (_serverConnection) {
-        _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+        if (IsCameraTargetSet()) {
+            // We are not following our player node, so we must not control it
+            _serverConnection->SetControls(Controls());
+        } else {
+            _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+        }
         return;
     }
 
@@ -251,7 +263,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     if (_isControlled) {
         if (_connection) {
             controls = _connection->GetControls();
-        } else {
+        } else if (!IsCameraTargetSet()) {
             controls = GetSubsystem<ControllerInput>()->GetControls(_controllerId);
         }
     } else {
@@ -322,4 +334,33 @@ void Player::SetClientConnection(Connection* connection)
 void Player::SetServerConnection(Connection *connection)
 {
     _serverConnection = connection;
+}
+
+void Player::SetCameraTarget(Node* target)
+{
+    _cameraTarget = target;
+}
+
+Node* Player::GetCameraTarget()
+{
+    if (_cameraTarget) {
+        return _cameraTarget;
+    }
+
+    return GetNode();
+}
+
+bool Player::IsCameraTargetSet()
+{
+    return _cameraTarget && _cameraTarget != _node;
+}
+
+void Player::SetCameraDistance(float distance)
+{
+    _cameraDistance = distance;
+}
+
+float Player::GetCameraDistance()
+{
+    return _cameraDistance;
 }

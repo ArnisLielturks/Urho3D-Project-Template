@@ -11,15 +11,11 @@ class LevelManager : public Object
     URHO3D_OBJECT(LevelManager, Object);
 public:
     LevelManager(Context* context);
-
     ~LevelManager();
 
-private:
-    /**
-     * Register all system levels
-     */
-    void RegisterAllFactories();
+    static void RegisterObject(Context* context);
 
+private:
     /**
      * Level changing handler
      */

@@ -31,6 +31,11 @@ Loading::~Loading()
 {
 }
 
+void Loading::RegisterObject(Context* context)
+{
+    context->RegisterFactory<Loading>();
+}
+
 void Loading::Init()
 {
     // Disable achievement showing for this level

@@ -6,6 +6,7 @@
 #include <Urho3D/Scene/ValueAnimation.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Input/Input.h>
+#include <Urho3D/Core/Context.h>
 #include "Splash.h"
 #include "../MyEvents.h"
 #include "../Messages/Achievements.h"
@@ -27,6 +28,11 @@ Splash::Splash(Context* context) :
 
 Splash::~Splash()
 {
+}
+
+void Splash::RegisterObject(Context* context)
+{
+    context->RegisterFactory<Splash>();
 }
 
 void Splash::Init()

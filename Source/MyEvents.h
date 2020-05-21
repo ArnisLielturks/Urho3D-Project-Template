@@ -179,11 +179,6 @@ namespace MyEvents
     {
     }
 
-    // Let the app know that player scores have been updated
-    URHO3D_EVENT(E_PLAYER_SCORES_UPDATED, PlayerScoresUpdated)
-    {
-    }
-
     // Register new loading step in the loading screen
     URHO3D_EVENT(E_REGISTER_LOADING_STEP, RegisterLoadingStep)
     {
@@ -238,25 +233,4 @@ namespace MyEvents
         URHO3D_PARAM(P_NODE_ID, NodeID);
         URHO3D_PARAM(P_PLAYER_ID, PlayerID);
     }
-
-    URHO3D_EVENT(E_REMOTE_PLAYER_SCORE_UPDATE, RemotePlayerScoreUpdate)
-    {
-        URHO3D_PARAM(P_ID, ID); // int - controller id
-        URHO3D_PARAM(P_SCORE, Score); // int
-    }
-
-    URHO3D_EVENT(E_REMOTE_ALL_PLAYER_SCORE_UPDATE, RemoteAllPlayerScoreUpdate)
-    {
-        URHO3D_PARAM(P_DATA, Data); // VariantMap of players and their score
-    }
-
-    URHO3D_EVENT(E_PLAYER_SCORE_CHANGED, PlayerScoreChanged)
-    {
-        URHO3D_PARAM(P_ID, ID); // int - controller id
-        URHO3D_PARAM(P_SCORE, Score); // int
-    }
-
-    enum RemoteMessages {
-        MSG_ASK_PLAYER_LIST = 160,
-    };
 }

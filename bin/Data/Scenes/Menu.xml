@@ -121,8 +121,8 @@
         <attribute name="Scale" value="1 1 1" />
         <attribute name="Variables" />
         <component type="StaticModel" id="16777230">
-            <attribute name="Model" value="Model;Models/Urchin.mdl" />
-            <attribute name="Material" value="Material;Materials/NoMaterial.xml" />
+            <attribute name="Model" value="Model;Models/Sphere.mdl" />
+            <attribute name="Material" value="Material;Materials/Ball.xml" />
             <attribute name="Cast Shadows" value="true" />
         </component>
         <component type="CollisionShape" id="16777295">

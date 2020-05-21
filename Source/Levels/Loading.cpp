@@ -50,6 +50,7 @@ void Loading::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
+    SetGlobalVar("PACKET_LIMIT", 200);
     GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID);
     if (_data.Contains("StartServer") && _data["StartServer"].GetBool()) {
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
@@ -74,15 +75,17 @@ void Loading::Init()
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
 #ifdef __EMSCRIPTEN__
-//            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
-            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
             GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #endif
         });
         SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
             using namespace MyEvents::RemoteClientId;
             _data[P_NODE_ID] = eventData[P_NODE_ID];
+
             _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
             URHO3D_LOGINFOF("ClientID %d", eventData["ID"].GetInt());
             SendEvent(MyEvents::E_LOADING_STEP_FINISHED,

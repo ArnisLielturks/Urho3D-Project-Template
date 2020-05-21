@@ -2,7 +2,6 @@ HttpRequest@ httpRequest;
 
 void Start()
 {
-    return;
     SubscribeToEvent("DownloadImages", "HandleDownloadImages");
 
     VariantMap data;
@@ -45,7 +44,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (httpRequest is null) {
         SetRandomSeed(time.systemTime);
         uint randomNumber = Random(1000);
-        String url = "http://www.gravatar.com/avatar/" + String(randomNumber) + "?s=100&d=retro&r=g";
+        String url = "http://www.gravatar.com/avatar/" + String(randomNumber) + "?s=128&d=retro&r=g";
         log.Info("Downloading avatar from: " + url);
         httpRequest = network.MakeHttpRequest(url);
     }

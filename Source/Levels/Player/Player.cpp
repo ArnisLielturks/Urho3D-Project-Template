@@ -132,7 +132,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 
     auto* ballObject = _node->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
-    ballObject->SetMaterial(cache->GetResource<Material>("Materials/Ball.xml"));
+    ballObject->SetMaterial(cache->GetResource<Material>("Materials/Box.xml"));
     ballObject->SetCastShadows(true);
 
     // Create the physics components

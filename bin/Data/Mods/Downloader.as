@@ -2,6 +2,7 @@ HttpRequest@ httpRequest;
 
 void Start()
 {
+    return;
     SubscribeToEvent("DownloadImages", "HandleDownloadImages");
 
     VariantMap data;

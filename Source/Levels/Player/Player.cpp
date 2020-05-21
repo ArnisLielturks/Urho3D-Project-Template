@@ -123,7 +123,8 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 
     // Create the scene node & visual representation. This will be a replicated object
     _node = scene->CreateChild("Player");
-    _node->CreateComponent<PlayerState>(REPLICATED);
+    auto playerState = _node->CreateComponent<PlayerState>(REPLICATED);
+    playerState->SetPlayerID(_controllerId);
     _node->SetVar("Player", _controllerId);
 
     _node->SetPosition(Vector3(0, 2, 0));

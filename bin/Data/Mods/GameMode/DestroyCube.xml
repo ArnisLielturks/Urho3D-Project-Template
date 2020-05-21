@@ -19,7 +19,7 @@
         <attribute name="Collision Layer" value="4" />
         <attribute name="Collision Mask" value="253" />
     </component>
-    <component type="ScriptInstance" id="71">
+    <component type="ScriptInstance" id="16777300">
         <attribute name="Delayed Method Calls" value="0" />
         <attribute name="Script File" value="ScriptFile;Mods/GameMode/Destroyer.as" />
         <attribute name="Class Name" value="Destroyer" />

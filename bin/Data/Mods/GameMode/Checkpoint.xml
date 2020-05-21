@@ -19,7 +19,7 @@
         <attribute name="Collision Event Mode" value="Always" />
         <attribute name="Is Trigger" value="true" />
     </component>
-    <component type="ScriptInstance" id="79">
+    <component type="ScriptInstance" id="16777301">
         <attribute name="Delayed Method Calls" value="0" />
         <attribute name="Script File" value="ScriptFile;Mods/GameMode/Checkpoint.as" />
         <attribute name="Class Name" value="Checkpoint" />

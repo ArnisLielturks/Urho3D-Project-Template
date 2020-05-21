@@ -573,7 +573,7 @@ namespace Urho3D {
         //tab.button->SetStyle("UITabButton");
 
         return tab.page.Get();
-    }\
+    }
 
     void UITabPanel::RemoveTab(const String& name) {
         auto index = -1;

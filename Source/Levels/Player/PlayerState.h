@@ -15,10 +15,14 @@ public:
     void SetScore(int value);
     int GetScore() const;
 
+    void SetPlayerID(int id);
+    int GetPlayerID() const;
+
 protected:
     void OnNodeSet(Node* node) override;
 private:
     void HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventData);
     void OnScoreChanged();
     int _score{0};
+    int _playerId{-1};
 };

@@ -41,8 +41,10 @@ class Destroyer : ScriptObject
                 data["SoundFile"] = "Sounds/achievement.wav";
                 SendEvent("PlaySound", data);
 
-                data["Player"] = lastHitPlayerId;
-                SendEvent("BoxDestroyed", data);
+                data["Score"] = 1;
+                otherBody.node.SendEvent("PlayerScoreAdd", data);
+
+                SendEvent("BoxDestroyed");
                 Burst();
                 node.Remove();
 
@@ -65,8 +67,7 @@ class Destroyer : ScriptObject
             data["SoundFile"] = "Sounds/achievement.wav";
             SendEvent("PlaySound", data);
 
-            data["Player"] = lastHitPlayerId;
-            SendEvent("BoxDestroyed", data);
+            SendEvent("BoxDestroyed");
             SendEvent("BoxDropped", data);
 
             Burst();

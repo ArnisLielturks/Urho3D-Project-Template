@@ -174,12 +174,9 @@ void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
     if (serverConnection !is null) {
         return;
     }
-    int playerId = eventData["Player"].GetInt();
 
     count--;
     CreateObject();
-
-    UpdatePlayerScore(playerId, 1);
 }
 
 void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
@@ -188,9 +185,6 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
     if (serverConnection !is null) {
         return;
     }
-    int playerId = eventData["Player"].GetInt();
-
-    UpdatePlayerScore(playerId, 5);
 
     for( uint i = 0; i < 5; i++) {
         CreateObject();

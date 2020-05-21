@@ -9,6 +9,7 @@ PlayerState::PlayerState(Context* context) :
         Component(context)
 {
     URHO3D_ACCESSOR_ATTRIBUTE("Score", GetScore, SetScore, int, 0, AM_DEFAULT);
+    URHO3D_ACCESSOR_ATTRIBUTE("Player ID", GetPlayerID, SetPlayerID, int, -1, AM_DEFAULT);
 }
 
 void PlayerState::RegisterObject(Context* context)
@@ -19,7 +20,6 @@ void PlayerState::RegisterObject(Context* context)
 void PlayerState::OnNodeSet(Node* node)
 {
     SubscribeToEvent(node, PlayerEvents::E_PLAYER_SCORE_ADD, URHO3D_HANDLER(PlayerState, HandlePlayerScoreAdd));
-    OnScoreChanged();
 }
 
 int PlayerState::GetScore() const
@@ -55,14 +55,25 @@ void PlayerState::HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventDa
 
 void PlayerState::OnScoreChanged()
 {
-    if (node_) {
-        int playerId = node_->GetVar("Player").GetInt();
+    URHO3D_LOGINFOF("Player %d Score %d", _playerId, _score);
+    if (_playerId >= 0) {
         VariantMap players = GetGlobalVar("Players").GetVariantMap();
-        VariantMap playerData = players[String(playerId)].GetVariantMap();
+        VariantMap playerData = players[String(GetPlayerID())].GetVariantMap();
         playerData["Score"] = _score;
-        playerData["ID"] = playerId;
-        players[String(playerId)] = playerData;
+        playerData["ID"] = GetPlayerID();
+        players[String(GetPlayerID())] = playerData;
         SetGlobalVar("Players", players);
         SendEvent(PlayerEvents::E_PLAYER_SCORES_UPDATED);
     }
+    MarkNetworkUpdate();
+}
+
+void PlayerState::SetPlayerID(int id)
+{
+    _playerId = id;
+}
+
+int PlayerState::GetPlayerID() const
+{
+    return _playerId;
 }

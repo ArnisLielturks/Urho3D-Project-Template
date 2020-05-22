@@ -83,6 +83,9 @@ void NewGameSettingsWindow::Create()
     _startServer = CreateCheckbox("Start server");
 #endif
     _connectServer = CreateCheckbox("Connect to server");
+#ifdef __EMSCRIPTEN__
+    _connectServer->SetChecked(true);
+#endif
 
     titleBar->SetFixedSize(_levelSelection->GetWidth(), 24);
 }

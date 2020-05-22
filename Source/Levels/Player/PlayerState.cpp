@@ -8,13 +8,13 @@
 PlayerState::PlayerState(Context* context) :
         Component(context)
 {
-    URHO3D_ACCESSOR_ATTRIBUTE("Score", GetScore, SetScore, int, 0, AM_DEFAULT);
-    URHO3D_ACCESSOR_ATTRIBUTE("Player ID", GetPlayerID, SetPlayerID, int, -1, AM_DEFAULT);
 }
 
 void PlayerState::RegisterObject(Context* context)
 {
     context->RegisterFactory<PlayerState>();
+    URHO3D_ACCESSOR_ATTRIBUTE("Score", GetScore, SetScore, int, 0, AM_DEFAULT);
+    URHO3D_ACCESSOR_ATTRIBUTE("Player ID", GetPlayerID, SetPlayerID, int, -1, AM_DEFAULT);
 }
 
 void PlayerState::OnNodeSet(Node* node)

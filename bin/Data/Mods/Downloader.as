@@ -69,8 +69,9 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         else
         {
             if (httpRequest.availableSize > 0) {
-                File@ file = File("Data/Textures/Avatar.png", FILE_READWRITE);
-                file.Write(httpRequest.Read(httpRequest.availableSize));
+                httpRequest.Read(httpRequest.availableSize);
+                // File@ file = File("Data/Textures/Avatar.png", FILE_READWRITE);
+                // file.Write(httpRequest.Read(httpRequest.availableSize));
             }
             else
             {

@@ -50,7 +50,7 @@ void Loading::Init()
     // Subscribe to global events for camera movement
     SubscribeToEvents();
 
-    SetGlobalVar("PACKET_LIMIT", -1);
+    SetGlobalVar("PACKET_LIMIT", 10000);
     GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID);
     if (_data.Contains("StartServer") && _data["StartServer"].GetBool()) {
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,

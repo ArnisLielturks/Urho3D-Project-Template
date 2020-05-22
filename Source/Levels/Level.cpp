@@ -320,8 +320,12 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
             _cameras[playerId]->SetRotation(rotation);
 
             Node* target = (*it).second_->GetCameraTarget();
-            // Move camera some distance away from the ball
-            _cameras[playerId]->SetPosition(target->GetPosition() + _cameras[playerId]->GetRotation() * Vector3::BACK * (*it).second_->GetCameraDistance());
+            if (target) {
+                // Move camera some distance away from the ball
+                _cameras[playerId]->SetPosition(target->GetPosition() +
+                                                _cameras[playerId]->GetRotation() * Vector3::BACK *
+                                                (*it).second_->GetCameraDistance());
+            }
         }
     }
 }

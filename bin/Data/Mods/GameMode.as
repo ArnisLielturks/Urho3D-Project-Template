@@ -189,17 +189,17 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
     for( uint i = 0; i < 5; i++) {
         CreateObject();
     }
-
-    if (ground !is null) {
-        if (ground.scale.x > 10) {
-            targetGroundScale = ground.scale * 0.9;
-            CreateCheckpoint();
-            SubscribeToEvent("Update", "HandleUpdate");
-        } else {
-            targetGroundScale = Vector3(40, 40, 40);
-            DelayedExecute(2.0, false, "void CreateCheckpoint()");
-        }
-    }
+    CreateCheckpoint();
+    // if (ground !is null) {
+    //     if (ground.scale.x > 10) {
+    //         targetGroundScale = ground.scale * 0.9;
+    //         CreateCheckpoint();
+    //         SubscribeToEvent("Update", "HandleUpdate");
+    //     } else {
+    //         targetGroundScale = Vector3(40, 40, 40);
+    //         DelayedExecute(2.0, false, "void CreateCheckpoint()");
+    //     }
+    // }
 }
 
 void HandleBoxDropped(StringHash eventType, VariantMap& eventData)

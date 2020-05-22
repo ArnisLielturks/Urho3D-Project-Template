@@ -125,6 +125,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     _node = scene->CreateChild("Player");
     auto playerState = _node->CreateComponent<PlayerState>(REPLICATED);
     playerState->SetPlayerID(_controllerId);
+    URHO3D_LOGINFOF("Creating player node=%d, playerstate=%d", _node->GetID(), playerState->GetID());
     _node->SetVar("Player", _controllerId);
 
     _node->SetPosition(Vector3(0, 2, 0));

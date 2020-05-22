@@ -3,6 +3,7 @@
  */
 void Start()
 {
+    return;
     SubscribeToEvent("LoadImages", "HandleLoadImages");
 
     VariantMap data;
@@ -35,14 +36,12 @@ void HandleLoadImages()
 
     progress = 0.0;
     DelayedExecute(1.0, false, "void LoadImagesProgress()");
-    DelayedExecute(2.0, false, "void LoadImagesProgress()");
-    DelayedExecute(3.0, false, "void LoadImagesProgress()");
-    DelayedExecute(4.0, false, "void FinishLoadImages()");
+    DelayedExecute(2.0, false, "void FinishLoadImages()");
 }
 
 void LoadImagesProgress()
 {
-    progress += 0.25;
+    progress += 0.5;
     VariantMap data;
     data["Event"] = "LoadImages";
     data["Progress"] = progress;

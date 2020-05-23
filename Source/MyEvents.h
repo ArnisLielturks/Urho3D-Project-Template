@@ -184,6 +184,7 @@ namespace MyEvents
     {
         URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
         URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
+        URHO3D_PARAM(P_REMOVE_ON_FINISH, RemoveOnFinish); // bool - automatically remove this loading step when finished
     }
 
     // ACK event to mark loading step as valid

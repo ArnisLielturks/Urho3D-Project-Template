@@ -95,6 +95,17 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     URHO3D_LOGINFO("Scene loaded: " + _activeScene->GetFileName());
 }
 
+void SceneManager::CleanupLoadingSteps()
+{
+    for (auto it = _loadingSteps.Begin(); it != _loadingSteps.End(); ++it) {
+        if ((*it).second_.autoRemove) {
+            URHO3D_LOGINFOF("Auto removing loading step %s", (*it).second_.name.CString());
+            _loadingSteps.Erase(it);
+            it--;
+        }
+    }
+}
+
 void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     using namespace Update;
@@ -167,6 +178,8 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         UnsubscribeFromEvent(MyEvents::E_ACK_LOADING_STEP);
         UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_PROGRESS);
         UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_FINISHED);
+
+        CleanupLoadingSteps();
     }
 }
 
@@ -193,6 +206,11 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
     step.finished = false;
     step.failed   = false;
     step.progress = 0;
+    step.autoRemove = false;
+
+    if (eventData.Contains(P_REMOVE_ON_FINISH) && eventData[P_REMOVE_ON_FINISH].GetBool()) {
+        step.autoRemove = true;
+    }
     if (step.name.Empty() || step.event.Empty()) {
         URHO3D_LOGERROR("Unable to register loading step " + step.name + ":" + step.event);
         return;

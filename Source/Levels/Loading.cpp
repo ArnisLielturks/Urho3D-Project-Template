@@ -55,6 +55,7 @@ void Loading::Init()
     if (_data.Contains("StartServer") && _data["StartServer"].GetBool()) {
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
                   MyEvents::RegisterLoadingStep::P_NAME, "Starting server",
+                  MyEvents::RegisterLoadingStep::P_REMOVE_ON_FINISH, true,
                   MyEvents::RegisterLoadingStep::P_EVENT, "StartServer");
         SubscribeToEvent("StartServer", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
@@ -70,6 +71,7 @@ void Loading::Init()
         // Register our loading step
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
                   MyEvents::RegisterLoadingStep::P_NAME, "Connecting to server",
+                  MyEvents::RegisterLoadingStep::P_REMOVE_ON_FINISH, true,
                   MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
         SubscribeToEvent("ConnectServer", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(MyEvents::E_ACK_LOADING_STEP,

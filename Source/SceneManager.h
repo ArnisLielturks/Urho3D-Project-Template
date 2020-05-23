@@ -16,6 +16,7 @@ struct LoadingStep {
     float progress;
     Timer loadTime;
     bool failed;
+    bool autoRemove;
 };
 
 class SceneManager : public Object
@@ -52,6 +53,8 @@ public:
     void ResetProgress();
 
 private:
+
+    void CleanupLoadingSteps();
 
     /**
      * Scene loading in progress

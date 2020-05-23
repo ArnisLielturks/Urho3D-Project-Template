@@ -68,7 +68,19 @@ void Loading::Init()
     }
 
     if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
-        // Register our loading step
+        StringVector dependsOn;
+        dependsOn.Push("ConnectServer");
+        SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
+                  MyEvents::RegisterLoadingStep::P_NAME, "Retrieving player data",
+                  MyEvents::RegisterLoadingStep::P_REMOVE_ON_FINISH, true,
+                  MyEvents::RegisterLoadingStep::P_DEPENDS_ON, dependsOn,
+                  MyEvents::RegisterLoadingStep::P_EVENT, "RetrievePlayerData");
+        SubscribeToEvent("RetrievePlayerData", [&](StringHash eventType, VariantMap &eventData) {
+            SendEvent(MyEvents::E_ACK_LOADING_STEP,
+                      MyEvents::RegisterLoadingStep::P_EVENT, "RetrievePlayerData");
+            _searchPlayerNode = true;
+            GetSubsystem<SceneManager>()->GetActiveScene()->SetUpdateEnabled(true);
+        });
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
                   MyEvents::RegisterLoadingStep::P_NAME, "Connecting to server",
                   MyEvents::RegisterLoadingStep::P_REMOVE_ON_FINISH, true,
@@ -80,8 +92,8 @@ void Loading::Init()
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
-            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
-//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #endif
         });
         SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
@@ -89,7 +101,7 @@ void Loading::Init()
             _data[P_NODE_ID] = eventData[P_NODE_ID];
 
             _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
-            URHO3D_LOGINFOF("ClientID %d", eventData["ID"].GetInt());
+            URHO3D_LOGINFOF("ClientID %d", eventData[P_NODE_ID].GetInt());
             SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
                       MyEvents::LoadingStepFinished::P_EVENT, "ConnectServer");
         });
@@ -235,6 +247,10 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     float progress = GetSubsystem<SceneManager>()->GetProgress();
 
+    if (_searchPlayerNode) {
+        SearchPlayerNode();
+    }
+
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         UpdateStatusMesage();
 
@@ -246,6 +262,20 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (progress >= 1.0f) {
         SendEvent("EndLoading");
         UnsubscribeFromEvent(E_UPDATE);
+    }
+}
+
+void Loading::SearchPlayerNode()
+{
+    if (GetSubsystem<SceneManager>()->GetActiveScene()) {
+        using namespace MyEvents::RemoteClientId;
+        int nodeID = _data[P_NODE_ID].GetInt();
+        auto node = GetSubsystem<SceneManager>()->GetActiveScene()->GetNode(nodeID);
+        if (node) {
+            _searchPlayerNode = false;
+            SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
+                      MyEvents::LoadingStepFinished::P_EVENT, "RetrievePlayerData");
+        }
     }
 }
 

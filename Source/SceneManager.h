@@ -17,6 +17,7 @@ struct LoadingStep {
     Timer loadTime;
     bool failed;
     bool autoRemove;
+    StringVector dependsOn;
 };
 
 class SceneManager : public Object
@@ -55,6 +56,8 @@ public:
 private:
 
     void CleanupLoadingSteps();
+
+    bool CanLoadingStepRun(LoadingStep& loadingStep);
 
     /**
      * Scene loading in progress

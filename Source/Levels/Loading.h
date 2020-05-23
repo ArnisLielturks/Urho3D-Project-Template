@@ -39,6 +39,9 @@ namespace Levels {
          */
         void HandleEndLoading(StringHash eventType, VariantMap& eventData);
 
+        void SearchPlayerNode();
+
+        bool _searchPlayerNode{false};
         /**
          * Status message of the current loading step
          */

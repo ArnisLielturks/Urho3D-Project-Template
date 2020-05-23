@@ -33,7 +33,9 @@ Player::Player(Context* context):
 Player::~Player()
 {
     UpdatePlayerList(true);
-    _node->Remove();
+    if (_node) {
+        _node->Remove();
+    }
     if (_label) {
         _label->Remove();
     }

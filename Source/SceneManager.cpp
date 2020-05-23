@@ -127,7 +127,7 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
         targetProgress = (float)completed / ( (float) _loadingSteps.Size() + 1.0f );
 
-        if (!(*it).second_.finished) {
+        if (CanLoadingStepRun((*it).second_)) {
 
             //TODO: implement fix for web builds as the loading steps might take longer to execute
             // due to the inactive browsers tabs where game is running in the background
@@ -207,6 +207,7 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
     step.failed   = false;
     step.progress = 0;
     step.autoRemove = false;
+    step.dependsOn = eventData[P_DEPENDS_ON].GetStringVector();
 
     if (eventData.Contains(P_REMOVE_ON_FINISH) && eventData[P_REMOVE_ON_FINISH].GetBool()) {
         step.autoRemove = true;
@@ -254,4 +255,22 @@ void SceneManager::HandleLoadingStepFinished(StringHash eventType, VariantMap& e
     _loadingSteps[event].finished = true;
 
     URHO3D_LOGINFO("Loading step " + event + " finished");
+}
+
+bool SceneManager::CanLoadingStepRun(LoadingStep& loadingStep)
+{
+    if (loadingStep.finished) {
+        return false;
+    }
+
+    if (!loadingStep.dependsOn.Empty()) {
+        for (auto it = loadingStep.dependsOn.Begin(); it != loadingStep.dependsOn.End(); ++it) {
+            String eventName = (*it);
+            if (_loadingSteps.Contains(eventName) && !_loadingSteps[eventName].finished) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

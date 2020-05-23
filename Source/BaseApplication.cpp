@@ -371,6 +371,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_WINDOW_RESIZABLE, true);
 #else
     SetEngineParameter(EP_WINDOW_RESIZABLE, GetSubsystem<ConfigManager>()->GetBool("video", "ResizableWindow", false));
+    SetEngineParameter(EP_BORDERLESS, false);
 #endif
 
 

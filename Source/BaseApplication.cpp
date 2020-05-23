@@ -367,7 +367,11 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 720));
     SetEngineParameter(EP_VSYNC, GetSubsystem<ConfigManager>()->GetBool("video", "VSync", true));
     SetEngineParameter(EP_REFRESH_RATE, GetSubsystem<ConfigManager>()->GetInt("video", "RefreshRate", 60));
+#ifdef __EMSCRIPTEN
+    SetEngineParameter(EP_WINDOW_RESIZABLE, true);
+#else
     SetEngineParameter(EP_WINDOW_RESIZABLE, GetSubsystem<ConfigManager>()->GetBool("video", "ResizableWindow", false));
+#endif
 
 
     // Engine settings

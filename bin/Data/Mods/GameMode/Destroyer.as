@@ -1,4 +1,5 @@
-// Rotator script object class. Script objects to be added to a scene node must implement the empty ScriptObject interface
+#include "GameObject.as"
+
 class Destroyer : ScriptObject
 {
     int lastHitPlayerId = -1;
@@ -77,13 +78,15 @@ class Destroyer : ScriptObject
 
     void Burst()
     {
-        Node@ emitter = scene.CreateChild();
+        Node@ emitter = scene.CreateChild("ParticleEffect");
         emitter.worldPosition = node.worldPosition;
         ParticleEmitter@ particleEmitter = emitter.CreateComponent("ParticleEmitter");
         particleEmitter.effect = cache.GetResource("ParticleEffect", "Particle/Burst.xml");
         particleEmitter.emitting = true;
         //particleEmitterNodeList.Push(emitter);
         emitter.temporary = true;
-        particleEmitter.autoRemoveMode = REMOVE_NODE;
+        // particleEmitter.autoRemoveMode = REMOVE_NODE;
+        GameObject@ object = cast<GameObject>(emitter.CreateScriptObject(scriptFile, "GameObject", LOCAL));
+        object.duration = 5.0f;
     }
 }

@@ -102,6 +102,7 @@ void Level::Init()
     auto input = GetSubsystem<Input>();
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
+        input->SetMouseMode(MouseMode::MM_RELATIVE);
     }
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
@@ -373,6 +374,7 @@ void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
         Input* input = GetSubsystem<Input>();
         if (input->IsMouseVisible()) {
             input->SetMouseVisible(false);
+            input->SetMouseMode(MouseMode::MM_RELATIVE);
         }
         Run();
     }

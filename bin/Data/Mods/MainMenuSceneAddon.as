@@ -37,6 +37,7 @@ void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
             StaticModel@ boxObject = box.CreateComponent("StaticModel");
             boxObject.model = cache.GetResource("Model", "Models/Box.mdl");
             boxObject.material = cache.GetResource("Material", "Materials/Box.xml");
+            boxObject.castShadows = true;
 
             RigidBody@ body = box.CreateComponent("RigidBody");
             body.mass = 1.0f;

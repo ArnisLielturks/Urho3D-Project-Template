@@ -4,7 +4,6 @@
     <texture unit="diffuse" name="Textures/floor_tiles_diff.png" />
     <texture unit="normal" name="Textures/floor_tiles_normal.png" />
     <texture unit="specular" name="Textures/floor_tiles_spec.png" />
-    <shader psdefines="PACKEDNORMAL" />
     <parameter name="MatSpecColor" value="0.3 0.3 0.3 16" />
     <parameter name="UOffset" value="30 0 0 0" />
     <parameter name="VOffset" value="0 30 0 0" />

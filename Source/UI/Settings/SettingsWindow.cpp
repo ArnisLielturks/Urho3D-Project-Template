@@ -203,6 +203,7 @@ void SettingsWindow::InitWindow()
     window_->SetLayout(LM_VERTICAL, 6, IntRect(6, 6, 6, 6));
     window_->SetAlignment(HA_CENTER, VA_CENTER);
     window_->SetName("Window");
+    window_->GetParent()->SetPriority(window_->GetParent()->GetPriority() + 1000);
 
     // Create Window 'titlebar' container
     auto* titleBar = new UIElement(context_);

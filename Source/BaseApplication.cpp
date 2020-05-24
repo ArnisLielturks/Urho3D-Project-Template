@@ -379,7 +379,7 @@ void BaseApplication::LoadINIConfig(String filename)
     GetSubsystem<Engine>()->SetMaxFps(GetSubsystem<ConfigManager>()->GetInt("engine", "FPSLimit", 60));
     SetEngineParameter(EP_HIGH_DPI, GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false));
     SetEngineParameter(EP_WINDOW_TITLE, "ProjectTemplate");
-    SetEngineParameter(EP_WINDOW_ICON, "Textures/UrhoIcon.png");
+    SetEngineParameter(EP_WINDOW_ICON, "Textures/AppIcon.png");
 
     // Logs
     SetEngineParameter(EP_LOG_NAME, GetSubsystem<ConfigManager>()->GetString("engine", "LogName", "ProjectTemplate.log"));
@@ -397,6 +397,7 @@ void BaseApplication::LoadINIConfig(String filename)
 
 
     Audio* audio = GetSubsystem<Audio>();
+
     audio->SetMasterGain(SOUND_MASTER, engine_->GetGlobalVar("Master").GetFloat());
     audio->SetMasterGain(SOUND_EFFECT, engine_->GetGlobalVar("Effect").GetFloat());
     audio->SetMasterGain(SOUND_AMBIENT, engine_->GetGlobalVar("Ambient").GetFloat());

@@ -254,7 +254,9 @@ void SettingsWindow::InitControls()
     CreateGraphicsTab();
     CreateAudioTab();
     CreateControllersTab();
+#if !defined(__ANDROID__)
     CreateControlsTab();
+#endif
     CreateGameTab();
 
     SubscribeToEvent(E_UITAB_CHANGED, URHO3D_HANDLER(SettingsWindow, HandleTabChanged));
@@ -264,6 +266,7 @@ void SettingsWindow::CreateVideoTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto video_tab = tabs_->AddTab(localization->Get("VIDEO"));
+
 
     opt_fullscreen_ = new UIMultiOption(context_);
     opt_fullscreen_->SetName("OptFullscreen");
@@ -363,13 +366,17 @@ void SettingsWindow::CreateVideoTab()
     gamma_->SetStyleAuto();
     gamma_->SetTags({"misc-video"});
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     video_tab->AddItem(opt_fullscreen_);
     video_tab->AddItem(opt_monitor_);
     video_tab->AddItem(opt_resolution_);
     video_tab->AddItem(opt_rate_);
+#endif
     video_tab->AddItem(opt_vsync_);
     video_tab->AddItem(elm);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     video_tab->AddItem(opt_resizable_);
+#endif
     video_tab->AddItem(opt_fpslimit_);
     video_tab->AddItem(gamma_);
 
@@ -380,6 +387,7 @@ void SettingsWindow::CreateGraphicsTab()
 {
     auto* localization = GetSubsystem<Localization>();
     auto graphics_tab = tabs_->AddTab(localization->Get("GRAPHICS"));
+
 
     // graphics tab
     opt_texture_quality_ = new UIMultiOption(context_);
@@ -470,7 +478,7 @@ void SettingsWindow::CreateGraphicsTab()
     opt_ssao_->SetTags({ "misc-video" });
     opt_ssao_->SetStrings(options_bool);
 
-    graphics_tab->AddItem(opt_texture_quality_);
+//    graphics_tab->AddItem(opt_texture_quality_);
     graphics_tab->AddItem(opt_material_quality_);
     graphics_tab->AddItem(opt_shadows_);
     graphics_tab->AddItem(opt_shadow_quality_);
@@ -478,7 +486,9 @@ void SettingsWindow::CreateGraphicsTab()
     graphics_tab->AddItem(opt_instancing_);
     graphics_tab->AddItem(opt_specular_);
     graphics_tab->AddItem(opt_hdr_);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     graphics_tab->AddItem(opt_ssao_);
+#endif
 }
 
 void SettingsWindow::CreateAudioTab()

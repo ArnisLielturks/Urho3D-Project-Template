@@ -47,9 +47,9 @@ class Destroyer : ScriptObject
 
                 SendEvent("BoxDestroyed");
                 Burst();
-                node.Remove();
 
                 UnsubscribeFromEvent("NodeCollisionStart");
+                node.Remove();
             } else {
                 VariantMap data;
                 data["Type"] = SOUND_EFFECT;

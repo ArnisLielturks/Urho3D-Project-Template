@@ -30,18 +30,24 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (timer.GetMSec(false) > 1000) {
         Connection@ serverConnection = network.serverConnection;
         if (serverConnection !is null) {
+            packetsIn.visible = true;
+            packetsOut.visible = true;
             packetsIn.text = "Packets In : " + String(serverConnection.packetsInPerSec);
             packetsOut.text = "Packets Out: " + String(serverConnection.packetsOutPerSec);
-        }
-        if (network.serverRunning) {
+        } else if (network.serverRunning) {
             int pIn = 0;
             int pOut = 0;
             for (uint i = 0; i < network.clientConnections.length; i++) {
                 pIn += network.clientConnections[i].packetsInPerSec;
                 pOut += network.clientConnections[i].packetsOutPerSec;
             }
+            packetsIn.visible = true;
+            packetsOut.visible = true;
             packetsIn.text = "Packets In : " + String(pIn);
             packetsOut.text = "Packets Out: " + String(pOut);
+        } else {
+            packetsIn.visible = false;
+            packetsOut.visible = false;
         }
     }
 }

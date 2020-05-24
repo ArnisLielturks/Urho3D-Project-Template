@@ -378,7 +378,9 @@ void SettingsWindow::CreateVideoTab()
     video_tab->AddItem(opt_resizable_);
 #endif
     video_tab->AddItem(opt_fpslimit_);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     video_tab->AddItem(gamma_);
+#endif
 
     SubscribeToEvent(btn_apply_, E_RELEASED, URHO3D_HANDLER(SettingsWindow, HandleApply));
 }

@@ -21,5 +21,5 @@ void VS()
 void PS()
 {
     vec3 color = texture2D(sDiffMap, vScreenPos).rgb;
-    gl_FragColor = vec4(ToGamma(color, cGamma), 1.0);
+    gl_FragColor = vec4(ToInverseGamma(color, cGamma), 1.0);
 }

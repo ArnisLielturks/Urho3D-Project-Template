@@ -92,7 +92,7 @@ void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
         Node *zoneNode = _scene->CreateChild("Zone", LOCAL);
         _defaultZone = zoneNode->CreateComponent<Zone>();
         _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
-        _defaultZone->SetAmbientColor(Color(0.3f, 0.3f, 0.3f));
+        _defaultZone->SetAmbientColor(Color(0.0f, 0.0f, 0.0f));
         _defaultZone->SetFogStart(50.0f);
         _defaultZone->SetFogEnd(300.0f);
 

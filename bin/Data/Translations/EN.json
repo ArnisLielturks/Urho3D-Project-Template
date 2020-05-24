@@ -42,7 +42,7 @@
   "APPLY": "Apply",
   "ENABLE_MODS": "Enable mods",
   "EXITING_GAME": "Exiting game",
-  "TUTORIAL": "ESC - pause menu\nTAB - scoreboard\nF2 - toggle console",
+  "TUTORIAL": "ESC - pause menu\nTAB - scoreboard\nF1 - toggle console",
   "CLEAR_ACHIEVEMENTS": "Clear achievements",
   "GAME": "Game",
   "LANGUAGE": "Language",

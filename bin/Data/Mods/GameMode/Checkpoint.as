@@ -19,7 +19,7 @@ class Checkpoint : ScriptObject
         {
             if (otherBody.node.vars.Contains("Player")) {
                 VariantMap data;
-                data["Score"] = 5;
+                data["Score"] = 2;
                 otherBody.node.SendEvent("PlayerScoreAdd", data);
 
                 SendEvent("CheckpointReached");

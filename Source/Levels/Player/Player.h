@@ -35,6 +35,8 @@ public:
 
     void SetRemotePlayerId(int id);
 
+    void SetName(const String& name);
+
     /**
      * Get created player node
      */
@@ -60,7 +62,6 @@ private:
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
     void RegisterConsoleCommands();
-    void UpdatePlayerList(bool remove = false);
 
     /**
      * Detect when player is on the ground or not
@@ -74,8 +75,6 @@ private:
     float _cameraDistance{1.5f};
 
     void ResetPosition();
-
-    void SetLabel();
     
     /**
      * Controller ID

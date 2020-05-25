@@ -31,6 +31,7 @@ SceneManager::SceneManager(Context* context) :
         using namespace MyEvents::LoadingStepCriticalFail;
         VariantMap& data = GetEventDataMap();
         data["Name"] = "MainMenu";
+        data["Type"] = "error";
         data["Message"] = eventData[P_DESCRIPTION];
         SendEvent(MyEvents::E_SET_LEVEL, data);
     });

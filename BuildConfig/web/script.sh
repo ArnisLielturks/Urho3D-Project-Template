@@ -3,7 +3,8 @@
 #rm -rf Urho3D-web
 
 # Clone the latest engine version
-git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D-web -b emscripten-shell
+#git clone git@github.com:ArnisLielturks/Urho3D-test.git --depth=1 Urho3D-web -b ws-only
+git clone https://gitlab.com/ArnisLielturks/urho3d-websockets.git --depth=1 Urho3D-web -b ws-only
 
 # Remove original Urho3D asset directories
 rm -rf Urho3D-web/bin/Data

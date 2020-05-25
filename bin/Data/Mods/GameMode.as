@@ -9,7 +9,6 @@ void Start()
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
     SubscribeToEvent("Update", "HandleUpdate");
-    SubscribeToEvent("FallOffTheMap", "HandleFallOfMap");
 
     // Register our loading step
     VariantMap data;
@@ -145,29 +144,6 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 }
 
-void UpdatePlayerScore(int playerId, int points)
-{
-    Connection@ serverConnection = network.serverConnection;
-    if (serverConnection !is null) {
-        return;
-    }
-    if (playerId < 0) {
-        return;
-    }
-
-    VariantMap data;
-    data["ID"] = playerId;
-    data["Score"] = points;
-    SendEvent("PlayerScoreChanged", data);
-
-    data["Message"] = "Player [" + String(playerId) + "] got " + String(points) + " points!";
-    if (points < 0) {
-        data["Message"] = "Player [" + String(playerId) + "] lost " + String(Abs(points)) + " points!";
-        data["Status"] = "Warning";
-    }
-    SendEvent("ShowNotification", data);
-}
-
 void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)
 {
     Connection@ serverConnection = network.serverConnection;
@@ -190,16 +166,6 @@ void HandleCheckpointReached(StringHash eventType, VariantMap& eventData)
         CreateObject();
     }
     CreateCheckpoint();
-    // if (ground !is null) {
-    //     if (ground.scale.x > 10) {
-    //         targetGroundScale = ground.scale * 0.9;
-    //         CreateCheckpoint();
-    //         SubscribeToEvent("Update", "HandleUpdate");
-    //     } else {
-    //         targetGroundScale = Vector3(40, 40, 40);
-    //         DelayedExecute(2.0, false, "void CreateCheckpoint()");
-    //     }
-    // }
 }
 
 void HandleBoxDropped(StringHash eventType, VariantMap& eventData)
@@ -208,18 +174,4 @@ void HandleBoxDropped(StringHash eventType, VariantMap& eventData)
     if (serverConnection !is null) {
         return;
     }
-    int playerId = eventData["Player"].GetInt();
-
-    UpdatePlayerScore(playerId, 2);
-}
-
-void HandleFallOfMap(StringHash eventType, VariantMap& eventData)
-{
-    Connection@ serverConnection = network.serverConnection;
-    if (serverConnection !is null) {
-        return;
-    }
-    int playerId = eventData["Player"].GetInt();
-
-    UpdatePlayerScore(playerId, -20);
 }

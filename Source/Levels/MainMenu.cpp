@@ -110,7 +110,7 @@ void MainMenu::CreateUI()
         data["Title"] = localization->Get("WARNING");
         data["Message"] = _data["Message"].GetString();
         data["Name"] = "PopupMessageWindow";
-        data["Type"] = "warning";
+        data["Type"] = _data.Contains("Type") ? _data["Type"].GetString() : "warning";
         data["ClosePrevious"] = true;
         SendEvent(MyEvents::E_OPEN_WINDOW, data);
     }

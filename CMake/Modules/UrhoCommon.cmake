@@ -26,6 +26,8 @@ if (NOT CMAKE_CROSSCOMPILING)
     set (SAVED_CXX $ENV{CXX} CACHE INTERNAL "Initial value for CXX")
 endif ()
 
+include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+
 # Limit the supported build configurations
 set (URHO3D_BUILD_CONFIGURATIONS Release RelWithDebInfo Debug)
 set (DOC_STRING "Specify CMake build configuration (single-configuration generator only), possible values are Release (default), RelWithDebInfo, and Debug")
@@ -70,7 +72,7 @@ if (IOS)
         string (REPLACE : "" DEPLOYMENT_TARGET_SAVED ${DEPLOYMENT_TARGET_SAVED})
         set (IPHONEOS_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET_SAVED}" CACHE STRING "Specify iOS deployment target (iOS platform only); default to latest installed iOS SDK if not specified, the minimum supported target is 3.0 due to constraint from SDL library" FORCE)
         message (FATAL_ERROR "IPHONEOS_DEPLOYMENT_TARGET cannot be changed after the initial configuration/generation. "
-                "Auto reverting to its initial value. If you wish to change it then the build tree would have to be regenerated from scratch.")
+            "Auto reverting to its initial value. If you wish to change it then the build tree would have to be regenerated from scratch.")
     endif ()
     set (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET ${IPHONEOS_DEPLOYMENT_TARGET})
     set (DEPLOYMENT_TARGET_SAVED ${IPHONEOS_DEPLOYMENT_TARGET}: CACHE INTERNAL "Last known deployment target")    # with sentinel so it does not appear empty even when the default target is used
@@ -109,7 +111,7 @@ elseif (XCODE)
     if (DEPLOYMENT_TARGET_SAVED AND NOT CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL DEPLOYMENT_TARGET_SAVED)
         set (CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET_SAVED} CACHE STRING "Specify macOS deployment target (macOS platform only); default to current running macOS if not specified, the minimum supported target is 10.9" FORCE)
         message (FATAL_ERROR "CMAKE_OSX_DEPLOYMENT_TARGET cannot be changed after the initial configuration/generation. "
-                "Auto reverting to its initial value. If you wish to change it then the build tree would have to be regenerated from scratch.")
+            "Auto reverting to its initial value. If you wish to change it then the build tree would have to be regenerated from scratch.")
     endif ()
     set (DEPLOYMENT_TARGET_SAVED ${CMAKE_OSX_DEPLOYMENT_TARGET} CACHE INTERNAL "Last known deployment target")
 endif ()
@@ -127,7 +129,7 @@ if (RPI)
     # Extra linker flags for Raspbian because it installs VideoCore libraries in the "/opt/vc/lib" directory (no harm in doing so for other distros)
     set (INDIRECT_DEPS_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} -Wl,-rpath-link,\"${CMAKE_SYSROOT}/opt/vc/lib\"")      # CMAKE_SYSROOT is empty when not cross-compiling
 elseif (APPLE AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0)
-    set (INDIRECT_DEPS_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} -Wl,-no_weak_imports")
+    set (INDIRECT_DEPS_EXE_LINKER_FLAGS "${INDIRECT_DEPS_EXE_LINKER_FLAGS} -Wl")
 endif ()
 if (ARM AND CMAKE_SYSTEM_NAME STREQUAL Linux AND CMAKE_CROSSCOMPILING)
     # Cannot do this in the toolchain file because CMAKE_LIBRARY_ARCHITECTURE is not yet defined when CMake is processing toolchain file
@@ -145,7 +147,7 @@ option (URHO3D_ANGELSCRIPT "Enable AngelScript scripting support" TRUE)
 option (URHO3D_IK "Enable inverse kinematics support" TRUE)
 option (URHO3D_LUA "Enable additional Lua scripting support" TRUE)
 option (URHO3D_NAVIGATION "Enable navigation support" TRUE)
-cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB" FALSE)
+cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB" TRUE)
 option (URHO3D_PHYSICS "Enable physics support" TRUE)
 option (URHO3D_URHO2D "Enable 2D graphics and physics support" TRUE)
 option (URHO3D_WEBP "Enable WebP support" TRUE)
@@ -180,7 +182,7 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
             if (NOT DEFINED URHO3D_SSE)     # Only give the warning once during initial configuration
                 # Certain MinGW versions fail to compile SSE code. This is the initial guess for known "bad" version range, and can be tightened later
                 message (WARNING "Disabling SSE by default due to MinGW version. It is recommended to upgrade to MinGW with GCC >= 4.9.1. "
-                        "You can also try to re-enable SSE with CMake option -DURHO3D_SSE=1, but this may result in compile errors.")
+                    "You can also try to re-enable SSE with CMake option -DURHO3D_SSE=1, but this may result in compile errors.")
             endif ()
             set (URHO3D_DEFAULT_SIMD FALSE)
         else ()
@@ -668,8 +670,9 @@ else ()
         if (WEB)
             if (EMSCRIPTEN)
                 # Emscripten-specific setup
-                set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-warn-absolute-paths -Wno-unknown-warning-option")
-                set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -Wno-unknown-warning-option")
+                set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-warn-absolute-paths -Wno-unknown-warning-option --bind")
+                set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-warn-absolute-paths -Wno-unknown-warning-option --bind")
+
                 if (URHO3D_THREADING)
                     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_PTHREADS=1")
                     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_PTHREADS=1")
@@ -774,12 +777,12 @@ macro (check_source_files)
             message (FATAL_ERROR ${ARGN})
         else ()
             message (FATAL_ERROR "Could not configure and generate the project file because no source files have been defined yet. "
-                    "You can define the source files explicitly by setting the SOURCE_FILES variable in your CMakeLists.txt; or "
-                    "by calling the define_source_files() macro which would by default glob all the C++ source files found in the same scope of "
-                    "CMakeLists.txt where the macro is being called and the macro would set the SOURCE_FILES variable automatically. "
-                    "If your source files are not located in the same directory as the CMakeLists.txt or your source files are "
-                    "more than just C++ language then you probably have to pass in extra arguments when calling the macro in order to make it works. "
-                    "See the define_source_files() macro definition in the CMake/Modules/UrhoCommon.cmake for more detail.")
+                "You can define the source files explicitly by setting the SOURCE_FILES variable in your CMakeLists.txt; or "
+                "by calling the define_source_files() macro which would by default glob all the C++ source files found in the same scope of "
+                "CMakeLists.txt where the macro is being called and the macro would set the SOURCE_FILES variable automatically. "
+                "If your source files are not located in the same directory as the CMakeLists.txt or your source files are "
+                "more than just C++ language then you probably have to pass in extra arguments when calling the macro in order to make it works. "
+                "See the define_source_files() macro definition in the CMake/Modules/UrhoCommon.cmake for more detail.")
         endif ()
     endif ()
 endmacro ()
@@ -899,6 +902,10 @@ macro (define_dependency_libs TARGET)
             list (APPEND LIBS dl m)
         endif ()
     endif ()
+
+    if (${TARGET_NAME} STREQUAL Urho3D)
+        list (APPEND LIBS humblenet)
+    endif()
 
     # Urho3D external dependency
     if (${TARGET} STREQUAL Urho3D)
@@ -1075,14 +1082,11 @@ macro (define_resource_dirs)
                             get_filename_component (NAME ${FILE} NAME)
                             list (APPEND PAK_NAMES ${NAME})
                         endforeach ()
-                        if (CMAKE_BUILD_TYPE STREQUAL Debug)
-                            set (SEPARATE_METADATA --separate-metadata)
-                        endif ()
                         add_custom_command (OUTPUT ${SHARED_RESOURCE_JS} ${SHARED_RESOURCE_JS}.data
-                                COMMAND ${EMPACKAGER} ${SHARED_RESOURCE_JS}.data --preload ${PAK_NAMES} --js-output=${SHARED_RESOURCE_JS} --use-preload-cache ${SEPARATE_METADATA}
-                                DEPENDS RESOURCE_CHECK ${RESOURCE_PAKS}
-                                WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-                                COMMENT "Generating shared data file")
+                            COMMAND ${EMPACKAGER} ${SHARED_RESOURCE_JS}.data --preload ${PAK_NAMES} --js-output=${SHARED_RESOURCE_JS} --use-preload-cache
+                            DEPENDS RESOURCE_CHECK ${RESOURCE_PAKS}
+                            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                            COMMENT "Generating shared data file")
                     endif ()
                 endif ()
             endif ()
@@ -1117,13 +1121,15 @@ macro (add_html_shell)
             set (HTML_SHELL ${ARGN})
         else ()
             # Create Urho3D custom HTML shell that also embeds our own project logo
-            if (NOT EXISTS ${CMAKE_BINARY_DIR}/Source/shell.html)
+            if (NOT EXISTS ${CMAKE_SOURCE_DIR}/bin/shell.html)
                 file (READ ${EMSCRIPTEN_ROOT_PATH}/src/shell.html HTML_SHELL)
                 string (REPLACE "<!doctype html>" "<!-- This is a generated file. DO NOT EDIT!-->\n\n<!doctype html>" HTML_SHELL "${HTML_SHELL}")     # Stringify to preserve semicolons
                 string (REPLACE "<body>" "<body>\n<script>document.body.innerHTML=document.body.innerHTML.replace(/^#!.*\\n/, '');</script>\n<a href=\"https://urho3d.github.io\" title=\"Urho3D Homepage\"><img src=\"https://urho3d.github.io/assets/images/logo.png\" alt=\"link to https://urho3d.github.io\" height=\"80\" width=\"160\" /></a>\n" HTML_SHELL "${HTML_SHELL}")
                 file (WRITE ${CMAKE_BINARY_DIR}/Source/shell.html "${HTML_SHELL}")
+                set (HTML_SHELL ${CMAKE_BINARY_DIR}/Source/shell.html)
+            else ()
+                set (HTML_SHELL ${CMAKE_SOURCE_DIR}/bin/shell.html)
             endif ()
-            set (HTML_SHELL ${CMAKE_BINARY_DIR}/Source/shell.html)
         endif ()
         list (APPEND SOURCE_FILES ${HTML_SHELL})
         set_source_files_properties (${HTML_SHELL} PROPERTIES EMCC_OPTION shell-file)
@@ -1258,7 +1264,7 @@ macro (enable_pch HEADER_PATHNAME)
                         execute_process (COMMAND ${CMAKE_${LANG}_COMPILER} @${ABS_PATH_PCH}.${CONFIG}.pch.rsp -MTdeps -MM -MF ${ABS_PATH_PCH}.d ${ABS_HEADER_PATHNAME} RESULT_VARIABLE ${LANG}_COMPILER_EXIT_CODE)
                         if (NOT ${LANG}_COMPILER_EXIT_CODE EQUAL 0)
                             message (FATAL_ERROR "Could not generate dependency list for PCH. There is something wrong with your compiler toolchain. "
-                                    "Ensure its bin path is in the PATH environment variable or ensure CMake can find CC/CXX in your build environment.")
+                                "Ensure its bin path is in the PATH environment variable or ensure CMake can find CC/CXX in your build environment.")
                         endif ()
                         file (STRINGS ${ABS_PATH_PCH}.d ${TARGET_NAME}_PCH_DEPS)
                         string (REGEX REPLACE "^deps: *| *\\; *" ";" ${TARGET_NAME}_PCH_DEPS ${${TARGET_NAME}_PCH_DEPS})
@@ -1266,10 +1272,10 @@ macro (enable_pch HEADER_PATHNAME)
                     endif ()
                     # Create the rule that depends on the included headers
                     add_custom_command (OUTPUT ${HEADER_FILENAME}.${CONFIG}.pch.trigger
-                            COMMAND ${CMAKE_${LANG}_COMPILER} @${ABS_PATH_PCH}.${CONFIG}.pch.rsp -o ${PCH_FILENAME}/${PCH_FILENAME}.${CONFIG} ${ABS_HEADER_PATHNAME}
-                            COMMAND ${CMAKE_COMMAND} -E touch ${HEADER_FILENAME}.${CONFIG}.pch.trigger
-                            DEPENDS ${ABS_PATH_PCH}.${CONFIG}.pch.rsp ${${TARGET_NAME}_PCH_DEPS}
-                            COMMENT "Precompiling header file '${HEADER_FILENAME}' for ${CONFIG} configuration")
+                        COMMAND ${CMAKE_${LANG}_COMPILER} @${ABS_PATH_PCH}.${CONFIG}.pch.rsp -o ${PCH_FILENAME}/${PCH_FILENAME}.${CONFIG} ${ABS_HEADER_PATHNAME}
+                        COMMAND ${CMAKE_COMMAND} -E touch ${HEADER_FILENAME}.${CONFIG}.pch.trigger
+                        DEPENDS ${ABS_PATH_PCH}.${CONFIG}.pch.rsp ${${TARGET_NAME}_PCH_DEPS}
+                        COMMENT "Precompiling header file '${HEADER_FILENAME}' for ${CONFIG} configuration")
                     add_make_clean_files (${PCH_FILENAME}/${PCH_FILENAME}.${CONFIG})
                 endforeach ()
                 # Using precompiled header file
@@ -1302,8 +1308,8 @@ macro (find_Urho3D_file VAR NAME)
     mark_as_advanced (${VAR})  # Hide it from cmake-gui in non-advanced mode
     if (NOT ${VAR} AND ARG_MSG_MODE)
         message (${ARG_MSG_MODE}
-                "Could not find ${VAR} file in the Urho3D build tree or Urho3D SDK. "
-                "Please reconfigure and rebuild your Urho3D build tree or reinstall the SDK for the correct target platform.")
+            "Could not find ${VAR} file in the Urho3D build tree or Urho3D SDK. "
+            "Please reconfigure and rebuild your Urho3D build tree or reinstall the SDK for the correct target platform.")
     endif ()
 endmacro ()
 
@@ -1317,9 +1323,9 @@ macro (find_Urho3D_tool VAR NAME)
         set (${VAR} ${CMAKE_BINARY_DIR}/bin/tool/${NAME})
         if (ARG_MSG_MODE AND NOT CMAKE_PROJECT_NAME STREQUAL Urho3D)
             message (${ARG_MSG_MODE}
-                    "Could not find ${VAR} tool in the Urho3D build tree or Urho3D SDK. Your project may not build successfully without this tool. "
-                    "You may have to first rebuild the Urho3D in its build tree or reinstall Urho3D SDK to get this tool built or installed properly. "
-                    "Alternatively, copy the ${VAR} executable manually into bin/tool subdirectory in your own project build tree.")
+                "Could not find ${VAR} tool in the Urho3D build tree or Urho3D SDK. Your project may not build successfully without this tool. "
+                "You may have to first rebuild the Urho3D in its build tree or reinstall Urho3D SDK to get this tool built or installed properly. "
+                "Alternatively, copy the ${VAR} executable manually into bin/tool subdirectory in your own project build tree.")
         endif ()
     endif ()
 endmacro ()
@@ -1490,7 +1496,7 @@ macro (setup_executable)
 
     if (URHO3D_SCP_TO_TARGET)
         add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND scp $<TARGET_FILE:${TARGET_NAME}> ${URHO3D_SCP_TO_TARGET} || exit 0
-                COMMENT "Scp-ing ${TARGET_NAME} executable to target system")
+            COMMENT "Scp-ing ${TARGET_NAME} executable to target system")
     endif ()
     if (WIN32 AND NOT ARG_NODEPS AND URHO3D_LIB_TYPE STREQUAL SHARED)
         # Make a copy of the Urho3D DLL to the runtime directory in the build tree
@@ -1574,7 +1580,7 @@ macro (setup_library)
         endif ()
     elseif (URHO3D_SCP_TO_TARGET)
         add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND scp $<TARGET_FILE:${TARGET_NAME}> ${URHO3D_SCP_TO_TARGET} || exit 0
-                COMMENT "Scp-ing ${TARGET_NAME} library to target system")
+            COMMENT "Scp-ing ${TARGET_NAME} library to target system")
     endif ()
 endmacro ()
 
@@ -1643,10 +1649,8 @@ macro (setup_main_executable)
             endif ()
         endif ()
         setup_executable (${EXE_TYPE} ${ARG_UNPARSED_ARGUMENTS})
-        if (HAS_SHELL_FILE)
-            get_target_property (LOCATION ${TARGET_NAME} LOCATION)
-            get_filename_component (NAME_WE ${LOCATION} NAME_WE)
-            add_make_clean_files ($<TARGET_FILE_DIR:${TARGET_NAME}>/${NAME_WE}.js $<TARGET_FILE_DIR:${TARGET_NAME}>/${NAME_WE}.wasm)
+        if (HAS_SHELL_FILE AND NOT CMAKE_VERSION VERSION_LESS 3.15)
+            add_make_clean_files ($<TARGET_FILE_DIR:${TARGET_NAME}>/$<TARGET_FILE_BASE_NAME:${TARGET_NAME}>.js $<TARGET_FILE_DIR:${TARGET_NAME}>/$<TARGET_FILE_BASE_NAME:${TARGET_NAME}>.wasm)
         endif ()
     endif ()
     # Setup custom resource checker target
@@ -1654,8 +1658,8 @@ macro (setup_main_executable)
         if (URHO3D_PACKAGING)
             # Urho3D project builds the PackageTool as required; downstream project uses PackageTool found in the Urho3D build tree or Urho3D SDK
             find_Urho3d_tool (PACKAGE_TOOL PackageTool
-                    HINTS ${CMAKE_BINARY_DIR}/bin/tool ${URHO3D_HOME}/bin/tool
-                    DOC "Path to PackageTool" MSG_MODE WARNING)
+                HINTS ${CMAKE_BINARY_DIR}/bin/tool ${URHO3D_HOME}/bin/tool
+                DOC "Path to PackageTool" MSG_MODE WARNING)
             if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
                 set (PACKAGING_DEP DEPENDS PackageTool)
             endif ()
@@ -1818,18 +1822,6 @@ macro (_setup_target)
             endif ()
         endforeach ()
     endif ()
-    # Workaround CMake/Xcode generator bug where it always appends '/build' path element to SYMROOT attribute and as such the items in Products are always rendered as red in the Xcode as if they are not yet built
-    if (NOT DEFINED ENV{TRAVIS})
-        if (XCODE AND NOT CMAKE_PROJECT_NAME MATCHES ^Urho3D-ExternalProject-)
-            file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-            get_target_property (LOCATION ${TARGET_NAME} LOCATION)
-            string (REGEX REPLACE "^.*\\$\\(CONFIGURATION\\)" $(CONFIGURATION) SYMLINK ${LOCATION})
-            get_filename_component (DIRECTORY ${SYMLINK} PATH)
-            add_custom_command (TARGET ${TARGET_NAME} POST_BUILD
-                    COMMAND mkdir -p ${DIRECTORY} && ln -sf $<TARGET_FILE:${TARGET_NAME}> ${DIRECTORY}/$<TARGET_FILE_NAME:${TARGET_NAME}>
-                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-        endif ()
-    endif ()
 endmacro()
 
 # Macro for setting up a test case
@@ -1892,8 +1884,8 @@ if (NOT CMAKE_HOST_WIN32 AND "$ENV{USE_CCACHE}")
     execute_process (COMMAND ${WHEREIS} COMMAND grep -o \\S*lib\\S* RESULT_VARIABLE EXIT_CODE OUTPUT_VARIABLE CCACHE_SYMLINK ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
     if (EXIT_CODE EQUAL 0 AND NOT $ENV{PATH} MATCHES "${CCACHE_SYMLINK}")  # Need to stringify because CCACHE_SYMLINK variable could be empty when the command failed
         message (WARNING "The lib directory containing the ccache symlinks (${CCACHE_SYMLINK}) has not been added in the PATH environment variable. "
-                "This is required to enable ccache support for native compiler toolchain. CMake has been configured to use the actual compiler toolchain instead of ccache. "
-                "In order to rectify this, the build tree must be regenerated after the PATH environment variable has been adjusted accordingly.")
+            "This is required to enable ccache support for native compiler toolchain. CMake has been configured to use the actual compiler toolchain instead of ccache. "
+            "In order to rectify this, the build tree must be regenerated after the PATH environment variable has been adjusted accordingly.")
     endif ()
 endif ()
 

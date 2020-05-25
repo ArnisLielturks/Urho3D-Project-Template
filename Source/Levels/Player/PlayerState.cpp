@@ -10,11 +10,19 @@ PlayerState::PlayerState(Context* context) :
 {
 }
 
+PlayerState::~PlayerState()
+{
+    VariantMap players = GetGlobalVar("Players").GetVariantMap();
+    players.Erase(String(GetPlayerID()));
+    SetGlobalVar("Players", players);
+}
+
 void PlayerState::RegisterObject(Context* context)
 {
     context->RegisterFactory<PlayerState>();
     URHO3D_ACCESSOR_ATTRIBUTE("Score", GetScore, SetScore, int, 0, AM_DEFAULT);
     URHO3D_ACCESSOR_ATTRIBUTE("Player ID", GetPlayerID, SetPlayerID, int, -1, AM_DEFAULT);
+    URHO3D_ACCESSOR_ATTRIBUTE("Name", GetPlayerName, SetPlayerName, String, String::EMPTY, AM_DEFAULT);
 }
 
 void PlayerState::OnNodeSet(Node* node)
@@ -42,6 +50,16 @@ void PlayerState::AddScore(int value)
     if (_score < 0) {
         _score = 0;
     }
+
+    VariantMap notificationData;
+    if (value < 0) {
+        notificationData["Status"] = "Error";
+        notificationData["Message"] = _name + " lost " + String(-value) + " points";
+    } else {
+        notificationData["Message"] = _name + " got " + String(value) + " points";
+    }
+    SendEvent("ShowNotification", notificationData);
+
     OnScoreChanged();
 }
 
@@ -61,6 +79,7 @@ void PlayerState::OnScoreChanged()
         VariantMap playerData = players[String(GetPlayerID())].GetVariantMap();
         playerData["Score"] = _score;
         playerData["ID"] = GetPlayerID();
+        playerData["Name"] = GetPlayerName();
         players[String(GetPlayerID())] = playerData;
         SetGlobalVar("Players", players);
         SendEvent(PlayerEvents::E_PLAYER_SCORES_UPDATED);
@@ -76,4 +95,16 @@ void PlayerState::SetPlayerID(int id)
 int PlayerState::GetPlayerID() const
 {
     return _playerId;
+}
+
+void PlayerState::SetPlayerName(const String& name)
+{
+    _name = name;
+    OnScoreChanged();
+    MarkNetworkUpdate();
+}
+
+const String& PlayerState::GetPlayerName() const
+{
+    return _name;
 }

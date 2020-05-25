@@ -18,6 +18,8 @@ void CreateElements()
 {
     packetsIn = CreateTextElement("PacketsIn",   "Packets In :", 0);
     packetsOut = CreateTextElement("PacketsOut", "Packets Out:", 1);
+    packetsIn.visible = false;
+    packetsOut.visible = false;
 }
 
 void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)

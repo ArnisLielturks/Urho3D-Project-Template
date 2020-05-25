@@ -32,7 +32,6 @@ Player::Player(Context* context):
 
 Player::~Player()
 {
-    UpdatePlayerList(true);
     if (_node) {
         _node->Remove();
     }
@@ -99,24 +98,6 @@ void Player::RegisterConsoleCommands()
     });
 }
 
-void Player::UpdatePlayerList(bool remove)
-{
-    if (_serverConnection) {
-        return;
-    }
-
-    VariantMap players = GetGlobalVar("Players").GetVariantMap();
-    if (remove) {
-        players.Erase(String(_controllerId));
-    } else {
-        VariantMap data;
-        data["Score"] = 0;
-        data["ID"] = _controllerId;
-        players[String(_controllerId)] = data;
-    }
-    SetGlobalVar("Players", players);
-}
-
 void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 {
     SetControllerId(controllerId);
@@ -158,7 +139,6 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
     text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
     text3D->SetViewMask(~(1 << _controllerId));
-    SetLabel();
 
     if (!SHOW_LABELS) {
         _label->SetEnabled(false);
@@ -169,8 +149,6 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     _terrain = terrain;
 
     ResetPosition();
-
-    UpdatePlayerList();
 }
 
 void Player::FindNode(Scene* scene, int id)
@@ -209,18 +187,6 @@ Node* Player::GetNode()
     return _node.Get();
 }
 
-void Player::SetLabel()
-{
-    if (!_label) {
-        return;
-    }
-    if (_isControlled) {
-        _label->GetComponent<Text3D>()->SetText("Player " + String(_controllerId));
-    } else {
-        _label->GetComponent<Text3D>()->SetText("Bot " + String(_controllerId));
-    }
-}
-
 void Player::SetControllable(bool value)
 {
     _isControlled = value;
@@ -234,7 +200,6 @@ void Player::SetControllable(bool value)
             GetNode()->GetComponent<BehaviourTree>()->Init("Config/Behaviour.json");
         }
     }
-    SetLabel();
 }
 
 void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
@@ -251,14 +216,13 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         return;
     }
 
-    if (_node->GetPosition().y_ < -30) {
+    if (_node->GetPosition().y_ < -20) {
         ResetPosition();
 
-        if (_isControlled) {
-            VariantMap &data = GetEventDataMap();
-            data["Player"] = _controllerId;
-            SendEvent("FallOffTheMap", data);
-        }
+        VariantMap &data = GetEventDataMap();
+        data["Player"] = _controllerId;
+        SendEvent("FallOffTheMap", data);
+        _node->GetComponent<PlayerState>()->AddScore(-10);
     }
 
     Controls controls;
@@ -367,4 +331,14 @@ void Player::SetCameraDistance(float distance)
 float Player::GetCameraDistance()
 {
     return _cameraDistance;
+}
+
+void Player::SetName(const String& name)
+{
+    if (_node) {
+        _node->GetOrCreateComponent<PlayerState>()->SetPlayerName(name);
+    }
+    if (_label) {
+        _label->GetComponent<Text3D>()->SetText(name);
+    }
 }

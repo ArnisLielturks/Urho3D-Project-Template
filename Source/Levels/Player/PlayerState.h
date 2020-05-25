@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Urho3D/Scene/Component.h>
+#include <Urho3D/Container/Str.h>
 
 using namespace Urho3D;
 
@@ -10,6 +11,7 @@ URHO3D_OBJECT(PlayerState, Component);
 
 public:
     explicit PlayerState(Context* context);
+    ~PlayerState();
     static void RegisterObject(Context* context);
     void AddScore(int value);
     void SetScore(int value);
@@ -18,6 +20,9 @@ public:
     void SetPlayerID(int id);
     int GetPlayerID() const;
 
+    void SetPlayerName(const String& name);
+    const String& GetPlayerName() const;
+
 protected:
     void OnNodeSet(Node* node) override;
 private:
@@ -25,4 +30,5 @@ private:
     void OnScoreChanged();
     int _score{0};
     int _playerId{-1};
+    String _name;
 };

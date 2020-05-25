@@ -114,6 +114,7 @@ void Level::Init()
                 _players[(*it)]->SetControllerId((*it));
             } else {
                 _players[(*it)]->CreateNode(_scene, (*it), _terrain);
+                _players[(*it)]->SetName("Player " + String((*it)));
             }
             _players[(*it)]->SetControllable(true);
             if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
@@ -122,10 +123,14 @@ void Level::Init()
         }
     }
 
-    if (!_data.Contains("ConnectServer")) {
-//        _players[100] = new Player(context_);
-//        _players[100]->CreateNode(_scene, 100, _terrain);
-//        _players[100]->SetControllable(false);
+    if (!GetSubsystem<Network>()->GetServerConnection()) {
+        for (int i = 0; i < 5; i++) {
+            _players[100 + i] = new Player(context_);
+            _players[100 + i]->CreateNode(_scene, 100 + i, _terrain);
+            _players[100 + i]->SetControllable(false);
+            _players[100 + i]->SetName("Bot " + String(100 + i));
+            URHO3D_LOGINFO("Bot created");
+        }
     }
 }
 
@@ -216,6 +221,7 @@ void Level::RegisterConsoleCommands()
     });
 }
 
+
 void Level::HandleBeforeLevelDestroy(StringHash eventType, VariantMap& eventData)
 {
     _remotePlayers.Clear();
@@ -251,6 +257,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
         _players[controllerIndex] = new Player(context_);
         _players[controllerIndex]->CreateNode(_scene, controllerIndex, _terrain);
         _players[controllerIndex]->SetControllable(true);
+        _players[controllerIndex]->SetName("Player " + String(controllerIndex + 1));
     }
 }
 
@@ -395,8 +402,10 @@ void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
     URHO3D_LOGINFO("Level::HandleClientConnected");
     _remotePlayers[newConnection] = new Player(context_);
     _remotePlayers[newConnection]->SetClientConnection(newConnection);
-    _remotePlayers[newConnection]->CreateNode(_scene, REMOTE_PLAYER_ID++, _terrain);
+    _remotePlayers[newConnection]->CreateNode(_scene, REMOTE_PLAYER_ID, _terrain);
     _remotePlayers[newConnection]->SetControllable(true);
+    _remotePlayers[newConnection]->SetName("Remote " + String(REMOTE_PLAYER_ID));
+    REMOTE_PLAYER_ID++;
 
     using namespace MyEvents::RemoteClientId;
     VariantMap data;
@@ -428,6 +437,7 @@ void Level::HandleServerDisconnected(StringHash eventType, VariantMap& eventData
     VariantMap data;
     data["Name"] = "MainMenu";
     data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
+    data["Type"] = "error";
     SendEvent(MyEvents::E_SET_LEVEL, data);
 }
 

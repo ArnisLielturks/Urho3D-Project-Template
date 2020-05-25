@@ -9,7 +9,7 @@
 #include "Notifications.h"
 #include "../Global.h"
 
-static const int NOTIFICATION_OVERLAP_TIME = 500;
+static const int NOTIFICATION_OVERLAP_TIME = 1000;
 
 Notifications::Notifications(Context* context) :
     Object(context)
@@ -35,7 +35,7 @@ void Notifications::Init()
     // Set spline tension
     positionAnimation->SetSplineTension(0.7f);
     positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
-    positionAnimation->SetKeyFrame(7.0f, IntVector2(-10, -500));
+    positionAnimation->SetKeyFrame(7.0f, IntVector2(-10, -600));
     notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
 
     opacityAnimation = new ValueAnimation(context_);
@@ -69,8 +69,11 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     data.color = color;
 
     if (_timer.GetMSec(false) < NOTIFICATION_OVERLAP_TIME) {
+        if (_messageQueue.Size() >= 10) {
+            return;
+        }
         _messageQueue.Push(data);
-        URHO3D_LOGINFO("Too many notification request, pushing notification on queue");
+        URHO3D_LOGINFOF("Too many notification request, pushing notification on queue. Queue size %d", _messageQueue.Size());
         return;
     }
     CreateNewNotification(data);

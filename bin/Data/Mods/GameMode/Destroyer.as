@@ -2,7 +2,6 @@
 
 class Destroyer : ScriptObject
 {
-    int lastHitPlayerId = -1;
     void Start()
     {
         node.AddTag("Cube");
@@ -26,48 +25,44 @@ class Destroyer : ScriptObject
                 Vector3 contactNormal = contacts.ReadVector3();
                 float contactDistance = contacts.ReadFloat();
                 float contactImpulse = contacts.ReadFloat();
-                body.ApplyImpulse(contactNormal * contactImpulse * 2);
+                if (otherBody.node.name == "Player") {
+                    body.ApplyImpulse(contactNormal * contactImpulse * 10);
+                }
             }
 
-            node.scale -= Vector3(0.5, 0.5, 0.5);
+            // node.scale -= Vector3(0.5, 0.5, 0.5);
 
             if (otherBody.node.name == "Player") {
-                lastHitPlayerId = otherBody.node.vars["Player"].GetInt();
+                node.vars["LastTouchedNode"] = otherBody.node;
             }
 
-            if (node.scale.length < 1.0) {
-                VariantMap data;
-
-                data["Type"] = SOUND_EFFECT;
-                data["SoundFile"] = "Sounds/achievement.wav";
-                SendEvent("PlaySound", data);
-
-                data["Score"] = 1;
-                otherBody.node.SendEvent("PlayerScoreAdd", data);
-
-                SendEvent("BoxDestroyed");
-                Burst();
-
-                UnsubscribeFromEvent("NodeCollisionStart");
+            if (otherBody.node.name == "Character") {
                 node.Remove();
-            } else {
-                VariantMap data;
-                data["Type"] = SOUND_EFFECT;
-                data["SoundFile"] = "Sounds/kick.wav";
-                SendEvent("PlaySound", data);
             }
+
+            VariantMap data;
+            data["Type"] = SOUND_EFFECT;
+            data["SoundFile"] = "Sounds/kick.wav";
+            SendEvent("PlaySound", data);
         }
     }
 
     // Update is called during the variable timestep scene update
     void Update(float timeStep)
     {
-        if (node.position.y < -10) {
+        if (node.position.y < -4) {
             VariantMap data;
             data["Type"] = SOUND_EFFECT;
             data["SoundFile"] = "Sounds/achievement.wav";
             SendEvent("PlaySound", data);
 
+            Node@ playerNode = node.vars["LastTouchedNode"].GetPtr();
+            if (playerNode !is null) {
+                Node@ playerNode = node.vars["LastTouchedNode"].GetPtr();
+                data["Player"] = node.vars["Player"].GetInt();
+                data["Score"] = 1;
+                playerNode.SendEvent("PlayerScoreAdd", data);
+            }
             SendEvent("BoxDestroyed");
             SendEvent("BoxDropped", data);
 

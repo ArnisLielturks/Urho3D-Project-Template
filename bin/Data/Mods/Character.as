@@ -136,7 +136,8 @@ void ChangeAnimation(int index)
 
 void CreateCharacter()
 {
-    if (scene is null || network.serverRunning == false) {
+    Connection@ connection = network.serverConnection;
+    if (scene is null || connection !is null) {
         log.Info("Cannot create character");
         return;
     }
@@ -163,7 +164,7 @@ void CreateCharacter()
     body.mass = 40.0f;
     body.angularFactor = Vector3::ZERO;
     CollisionShape@ shape = characterNode.CreateComponent("CollisionShape");
-    shape.SetCapsule(60.0f, 180.0f, Vector3(0.0f, 105.0f, 0.0f));
+    shape.SetCapsule(60.0f, 180.0f, Vector3(0.0f, 90.0f, -10.0f));
 
     ChangeAnimation(0);
 
@@ -222,7 +223,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         timer.Reset();
     }
 
-    if (followCameraTimer.GetMSec(false) > 2000) {
+    if (followCameraTimer.GetMSec(false) > 5000) {
         // Reset player camera to follow player controlled node instead
         VariantMap data;
         data["ID"] = 0;

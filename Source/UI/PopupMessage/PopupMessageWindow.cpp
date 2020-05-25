@@ -56,6 +56,7 @@ void PopupMessageWindow::Create()
     colorAnimation->SetKeyFrame(0.0f, Color::WHITE);
     colorAnimation->SetKeyFrame(0.5f, color);
     colorAnimation->SetKeyFrame(1.0f, Color::WHITE);
+    colorAnimation->SetInterpolationMethod(InterpMethod::IM_LINEAR);
     animation->AddAttributeAnimation("Color", colorAnimation);
 
     _baseWindow->SetObjectAnimation(animation);

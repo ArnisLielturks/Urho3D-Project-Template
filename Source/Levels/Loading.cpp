@@ -88,12 +88,14 @@ void Loading::Init()
         SubscribeToEvent("ConnectServer", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "ConnectServer");
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
 //            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
-            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->Connect("playground-server.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #endif
         });
         SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
@@ -110,6 +112,12 @@ void Loading::Init()
             SendEvent(MyEvents::E_LOADING_STEP_PROGRESS,
                       MyEvents::LoadingStepProgress::P_EVENT, "ConnectServer",
                 MyEvents::LoadingStepProgress::P_PROGRESS, 0.5f);
+        });
+
+        SubscribeToEvent(E_NETWORKSCENELOADFAILED, [&](StringHash eventType, VariantMap &eventData) {
+            if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+                GetSubsystem<Network>()->Disconnect(200);
+            }
         });
         SubscribeToEvent(E_CONNECTFAILED, [&](StringHash eventType, VariantMap &eventData) {
             using namespace MyEvents::LoadingStepCriticalFail;

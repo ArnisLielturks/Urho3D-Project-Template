@@ -90,7 +90,7 @@ void ScoreboardWindow::CreatePlayerScores()
         // Create log element to view latest logs from the system
         auto name = container->CreateChild<Text>();
         name->SetFont(font, 14);
-        name->SetText("Player " + String(playerData["ID"].GetInt()));
+        name->SetText(playerData["Name"].GetString());
         name->SetFixedWidth(200);
         name->SetColor(Color::GREEN);
         name->SetTextEffect(TextEffect::TE_SHADOW);

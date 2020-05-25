@@ -6,9 +6,9 @@
 	<attribute name="Snap Threshold" value="5" />
 	<attribute name="Elapsed Time" value="0" />
 	<attribute name="Next Replicated Node ID" value="33" />
-	<attribute name="Next Replicated Component ID" value="81" />
-	<attribute name="Next Local Node ID" value="16777235" />
-	<attribute name="Next Local Component ID" value="16777423" />
+	<attribute name="Next Replicated Component ID" value="82" />
+	<attribute name="Next Local Node ID" value="16777236" />
+	<attribute name="Next Local Component ID" value="16777435" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
@@ -20,19 +20,20 @@
 		<attribute name="Tags" />
 		<attribute name="Position" value="0 0 0" />
 		<attribute name="Rotation" value="1 0 0 0" />
-		<attribute name="Scale" value="40 40 40" />
+		<attribute name="Scale" value="40 0.1 40" />
 		<attribute name="Variables" />
 		<component type="StaticModel" id="3">
-			<attribute name="Model" value="Model;Models/Plane.mdl" />
+			<attribute name="Model" value="Model;Models/Box.mdl" />
 			<attribute name="Material" value="Material;Materials/Ground.xml" />
 		</component>
 		<component type="RigidBody" id="23">
-			<attribute name="Physics Position" value="0 0.0792121 0" />
+			<attribute name="Physics Position" value="0 0.0792097 0" />
 			<attribute name="Friction" value="1" />
 		</component>
-		<component type="CollisionShape" id="25">
-			<attribute name="Shape Type" value="TriangleMesh" />
-			<attribute name="Model" value="Model;Models/Plane.mdl" />
+		<component type="CollisionShape" id="81">
+			<attribute name="Offset Position" value="0 -0.79 0" />
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Collision Margin" value="0.01" />
 		</component>
 	</node>
 	<node id="8">
@@ -53,12 +54,11 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="0 9.67959 0" />
+		<attribute name="Position" value="0 6.20857 0" />
 		<attribute name="Rotation" value="0.956781 0.290807 0 0" />
 		<attribute name="Scale" value="1 1 1" />
 		<attribute name="Variables" />
 		<component type="Light" id="80">
-			<attribute name="Brightness Multiplier" value="0.2" />
 			<attribute name="Range" value="100" />
 			<attribute name="Light Shape Texture" value="TextureCube;" />
 			<attribute name="Cast Shadows" value="true" />

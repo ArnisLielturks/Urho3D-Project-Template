@@ -59,7 +59,7 @@ const Controls& BehaviourTree::GetControls()
 
 void BehaviourTree::FixedUpdate(float timeStep)
 {
-    _controls.yaw_ += timeStep * 100;
+    _controls.yaw_ += timeStep * 50;
 }
 
 void BehaviourTree::SubscribeToEvents()

@@ -27,11 +27,11 @@
 			<attribute name="Material" value="Material;Materials/Ground.xml" />
 		</component>
 		<component type="RigidBody" id="23">
-			<attribute name="Physics Position" value="0 0.0792097 0" />
+			<attribute name="Physics Position" value="0 0 0" />
 			<attribute name="Friction" value="1" />
 		</component>
 		<component type="CollisionShape" id="81">
-			<attribute name="Offset Position" value="0 -0.79 0" />
+			<attribute name="Offset Position" value="0 0 0" />
 			<attribute name="Model" value="Model;Models/Box.mdl" />
 			<attribute name="Collision Margin" value="0.01" />
 		</component>

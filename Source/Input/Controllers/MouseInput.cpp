@@ -1,6 +1,7 @@
 #include <Urho3D/Input/InputEvents.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Input/Input.h>
+#include <Urho3D/UI/UI.h>
 #include "MouseInput.h"
 #include "../ControllerInput.h"
 #include "../../MyEvents.h"
@@ -30,6 +31,10 @@ void MouseInput::SubscribeToEvents()
     SubscribeToEvent(E_MOUSEBUTTONUP, URHO3D_HANDLER(MouseInput, HandleKeyUp));
     SubscribeToEvent(E_MOUSEMOVE, URHO3D_HANDLER(MouseInput, HandleMouseMove));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(MouseInput, HandleUpdate));
+
+    SubscribeToEvent(E_TOUCHBEGIN, URHO3D_HANDLER(MouseInput, HandleTouchUI));
+    SubscribeToEvent(E_TOUCHMOVE, URHO3D_HANDLER(MouseInput, HandleTouchUI));
+    SubscribeToEvent(E_TOUCHEND, URHO3D_HANDLER(MouseInput, HandleTouchUI));
 //    GetSubsystem<Input>()->SetTouchEmulation(true);
 }
 
@@ -112,6 +117,7 @@ void MouseInput::LoadConfig()
 void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     auto input = GetSubsystem<Input>();
+    auto ui = GetSubsystem<UI>();
     ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
     for (unsigned i = 0; i < input->GetNumTouches(); ++i) {
         TouchState* state = input->GetTouch(i);
@@ -123,6 +129,32 @@ void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
                 float pitch = _sensitivityY * state->delta_.y_;
                 controllerInput->UpdateYaw(yaw);
                 controllerInput->UpdatePitch(pitch);
+            }
+        }
+    }
+}
+
+void MouseInput::HandleTouchUI(StringHash eventType, VariantMap& eventData)
+{
+    using namespace TouchBegin;
+    auto input = GetSubsystem<Input>();
+    auto ui = GetSubsystem<UI>();
+
+    int touchId = eventData[P_TOUCHID].GetInt();
+
+    ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
+    for (unsigned i = 0; i < input->GetNumTouches(); ++i) {
+        TouchState* state = input->GetTouch(i);
+        if (state->touchID_ == touchId) {
+            if (eventType == E_TOUCHBEGIN) {
+                UIElement* element = ui->GetElementAt(ui->ConvertSystemToUI(state->position_));
+                if (!element) {
+                    state->touchedElement_.Reset();
+                    continue;
+                }
+                state->touchedElement_ = element;
+            } else if (eventType == E_TOUCHEND) {
+                state->touchedElement_.Reset();
             }
         }
     }

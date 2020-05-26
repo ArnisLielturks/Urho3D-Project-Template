@@ -245,16 +245,36 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     // Torque is relative to the forward vector
     Quaternion rotation(0.0f, controls.yaw_, 0.0f);
     if (controls.IsDown(CTRL_FORWARD)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed);
+        static StringHash forward(CTRL_FORWARD);
+        float strength = 1.0f;
+        if (controls.extraData_.Contains(forward)) {
+            strength = controls.extraData_[forward].GetFloat();
+        }
+        _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed * strength);
     }
     if (controls.IsDown(CTRL_BACK)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::LEFT * movementSpeed);
+        static StringHash backward(CTRL_BACK);
+        float strength = 1.0f;
+        if (controls.extraData_.Contains(backward)) {
+            strength = controls.extraData_[backward].GetFloat();
+        }
+        _rigidBody->ApplyTorque(rotation * Vector3::LEFT * movementSpeed * strength);
     }
     if (controls.IsDown(CTRL_LEFT)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed);
+        static StringHash left(CTRL_LEFT);
+        float strength = 1.0f;
+        if (controls.extraData_.Contains(left)) {
+            strength = controls.extraData_[left].GetFloat();
+        }
+        _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed * strength);
     }
     if (controls.IsDown(CTRL_RIGHT)) {
-        _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed);
+        static StringHash right(CTRL_RIGHT);
+        float strength = 1.0f;
+        if (controls.extraData_.Contains(right)) {
+            strength = controls.extraData_[right].GetFloat();
+        }
+        _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed * strength);
     }
     if (controls.IsPressed(CTRL_JUMP, _controls) && _onGround) {
         _rigidBody->ApplyImpulse(Vector3::UP * JUMP_FORCE);

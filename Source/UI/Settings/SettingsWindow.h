@@ -94,6 +94,7 @@ private:
     WeakPtr<UISliderOption> mouse_sensitivity;
     WeakPtr<UIBoolOption> invert_joystic_x;
     WeakPtr<UIBoolOption> invert_joystick_y;
+    WeakPtr<UIBoolOption> ui_joystick;
     WeakPtr<UISliderOption> joystick_sensitivity_x;
     WeakPtr<UISliderOption> joystick_sensitivity_y;
     WeakPtr<UISliderOption> deadzone_;

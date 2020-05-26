@@ -31,12 +31,12 @@ void BehaviourTree::Init(const String& config)
 
 void BehaviourTree::LoadConfig(const String& config)
 {
-    URHO3D_LOGINFOF("Loading behaviour tree: %s", config.CString());
+//    URHO3D_LOGINFOF("Loading behaviour tree: %s", config.CString());
     auto json = GetSubsystem<ResourceCache>()->GetResource<JSONFile>(config);
     JSONValue& content = json->GetRoot();
     if (content.IsObject()) {
         for (auto it = content.Begin(); it != content.End(); ++it) {
-            URHO3D_LOGWARNINGF("JSON: %s", (*it).first_.CString());
+//            URHO3D_LOGWARNINGF("JSON: %s", (*it).first_.CString());
             auto field  = (*it).first_;
             auto value = (*it).second_;
             if (field == "type") {

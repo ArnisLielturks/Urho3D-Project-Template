@@ -8,6 +8,7 @@
 #include "Controllers/KeyboardInput.h"
 #include "Controllers/MouseInput.h"
 #include "Controllers/JoystickInput.h"
+#include "Controllers/ScreenJoystickInput.h"
 
 using namespace Urho3D;
 
@@ -22,10 +23,12 @@ ControllerInput::ControllerInput(Context* context) :
     context_->RegisterFactory<KeyboardInput>();
     context_->RegisterFactory<MouseInput>();
     context_->RegisterFactory<JoystickInput>();
+    context_->RegisterFactory<ScreenJoystickInput>();
 
     _inputHandlers[ControllerType::KEYBOARD] = context_->CreateObject<KeyboardInput>();
     _inputHandlers[ControllerType::MOUSE] = context_->CreateObject<MouseInput>();
     _inputHandlers[ControllerType::JOYSTICK] = context_->CreateObject<JoystickInput>();
+    _inputHandlers[ControllerType::SCREEN_JOYSTICK] = context_->CreateObject<ScreenJoystickInput>();
 
     _controlMapNames[CTRL_FORWARD]  = "Move forward";
     _controlMapNames[CTRL_BACK]     = "Move backward";
@@ -254,6 +257,9 @@ Controls ControllerInput::GetControls(int index)
     if (!_multipleControllerSupport) {
         index = 0;
     }
+    if (!_controls.Contains(index)) {
+        return Controls();
+    }
     return _controls[index];
 }
 
@@ -332,7 +338,7 @@ String ControllerInput::GetActionKeyName(int action)
     return String::EMPTY;
 }
 
-void ControllerInput::SetActionState(int action, bool active, int index)
+void ControllerInput::SetActionState(int action, bool active, int index, float strength)
 {
     if (!_multipleControllerSupport) {
         index = 0;
@@ -353,6 +359,7 @@ void ControllerInput::SetActionState(int action, bool active, int index)
         }
     }
     _controls[index].Set(action, active);
+    _controls[index].extraData_[StringHash(action)] = strength;
 }
 
 Vector<int> ControllerInput::GetControlIndexes()
@@ -515,4 +522,14 @@ void ControllerInput::SetJoystickDeadzone(float value)
 float ControllerInput::GetJoystickDeadzone()
 {
     return _inputHandlers[ControllerType::JOYSTICK]->GetDeadzone();
+}
+
+void ControllerInput::ShowOnScreenJoystick()
+{
+    _inputHandlers[ControllerType::SCREEN_JOYSTICK]->Show();
+}
+
+void ControllerInput::HideOnScreenJoystick()
+{
+    _inputHandlers[ControllerType::SCREEN_JOYSTICK]->Hide();
 }

@@ -82,13 +82,14 @@ namespace Levels {
         CreateSingleLine("@Modanung", PARAGRAPH);
         CreateSingleLine("", PARAGRAPH);
 
-        CreateSingleLine("Community", HEADER_SIZE);
+        CreateSingleLine("Community components", HEADER_SIZE);
         CreateSingleLine("", HEADER_MARGIN);
         CreateSingleLine("Android event handler: @Lumak", PARAGRAPH);
         CreateSingleLine("INI file parser: @carnalis", PARAGRAPH);
         CreateSingleLine("Level manager: @artgolf1000", PARAGRAPH);
-        CreateSingleLine("Settings window: @PredatorMF", PARAGRAPH);
         CreateSingleLine("Perlin Noise algorithm: @Reputeless", PARAGRAPH);
+        CreateSingleLine("Screen Joystick: @Lumak", PARAGRAPH);
+        CreateSingleLine("Settings window: @PredatorMF", PARAGRAPH);
         CreateSingleLine("", PARAGRAPH);
 
         CreateSingleLine("Assets", HEADER_SIZE);

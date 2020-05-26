@@ -15,6 +15,7 @@ public:
 
     static void RegisterObject(Context* context);
 
+    const String& GetCurrentLevel() const { return currentLevel_; }
 private:
     /**
      * Level changing handler

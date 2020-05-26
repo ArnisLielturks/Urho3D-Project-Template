@@ -14,7 +14,8 @@ using namespace Urho3D;
 enum ControllerType {
     KEYBOARD,
     MOUSE,
-    JOYSTICK
+    JOYSTICK,
+    SCREEN_JOYSTICK
 };
 
 class ControllerInput : public Object
@@ -54,7 +55,7 @@ public:
     /**
      * Set the controls action
      */
-    void SetActionState(int action, bool active, int index = 0);
+    void SetActionState(int action, bool active, int index = 0, float strength = 1.0f);
 
     /**
      * Update Yaw value for specific controller
@@ -176,6 +177,9 @@ public:
      */
     void StopInputMapping();
 
+    void ShowOnScreenJoystick();
+    void HideOnScreenJoystick();
+
 protected:
     virtual void Init();
 
@@ -204,6 +208,8 @@ private:
      * Start mapping specific action
      */
     void HandleStartInputListening(StringHash eventType, VariantMap& eventData);
+
+    void HandleJoystickDrag(StringHash eventType, VariantMap& eventData);
 
     /**
      * Action key to string map

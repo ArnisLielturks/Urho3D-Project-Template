@@ -103,6 +103,7 @@ void Level::Init()
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
+    input->SetMouseVisible(true);
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
@@ -132,6 +133,8 @@ void Level::Init()
             URHO3D_LOGINFO("Bot created");
         }
     }
+
+    GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
 }
 
 void Level::StartAudio()
@@ -200,6 +203,9 @@ void Level::SubscribeToEvents()
     RegisterConsoleCommands();
 
     SubscribeToEvent(MyEvents::E_LEVEL_BEFORE_DESTROY, URHO3D_HANDLER(Level, HandleBeforeLevelDestroy));
+    SubscribeToEvent("SettingsButtonPressed", [&](StringHash eventType, VariantMap& eventData) {
+        ShowPauseMenu();
+    });
 }
 
 void Level::RegisterConsoleCommands()
@@ -349,13 +355,30 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     }
 
     if (key == KEY_ESCAPE) {
-        UnsubscribeToEvents();
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "PauseWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
-        SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
-        Pause();
+        ShowPauseMenu();
     }
+}
+
+void Level::ShowPauseMenu()
+{
+    UnsubscribeToEvents();
+    VariantMap& data = GetEventDataMap();
+    data["Name"] = "PauseWindow";
+    SendEvent(MyEvents::E_OPEN_WINDOW, data);
+    SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
+    Pause();
+}
+
+void Level::PauseMenuHidden()
+{
+    UnsubscribeFromEvent(MyEvents::E_WINDOW_CLOSED);
+    SubscribeToEvents();
+
+    Input* input = GetSubsystem<Input>();
+    if (input->IsMouseVisible()) {
+        input->SetMouseVisible(false);
+    }
+    Run();
 }
 
 void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
@@ -374,14 +397,7 @@ void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
 {
     String name = eventData["Name"].GetString();
     if (name == "PauseWindow") {
-        UnsubscribeFromEvent(MyEvents::E_WINDOW_CLOSED);
-        SubscribeToEvents();
-
-        Input* input = GetSubsystem<Input>();
-        if (input->IsMouseVisible()) {
-            input->SetMouseVisible(false);
-        }
-        Run();
+        PauseMenuHidden();
     }
 }
 

@@ -12,7 +12,9 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Audio/AudioDefs.h>
 #include <Urho3D/Audio/Audio.h>
+#include <Urho3D/Core/ProcessUtils.h>
 #include "../../Input/ControllerInput.h"
+#include "../../Input/ControllerEvents.h"
 #include "SettingsWindow.h"
 #include "../../MyEvents.h"
 #include "../../Global.h"
@@ -591,6 +593,13 @@ void SettingsWindow::CreateControllersTab()
         label->SetText(localization->Get("JOYSTICK"));
         controllers_tab->AddItem(label);
 
+        ui_joystick = new UIBoolOption(context_);
+        ui_joystick->SetOptionName(localization->Get("UI_JOYSTICK"));
+        ui_joystick->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "UIJoystick", GetPlatform() == "Android" || GetPlatform() == "iOS"));
+        ui_joystick->SetTags({"ui_joystick"});
+        ui_joystick->SetStyleAuto();
+        controllers_tab->AddItem(ui_joystick);
+
         invert_joystic_x = new UIBoolOption(context_);
         invert_joystic_x->SetOptionName(localization->Get("INVERT_X_AXIS"));
         invert_joystic_x->SetOptionValue(GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false));
@@ -1096,6 +1105,10 @@ void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& event
     if (option->HasTag("invert_joystick_x")) {
         controllerInput->SetInvertX(invert_joystic_x->GetOptionValue(), ControllerType::JOYSTICK);
         GetSubsystem<ConfigManager>()->Set("joystick", "InvertX", invert_joystic_x->GetOptionValue());
+    }
+    if (option->HasTag("ui_joystick")) {
+        GetSubsystem<ConfigManager>()->Set("joystick", "UIJoystick", ui_joystick->GetOptionValue());
+        SendEvent(ControllerEvents::E_UI_JOYSTICK_TOGGLE, ControllerEvents::UIJoystickToggle::P_ENABLED, ui_joystick->GetOptionValue());
     }
     if (option->HasTag("invert_joystick_y")) {
         controllerInput->SetInvertX(invert_joystick_y->GetOptionValue(), ControllerType::JOYSTICK);

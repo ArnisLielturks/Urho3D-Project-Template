@@ -23,6 +23,8 @@ public:
     }
 
     virtual ~BaseInput() {};
+    virtual void Show() {};
+    virtual void Hide() {};
 
     virtual void LoadConfig() {};
 

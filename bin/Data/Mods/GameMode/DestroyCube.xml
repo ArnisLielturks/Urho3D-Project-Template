@@ -26,6 +26,5 @@
 		<attribute name="Delayed Method Calls" value="0" />
 		<attribute name="Script File" value="ScriptFile;Mods/GameMode/Destroyer.as" />
 		<attribute name="Class Name" value="Destroyer" />
-		<attribute name="lastHitPlayerId" value="-1" />
 	</component>
 </node>

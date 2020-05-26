@@ -2,9 +2,9 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Core/ProcessUtils.h>
 #include "JoystickInput.h"
 #include "../ControllerInput.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
 
 /// Construct.
@@ -33,13 +33,15 @@ void JoystickInput::Init()
 
 void JoystickInput::SubscribeToEvents()
 {
-    SubscribeToEvent(E_JOYSTICKBUTTONDOWN, URHO3D_HANDLER(JoystickInput, HandleKeyDown));
-    SubscribeToEvent(E_JOYSTICKBUTTONUP, URHO3D_HANDLER(JoystickInput, HandleKeyUp));
-    SubscribeToEvent(E_JOYSTICKCONNECTED, URHO3D_HANDLER(JoystickInput, HandleJoystickConnected));
-    SubscribeToEvent(E_JOYSTICKDISCONNECTED, URHO3D_HANDLER(JoystickInput, HandleJoystickDisconnected));
-    SubscribeToEvent(E_JOYSTICKAXISMOVE, URHO3D_HANDLER(JoystickInput, HandleAxisMove));
-    SubscribeToEvent(E_JOYSTICKHATMOVE, URHO3D_HANDLER(JoystickInput, HandleHatMove));
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(JoystickInput, HandleUpdate));
+    if (GetPlatform() != "Android") {
+        SubscribeToEvent(E_JOYSTICKBUTTONDOWN, URHO3D_HANDLER(JoystickInput, HandleKeyDown));
+        SubscribeToEvent(E_JOYSTICKBUTTONUP, URHO3D_HANDLER(JoystickInput, HandleKeyUp));
+        SubscribeToEvent(E_JOYSTICKCONNECTED, URHO3D_HANDLER(JoystickInput, HandleJoystickConnected));
+        SubscribeToEvent(E_JOYSTICKDISCONNECTED, URHO3D_HANDLER(JoystickInput, HandleJoystickDisconnected));
+        SubscribeToEvent(E_JOYSTICKAXISMOVE, URHO3D_HANDLER(JoystickInput, HandleAxisMove));
+        SubscribeToEvent(E_JOYSTICKHATMOVE, URHO3D_HANDLER(JoystickInput, HandleHatMove));
+        SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(JoystickInput, HandleUpdate));
+    }
 }
 
 void JoystickInput::SetJoystickAsFirstController(bool enabled)

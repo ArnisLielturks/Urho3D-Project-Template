@@ -29,4 +29,5 @@ private:
     void HandleKeyUp(StringHash eventType, VariantMap& eventData);
     void HandleMouseMove(StringHash eventType, VariantMap& eventData);
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleTouchUI(StringHash eventType, VariantMap& eventData);
 };

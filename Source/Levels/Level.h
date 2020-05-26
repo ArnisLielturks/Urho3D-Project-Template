@@ -49,6 +49,8 @@ namespace Levels {
         void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
         void HandleServerConnected(StringHash eventType, VariantMap& eventData);
         void HandleServerDisconnected(StringHash eventType, VariantMap& eventData);
+        void ShowPauseMenu();
+        void PauseMenuHidden();
 
         bool _showScoreboard;
 

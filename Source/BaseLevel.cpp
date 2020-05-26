@@ -220,9 +220,9 @@ void BaseLevel::Dispose()
 {
     // Pause the scene, remove all contents from the scene, then remove the scene itself.
     if (_scene) {
-        _scene->SetUpdateEnabled(false);
-        _scene->Clear();
-        _scene->Remove();
+//        _scene->SetUpdateEnabled(false);
+//        _scene->Clear();
+//        _scene->Remove();
     }
 
     // Remove all UI elements from UI sub-system

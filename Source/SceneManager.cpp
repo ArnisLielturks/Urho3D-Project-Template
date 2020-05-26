@@ -77,7 +77,7 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 {
     using namespace AsyncLoadFinished;
 
-    _activeScene->SetUpdateEnabled(false);
+//    _activeScene->SetUpdateEnabled(false);
 
 #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {

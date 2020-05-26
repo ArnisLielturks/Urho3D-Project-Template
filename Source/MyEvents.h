@@ -211,7 +211,13 @@ namespace MyEvents
     URHO3D_EVENT(E_LOADING_STEP_CRITICAL_FAIL, LoadingStepCriticalFail)
     {
         URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
-        URHO3D_PARAM(P_DESCRIPTION, Description); // string - event to call to start loading process
+        URHO3D_PARAM(P_DESCRIPTION, Description); // string - problem description
+    }
+
+    // Load step loading finished event
+    URHO3D_EVENT(E_LOADING_STEP_TIMED_OUT, LoadingStepTimedOut)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - event to call to start loading process
     }
 
     // Called when new loading step is about to start

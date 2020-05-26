@@ -17,7 +17,7 @@ using namespace Urho3D;
  * Wait this many MS before marking loading step as completed if no ACK request was received
  */
 const int LOADING_STEP_ACK_MAX_TIME       = 2000; // Max wait time in MS for ACK message for loading step
-const int LOADING_STEP_MAX_EXECUTION_TIME = 30 * 1000; // Max loading step execution time in MS, 0 - infinite
+const int LOADING_STEP_MAX_EXECUTION_TIME = 10 * 1000; // Max loading step execution time in MS, 0 - infinite
 const float PROGRESS_SPEED                = 0.3f; // how fast should the progress bar increase each second, e.g. 1 would load 0 to 100% in 1 second
 
 SceneManager::SceneManager(Context* context) :
@@ -124,7 +124,6 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         if ((*it).second_.ackSent && !(*it).second_.ack && (*it).second_.ackTimer.GetMSec(false) > LOADING_STEP_ACK_MAX_TIME) {
             (*it).second_.finished = true;
             (*it).second_.ack      = true;
-            URHO3D_LOGINFO("Loading step skipped, no ACK retrieved for " + (*it).second_.name);
         }
         targetProgress = (float)completed / ( (float) _loadingSteps.Size() + 1.0f );
 
@@ -137,6 +136,13 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
                 (*it).second_.finished = true;
                 (*it).second_.failed   = true;
                 URHO3D_LOGERROR("Loading step '" + (*it).second_.name + "' failed, took too long to execute!");
+
+                using namespace MyEvents::LoadingStepTimedOut;
+                VariantMap& data = GetEventDataMap();
+                data[P_EVENT] = (*it).second_.event;
+                SendEvent(MyEvents::E_LOADING_STEP_TIMED_OUT, data);
+                URHO3D_LOGINFO("Loading step skipped, no ACK retrieved for " + (*it).second_.name);
+                return;
 
                 // Note the the tasks could still succeed in the background, but the loading screen will move further without waiting it to finish
                 return;

@@ -77,5 +77,9 @@
   "WINDOW": "Window",
   "BORDERLESS_WINDOW": "Borderless window",
   "FULLSCREEN": "Fullscreen",
-  "ARE_YOU_SURE": "Are you sure?"
+  "ARE_YOU_SURE": "Are you sure?",
+  "FAILED_TO_RETRIEVE_PLAYER_DATA": "Failed to retrieve player data",
+  "CANNOT_CONNECT_TO_SERVER": "Failed to connect to the server",
+  "SCENE_LOAD_FAILED": "Failed to load selected level from server",
+  "DISCONNECTED_FROM_SERVER": "Disconnected from server"
 }

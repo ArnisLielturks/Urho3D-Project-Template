@@ -79,7 +79,6 @@ void Loading::Init()
             SendEvent(MyEvents::E_ACK_LOADING_STEP,
                       MyEvents::RegisterLoadingStep::P_EVENT, "RetrievePlayerData");
             _searchPlayerNode = true;
-            GetSubsystem<SceneManager>()->GetActiveScene()->SetUpdateEnabled(true);
         });
         SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
                   MyEvents::RegisterLoadingStep::P_NAME, "Connecting to server",
@@ -92,40 +91,19 @@ void Loading::Init()
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
-//            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
-            GetSubsystem<Network>()->Connect("playground-server.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->Connect("playground-server.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #endif
         });
-        SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace MyEvents::RemoteClientId;
-            _data[P_NODE_ID] = eventData[P_NODE_ID];
 
-            _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
-            URHO3D_LOGINFOF("ClientID %d", eventData[P_NODE_ID].GetInt());
-            SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
-                      MyEvents::LoadingStepFinished::P_EVENT, "ConnectServer");
-        });
-        SubscribeToEvent(E_SERVERCONNECTED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace MyEvents::LoadingStepProgress;
-            SendEvent(MyEvents::E_LOADING_STEP_PROGRESS,
-                      MyEvents::LoadingStepProgress::P_EVENT, "ConnectServer",
-                MyEvents::LoadingStepProgress::P_PROGRESS, 0.5f);
-        });
-
-        SubscribeToEvent(E_NETWORKSCENELOADFAILED, [&](StringHash eventType, VariantMap &eventData) {
-            if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
-                GetSubsystem<Network>()->Disconnect(200);
-            }
-        });
-        SubscribeToEvent(E_CONNECTFAILED, [&](StringHash eventType, VariantMap &eventData) {
-            using namespace MyEvents::LoadingStepCriticalFail;
-            auto localization = GetSubsystem<Localization>();
-            VariantMap& data = GetEventDataMap();
-            data[P_DESCRIPTION] = localization->Get("CANNOT_CONNECT_TO_SERVER");
-            SendEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, data);
-        });
+        SubscribeToEvent(MyEvents::E_REMOTE_CLIENT_ID, URHO3D_HANDLER(Loading, HandleRemoteClientID));
+        SubscribeToEvent(MyEvents::E_LOADING_STEP_TIMED_OUT, URHO3D_HANDLER(Loading, HandleLoadingStepFailed));
+        SubscribeToEvent(E_SERVERCONNECTED, URHO3D_HANDLER(Loading, HandleServerConnected));
+        SubscribeToEvent(E_SERVERDISCONNECTED, URHO3D_HANDLER(Loading, HandleServerDisconnected));
+        SubscribeToEvent(E_NETWORKSCENELOADFAILED, URHO3D_HANDLER(Loading, HandleSceneLoadFailed));
+        SubscribeToEvent(E_CONNECTFAILED, URHO3D_HANDLER(Loading, HandleConnectFailed));
     }
 
     _statusMessage = GetSubsystem<SceneManager>()->GetStatusMessage();
@@ -133,14 +111,6 @@ void Loading::Init()
         using namespace MyEvents::LoadingStatusUpdate;
         _statusMessage = eventData[P_NAME].GetString();
         UpdateStatusMesage();
-    });
-
-    SubscribeToEvent(E_SERVERDISCONNECTED, [&](StringHash eventType, VariantMap& eventData) {
-        auto localization = GetSubsystem<Localization>();
-        VariantMap data;
-        data["Name"] = "MainMenu";
-        data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
-        SendEvent(MyEvents::E_SET_LEVEL, data);
     });
 
     if (_data.Contains("Map")) {
@@ -326,5 +296,71 @@ void Loading::CreateProgressBar()
             auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
             _loadingBar->SetPosition(10, height - 30);
         });
+    }
+}
+
+void Loading::HandleServerDisconnected(StringHash eventType, VariantMap& eventData)
+{
+    auto localization = GetSubsystem<Localization>();
+    VariantMap data;
+    data["Name"] = "MainMenu";
+    data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
+    SendEvent(MyEvents::E_SET_LEVEL, data);
+}
+
+void Loading::HandleSceneLoadFailed(StringHash eventType, VariantMap& eventData)
+{
+    UnsubscribeFromEvent(E_SERVERDISCONNECTED);
+    if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+        GetSubsystem<Network>()->Disconnect(200);
+        auto localization = GetSubsystem<Localization>();
+        VariantMap data;
+        data["Name"] = "MainMenu";
+        data["Message"] = localization->Get("SCENE_LOAD_FAILED");
+        SendEvent(MyEvents::E_SET_LEVEL, data);
+    }
+}
+
+void Loading::HandleConnectFailed(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::LoadingStepCriticalFail;
+    auto localization = GetSubsystem<Localization>();
+    VariantMap& data = GetEventDataMap();
+    data[P_DESCRIPTION] = localization->Get("CANNOT_CONNECT_TO_SERVER");
+    SendEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, data);
+}
+
+void Loading::HandleServerConnected(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::LoadingStepProgress;
+    SendEvent(MyEvents::E_LOADING_STEP_PROGRESS,
+              MyEvents::LoadingStepProgress::P_EVENT, "ConnectServer",
+              MyEvents::LoadingStepProgress::P_PROGRESS, 0.5f);
+}
+
+void Loading::HandleRemoteClientID(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::RemoteClientId;
+    _data[P_NODE_ID] = eventData[P_NODE_ID];
+    _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
+    URHO3D_LOGINFOF("ClientID %d", eventData[P_NODE_ID].GetInt());
+    GetSubsystem<SceneManager>()->GetActiveScene()->SetUpdateEnabled(true);
+    SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
+              MyEvents::LoadingStepFinished::P_EVENT, "ConnectServer");
+}
+
+void Loading::HandleLoadingStepFailed(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MyEvents::LoadingStepCriticalFail;
+    auto localization = GetSubsystem<Localization>();
+    if (eventData[P_EVENT].GetString() == "RetrievePlayerData") {
+        UnsubscribeFromEvent(E_SERVERDISCONNECTED);
+        if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
+            GetSubsystem<Network>()->Disconnect(200);
+        }
+        VariantMap& data = GetEventDataMap();
+        data[P_EVENT] = "RetrievePlayerData";
+        data[P_DESCRIPTION] = localization->Get("FAILED_TO_RETRIEVE_PLAYER_DATA");
+        SendEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, data);
     }
 }

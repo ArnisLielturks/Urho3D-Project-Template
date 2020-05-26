@@ -154,6 +154,9 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 void Player::FindNode(Scene* scene, int id)
 {
     _node = scene->GetNode(id);
+    if (_node) {
+        _node->SetInterceptNetworkUpdate("Network Position", true);
+    }
 }
 
 void Player::ResetPosition()

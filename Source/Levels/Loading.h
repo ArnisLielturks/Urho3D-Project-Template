@@ -38,6 +38,12 @@ namespace Levels {
          * Finish loading and move to next level
          */
         void HandleEndLoading(StringHash eventType, VariantMap& eventData);
+        void HandleServerDisconnected(StringHash eventType, VariantMap& eventData);
+        void HandleSceneLoadFailed(StringHash eventType, VariantMap& eventData);
+        void HandleConnectFailed(StringHash eventType, VariantMap& eventData);
+        void HandleServerConnected(StringHash eventType, VariantMap& eventData);
+        void HandleRemoteClientID(StringHash eventType, VariantMap& eventData);
+        void HandleLoadingStepFailed(StringHash eventType, VariantMap& eventData);
 
         void SearchPlayerNode();
 

@@ -415,7 +415,7 @@ void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
     // When a client connects, assign to scene to begin scene replication
     auto* newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
     newConnection->SetScene(_scene);
-    URHO3D_LOGINFO("Level::HandleClientConnected");
+
     _remotePlayers[newConnection] = new Player(context_);
     _remotePlayers[newConnection]->SetClientConnection(newConnection);
     _remotePlayers[newConnection]->CreateNode(_scene, REMOTE_PLAYER_ID, _terrain);

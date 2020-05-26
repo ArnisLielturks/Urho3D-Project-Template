@@ -125,7 +125,7 @@ void Level::Init()
     }
 
     if (!GetSubsystem<Network>()->GetServerConnection()) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             _players[100 + i] = new Player(context_);
             _players[100 + i]->CreateNode(_scene, 100 + i, _terrain);
             _players[100 + i]->SetControllable(false);

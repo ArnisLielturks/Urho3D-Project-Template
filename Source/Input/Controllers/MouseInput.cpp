@@ -4,10 +4,8 @@
 #include <Urho3D/UI/UI.h>
 #include "MouseInput.h"
 #include "../ControllerInput.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
 
-/// Construct.
 MouseInput::MouseInput(Context* context) :
     BaseInput(context)
 {

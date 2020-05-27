@@ -7,12 +7,16 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include "NewGameSettingsWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
+#include "../../LevelManagerEvents.h"
+#include "../WindowEvents.h"
 
 static const int BUTTON_HEIGHT = 40;
 static const int MARGIN = 10;
 static const int IMAGE_SIZE = 200;
+
+using namespace LevelManagerEvents;
+using namespace WindowEvents;
 
 NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
     BaseWindow(context)
@@ -74,7 +78,7 @@ void NewGameSettingsWindow::Create()
     SubscribeToEvent(buttonClose, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
     });
 
     CreateLevelSelection();
@@ -162,7 +166,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
             data["StartServer"] = _startServer->IsChecked();
 #endif
             data["ConnectServer"] = _connectServer->IsChecked() && !_startServer->IsChecked() ? "127.0.0.1" : String::EMPTY;
-            SendEvent(MyEvents::E_SET_LEVEL, data);
+            SendEvent(E_SET_LEVEL, data);
         });
 
         auto sprite = button->CreateChild<Sprite>();

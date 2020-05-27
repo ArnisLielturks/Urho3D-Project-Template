@@ -9,7 +9,6 @@ class AchievementsWindow : public BaseWindow
     URHO3D_OBJECT(AchievementsWindow, BaseWindow);
 
 public:
-    /// Construct.
     AchievementsWindow(Context* context);
 
     virtual ~AchievementsWindow();

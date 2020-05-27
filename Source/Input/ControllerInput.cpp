@@ -3,16 +3,16 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/Log.h>
 #include "ControllerInput.h"
-#include "../MyEvents.h"
 #include "../Global.h"
 #include "Controllers/KeyboardInput.h"
 #include "Controllers/MouseInput.h"
 #include "Controllers/JoystickInput.h"
 #include "Controllers/ScreenJoystickInput.h"
+#include "ControllerEvents.h"
 
 using namespace Urho3D;
+using namespace ControllerEvents;
 
-/// Construct.
 ControllerInput::ControllerInput(Context* context) :
     Object(context),
     _multipleControllerSupport(true),
@@ -139,7 +139,7 @@ void ControllerInput::SaveConfig()
 
 void ControllerInput::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_START_INPUT_MAPPING, URHO3D_HANDLER(ControllerInput, HandleStartInputListening));
+    SubscribeToEvent(E_START_INPUT_MAPPING, URHO3D_HANDLER(ControllerInput, HandleStartInputListening));
 
     SubscribeToEvent("StartInputMappingConsole", URHO3D_HANDLER(ControllerInput, HandleStartInputListeningConsole));
     RegisterConsoleCommands();
@@ -176,21 +176,21 @@ void ControllerInput::SetConfiguredKey(int action, int key, String controller)
     }
 
     // Send out event with all the details about the mapped control
-    using namespace MyEvents::InputMappingFinished;
+    using namespace InputMappingFinished;
     VariantMap& data = GetEventDataMap();
     data[P_CONTROLLER] = controller;
     data[P_CONTROL_ACTION] = action;
     data[P_ACTION_NAME] = _controlMapNames[action];
     data[P_KEY] = key;
     data[P_KEY_NAME] = input->GetKeyName(static_cast<Key>(key));
-    SendEvent(MyEvents::E_INPUT_MAPPING_FINISHED, data);
+    SendEvent(E_INPUT_MAPPING_FINISHED, data);
 
     SaveConfig();
 }
 
 void ControllerInput::StopInputMapping()
 {
-    using namespace MyEvents::StopInputMapping;
+    using namespace StopInputMapping;
     VariantMap& data = GetEventDataMap();
     data[P_CONTROL_ACTION] = _activeAction;
 
@@ -200,14 +200,14 @@ void ControllerInput::StopInputMapping()
         (*it).second_->StopMappingAction();
     }
 
-    SendEvent(MyEvents::E_STOP_INPUT_MAPPING, data);
+    SendEvent(E_STOP_INPUT_MAPPING, data);
 
     _mappingTimer.Reset();
 }
 
 void ControllerInput::HandleStartInputListening(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::StartInputMapping;
+    using namespace StartInputMapping;
     if (eventData[P_CONTROL_ACTION].GetType() == VAR_INT) {
         _activeAction = eventData[P_CONTROL_ACTION].GetInt();
     }
@@ -242,10 +242,10 @@ void ControllerInput::HandleStartInputListeningConsole(StringHash eventType, Var
 {
     StringVector parameters = eventData["Parameters"].GetStringVector();
     if (parameters.Size() == 2) {
-        using namespace MyEvents::StartInputMapping;
+        using namespace StartInputMapping;
         VariantMap& data = GetEventDataMap();
         data[P_CONTROL_ACTION] = parameters[1];
-        SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+        SendEvent(E_START_INPUT_MAPPING, data);
         return;
     }
 
@@ -287,11 +287,11 @@ void ControllerInput::CreateController(int controllerIndex)
     if (!_multipleControllerSupport) {
         return;
     }
-    using namespace MyEvents::ControllerAdded;
+    using namespace ControllerAdded;
     _controls[controllerIndex] = Controls();
     VariantMap& data           = GetEventDataMap();
     data[P_INDEX]              = controllerIndex;
-    SendEvent(MyEvents::E_CONTROLLER_ADDED, data);
+    SendEvent(E_CONTROLLER_ADDED, data);
 
     if (GetSubsystem<DebugHud>()) {
         GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
@@ -307,11 +307,11 @@ void ControllerInput::DestroyController(int controllerIndex)
     if (controllerIndex > 0) {
         _controls.Erase(controllerIndex);
 
-        using namespace MyEvents::ControllerRemoved;
+        using namespace ControllerRemoved;
 
         VariantMap& data = GetEventDataMap();
         data[P_INDEX] = controllerIndex;
-        SendEvent(MyEvents::E_CONTROLLER_REMOVED, data);
+        SendEvent(E_CONTROLLER_REMOVED, data);
     }
     if (GetSubsystem<DebugHud>()) {
         GetSubsystem<DebugHud>()->SetAppStats("Controls", _controls.Size());
@@ -347,15 +347,15 @@ void ControllerInput::SetActionState(int action, bool active, int index, float s
     // Mapped control is about to change, send out events
     if (_controls[index].IsDown(action) != active) {
         if (active) {
-            using namespace MyEvents::MappedControlPressed;
+            using namespace MappedControlPressed;
             VariantMap &data = GetEventDataMap();
             data[P_ACTION] = action;
-            SendEvent(MyEvents::E_MAPPED_CONTROL_PRESSED, data);
+            SendEvent(E_MAPPED_CONTROL_PRESSED, data);
         } else {
-            using namespace MyEvents::MappedControlReleased;
+            using namespace MappedControlReleased;
             VariantMap &data = GetEventDataMap();
             data[P_ACTION] = action;
-            SendEvent(MyEvents::E_MAPPED_CONTROL_RELEASED, data);
+            SendEvent(E_MAPPED_CONTROL_RELEASED, data);
         }
     }
     _controls[index].Set(action, active);

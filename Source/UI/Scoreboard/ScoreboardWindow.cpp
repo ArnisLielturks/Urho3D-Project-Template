@@ -6,7 +6,6 @@
 #include "../../Global.h"
 #include "../../Levels/Player/PlayerEvents.h"
 
-/// Construct.
 ScoreboardWindow::ScoreboardWindow(Context* context) :
     BaseWindow(context)
 {

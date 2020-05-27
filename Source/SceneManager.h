@@ -53,6 +53,8 @@ public:
      */
     void ResetProgress();
 
+    void CleanupScene();
+
 private:
 
     void CleanupLoadingSteps();

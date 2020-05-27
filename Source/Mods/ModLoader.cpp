@@ -13,10 +13,11 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include "ModLoader.h"
-#include "../MyEvents.h"
 #include "../Config/ConfigManager.h"
+#include "../Console/ConsoleHandlerEvents.h"
 
-/// Construct.
+using namespace ConsoleHandlerEvents;
+
 ModLoader::ModLoader(Context* context) :
     Object(context)
 {
@@ -174,13 +175,13 @@ void ModLoader::Reload()
 
 void ModLoader::SubscribeConsoleCommands()
 {
-    using namespace MyEvents::ConsoleCommandAdd;
+    using namespace ConsoleCommandAdd;
 
     VariantMap& data = GetEventDataMap();
     data[P_NAME] = "reload_mods";
     data[P_EVENT] = "HandleReloadMods";
     data[P_DESCRIPTION] = "Reload all scripts";
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    SendEvent(E_CONSOLE_COMMAND_ADD, data);
 }
 
 void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)

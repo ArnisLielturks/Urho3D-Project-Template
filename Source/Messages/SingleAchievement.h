@@ -11,7 +11,6 @@ class SingleAchievement : public Animatable
 {
 URHO3D_OBJECT(SingleAchievement, Animatable);
 public:
-    /// Construct.
     SingleAchievement(Context* context);
 
     virtual ~SingleAchievement();

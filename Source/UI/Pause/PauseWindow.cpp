@@ -5,10 +5,13 @@
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/Font.h>
 #include "PauseWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
+#include "../../LevelManagerEvents.h"
+#include "../WindowEvents.h"
 
-/// Construct.
+using namespace LevelManagerEvents;
+using namespace WindowEvents;
+
 PauseWindow::PauseWindow(Context* context) :
     BaseWindow(context)
 {
@@ -48,7 +51,7 @@ void PauseWindow::Create()
     _continueButton->SetAlignment(HA_CENTER, VA_TOP);
 
     SubscribeToEvent(_continueButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+        SendEvent(E_CLOSE_ALL_WINDOWS);
     });
 
     _mainMenuButton = CreateButton(localization->Get("RETURN_TO_MENU"), 200, IntVector2(0, 60));
@@ -57,10 +60,10 @@ void PauseWindow::Create()
     SubscribeToEvent(_mainMenuButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PauseWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
 
         data["Name"] = "MainMenu";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
     });
 
     _settingsButton = CreateButton(localization->Get("SETTINGS"), 200, IntVector2(0, 100));
@@ -69,7 +72,7 @@ void PauseWindow::Create()
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 
     _exitButton = CreateButton(localization->Get("EXIT_GAME"), 200, IntVector2(0, 140));
@@ -78,7 +81,7 @@ void PauseWindow::Create()
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 
 }

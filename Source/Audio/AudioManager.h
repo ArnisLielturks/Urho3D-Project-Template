@@ -16,7 +16,6 @@ class AudioManager : public Object
     URHO3D_OBJECT(AudioManager, Object);
 
 public:
-    /// Construct.
     AudioManager(Context* context);
 
     virtual ~AudioManager();

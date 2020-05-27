@@ -7,7 +7,6 @@ class ScoreboardWindow : public BaseWindow
     URHO3D_OBJECT(ScoreboardWindow, BaseWindow);
 
 public:
-    /// Construct.
     ScoreboardWindow(Context* context);
 
     virtual ~ScoreboardWindow();

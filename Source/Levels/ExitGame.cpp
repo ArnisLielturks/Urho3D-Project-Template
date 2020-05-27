@@ -5,13 +5,11 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/Font.h>
 #include "ExitGame.h"
-#include "../MyEvents.h"
 #include "../Messages/Achievements.h"
 #include "../Global.h"
 
 using namespace Levels;
 
-    /// Construct.
 ExitGame::ExitGame(Context* context) :
     BaseLevel(context)
 {

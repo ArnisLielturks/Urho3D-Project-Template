@@ -16,9 +16,14 @@
 #include "../../Input/ControllerInput.h"
 #include "../../Input/ControllerEvents.h"
 #include "SettingsWindow.h"
-#include "../../MyEvents.h"
+#include "../../CustomEvents.h"
 #include "../../Global.h"
 #include "../../Messages/Achievements.h"
+#include "../WindowEvents.h"
+
+using namespace ControllerEvents;
+using namespace WindowEvents;
+using namespace CustomEvents;
 
 namespace {
 // RenderWindow modes
@@ -148,7 +153,6 @@ namespace {
 
 } // namespace
 
-/// Construct.
 SettingsWindow::SettingsWindow(Context* context) :
     BaseWindow(context)
 {
@@ -240,7 +244,7 @@ void SettingsWindow::InitWindow()
     SubscribeToEvent(buttonClose, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
     });
 
     window_->SetMovable(true);
@@ -698,10 +702,10 @@ void SettingsWindow::CreateControlsTab()
             Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
             int action = button->GetVar("Action").GetInt();
 
-            using namespace MyEvents::StartInputMapping;
+            using namespace StartInputMapping;
             VariantMap& data = GetEventDataMap();
             data[P_CONTROL_ACTION] = action;
-            SendEvent(MyEvents::E_START_INPUT_MAPPING, data);
+            SendEvent(E_START_INPUT_MAPPING, data);
 
             auto buttonLabel = button->GetChildStaticCast<Text>("Label", false);
             buttonLabel->SetText("...");
@@ -713,7 +717,7 @@ void SettingsWindow::CreateControlsTab()
         });
     }
 
-    SubscribeToEvent(MyEvents::E_INPUT_MAPPING_FINISHED, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(E_INPUT_MAPPING_FINISHED, [&](StringHash eventType, VariantMap& eventData) {
         RefreshControlsTab();
         Input* input = GetSubsystem<Input>();
         if (!input->IsMouseVisible()) {
@@ -721,7 +725,7 @@ void SettingsWindow::CreateControlsTab()
         }
     });
 
-    SubscribeToEvent(MyEvents::E_STOP_INPUT_MAPPING, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(E_STOP_INPUT_MAPPING, [&](StringHash eventType, VariantMap& eventData) {
         RefreshControlsTab();
         Input* input = GetSubsystem<Input>();
         if (!input->IsMouseVisible()) {
@@ -955,7 +959,7 @@ void SettingsWindow::ApplyVideoOptions()
     GetSubsystem<ConfigManager>()->Set("video", "VSync", opt_vsync_->GetOptionValue());
     GetSubsystem<ConfigManager>()->Set("video", "Monitor", opt_monitor_->GetOptionIndex());
 
-    SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
+    SendEvent(E_VIDEO_SETTINGS_CHANGED);
 
 }
 
@@ -1156,7 +1160,7 @@ void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& event
         data["Name"] = "PopupMessageWindow";
         data["Type"] = "warning";
         data["ClosePrevious"] = true;
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     }
 
     if (option->HasTag("mods")) {
@@ -1169,7 +1173,7 @@ void SettingsWindow::HandleOptionChanged(StringHash eventType, VariantMap& event
         data["Name"] = "PopupMessageWindow";
         data["Type"] = "warning";
         data["ClosePrevious"] = true;
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     }
 
     if (option->HasTag("developer_console")) {

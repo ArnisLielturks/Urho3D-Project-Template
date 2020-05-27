@@ -23,7 +23,6 @@ class ControllerInput : public Object
     URHO3D_OBJECT(ControllerInput, Object);
 
 public:
-    /// Construct.
     ControllerInput(Context* context);
 
     virtual ~ControllerInput();

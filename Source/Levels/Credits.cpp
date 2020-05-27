@@ -9,18 +9,20 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/Context.h>
 #include "Credits.h"
-#include "../MyEvents.h"
 #include "../Global.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
+#include "../LevelManagerEvents.h"
+#include "../AndroidEvents/ServiceEvents.h"
 
 using namespace Levels;
 using namespace Urho3D;
+using namespace LevelManagerEvents;
+using namespace ServiceEvents;
 
 const static float CREDITS_SCROLL_SPEED = 50.0f;
 
 namespace Levels {
-    /// Construct.
     Credits::Credits(Context* context) :
             BaseLevel(context),
             _offset(0)
@@ -107,8 +109,8 @@ namespace Levels {
 
         GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_REWARDED, 1);
 
-        SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
-            using namespace MyEvents::ServiceMessage;
+        SubscribeToEvent(E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+            using namespace ServiceMessage;
             int eventId = eventData[P_COMMAND].GetInt();
             if (eventId == ANDROID_AD_REWARDED_LOADED) {
                 GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_REWARDED_SHOW, 1);
@@ -148,7 +150,7 @@ namespace Levels {
         UnsubscribeFromEvent(E_UPDATE);
         VariantMap& data = GetEventDataMap();
         data["Name"] = "MainMenu";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
 
         if (!forced) {
             SendEvent("CreditsEnd");

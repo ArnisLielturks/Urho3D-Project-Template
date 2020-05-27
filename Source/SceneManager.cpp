@@ -9,9 +9,14 @@
 #endif
 #include <Urho3D/Core/CoreEvents.h>
 #include "SceneManager.h"
-#include "MyEvents.h"
+#include "SceneManagerEvents.h"
+#include "Console/ConsoleHandlerEvents.h"
+#include "LevelManagerEvents.h"
 
 using namespace Urho3D;
+using namespace ConsoleHandlerEvents;
+using namespace SceneManagerEvents;
+using namespace LevelManagerEvents;
 
 /**
  * Wait this many MS before marking loading step as completed if no ACK request was received
@@ -25,15 +30,15 @@ SceneManager::SceneManager(Context* context) :
         progress(0),
         targetProgress(0)
 {
-    SubscribeToEvent(MyEvents::E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
-    SubscribeToEvent(MyEvents::E_LOADING_STEP_CRITICAL_FAIL, [&](StringHash eventType, VariantMap &eventData) {
+    SubscribeToEvent(E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
+    SubscribeToEvent(E_LOADING_STEP_CRITICAL_FAIL, [&](StringHash eventType, VariantMap &eventData) {
         UnsubscribeFromEvent(E_UPDATE);
-        using namespace MyEvents::LoadingStepCriticalFail;
+        using namespace LoadingStepCriticalFail;
         VariantMap& data = GetEventDataMap();
         data["Name"] = "MainMenu";
         data["Type"] = "error";
         data["Message"] = eventData[P_DESCRIPTION];
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
     });
 }
 
@@ -59,6 +64,20 @@ void SceneManager::LoadScene(const String& filename)
     SubscribeToEvent(_activeScene, E_ASYNCLOADPROGRESS, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingProgress));
     SubscribeToEvent(_activeScene, E_ASYNCEXECFINISHED, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingFinished));
     SubscribeToEvent(_activeScene, E_ASYNCLOADFINISHED, URHO3D_HANDLER(SceneManager, HandleAsyncSceneLoadingFinished));
+
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "remove_local_nodes", ConsoleCommandAdd::P_EVENT, "#remove_local_nodes", ConsoleCommandAdd::P_DESCRIPTION, "Remove all local nodes");
+    SubscribeToEvent("#remove_local_nodes", [&](StringHash eventType, VariantMap& eventData) {
+        if (_activeScene) {
+            _activeScene->Clear(false, true);
+        }
+    });
+
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "remove_replicated_nodes", ConsoleCommandAdd::P_EVENT, "#remove_replicated_nodes", ConsoleCommandAdd::P_DESCRIPTION, "Remove all replicated nodes");
+    SubscribeToEvent("#remove_replicated_nodes", [&](StringHash eventType, VariantMap& eventData) {
+        if (_activeScene) {
+            _activeScene->Clear(true, false);
+        }
+    });
 }
 
 void SceneManager::HandleAsyncSceneLoadingProgress(StringHash eventType, VariantMap& eventData)
@@ -77,7 +96,7 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
 {
     using namespace AsyncLoadFinished;
 
-//    _activeScene->SetUpdateEnabled(false);
+    _activeScene->SetUpdateEnabled(false);
 
 #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
@@ -88,9 +107,9 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     UnsubscribeFromEvent(E_ASYNCLOADPROGRESS);
     UnsubscribeFromEvent(E_ASYNCLOADFINISHED);
 
-    SubscribeToEvent(MyEvents::E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));
-    SubscribeToEvent(MyEvents::E_LOADING_STEP_PROGRESS, URHO3D_HANDLER(SceneManager, HandleLoadingStepProgress));
-    SubscribeToEvent(MyEvents::E_LOADING_STEP_FINISHED, URHO3D_HANDLER(SceneManager, HandleLoadingStepFinished));
+    SubscribeToEvent(E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));
+    SubscribeToEvent(E_LOADING_STEP_PROGRESS, URHO3D_HANDLER(SceneManager, HandleLoadingStepProgress));
+    SubscribeToEvent(E_LOADING_STEP_FINISHED, URHO3D_HANDLER(SceneManager, HandleLoadingStepFinished));
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(SceneManager, HandleUpdate));
     URHO3D_LOGINFO("Scene loaded: " + _activeScene->GetFileName());
@@ -137,10 +156,10 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
                 (*it).second_.failed   = true;
                 URHO3D_LOGERROR("Loading step '" + (*it).second_.name + "' failed, took too long to execute!");
 
-                using namespace MyEvents::LoadingStepTimedOut;
+                using namespace LoadingStepTimedOut;
                 VariantMap& data = GetEventDataMap();
                 data[P_EVENT] = (*it).second_.event;
-                SendEvent(MyEvents::E_LOADING_STEP_TIMED_OUT, data);
+                SendEvent(E_LOADING_STEP_TIMED_OUT, data);
                 URHO3D_LOGINFO("Loading step skipped, no ACK retrieved for " + (*it).second_.name);
                 return;
 
@@ -153,10 +172,10 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
                     _loadingStatus = (*it).second_.name;
                     // Delay loading step execution till the next frame
                     // to allow the status to be updated
-                    using namespace MyEvents::LoadingStatusUpdate;
+                    using namespace LoadingStatusUpdate;
                     VariantMap data;
                     data[P_NAME] = (*it).second_.name;
-                    SendEvent(MyEvents::E_LOADING_STATUS_UPDATE, data);
+                    SendEvent(E_LOADING_STATUS_UPDATE, data);
                     return;
                 }
                 // Send out event to start this loading step
@@ -182,9 +201,9 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         // Re-enable active scene
         _activeScene->SetUpdateEnabled(true);
 
-        UnsubscribeFromEvent(MyEvents::E_ACK_LOADING_STEP);
-        UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_PROGRESS);
-        UnsubscribeFromEvent(MyEvents::E_LOADING_STEP_FINISHED);
+        UnsubscribeFromEvent(E_ACK_LOADING_STEP);
+        UnsubscribeFromEvent(E_LOADING_STEP_PROGRESS);
+        UnsubscribeFromEvent(E_LOADING_STEP_FINISHED);
 
         CleanupLoadingSteps();
     }
@@ -205,7 +224,7 @@ void SceneManager::ResetProgress()
 
 void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::RegisterLoadingStep;
+    using namespace RegisterLoadingStep;
     LoadingStep step;
     step.name     = eventData[P_NAME].GetString();
     step.event    = eventData[P_EVENT].GetString();
@@ -235,7 +254,7 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
 void SceneManager::HandleLoadingStepAck(StringHash eventType, VariantMap& eventData)
 {
     //
-    using namespace MyEvents::AckLoadingStep;
+    using namespace AckLoadingStep;
     String name = eventData[P_EVENT].GetString();
 
     _loadingSteps[name].ack = true;
@@ -245,7 +264,7 @@ void SceneManager::HandleLoadingStepAck(StringHash eventType, VariantMap& eventD
 
 void SceneManager::HandleLoadingStepProgress(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::LoadingStepProgress;
+    using namespace LoadingStepProgress;
     String event   = eventData[P_EVENT].GetString();
     float progress = eventData[P_PROGRESS].GetFloat();
     progress       = Clamp(progress, 0.0f, 1.0f);
@@ -256,7 +275,7 @@ void SceneManager::HandleLoadingStepProgress(StringHash eventType, VariantMap& e
 
 void SceneManager::HandleLoadingStepFinished(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::LoadingStepFinished;
+    using namespace LoadingStepFinished;
     String event = eventData[P_EVENT].GetString();
 
     _loadingSteps[event].finished = true;
@@ -280,4 +299,14 @@ bool SceneManager::CanLoadingStepRun(LoadingStep& loadingStep)
     }
 
     return true;
+}
+
+void SceneManager::CleanupScene()
+{
+    if (_activeScene) {
+        _activeScene->SetUpdateEnabled(false);
+        _activeScene->Clear();
+        _activeScene->Remove();
+        _activeScene.Reset();
+    }
 }

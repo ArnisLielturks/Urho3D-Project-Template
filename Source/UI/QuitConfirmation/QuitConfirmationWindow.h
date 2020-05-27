@@ -8,7 +8,6 @@ class QuitConfirmationWindow : public BaseWindow
     URHO3D_OBJECT(QuitConfirmationWindow, BaseWindow);
 
 public:
-    /// Construct.
     QuitConfirmationWindow(Context* context);
 
     virtual ~QuitConfirmationWindow();

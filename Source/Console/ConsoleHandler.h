@@ -16,7 +16,6 @@ class ConsoleHandler : public Object
     URHO3D_OBJECT(ConsoleHandler, Object);
 
 public:
-    /// Construct.
     ConsoleHandler(Context* context);
 
     virtual ~ConsoleHandler();

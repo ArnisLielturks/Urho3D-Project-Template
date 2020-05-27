@@ -8,7 +8,6 @@ namespace Levels {
         URHO3D_OBJECT(ExitGame, BaseLevel);
 
     public:
-        /// Construct.
         ExitGame(Context* context);
         virtual ~ExitGame();
         static void RegisterObject(Context* context);

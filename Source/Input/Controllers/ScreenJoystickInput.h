@@ -9,7 +9,6 @@ class ScreenJoystickInput : public BaseInput
     URHO3D_OBJECT(ScreenJoystickInput, BaseInput);
 
 public:
-    /// Construct.
     ScreenJoystickInput(Context* context);
 
     virtual ~ScreenJoystickInput();

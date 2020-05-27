@@ -1,12 +1,12 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/Resource/ResourceCache.h>
-
 #include "BehaviourTree.h"
-#include "../MyEvents.h"
 #include "../Global.h"
+#include "../Console/ConsoleHandlerEvents.h"
 
 using namespace Urho3D;
+using namespace ConsoleHandlerEvents;
 
 BehaviourTree::BehaviourTree(Context* context):
     LogicComponent(context)
@@ -65,10 +65,10 @@ void BehaviourTree::FixedUpdate(float timeStep)
 void BehaviourTree::SubscribeToEvents()
 {
     _controls.Set(CTRL_FORWARD, true);
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "behaviour_debug",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#behaviour_debug",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change behaviour tree state");
+    SendEvent(E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "behaviour_debug",
+            ConsoleCommandAdd::P_EVENT, "#behaviour_debug",
+            ConsoleCommandAdd::P_DESCRIPTION, "Change behaviour tree state");
     SubscribeToEvent("#behaviour_debug", [&](StringHash eventType, VariantMap& eventData) {
         _controls.Set(CTRL_FORWARD, true);
     });

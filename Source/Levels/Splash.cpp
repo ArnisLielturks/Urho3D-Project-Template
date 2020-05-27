@@ -8,14 +8,14 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/Core/Context.h>
 #include "Splash.h"
-#include "../MyEvents.h"
 #include "../Messages/Achievements.h"
+#include "../LevelManagerEvents.h"
 
 using namespace Levels;
+using namespace LevelManagerEvents;
 
 static int SPLASH_TIME = 3000;
 
-    /// Construct.
 Splash::Splash(Context* context) :
     BaseLevel(context),
     _logoIndex(0)
@@ -149,5 +149,5 @@ void Splash::HandleEndSplash()
         data["Name"] = "Splash";
         data["LogoIndex"] = _logoIndex;
     }
-    SendEvent(MyEvents::E_SET_LEVEL, data);
+    SendEvent(E_SET_LEVEL, data);
 }

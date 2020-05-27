@@ -1,6 +1,5 @@
 int count = 0;
 Node@ ground = null;
-Vector3 targetGroundScale = Vector3(40, 40, 40);
 
 void Start()
 {
@@ -8,7 +7,6 @@ void Start()
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
     SubscribeToEvent("CheckpointReached", "HandleCheckpointReached");
-    SubscribeToEvent("Update", "HandleUpdate");
 
     // Register our loading step
     VariantMap data;
@@ -63,8 +61,7 @@ void CreateCheckpoint()
         return;
     }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
-    float scale = targetGroundScale.x * 0.5;
-    scene.InstantiateXML(xml.root, Vector3(Random(scale * 2) - scale, 2.0, Random(scale * 2) - scale), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(40) - scale, 2.0, Random(40) - scale), Quaternion());
 }
 
 void UpdateBoxes()
@@ -123,25 +120,6 @@ void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
 
     // Let the loading system know that we finished our work
     SendEvent("LoadingStepFinished", data);
-}
-
-void HandleUpdate(StringHash eventType, VariantMap& eventData)
-{
-    Connection@ serverConnection = network.serverConnection;
-    if (serverConnection !is null) {
-        return;
-    }
-    if (ground is null) {
-        return;
-    }
-    float timestep = eventData["TimeStep"].GetFloat();
-    float diff = (targetGroundScale.x - ground.scale.x);
-    if (Abs(diff) > 0.1) {
-        ground.scale += Vector3(1, 1, 1) * diff * timestep;
-    } else {
-        UpdateBoxes();
-        UnsubscribeFromEvent("Update");
-    }
 }
 
 void HandleBoxDestroyed(StringHash eventType, VariantMap& eventData)

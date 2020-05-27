@@ -14,16 +14,22 @@
 #endif
 #include "MainMenu.h"
 #include "../Global.h"
-#include "../MyEvents.h"
+#include "../CustomEvents.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
 #include "../Input/ControllerInput.h"
+#include "../LevelManagerEvents.h"
+#include "../UI/WindowEvents.h"
+#include "../AndroidEvents/ServiceEvents.h"
 
 using namespace Levels;
+using namespace LevelManagerEvents;
+using namespace WindowEvents;
+using namespace CustomEvents;
+using namespace ServiceEvents;
 
 const static int BUTTON_FONT_SIZE = 20;
 
-    /// Construct.
 MainMenu::MainMenu(Context* context) :
     BaseLevel(context)
 {
@@ -62,7 +68,7 @@ void MainMenu::CreateScene()
 
     InitCamera();
 
-    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
         InitCamera();
     });
 
@@ -112,7 +118,7 @@ void MainMenu::CreateUI()
         data["Name"] = "PopupMessageWindow";
         data["Type"] = _data.Contains("Type") ? _data["Type"].GetString() : "warning";
         data["ClosePrevious"] = true;
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     }
     auto* localization = GetSubsystem<Localization>();
 
@@ -126,7 +132,7 @@ void MainMenu::CreateUI()
     SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 
     // Load dynamic buttons
@@ -147,21 +153,21 @@ void MainMenu::CreateUI()
     SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 
     _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"));
     SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 
     _creditsButton = CreateButton(localization->Get("CREDITS"));
     SubscribeToEvent(_creditsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Credits";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
     });
 
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
@@ -169,15 +175,15 @@ void MainMenu::CreateUI()
     SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
     });
 #endif
 
     // Test Communication between the sample and android activity
     GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_INTERSTITIAL, 1);
 
-    SubscribeToEvent(MyEvents::E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace MyEvents::ServiceMessage;
+    SubscribeToEvent(E_SERVICE_MESSAGE, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace ServiceMessage;
         int eventId = eventData[P_COMMAND].GetInt();
         if (eventId == ANDROID_AD_INTERSTITIAL_LOADED) {
             GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_SHOW_INTERSTITIAL, 1);
@@ -209,7 +215,7 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
     float timestep = eventData[P_TIMESTEP].GetFloat();
     if (!GetSubsystem<ControllerInput>()->IsMappingInProgress()) {
         if (GetSubsystem<Input>()->GetKeyPress(KEY_ESCAPE)) {
-            SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+            SendEvent(E_CLOSE_ALL_WINDOWS);
         }
     }
 

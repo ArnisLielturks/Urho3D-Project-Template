@@ -10,7 +10,6 @@ namespace Levels {
         URHO3D_OBJECT(Credits, BaseLevel);
 
     public:
-        /// Construct.
         Credits(Context* context);
         virtual ~Credits();
         static void RegisterObject(Context* context);

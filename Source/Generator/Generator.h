@@ -12,7 +12,6 @@ class Generator : public Object
     URHO3D_OBJECT(Generator, Object);
 
 public:
-    /// Construct.
     Generator(Context* context);
 
     virtual ~Generator();

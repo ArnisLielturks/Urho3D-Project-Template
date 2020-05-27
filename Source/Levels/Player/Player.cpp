@@ -4,29 +4,29 @@
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/StaticModel.h>
-#include <Urho3D/UI/Text3D.h>
 #include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/IO/MemoryBuffer.h>
 #include <Urho3D/Graphics/Model.h>
-#include <Urho3D/UI/Font.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Material.h>
+#include <Urho3D/Network/Network.h>
+#include <Urho3D/Scene/SceneEvents.h>
 #include "Player.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
 #include "../../BehaviourTree/BehaviourTree.h"
 #include "PlayerState.h"
+#include "../../Console/ConsoleHandlerEvents.h"
 
-static bool SHOW_LABELS = true;
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
+
+using namespace ConsoleHandlerEvents;
 
 Player::Player(Context* context):
     Object(context)
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
-    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(Player, HandlePostUpdate));
     RegisterConsoleCommands();
 }
 
@@ -34,9 +34,6 @@ Player::~Player()
 {
     if (_node) {
         _node->Remove();
-    }
-    if (_label) {
-        _label->Remove();
     }
 }
 
@@ -49,28 +46,11 @@ void Player::RegisterObject(Context* context)
 void Player::RegisterConsoleCommands()
 {
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "show_labels",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#show_labels",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#show_labels", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() != 2) {
-            URHO3D_LOGERROR("Invalid number of arguments!");
-            return;
-        }
-        SHOW_LABELS = ToBool(params[1]);
-        _label->SetEnabled(SHOW_LABELS);
-    });
-
-    SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "movement_speed",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#movement_speed",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "movement_speed",
+            ConsoleCommandAdd::P_EVENT, "#movement_speed",
+            ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#movement_speed", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
@@ -82,11 +62,11 @@ void Player::RegisterConsoleCommands()
     });
 
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "jump_force",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#jump_force",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "jump_force",
+            ConsoleCommandAdd::P_EVENT, "#jump_force",
+            ConsoleCommandAdd::P_DESCRIPTION, "Show player labels",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#jump_force", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
@@ -120,7 +100,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     ballObject->SetCastShadows(true);
 
     // Create the physics components
-    _rigidBody = _node->CreateComponent<RigidBody>();
+    _rigidBody = _node->CreateComponent<RigidBody>(LOCAL);
     _rigidBody->SetMass(5.0f);
     _rigidBody->SetFriction(2.0f);
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
@@ -130,19 +110,6 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
 
     auto* shape = _node->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
-
-    _label = scene->CreateChild("Label", LOCAL);
-
-    auto text3D = _label->CreateComponent<Text3D>();
-    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-    text3D->SetColor(Color::GRAY);
-    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-    text3D->SetViewMask(~(1 << _controllerId));
-
-    if (!SHOW_LABELS) {
-        _label->SetEnabled(false);
-    }
 
     SubscribeToEvent(_node, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
 
@@ -156,6 +123,8 @@ void Player::FindNode(Scene* scene, int id)
     _node = scene->GetNode(id);
     if (_node) {
         _node->SetInterceptNetworkUpdate("Network Position", true);
+        _node->GetComponent<PlayerState>()->HideLabel();
+        SubscribeToEvent(E_INTERCEPTNETWORKUPDATE, URHO3D_HANDLER(Player, HandlePredictPlayerPosition));
     }
 }
 
@@ -178,11 +147,6 @@ void Player::ResetPosition()
 void Player::SetControllerId(unsigned int id)
 {
     _controllerId = id;
-}
-
-void Player::SetRemotePlayerId(int id)
-{
-    _remotePlayerId = id;
 }
 
 Node* Player::GetNode()
@@ -209,12 +173,13 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 {
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    if (_serverConnection) {
+    auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
+    if (serverConnection) {
         if (IsCameraTargetSet()) {
             // We are not following our player node, so we must not control it
-            _serverConnection->SetControls(Controls());
+            serverConnection->SetControls(Controls());
         } else {
-            _serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+            serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
         }
         return;
     }
@@ -286,13 +251,6 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     _onGround = false;
 }
 
-void Player::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
-{
-    if (_label) {
-        _label->SetPosition(_node->GetPosition() + Vector3::UP * 0.2);
-    }
-}
-
 void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
 {
     // Check collision contacts and see if character is standing on ground (look for a contact that has near vertical normal)
@@ -320,11 +278,6 @@ void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
 void Player::SetClientConnection(Connection* connection)
 {
     _connection = connection;
-}
-
-void Player::SetServerConnection(Connection *connection)
-{
-    _serverConnection = connection;
 }
 
 void Player::SetCameraTarget(Node* target)
@@ -361,7 +314,16 @@ void Player::SetName(const String& name)
     if (_node) {
         _node->GetOrCreateComponent<PlayerState>()->SetPlayerName(name);
     }
-    if (_label) {
-        _label->GetComponent<Text3D>()->SetText(name);
-    }
+}
+
+void Player::HandlePredictPlayerPosition(StringHash eventType, VariantMap& eventData)
+{
+    using namespace InterceptNetworkUpdate;
+    String name = eventData[P_NAME].GetString();
+    Node* node = static_cast<Node*>(eventData[P_SERIALIZABLE].GetPtr());
+    Vector3 position = eventData[P_VALUE].GetVector3();
+//    _node->SetWorldPosition(position);
+//    URHO3D_LOGINFOF("HandlePredictPlayerPosition %s", (position - node->GetPosition()).ToString().CString());
+    const AttributeInfo& attr = node->GetAttributes()->At(eventData[P_INDEX].GetInt());
+    node->OnSetAttribute(attr, eventData[P_VALUE]);
 }

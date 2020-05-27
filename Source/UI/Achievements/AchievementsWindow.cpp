@@ -6,11 +6,14 @@
 #include <Urho3D/UI/ToolTip.h>
 #include <Urho3D/UI/Font.h>
 #include "AchievementsWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
 #include "../../Messages/Achievements.h"
+#include "../WindowEvents.h"
+#include "../../Messages/MessageEvents.h"
 
-/// Construct.
+using namespace WindowEvents;
+using namespace MessageEvents;
+
 AchievementsWindow::AchievementsWindow(Context* context) :
     BaseWindow(context)
 {
@@ -87,7 +90,7 @@ void AchievementsWindow::Create()
     SubscribeToEvent(buttonClose, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
     });
 
     _listView = _baseWindow->CreateChild<ListView>();
@@ -103,8 +106,7 @@ void AchievementsWindow::Create()
         CreateItem((*it).image, (*it).message, (*it).completed, (*it).current, (*it).threshold);
     }
 
-    SubscribeToEvent(MyEvents::E_ACHIEVEMENT_UNLOCKED, URHO3D_HANDLER(AchievementsWindow, HandleAchievementUnlocked));
-
+    SubscribeToEvent(E_ACHIEVEMENT_UNLOCKED, URHO3D_HANDLER(AchievementsWindow, HandleAchievementUnlocked));
 }
 
 void AchievementsWindow::SubscribeToEvents()

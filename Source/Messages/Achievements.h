@@ -52,7 +52,6 @@ class Achievements : public Object
     URHO3D_OBJECT(Achievements, Object);
 
 public:
-    /// Construct.
     Achievements(Context* context);
 
     virtual ~Achievements();

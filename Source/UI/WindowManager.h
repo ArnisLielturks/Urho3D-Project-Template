@@ -10,7 +10,6 @@ class WindowManager : public Object
     URHO3D_OBJECT(WindowManager, Object);
 
 public:
-    /// Construct.
     WindowManager(Context* context);
 
     virtual ~WindowManager();
@@ -19,6 +18,8 @@ public:
      * Is specific window is already opened
      */
     bool IsWindowOpen(String windowName);
+
+    bool IsAnyWindowOpened();
 
 private:
 

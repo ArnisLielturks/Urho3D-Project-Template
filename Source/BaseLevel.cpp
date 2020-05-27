@@ -14,6 +14,13 @@
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
 #include "Global.h"
+#include "Console/ConsoleHandlerEvents.h"
+#include "LevelManagerEvents.h"
+#include "CustomEvents.h"
+
+using namespace ConsoleHandlerEvents;
+using namespace LevelManagerEvents;
+using namespace CustomEvents;
 
 BaseLevel::BaseLevel(Context* context) :
 Object(context)
@@ -30,10 +37,10 @@ BaseLevel::~BaseLevel()
 
 void BaseLevel::SubscribeToBaseEvents()
 {
-    SubscribeToEvent(MyEvents::E_LEVEL_CHANGING_IN_PROGRESS, URHO3D_HANDLER(BaseLevel, HandleStart));
+    SubscribeToEvent(E_LEVEL_CHANGING_IN_PROGRESS, URHO3D_HANDLER(BaseLevel, HandleStart));
 
     // How to use lambda (anonymous) functions
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "gamma", MyEvents::ConsoleCommandAdd::P_EVENT, "gamma", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change gamma", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "gamma", ConsoleCommandAdd::P_EVENT, "gamma", ConsoleCommandAdd::P_DESCRIPTION, "Change gamma", ConsoleCommandAdd::P_OVERWRITE, true);
     SubscribeToEvent("gamma", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() == 2) {
@@ -47,7 +54,7 @@ void BaseLevel::SubscribeToBaseEvents()
         }
     });
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "clip", MyEvents::ConsoleCommandAdd::P_EVENT, "clip", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change camera far/near clip", MyEvents::ConsoleCommandAdd::P_OVERWRITE, true);
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "clip", ConsoleCommandAdd::P_EVENT, "clip", ConsoleCommandAdd::P_DESCRIPTION, "Change camera far/near clip", ConsoleCommandAdd::P_OVERWRITE, true);
     SubscribeToEvent("clip", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() == 3) {
@@ -66,10 +73,10 @@ void BaseLevel::SubscribeToBaseEvents()
     });
 
     SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
-        SendEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED);
+        SendEvent(E_VIDEO_SETTINGS_CHANGED);
     });
 
-    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
         auto cache = GetSubsystem<ResourceCache>();
         for (int i = 0; i < GetSubsystem<Renderer>()->GetNumViewports(); i++) {
             auto viewport = GetSubsystem<Renderer>()->GetViewport(i);
@@ -129,20 +136,20 @@ void BaseLevel::SubscribeToEvents()
 {
     SubscribeToEvent("FovChange", URHO3D_HANDLER(BaseLevel, HandleFovChange));
 
-    using namespace MyEvents::ConsoleCommandAdd;
+    using namespace ConsoleCommandAdd;
     VariantMap& data = GetEventDataMap();
     data[P_NAME] = "fov";
     data[P_EVENT] = "FovChange";
     data[P_DESCRIPTION] = "Show/Change camera fov";
     data[P_OVERWRITE] = true;
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    SendEvent(E_CONSOLE_COMMAND_ADD, data);
 
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "ambient_light",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#ambient_light",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "ambient_light",
+            ConsoleCommandAdd::P_EVENT, "#ambient_light",
+            ConsoleCommandAdd::P_DESCRIPTION, "Change scene ambient light",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
         if (!_scene) {
@@ -162,11 +169,11 @@ void BaseLevel::SubscribeToEvents()
     });
 
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "fog",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#fog",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "fog",
+            ConsoleCommandAdd::P_EVENT, "#fog",
+            ConsoleCommandAdd::P_DESCRIPTION, "Change custom scene fog",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
         if (!_scene) {
@@ -220,9 +227,14 @@ void BaseLevel::Dispose()
 {
     // Pause the scene, remove all contents from the scene, then remove the scene itself.
     if (_scene) {
-//        _scene->SetUpdateEnabled(false);
-//        _scene->Clear();
-//        _scene->Remove();
+        if (_scene == GetSubsystem<SceneManager>()->GetActiveScene()) {
+            GetSubsystem<SceneManager>()->CleanupScene();
+        } else {
+            _scene->SetUpdateEnabled(false);
+            _scene->Clear();
+            _scene->Remove();
+            _scene.Reset();
+        }
     }
 
     // Remove all UI elements from UI sub-system

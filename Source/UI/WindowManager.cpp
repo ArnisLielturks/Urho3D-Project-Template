@@ -2,8 +2,6 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Input/Input.h>
 #include "WindowManager.h"
-#include "../MyEvents.h"
-
 #include "Settings/SettingsWindow.h"
 #include "Scoreboard/ScoreboardWindow.h"
 #include "Pause/PauseWindow.h"
@@ -12,6 +10,9 @@
 #include "Achievements/AchievementsWindow.h"
 #include "PopupMessage/PopupMessageWindow.h"
 #include "Settings/UIOption.h"
+#include "WindowEvents.h"
+
+using namespace WindowEvents;
 
 WindowManager::WindowManager(Context* context) :
     Object(context)
@@ -48,15 +49,15 @@ void WindowManager::RegisterAllFactories()
 
 void WindowManager::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_OPEN_WINDOW, URHO3D_HANDLER(WindowManager, HandleOpenWindow));
-    SubscribeToEvent(MyEvents::E_CLOSE_WINDOW, URHO3D_HANDLER(WindowManager, HandleCloseWindow));
-    SubscribeToEvent(MyEvents::E_CLOSE_ALL_WINDOWS, URHO3D_HANDLER(WindowManager, HandleCloseAllWindows));
+    SubscribeToEvent(E_OPEN_WINDOW, URHO3D_HANDLER(WindowManager, HandleOpenWindow));
+    SubscribeToEvent(E_CLOSE_WINDOW, URHO3D_HANDLER(WindowManager, HandleCloseWindow));
+    SubscribeToEvent(E_CLOSE_ALL_WINDOWS, URHO3D_HANDLER(WindowManager, HandleCloseAllWindows));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(WindowManager, HandleUpdate));
 }
 
 void WindowManager::HandleOpenWindow(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::OpenWindow;
+    using namespace OpenWindow;
     String windowName = eventData["Name"].GetString();
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
@@ -127,7 +128,7 @@ bool WindowManager::IsWindowOpen(String windowName)
 
 void WindowManager::CloseWindow(String windowName)
 {
-    using namespace MyEvents::CloseWindow;
+    using namespace CloseWindow;
     URHO3D_LOGINFO("Closing window: " + windowName);
     for (auto it = _windowList.Begin(); it != _windowList.End(); ++it) {
         if ((*it)->GetType() == StringHash(windowName)) {
@@ -135,7 +136,7 @@ void WindowManager::CloseWindow(String windowName)
             _windowList.Erase(it);
             VariantMap data;
             data[P_NAME] = windowName;
-            SendEvent(MyEvents::E_WINDOW_CLOSED, data);
+            SendEvent(E_WINDOW_CLOSED, data);
             return;
         }
     }
@@ -149,4 +150,9 @@ void WindowManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
         _closeQueue.Clear();
     }
+}
+
+bool WindowManager::IsAnyWindowOpened()
+{
+    return !_openedWindows.Empty();
 }

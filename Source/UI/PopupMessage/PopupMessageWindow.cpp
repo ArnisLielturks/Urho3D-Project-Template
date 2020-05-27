@@ -5,10 +5,11 @@
 #include <Urho3D/Scene/ObjectAnimation.h>
 #include <Urho3D/Scene/ValueAnimation.h>
 #include "PopupMessageWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
+#include "../WindowEvents.h"
 
-/// Construct.
+using namespace WindowEvents;
+
 PopupMessageWindow::PopupMessageWindow(Context* context) :
     BaseWindow(context)
 {
@@ -70,7 +71,7 @@ void PopupMessageWindow::Create()
     SubscribeToEvent(_okButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PopupMessageWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
 
 //        String type;
 //        if (_data["Type"].GetString() == "info") {

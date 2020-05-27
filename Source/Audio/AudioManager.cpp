@@ -1,12 +1,13 @@
 #include <Urho3D/Core/Object.h>
 
 #include "AudioManager.h"
-#include "../MyEvents.h"
 #include "AudioManagerDefs.h"
+#include "../Console/ConsoleHandlerEvents.h"
+#include "AudioEvents.h"
 
 using namespace Urho3D;
+using namespace AudioEvents;
 
-/// Construct.
 AudioManager::AudioManager(Context* context) :
     Object(context),
     _multipleMusicTracks(true),
@@ -37,9 +38,9 @@ void AudioManager::Init()
 
 void AudioManager::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_PLAY_SOUND, URHO3D_HANDLER(AudioManager, HandlePlaySound));
-    SubscribeToEvent(MyEvents::E_STOP_SOUND, URHO3D_HANDLER(AudioManager, HandleStopSound));
-    SubscribeToEvent(MyEvents::E_STOP_ALL_SOUNDS, URHO3D_HANDLER(AudioManager, HandleStopAllSounds));
+    SubscribeToEvent(E_PLAY_SOUND, URHO3D_HANDLER(AudioManager, HandlePlaySound));
+    SubscribeToEvent(E_STOP_SOUND, URHO3D_HANDLER(AudioManager, HandleStopSound));
+    SubscribeToEvent(E_STOP_ALL_SOUNDS, URHO3D_HANDLER(AudioManager, HandleStopAllSounds));
 
     SubscribeToEvent(E_PRESSED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
     SubscribeToEvent(E_ITEMSELECTED, URHO3D_HANDLER(AudioManager, HandleButtonClick));
@@ -51,18 +52,18 @@ void AudioManager::SubscribeToEvents()
 
 void AudioManager::SubscribeConsoleCommands()
 {
-    using namespace MyEvents::ConsoleCommandAdd;
+    using namespace ConsoleHandlerEvents::ConsoleCommandAdd;
 
     VariantMap& data = GetEventDataMap();
     data[P_NAME] = "play_sound";
     data[P_EVENT] = "ConsolePlaySound";
     data[P_DESCRIPTION] = "Play sound effect";
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, data);
+    SendEvent(ConsoleHandlerEvents::E_CONSOLE_COMMAND_ADD, data);
 }
 
 void AudioManager::HandlePlaySound(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::PlaySound;
+    using namespace PlaySound;
     int index = -1;
     if (eventData.Contains(P_INDEX)) {
         index = eventData[P_INDEX].GetInt();
@@ -154,7 +155,7 @@ void AudioManager::PlaySound(String filename, String type, int index)
 
 void AudioManager::HandleStopSound(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::StopSound;
+    using namespace StopSound;
     int index = eventData[P_INDEX].GetInt();
     String type = eventData[P_TYPE].GetString();
 
@@ -210,11 +211,11 @@ void AudioManager::HandleStopAllSounds(StringHash eventType, VariantMap& eventDa
 void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData)
 {
     using namespace AudioDefs;
-    using namespace MyEvents::PlaySound;
+    using namespace PlaySound;
     VariantMap& data = GetEventDataMap();
     data[P_INDEX] = SOUND_EFFECTS::BUTTON_CLICK;
     data[P_TYPE] = SOUND_EFFECT;
-    SendEvent(MyEvents::E_PLAY_SOUND, data);
+    SendEvent(E_PLAY_SOUND, data);
 }
 
 SoundSource3D* AudioManager::AddEffectToNode(Node* node, unsigned int index)

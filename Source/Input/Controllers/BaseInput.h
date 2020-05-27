@@ -10,7 +10,6 @@ class BaseInput : public Object
     URHO3D_OBJECT(BaseInput, Object);
 
 public:
-    /// Construct.
     BaseInput(Context* context):
         Object(context),
         _activeAction(0),

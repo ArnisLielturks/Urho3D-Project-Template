@@ -13,7 +13,6 @@ namespace Levels {
         URHO3D_OBJECT(Level, BaseLevel);
 
     public:
-        /// Construct.
         Level(Context* context);
 
         virtual ~Level();

@@ -13,9 +13,14 @@
 #include "Levels/ExitGame.h"
 #include "Levels/Loading.h"
 #include "Levels/Credits.h"
-#include "MyEvents.h"
+#include "Console/ConsoleHandlerEvents.h"
+#include "LevelManagerEvents.h"
+#include "UI/WindowEvents.h"
 
 using namespace Urho3D;
+using namespace ConsoleHandlerEvents;
+using namespace LevelManagerEvents;
+using namespace WindowEvents;
 
 LevelManager::LevelManager(Context* context) :
 Object(context),
@@ -23,14 +28,14 @@ currentLevel_("NONE")
 {
 
     // Listen to set level event
-    SubscribeToEvent(MyEvents::E_SET_LEVEL, URHO3D_HANDLER(LevelManager, HandleSetLevelQueue));
+    SubscribeToEvent(E_SET_LEVEL, URHO3D_HANDLER(LevelManager, HandleSetLevelQueue));
 
     if (GetSubsystem<UI>()) {
         GetSubsystem<UI>()->GetRoot()->RemoveAllChildren();
     }
 
     // How to use lambda (anonymous) functions
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "change_level", MyEvents::ConsoleCommandAdd::P_EVENT, "ChangeLevelConsole", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change level");
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "change_level", ConsoleCommandAdd::P_EVENT, "ChangeLevelConsole", ConsoleCommandAdd::P_DESCRIPTION, "Change level");
     SubscribeToEvent("ChangeLevelConsole", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
 
@@ -38,8 +43,8 @@ currentLevel_("NONE")
             URHO3D_LOGERROR("Invalid number of parameters!");
         } else {
             VariantMap& data = GetEventDataMap();
-            data[MyEvents::SetLevel::P_NAME] = params[1];
-            SendEvent(MyEvents::E_SET_LEVEL, data);
+            data[SetLevel::P_NAME] = params[1];
+            SendEvent(E_SET_LEVEL, data);
         }
     });
 }
@@ -93,11 +98,11 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     // Prepare to fade out
     if (fade_status_ == 0) {
-        using namespace MyEvents::LevelChangingStarted;
+        using namespace LevelChangingStarted;
         VariantMap& data = GetEventDataMap();
         data[P_FROM] = currentLevel_;
         data[P_TO] = level_queue_.Front();
-        SendEvent(MyEvents::E_LEVEL_CHANGING_STARTED, data);
+        SendEvent(E_LEVEL_CHANGING_STARTED, data);
 
         // No old level
         if (!level_) {
@@ -126,7 +131,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         // Increase fade status
         if (fade_time_ <= 0.0f) {
             fade_status_++;
-            SendEvent(MyEvents::E_LEVEL_BEFORE_DESTROY);
+            SendEvent(E_LEVEL_BEFORE_DESTROY);
         }
         return;
     }
@@ -138,7 +143,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         fade_status_++;
 
         // Send event to close all active UI windows
-        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+        SendEvent(E_CLOSE_ALL_WINDOWS);
         return;
     }
 
@@ -153,7 +158,7 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             VariantMap& eventData = GetEventDataMap();
             eventData["Name"] = "MainMenu";
             eventData["Message"] = localization->Get("LEVEL_NOT_EXIST") + " : " + level_queue_.Front();
-            SendEvent(MyEvents::E_SET_LEVEL, eventData);
+            SendEvent(E_SET_LEVEL, eventData);
 
             level_queue_.PopFront();
             return;
@@ -173,10 +178,10 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         fade_time_ = MAX_FADE_TIME;
         fade_status_++;
 
-        using namespace MyEvents::LevelChangingInProgress;
+        using namespace LevelChangingInProgress;
         data_[P_FROM] = previousLevel_;
         data_[P_TO] = currentLevel_;
-        SendEvent(MyEvents::E_LEVEL_CHANGING_IN_PROGRESS, data_);
+        SendEvent(E_LEVEL_CHANGING_IN_PROGRESS, data_);
         return;
     }
 
@@ -201,11 +206,11 @@ void LevelManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         UnsubscribeFromEvent(E_UPDATE);
 
         {
-            using namespace MyEvents::LevelChangingFinished;
+            using namespace LevelChangingFinished;
             VariantMap& data = GetEventDataMap();
             data[P_FROM] = previousLevel_;
             data[P_TO] = level_queue_.Front();
-            SendEvent(MyEvents::E_LEVEL_CHANGING_FINISHED, data);
+            SendEvent(E_LEVEL_CHANGING_FINISHED, data);
         }
 
         VariantMap& data = GetEventDataMap();

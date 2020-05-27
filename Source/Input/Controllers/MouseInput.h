@@ -8,7 +8,6 @@ class MouseInput : public BaseInput
     URHO3D_OBJECT(MouseInput, BaseInput);
 
 public:
-    /// Construct.
     MouseInput(Context* context);
 
     virtual ~MouseInput();

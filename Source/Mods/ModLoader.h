@@ -14,7 +14,6 @@ class ModLoader : public Object
     URHO3D_OBJECT(ModLoader, Object);
 
 public:
-    /// Construct.
     ModLoader(Context* context);
 
     virtual ~ModLoader();

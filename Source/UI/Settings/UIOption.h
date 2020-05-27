@@ -27,7 +27,6 @@ namespace Urho3D {
     class UIOption : public BorderImage {
     URHO3D_OBJECT(UIOption, BorderImage)
     public:
-        /// Construct.
         explicit UIOption(Context* context);
         /// Destruct.
         ~UIOption() override;

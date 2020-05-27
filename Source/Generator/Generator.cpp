@@ -5,7 +5,10 @@
 #include "Generator.h"
 #include "../Global.h"
 #include "PerlinNoise.h"
-#include "../MyEvents.h"
+#include "../SceneManagerEvents.h"
+#include "../Console/ConsoleHandlerEvents.h"
+
+using namespace ConsoleHandlerEvents;
 
 Generator::Generator(Context* context) :
     Object(context)
@@ -42,11 +45,11 @@ Image* Generator::GenerateImage(double frequency, int octaves, int seed)
 void Generator::SubscribeToEvents()
 {
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "generate_map",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#generate_map",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Perlin noise map generating",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "generate_map",
+            ConsoleCommandAdd::P_EVENT, "#generate_map",
+            ConsoleCommandAdd::P_DESCRIPTION, "Perlin noise map generating",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#generate_map", [&](StringHash eventType, VariantMap &eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
@@ -64,10 +67,10 @@ void Generator::SubscribeToEvents()
     });
 
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "save_heightmap",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#save_heightmap",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Save generated image to file"
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "save_heightmap",
+            ConsoleCommandAdd::P_EVENT, "#save_heightmap",
+            ConsoleCommandAdd::P_DESCRIPTION, "Save generated image to file"
     );
     SubscribeToEvent("#save_heightmap", [&](StringHash eventType, VariantMap &eventData) {
         Save();
@@ -75,25 +78,25 @@ void Generator::SubscribeToEvents()
 
 
     // Register our loading step
-    SendEvent(MyEvents::E_REGISTER_LOADING_STEP,
-              MyEvents::RegisterLoadingStep::P_NAME, "Generating world",
-              MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+    SendEvent(SceneManagerEvents::E_REGISTER_LOADING_STEP,
+              SceneManagerEvents::RegisterLoadingStep::P_NAME, "Generating world",
+              SceneManagerEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
 
     // Handle our loading step
     SubscribeToEvent("GenerateWorld", [&](StringHash eventType, VariantMap& eventData) {
-        SendEvent(MyEvents::E_ACK_LOADING_STEP,
-                MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+        SendEvent(SceneManagerEvents::E_ACK_LOADING_STEP,
+                SceneManagerEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
         GenerateImage(40, 1, Random());
         Save();
-        SendEvent(MyEvents::E_LOADING_STEP_FINISHED,
-                  MyEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
+        SendEvent(SceneManagerEvents::E_LOADING_STEP_FINISHED,
+                  SceneManagerEvents::RegisterLoadingStep::P_EVENT, "GenerateWorld");
     });
 
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "generate_ui_textures",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#generate_ui_textures",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Generate UI textures"
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "generate_ui_textures",
+            ConsoleCommandAdd::P_EVENT, "#generate_ui_textures",
+            ConsoleCommandAdd::P_DESCRIPTION, "Generate UI textures"
     );
     SubscribeToEvent("#generate_ui_textures", [&](StringHash eventType, VariantMap &eventData) {
         Image* image = new Image(context_);

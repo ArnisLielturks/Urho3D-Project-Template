@@ -7,7 +7,6 @@
 #include "../ControllerInput.h"
 #include "../../Global.h"
 
-/// Construct.
 JoystickInput::JoystickInput(Context* context) :
     BaseInput(context),
     _joystickAsFirstController(true)

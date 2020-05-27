@@ -11,7 +11,6 @@ namespace Levels {
         URHO3D_OBJECT(Loading, BaseLevel);
 
     public:
-        /// Construct.
         Loading(Context* context);
         virtual ~Loading();
         static void RegisterObject(Context* context);

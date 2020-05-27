@@ -12,10 +12,13 @@
 
 #include "Achievements.h"
 #include "../Audio/AudioManagerDefs.h"
-#include "../MyEvents.h"
 #include "../Global.h"
+#include "../Audio/AudioEvents.h"
+#include "MessageEvents.h"
 
 using namespace Urho3D;
+using namespace AudioEvents;
+using namespace MessageEvents;
 
 void SaveProgressAsync(const WorkItem* item, unsigned threadIndex)
 {
@@ -49,14 +52,14 @@ void Achievements::Init()
 
 void Achievements::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_NEW_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleNewAchievement));
-    SubscribeToEvent(MyEvents::E_ADD_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleAddAchievement));
+    SubscribeToEvent(E_NEW_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleNewAchievement));
+    SubscribeToEvent(E_ADD_ACHIEVEMENT, URHO3D_HANDLER(Achievements, HandleAddAchievement));
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Achievements, HandleUpdate));
 }
 
 void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::NewAchievement;
+    using namespace NewAchievement;
     String message = eventData[P_MESSAGE].GetString();
 
     if (!_activeAchievements.Empty() || !_showAchievements) {
@@ -106,16 +109,16 @@ void Achievements::HandleNewAchievement(StringHash eventType, VariantMap& eventD
     _activeAchievements.Push(singleAchievement);
 
     using namespace AudioDefs;
-    using namespace MyEvents::PlaySound;
+    using namespace PlaySound;
     VariantMap& data = GetEventDataMap();
     data[P_INDEX] = SOUND_EFFECTS::ACHIEVEMENT;
     data[P_TYPE] = SOUND_EFFECT;
-    SendEvent(MyEvents::E_PLAY_SOUND, data);
+    SendEvent(E_PLAY_SOUND, data);
 
-    using namespace MyEvents::AchievementUnlocked;
+    using namespace AchievementUnlocked;
     VariantMap achievementData = GetEventDataMap();
-    achievementData[MyEvents::AchievementUnlocked::P_MESSAGE] = message;
-    SendEvent(MyEvents::E_ACHIEVEMENT_UNLOCKED, achievementData);
+    achievementData[AchievementUnlocked::P_MESSAGE] = message;
+    SendEvent(E_ACHIEVEMENT_UNLOCKED, achievementData);
 }
 
 void Achievements::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -239,7 +242,7 @@ void Achievements::HandleRegisteredEvent(StringHash eventType, VariantMap& event
                 VariantMap& data = GetEventDataMap();
                 data["Message"] = (*it).message;
                 data["Image"] = (*it).image;
-                SendEvent(MyEvents::E_NEW_ACHIEVEMENT, data);
+                SendEvent(E_NEW_ACHIEVEMENT, data);
             }
         }
     }
@@ -373,7 +376,7 @@ void Achievements::AddAchievement(String message,
 
 void Achievements::HandleAddAchievement(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::AddAchievement;
+    using namespace AddAchievement;
     if (eventData.Contains(P_EVENT)
         && eventData.Contains(P_MESSAGE)
         && eventData.Contains(P_IMAGE)

@@ -33,8 +33,6 @@ public:
 
     int GetControllerId() { return _controllerId; }
 
-    void SetRemotePlayerId(int id);
-
     void SetName(const String& name);
 
     /**
@@ -48,7 +46,6 @@ public:
     void SetControllable(bool value);
 
     void SetClientConnection(Connection* connection);
-    void SetServerConnection(Connection* connection);
 
     void SetCameraTarget(Node* target);
     Node* GetCameraTarget();
@@ -60,13 +57,14 @@ private:
 
     bool IsCameraTargetSet();
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
-    void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
     void RegisterConsoleCommands();
 
     /**
      * Detect when player is on the ground or not
      */
     void HandleNodeCollision(StringHash eventType, VariantMap& eventData);
+
+    void HandlePredictPlayerPosition(StringHash eventType, VariantMap& eventData);
 
     RigidBody* _rigidBody;
     SharedPtr<Node> _node;
@@ -81,13 +79,6 @@ private:
      */
     int _controllerId;
 
-    int _remotePlayerId;
-
-    /**
-     * 3D Text player label node
-     */
-    SharedPtr<Node> _label;
-
     /**
      * Player controlers
      */
@@ -98,10 +89,9 @@ private:
      */
     bool _onGround;
 
-    Terrain* _terrain;
+    Terrain* _terrain{nullptr};
 
     Connection* _connection{nullptr};
-    Connection* _serverConnection{nullptr};
 
     bool _isControlled{false};
 };

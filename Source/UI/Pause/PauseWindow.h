@@ -9,7 +9,6 @@ class PauseWindow : public BaseWindow
     URHO3D_OBJECT(PauseWindow, BaseWindow);
 
 public:
-    /// Construct.
     PauseWindow(Context* context);
 
     virtual ~PauseWindow();

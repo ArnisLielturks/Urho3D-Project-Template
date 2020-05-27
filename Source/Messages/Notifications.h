@@ -16,7 +16,6 @@ class Notifications : public Object
     URHO3D_OBJECT(Notifications, Object);
 
 public:
-    /// Construct.
     Notifications(Context* context);
 
     virtual ~Notifications();

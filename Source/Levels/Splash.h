@@ -9,7 +9,6 @@ namespace Levels {
         URHO3D_OBJECT(Splash, BaseLevel);
 
     public:
-        /// Construct.
         Splash(Context* context);
         virtual ~Splash();
         static void RegisterObject(Context* context);

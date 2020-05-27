@@ -1,14 +1,11 @@
 #include <Urho3D/Input/InputEvents.h>
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/IO/Log.h>
-#include <Urho3D/IO/FileSystem.h>
 #include <Urho3D/Input/Input.h>
 #include "KeyboardInput.h"
 #include "../ControllerInput.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
 
-/// Construct.
 KeyboardInput::KeyboardInput(Context* context) :
     BaseInput(context)
 {

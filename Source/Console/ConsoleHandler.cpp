@@ -5,10 +5,13 @@
 #include <Urho3D/Engine/EngineEvents.h>
 #include <Urho3D/IO/Log.h>
 #include "ConsoleHandler.h"
-#include "../MyEvents.h"
 #include "../Config/ConfigManager.h"
+#include "ConsoleHandlerEvents.h"
+#include "../LevelManagerEvents.h"
 
-/// Construct.
+using namespace ConsoleHandlerEvents;
+using namespace LevelManagerEvents;
+
 ConsoleHandler::ConsoleHandler(Context* context) :
     Object(context)
 {
@@ -27,9 +30,6 @@ void ConsoleHandler::Init()
 void ConsoleHandler::Create()
 {
     Input* input = GetSubsystem<Input>();
-    if (!input->IsMouseVisible()) {
-        input->SetMouseVisible(true);
-    }
     // Get default style
     ResourceCache* cache = GetSubsystem<ResourceCache>();
     XMLFile* xmlFile     = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -54,13 +54,15 @@ void ConsoleHandler::Create()
     for (auto it = _registeredConsoleCommands.Begin(); it != _registeredConsoleCommands.End(); ++it) {
         _console->AddAutoComplete((*it).first_);
     }
+
+    _console->SetVisible(false);
 }
 
 void ConsoleHandler::SubscribeToEvents()
 {
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleHandler, HandleKeyDown));
     SubscribeToEvent(E_CONSOLECOMMAND, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommand));
-    SubscribeToEvent(MyEvents::E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandAdd));
+    SubscribeToEvent(E_CONSOLE_COMMAND_ADD, URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandAdd));
 
     VariantMap data;
     data["ConsoleCommandName"]        = "help";
@@ -72,7 +74,7 @@ void ConsoleHandler::SubscribeToEvents()
     SubscribeToEvent("ConsoleHelp", URHO3D_HANDLER(ConsoleHandler, HandleConsoleCommandHelp));
 
     // How to use lambda (anonymous) functions
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "map", MyEvents::ConsoleCommandAdd::P_EVENT, "#map", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change the map");
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "map", ConsoleCommandAdd::P_EVENT, "#map", ConsoleCommandAdd::P_DESCRIPTION, "Change the map");
     SubscribeToEvent("#map", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 2) {
@@ -82,10 +84,10 @@ void ConsoleHandler::SubscribeToEvents()
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Loading";
         data["Map"]  = "Scenes/" + params[1];
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
     });
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "opacity", MyEvents::ConsoleCommandAdd::P_EVENT, "#opacity", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Change the console opacity");
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "opacity", ConsoleCommandAdd::P_EVENT, "#opacity", ConsoleCommandAdd::P_DESCRIPTION, "Change the console opacity");
     SubscribeToEvent("#opacity", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 2) {
@@ -105,6 +107,12 @@ void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
         int key = eventData[P_KEY].GetInt();
         if (key == KEY_F1) {
             _console->Toggle();
+            auto input = GetSubsystem<Input>();
+            if (_console->IsVisible()) {
+                input->SetMouseVisible(true);
+            } else {
+                input->ResetMouseVisible();
+            }
         }
     } else {
         // If console is still visible when it was disabled via options, hide it
@@ -116,7 +124,7 @@ void ConsoleHandler::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
 void ConsoleHandler::HandleConsoleCommandAdd(StringHash eventType, VariantMap& eventData)
 {
-    using namespace MyEvents::ConsoleCommandAdd;
+    using namespace ConsoleCommandAdd;
     String command = eventData[P_NAME].GetString();
     String eventToCall = eventData[P_EVENT].GetString();
     String description = eventData[P_DESCRIPTION].GetString();
@@ -250,12 +258,12 @@ void ConsoleHandler::HandleConsoleGlobalVariableChange(StringVector params)
         URHO3D_LOGINFO("Global variable changed'" + params[0] + "' from '" + oldValue + "' to '" + newValue + "'");
 
         // Let the system know that variable was changed
-        using namespace MyEvents::ConsoleGlobalVariableChanged;
+        using namespace ConsoleGlobalVariableChanged;
         VariantMap& data = GetEventDataMap();
         data[P_NAME]     = params[0];
         data[P_VALUE]    = newValue;
 
         SendEvent("global_variable_changed_" + params[0], data);
-        SendEvent(MyEvents::E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
+        SendEvent(E_CONSOLE_GLOBAL_VARIABLE_CHANGED, data);
     }
 }

@@ -10,10 +10,8 @@
 #include "../ControllerInput.h"
 #include "../ControllerEvents.h"
 #include "../../Global.h"
-#include "../../MyEvents.h"
 #include "../../LevelManager.h"
 
-/// Construct.
 ScreenJoystickInput::ScreenJoystickInput(Context* context) :
     BaseInput(context)
 {

@@ -8,7 +8,6 @@ class KeyboardInput : public BaseInput
     URHO3D_OBJECT(KeyboardInput, BaseInput);
 
 public:
-    /// Construct.
     KeyboardInput(Context* context);
 
     virtual ~KeyboardInput();

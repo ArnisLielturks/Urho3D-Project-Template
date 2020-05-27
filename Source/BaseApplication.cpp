@@ -9,19 +9,22 @@
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/PackageFile.h>
-
 #include "BaseApplication.h"
 #include "Config/ConfigFile.h"
 #include "Input/ControllerInput.h"
 #include "Audio/AudioManager.h"
 #include "Console/ConsoleHandler.h"
 #include "SceneManager.h"
-#include "MyEvents.h"
+#include "CustomEvents.h"
 #include "Global.h"
 #include "Generator/Generator.h"
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
 #include "State/State.h"
+#include "Console/ConsoleHandlerEvents.h"
+#include "Console/ConsoleHandlerEvents.h"
+#include "LevelManagerEvents.h"
+#include "Input/ControllerEvents.h"
 
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
@@ -38,6 +41,11 @@ static unsigned int mouseMode;
 #endif
 
 URHO3D_DEFINE_APPLICATION_MAIN(BaseApplication);
+
+using namespace ConsoleHandlerEvents;
+using namespace LevelManagerEvents;
+using namespace ControllerEvents;
+using namespace CustomEvents;
 
 BaseApplication::BaseApplication(Context* context) :
     Application(context)
@@ -236,7 +244,7 @@ void BaseApplication::Start()
     } else {
         eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     }
-    SendEvent(MyEvents::E_SET_LEVEL, eventData);
+    SendEvent(E_SET_LEVEL, eventData);
 
     LoadTranslationFiles();
 
@@ -301,14 +309,14 @@ void BaseApplication::RegisterConsoleCommands()
 
     SubscribeToEvent("HandleExit", URHO3D_HANDLER(BaseApplication, HandleExit));
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "debugger", MyEvents::ConsoleCommandAdd::P_EVENT, "#debugger", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "debugger", ConsoleCommandAdd::P_EVENT, "#debugger", ConsoleCommandAdd::P_DESCRIPTION, "Show debug");
     SubscribeToEvent("#debugger", [&](StringHash eventType, VariantMap& eventData) {
         if (GetSubsystem<DebugHud>()) {
             GetSubsystem<DebugHud>()->Toggle(DEBUGHUD_SHOW_ALL);
         }
     });
 
-    SendEvent(MyEvents::E_CONSOLE_COMMAND_ADD, MyEvents::ConsoleCommandAdd::P_NAME, "mouse_visible", MyEvents::ConsoleCommandAdd::P_EVENT, "#mouse_visible", MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle mouse visible");
+    SendEvent(E_CONSOLE_COMMAND_ADD, ConsoleCommandAdd::P_NAME, "mouse_visible", ConsoleCommandAdd::P_EVENT, "#mouse_visible", ConsoleCommandAdd::P_DESCRIPTION, "Toggle mouse visible");
     SubscribeToEvent("#mouse_visible", [&](StringHash eventType, VariantMap& eventData) {
         Input* input = GetSubsystem<Input>();
         if (input->IsMouseVisible()) {
@@ -324,11 +332,11 @@ void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
 
 void BaseApplication::SubscribeToEvents()
 {
-    SubscribeToEvent(MyEvents::E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
-    SubscribeToEvent(MyEvents::E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
+    SubscribeToEvent(E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
+    SubscribeToEvent(E_LOAD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleLoadConfig));
 
-    SubscribeToEvent(MyEvents::E_MAPPED_CONTROL_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        using namespace MyEvents::MappedControlReleased;
+    SubscribeToEvent(E_MAPPED_CONTROL_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        using namespace MappedControlReleased;
         int action = eventData[P_ACTION].GetInt();
         if (action == CTRL_SCREENSHOT) {
             Graphics *graphics = GetSubsystem<Graphics>();

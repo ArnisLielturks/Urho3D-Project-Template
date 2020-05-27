@@ -23,12 +23,19 @@ public:
     void SetPlayerName(const String& name);
     const String& GetPlayerName() const;
 
+    void HideLabel();
+
 protected:
     void OnNodeSet(Node* node) override;
 private:
     void HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventData);
+    void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
     void OnScoreChanged();
     int _score{0};
     int _playerId{-1};
     String _name;
+    /**
+     * 3D Text player label node
+     */
+    SharedPtr<Node> _label;
 };

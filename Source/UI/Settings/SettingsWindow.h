@@ -10,7 +10,6 @@ class SettingsWindow : public BaseWindow
     URHO3D_OBJECT(SettingsWindow, BaseWindow);
 
 public:
-    /// Construct.
     SettingsWindow(Context* context);
 
     virtual ~SettingsWindow();

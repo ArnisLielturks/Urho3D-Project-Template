@@ -8,7 +8,6 @@ class JoystickInput : public BaseInput
     URHO3D_OBJECT(JoystickInput, BaseInput);
 
 public:
-    /// Construct.
     JoystickInput(Context* context);
 
     virtual ~JoystickInput();

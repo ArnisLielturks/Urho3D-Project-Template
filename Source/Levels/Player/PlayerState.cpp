@@ -2,8 +2,13 @@
 #include <Urho3D/Scene/Serializable.h>
 #include <Urho3D/Scene/Node.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/UI/Text3D.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/Core/CoreEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
 #include "PlayerState.h"
 #include "PlayerEvents.h"
+#include "../../Global.h"
 
 PlayerState::PlayerState(Context* context) :
         Component(context)
@@ -28,6 +33,21 @@ void PlayerState::RegisterObject(Context* context)
 void PlayerState::OnNodeSet(Node* node)
 {
     SubscribeToEvent(node, PlayerEvents::E_PLAYER_SCORE_ADD, URHO3D_HANDLER(PlayerState, HandlePlayerScoreAdd));
+    SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(PlayerState, HandlePostUpdate));
+
+    auto* cache = GetSubsystem<ResourceCache>();
+    _label = node->GetParent()->CreateChild("Label", LOCAL);
+
+    auto text3D = _label->CreateComponent<Text3D>();
+    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+    text3D->SetColor(Color::GRAY);
+    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+//    text3D->SetViewMask(~(1 << _controllerId));
+
+//    if (!SHOW_LABELS) {
+//        _label->SetEnabled(false);
+//    }
 }
 
 int PlayerState::GetScore() const
@@ -102,9 +122,27 @@ void PlayerState::SetPlayerName(const String& name)
     _name = name;
     OnScoreChanged();
     MarkNetworkUpdate();
+
+    if (_label) {
+        _label->GetComponent<Text3D>()->SetText(name);
+    }
 }
 
 const String& PlayerState::GetPlayerName() const
 {
     return _name;
+}
+
+void PlayerState::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
+{
+    if (_label) {
+        _label->SetPosition(node_->GetPosition() + Vector3::UP * 0.2);
+    }
+}
+
+void PlayerState::HideLabel()
+{
+    if (_label) {
+        _label->SetEnabled(false);
+    }
 }

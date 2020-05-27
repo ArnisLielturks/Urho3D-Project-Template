@@ -10,7 +10,6 @@ class PopupMessageWindow : public BaseWindow
     URHO3D_OBJECT(PopupMessageWindow, BaseWindow);
 
 public:
-    /// Construct.
     PopupMessageWindow(Context* context);
 
     virtual ~PopupMessageWindow();

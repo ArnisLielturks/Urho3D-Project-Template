@@ -1,14 +1,10 @@
 #include <Urho3D/Core/CoreEvents.h>
-#include <Urho3D/Core/ProcessUtils.h>
 #include <Urho3D/Input/Input.h>
-#include <Urho3D/Resource/ResourceCache.h>
-#include <Urho3D/IO/Log.h>
-#include <Urho3D/Engine/DebugHud.h>
 
 #include "ServiceCmd.h"
-#include "../MyEvents.h"
+#include "ServiceEvents.h"
 
-#include <Urho3D/DebugNew.h>
+using namespace ServiceEvents;
 
 static ServiceCmd *handler = nullptr;
 
@@ -92,14 +88,14 @@ void ServiceCmd::PopFrontQueue()
 
 void ServiceCmd::SendResponseMsg(const MessageData &msg)
 {
-    using namespace MyEvents::ServiceMessage;
+    using namespace ServiceMessage;
 
     VariantMap& eventData = GetEventDataMap();
     eventData[P_COMMAND]  = msg.command;
     eventData[P_STATUS]   = msg.status;
     eventData[P_MESSAGE]  = msg.message;
 
-    SendEvent(MyEvents::E_SERVICE_MESSAGE, eventData);
+    SendEvent(E_SERVICE_MESSAGE, eventData);
 
     eventData["Message"] = "Got cmd: " + String(msg.command) + "; Status: " + String(msg.status) + "; Msg: " + msg.message;
     SendEvent("ShowNotification", eventData);

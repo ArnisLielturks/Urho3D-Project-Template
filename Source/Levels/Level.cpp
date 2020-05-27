@@ -13,18 +13,31 @@
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Engine/Engine.h>
-#include <Urho3D/IO/MemoryBuffer.h>
 #include "../Generator/Generator.h"
 #include "Level.h"
-#include "../MyEvents.h"
+#include "../CustomEvents.h"
 #include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
 #include "../Messages/Achievements.h"
 #include "Player/PlayerEvents.h"
+#include "../UI/WindowManager.h"
+#include "../Console/ConsoleHandlerEvents.h"
+#include "../LevelManagerEvents.h"
+#include "../Input/ControllerEvents.h"
+#include "../UI/WindowEvents.h"
+#include "../Audio/AudioEvents.h"
+#include "../NetworkEvents.h"
 
 using namespace Levels;
+using namespace ConsoleHandlerEvents;
+using namespace LevelManagerEvents;
+using namespace ControllerEvents;
+using namespace WindowEvents;
+using namespace AudioEvents;
+using namespace CustomEvents;
+using namespace NetworkEvents;
 
 static int REMOTE_PLAYER_ID = 1000;
 
@@ -54,7 +67,7 @@ void Level::Init()
         VariantMap& eventData = GetEventDataMap();
         eventData["Name"] = "MainMenu";
         eventData["Message"] = localization->Get("NO_SCENE");
-        SendEvent(MyEvents::E_SET_LEVEL, eventData);
+        SendEvent(E_SET_LEVEL, eventData);
 
         return;
     }
@@ -103,12 +116,11 @@ void Level::Init()
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
-    input->SetMouseVisible(true);
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
             _players[(*it)] = new Player(context_);
-            using namespace MyEvents::RemoteClientId;
+            using namespace RemoteClientId;
             if (_data.Contains(P_NODE_ID) && _data.Contains(P_PLAYER_ID)) {
                 // We are the client, we have to lookup the node on the received scene
                 _players[(*it)]->FindNode(_scene, _data[P_NODE_ID].GetInt());
@@ -118,9 +130,6 @@ void Level::Init()
                 _players[(*it)]->SetName("Player " + String((*it)));
             }
             _players[(*it)]->SetControllable(true);
-            if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
-                _players[(*it)]->SetServerConnection(GetSubsystem<Network>()->GetServerConnection());
-            }
         }
     }
 
@@ -140,16 +149,16 @@ void Level::Init()
 void Level::StartAudio()
 {
     using namespace AudioDefs;
-    using namespace MyEvents::PlaySound;
+    using namespace PlaySound;
     VariantMap& data = GetEventDataMap();
     data[P_INDEX] = AMBIENT_SOUNDS::LEVEL;
     data[P_TYPE]  = SOUND_AMBIENT;
-    SendEvent(MyEvents::E_PLAY_SOUND, data);
+    SendEvent(E_PLAY_SOUND, data);
 }
 
 void Level::StopAllAudio()
 {
-    SendEvent(MyEvents::E_STOP_ALL_SOUNDS);
+    SendEvent(E_STOP_ALL_SOUNDS);
 }
 
 void Level::CreateScene()
@@ -189,20 +198,16 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_SERVERCONNECTED, URHO3D_HANDLER(Level, HandleServerConnected));
     SubscribeToEvent(E_SERVERDISCONNECTED, URHO3D_HANDLER(Level, HandleServerDisconnected));
 
-    SubscribeToEvent(MyEvents::E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
-    SubscribeToEvent(MyEvents::E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
+    SubscribeToEvent(E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
+    SubscribeToEvent(E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
 
-    SubscribeToEvent(MyEvents::E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
+    SubscribeToEvent(E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));
 
     SubscribeToEvent(PlayerEvents::E_SET_PLAYER_CAMERA_TARGET, URHO3D_HANDLER(Level, HandlePlayerTargetChanged));
 
-
-//    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_PLAYER_SCORE_UPDATE);
-//    GetSubsystem<Network>()->RegisterRemoteEvent(MyEvents::E_REMOTE_ALL_PLAYER_SCORE_UPDATE);
-
     RegisterConsoleCommands();
 
-    SubscribeToEvent(MyEvents::E_LEVEL_BEFORE_DESTROY, URHO3D_HANDLER(Level, HandleBeforeLevelDestroy));
+    SubscribeToEvent(E_LEVEL_BEFORE_DESTROY, URHO3D_HANDLER(Level, HandleBeforeLevelDestroy));
     SubscribeToEvent("SettingsButtonPressed", [&](StringHash eventType, VariantMap& eventData) {
         ShowPauseMenu();
     });
@@ -211,11 +216,11 @@ void Level::SubscribeToEvents()
 void Level::RegisterConsoleCommands()
 {
     SendEvent(
-            MyEvents::E_CONSOLE_COMMAND_ADD,
-            MyEvents::ConsoleCommandAdd::P_NAME, "debug_geometry",
-            MyEvents::ConsoleCommandAdd::P_EVENT, "#debug_geometry",
-            MyEvents::ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
-            MyEvents::ConsoleCommandAdd::P_OVERWRITE, true
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "debug_geometry",
+            ConsoleCommandAdd::P_EVENT, "#debug_geometry",
+            ConsoleCommandAdd::P_DESCRIPTION, "Toggle debugging geometry",
+            ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#debug_geometry", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
@@ -248,7 +253,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
         return;
     }
 
-    using namespace MyEvents::ControllerAdded;
+    using namespace ControllerAdded;
     int controllerIndex = eventData[P_INDEX].GetInt();
 
     auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -273,7 +278,7 @@ void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& event
         return;
     }
 
-    using namespace MyEvents::ControllerRemoved;
+    using namespace ControllerRemoved;
     int controllerIndex = eventData[P_INDEX].GetInt();
 
     if (controllerIndex > 0) {
@@ -350,7 +355,7 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     if (key == KEY_TAB && !_showScoreboard) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
-        SendEvent(MyEvents::E_OPEN_WINDOW, data);
+        SendEvent(E_OPEN_WINDOW, data);
         _showScoreboard = true;
     }
 
@@ -361,17 +366,20 @@ void Level::HandleKeyDown(StringHash eventType, VariantMap& eventData)
 
 void Level::ShowPauseMenu()
 {
-    UnsubscribeToEvents();
     VariantMap& data = GetEventDataMap();
     data["Name"] = "PauseWindow";
-    SendEvent(MyEvents::E_OPEN_WINDOW, data);
-    SubscribeToEvent(MyEvents::E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
-    Pause();
+    SendEvent(E_OPEN_WINDOW, data);
+
+    if (!GetSubsystem<Network>()->IsServerRunning() && !GetSubsystem<Network>()->GetServerConnection()) {
+        UnsubscribeToEvents();
+        SubscribeToEvent(E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
+        Pause();
+    }
 }
 
 void Level::PauseMenuHidden()
 {
-    UnsubscribeFromEvent(MyEvents::E_WINDOW_CLOSED);
+    UnsubscribeFromEvent(E_WINDOW_CLOSED);
     SubscribeToEvents();
 
     Input* input = GetSubsystem<Input>();
@@ -388,7 +396,7 @@ void Level::HandleKeyUp(StringHash eventType, VariantMap& eventData)
     if (key == KEY_TAB && _showScoreboard) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "ScoreboardWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
         _showScoreboard = false;
     }
 }
@@ -398,6 +406,10 @@ void Level::HandleWindowClosed(StringHash eventType, VariantMap& eventData)
     String name = eventData["Name"].GetString();
     if (name == "PauseWindow") {
         PauseMenuHidden();
+    }
+    if (!GetSubsystem<WindowManager>()->IsAnyWindowOpened()) {
+        auto input = GetSubsystem<Input>();
+        input->SetMouseVisible(false);
     }
 }
 
@@ -423,12 +435,12 @@ void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
     _remotePlayers[newConnection]->SetName("Remote " + String(REMOTE_PLAYER_ID));
     REMOTE_PLAYER_ID++;
 
-    using namespace MyEvents::RemoteClientId;
+    using namespace RemoteClientId;
     VariantMap data;
     data[P_NODE_ID] = _remotePlayers[newConnection]->GetNode()->GetID();
     data[P_PLAYER_ID] = _remotePlayers[newConnection]->GetControllerId();
     URHO3D_LOGINFOF("Sending out remote client id %d", _remotePlayers[newConnection]->GetNode()->GetID());
-    newConnection->SendRemoteEvent(MyEvents::E_REMOTE_CLIENT_ID, true, data);
+    newConnection->SendRemoteEvent(E_REMOTE_CLIENT_ID, true, data);
 }
 
 void Level::HandleClientDisconnected(StringHash eventType, VariantMap& eventData)
@@ -454,7 +466,7 @@ void Level::HandleServerDisconnected(StringHash eventType, VariantMap& eventData
     data["Name"] = "MainMenu";
     data["Message"] = localization->Get("DISCONNECTED_FROM_SERVER");
     data["Type"] = "error";
-    SendEvent(MyEvents::E_SET_LEVEL, data);
+    SendEvent(E_SET_LEVEL, data);
 }
 
 void Level::HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventData)
@@ -473,5 +485,4 @@ void Level::HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventDat
         _players[playerId]->SetCameraTarget(targetNode);
         _players[playerId]->SetCameraDistance(cameraDistance);
     }
-
 }

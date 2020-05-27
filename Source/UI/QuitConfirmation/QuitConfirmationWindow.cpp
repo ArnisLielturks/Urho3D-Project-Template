@@ -5,8 +5,12 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/UI/Text.h>
 #include "QuitConfirmationWindow.h"
-#include "../../MyEvents.h"
 #include "../../Global.h"
+#include "../../LevelManagerEvents.h"
+#include "../WindowEvents.h"
+
+using namespace LevelManagerEvents;
+using namespace WindowEvents;
 
 QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
     BaseWindow(context)
@@ -58,18 +62,18 @@ void QuitConfirmationWindow::Create()
 
     _yesButton = CreateButton(localization->Get("YES"));
     SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        SendEvent(MyEvents::E_CLOSE_ALL_WINDOWS);
+        SendEvent(E_CLOSE_ALL_WINDOWS);
 
         VariantMap& data = GetEventDataMap();
         data["Name"] = "ExitGame";
-        SendEvent(MyEvents::E_SET_LEVEL, data);
+        SendEvent(E_SET_LEVEL, data);
     });
 
     _noButton = CreateButton(localization->Get("NO"));
     SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
-        SendEvent(MyEvents::E_CLOSE_WINDOW, data);
+        SendEvent(E_CLOSE_WINDOW, data);
     });
 
     buttonsContainer->AddChild(_yesButton);

@@ -98,8 +98,8 @@ void Loading::Init()
 #else
 //            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->Connect("192.168.8.107", SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
-//            GetSubsystem<Network>()->Connect("playground-sample.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
-            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+            GetSubsystem<Network>()->Connect("playground-sample.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #endif
         });

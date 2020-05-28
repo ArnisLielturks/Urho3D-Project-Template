@@ -5,14 +5,6 @@
 #include <Urho3D/UI/CheckBox.h>
 #include "../BaseWindow.h"
 
-struct MapInfo {
-    String map;
-    String name;
-    String description;
-    String image;
-    StringVector commands;
-};
-
 class NewGameSettingsWindow : public BaseWindow
 {
     URHO3D_OBJECT(NewGameSettingsWindow, BaseWindow);
@@ -34,8 +26,6 @@ private:
 
     Button* CreateButton(UIElement *parent, const String& text, int width, IntVector2 position);
     CheckBox* CreateCheckbox(const String& label);
-
-    Vector<MapInfo> LoadMaps();
 
     void CreateLevelSelection();
 

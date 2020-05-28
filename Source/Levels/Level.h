@@ -51,6 +51,8 @@ namespace Levels {
         void ShowPauseMenu();
         void PauseMenuHidden();
 
+        SharedPtr<Player> CreatePlayer(int controllerId, bool controllable, const String& name = String::EMPTY, int nodeID = -1);
+
         bool _showScoreboard;
 
         bool _drawDebug;

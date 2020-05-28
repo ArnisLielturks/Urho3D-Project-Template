@@ -61,7 +61,7 @@ void CreateCheckpoint()
         return;
     }
     XMLFile@ xml = cache.GetResource("XMLFile", "Mods/GameMode/Checkpoint.xml");
-    scene.InstantiateXML(xml.root, Vector3(Random(40) - scale, 2.0, Random(40) - scale), Quaternion());
+    scene.InstantiateXML(xml.root, Vector3(Random(40) - 20, 2.0, Random(40) - 20), Quaternion());
 }
 
 void UpdateBoxes()
@@ -103,6 +103,11 @@ void CreateObject()
  */
 void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
 {
+    String map = eventData["Map"].GetString();
+    if (map != "Scenes/Flat.xml") {
+        log.Info("Skipping GameMode initialization");
+        return;
+    }
     VariantMap data;
     data["Event"] = "LoadGamemode";
 

@@ -53,6 +53,8 @@ public:
     void SetCameraDistance(float distance);
     float GetCameraDistance();
 
+    void SetSpawnPoint(Vector3 position);
+
 private:
 
     bool IsCameraTargetSet();
@@ -94,4 +96,6 @@ private:
     Connection* _connection{nullptr};
 
     bool _isControlled{false};
+
+    Vector3 _spawnPoint;
 };

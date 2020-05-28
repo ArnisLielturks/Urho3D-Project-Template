@@ -48,4 +48,20 @@ namespace SceneManagerEvents {
     {
         URHO3D_PARAM(P_NAME, Name); // string - loading step name
     }
+
+    // Called from the loading step handler function to indicate that specific lading step should be skipped
+    URHO3D_EVENT(E_LOADING_STEP_SKIP, LoadingStepSkip)
+    {
+        URHO3D_PARAM(P_EVENT, Event); // string - loading step event
+    }
+
+    URHO3D_EVENT(E_ADD_MAP, AddMap)
+    {
+        URHO3D_PARAM(P_MAP, Map); // string - location to the map that should be added to the map list window
+        URHO3D_PARAM(P_NAME, Name); // string - name of the map
+        URHO3D_PARAM(P_DESCRIPTION, Description); // string - short description of the map
+        URHO3D_PARAM(P_IMAGE, Image); // string - image loaction that should be loaded in the level selection
+        URHO3D_PARAM(P_COMMANDS, Commands); // string array - list of console commands that should be run when level starts
+        URHO3D_PARAM(P_START_POINT, StartPoint); // Vector3 - where the players should be spawned
+    }
 }

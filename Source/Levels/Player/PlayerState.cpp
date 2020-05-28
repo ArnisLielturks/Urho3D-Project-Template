@@ -35,19 +35,21 @@ void PlayerState::OnNodeSet(Node* node)
     SubscribeToEvent(node, PlayerEvents::E_PLAYER_SCORE_ADD, URHO3D_HANDLER(PlayerState, HandlePlayerScoreAdd));
     SubscribeToEvent(E_POSTUPDATE, URHO3D_HANDLER(PlayerState, HandlePostUpdate));
 
-    auto* cache = GetSubsystem<ResourceCache>();
-    _label = node->GetParent()->CreateChild("Label", LOCAL);
+    if (node) {
+        auto *cache = GetSubsystem<ResourceCache>();
+        _label = node->GetParent()->CreateChild("Label", LOCAL);
 
-    auto text3D = _label->CreateComponent<Text3D>();
-    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-    text3D->SetColor(Color::GRAY);
-    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+        auto text3D = _label->CreateComponent<Text3D>();
+        text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+        text3D->SetColor(Color::GRAY);
+        text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+        text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
 //    text3D->SetViewMask(~(1 << _controllerId));
 
 //    if (!SHOW_LABELS) {
 //        _label->SetEnabled(false);
 //    }
+    }
 }
 
 int PlayerState::GetScore() const

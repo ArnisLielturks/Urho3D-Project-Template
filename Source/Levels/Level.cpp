@@ -29,6 +29,7 @@
 #include "../UI/WindowEvents.h"
 #include "../Audio/AudioEvents.h"
 #include "../NetworkEvents.h"
+#include "../SceneManager.h"
 
 using namespace Levels;
 using namespace ConsoleHandlerEvents;
@@ -119,31 +120,46 @@ void Level::Init()
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         for (auto it = controlIndexes.Begin(); it != controlIndexes.End(); ++it) {
-            _players[(*it)] = new Player(context_);
             using namespace RemoteClientId;
             if (_data.Contains(P_NODE_ID) && _data.Contains(P_PLAYER_ID)) {
                 // We are the client, we have to lookup the node on the received scene
-                _players[(*it)]->FindNode(_scene, _data[P_NODE_ID].GetInt());
-                _players[(*it)]->SetControllerId((*it));
+                _players[(*it)] = CreatePlayer((*it), true, "", _data[P_NODE_ID].GetInt());
             } else {
-                _players[(*it)]->CreateNode(_scene, (*it), _terrain);
-                _players[(*it)]->SetName("Player " + String((*it)));
+                _players[(*it)] = CreatePlayer((*it), true, "Player " + String((*it)));
             }
-            _players[(*it)]->SetControllable(true);
         }
     }
 
     if (!GetSubsystem<Network>()->GetServerConnection()) {
         for (int i = 0; i < 1; i++) {
-            _players[100 + i] = new Player(context_);
-            _players[100 + i]->CreateNode(_scene, 100 + i, _terrain);
-            _players[100 + i]->SetControllable(false);
-            _players[100 + i]->SetName("Bot " + String(100 + i));
+            _players[100 + i] = CreatePlayer(100 + i, false, "Bot " + String(100 + i));
             URHO3D_LOGINFO("Bot created");
         }
     }
 
     GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
+}
+
+SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const String& name, int nodeID)
+{
+    SharedPtr<Player> newPlayer(new Player(context_));
+    if (nodeID > 0) {
+        newPlayer->FindNode(_scene, nodeID);
+    } else {
+        newPlayer->CreateNode(_scene, controllerId, _terrain);
+    }
+    newPlayer->SetControllable(controllable);
+    newPlayer->SetControllerId(controllerId);
+    if (!name.Empty()) {
+        newPlayer->SetName(name);
+    }
+
+    auto mapInfo = GetSubsystem<SceneManager>()->GetCurrentMapInfo();
+    if (mapInfo) {
+        newPlayer->SetSpawnPoint(mapInfo->startPoint);
+    }
+
+    return newPlayer;
 }
 
 void Level::StartAudio()
@@ -265,10 +281,7 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
     SendEvent("ShowNotification", data);
 
     if (!_players.Contains(controllerIndex)) {
-        _players[controllerIndex] = new Player(context_);
-        _players[controllerIndex]->CreateNode(_scene, controllerIndex, _terrain);
-        _players[controllerIndex]->SetControllable(true);
-        _players[controllerIndex]->SetName("Player " + String(controllerIndex + 1));
+        _players[controllerIndex] = CreatePlayer(controllerIndex, true, "Player " + String(controllerIndex + 1));
     }
 }
 
@@ -428,11 +441,8 @@ void Level::HandleClientConnected(StringHash eventType, VariantMap& eventData)
     auto* newConnection = static_cast<Connection*>(eventData[P_CONNECTION].GetPtr());
     newConnection->SetScene(_scene);
 
-    _remotePlayers[newConnection] = new Player(context_);
+    _remotePlayers[newConnection] = CreatePlayer(REMOTE_PLAYER_ID, true, "Remote " + String(REMOTE_PLAYER_ID));
     _remotePlayers[newConnection]->SetClientConnection(newConnection);
-    _remotePlayers[newConnection]->CreateNode(_scene, REMOTE_PLAYER_ID, _terrain);
-    _remotePlayers[newConnection]->SetControllable(true);
-    _remotePlayers[newConnection]->SetName("Remote " + String(REMOTE_PLAYER_ID));
     REMOTE_PLAYER_ID++;
 
     using namespace RemoteClientId;

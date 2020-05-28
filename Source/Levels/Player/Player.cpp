@@ -130,13 +130,9 @@ void Player::FindNode(Scene* scene, int id)
 
 void Player::ResetPosition()
 {
-    Vector3 position = GetNode()->GetWorldPosition();
+    Vector3 position = _spawnPoint;
     if (_terrain) {
         position.y_ = _terrain->GetHeight(position) + 1.0f;
-    } else {
-        position.y_ = 1;
-        position.x_ = 0;
-        position.z_ = 0;
     }
     GetNode()->SetWorldPosition(position);
 
@@ -326,4 +322,9 @@ void Player::HandlePredictPlayerPosition(StringHash eventType, VariantMap& event
 //    URHO3D_LOGINFOF("HandlePredictPlayerPosition %s", (position - node->GetPosition()).ToString().CString());
     const AttributeInfo& attr = node->GetAttributes()->At(eventData[P_INDEX].GetInt());
     node->OnSetAttribute(attr, eventData[P_VALUE]);
+}
+
+void Player::SetSpawnPoint(Vector3 position)
+{
+    _spawnPoint = position;
 }

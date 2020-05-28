@@ -10,6 +10,7 @@
 #include "../../Global.h"
 #include "../../LevelManagerEvents.h"
 #include "../WindowEvents.h"
+#include "../../SceneManager.h"
 
 static const int BUTTON_HEIGHT = 40;
 static const int MARGIN = 10;
@@ -141,7 +142,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
     auto cache = GetSubsystem<ResourceCache>();
     auto font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto maps = LoadMaps();
+    auto maps = GetSubsystem<SceneManager>()->GetAvailableMaps();
 
     for (auto it = maps.Begin(); it != maps.End(); ++it) {
 
@@ -190,51 +191,4 @@ void NewGameSettingsWindow::CreateLevelSelection()
         description->SetWordwrap(true);
         description->SetText((*it).description);
     }
-}
-
-Vector<MapInfo> NewGameSettingsWindow::LoadMaps()
-{
-    Vector<MapInfo> maps;
-    auto configFile = GetSubsystem<ResourceCache>()->GetResource<JSONFile>("Config/Maps.json");
-
-    JSONValue value = configFile->GetRoot();
-    if (value.IsArray()) {
-        URHO3D_LOGINFOF("Loading map list: %u", value.Size());
-        for (int i = 0; i < value.Size(); i++) {
-            JSONValue mapInfo = value[i];
-            if (mapInfo.Contains("Map")
-                && mapInfo["Map"].IsString()
-                && mapInfo.Contains("Name")
-                && mapInfo["Name"].IsString()
-               && mapInfo.Contains("Image")
-               && mapInfo["Image"].IsString()
-                && mapInfo.Contains("Description")
-                && mapInfo["Description"].IsString()) {
-                MapInfo map;
-                map.map         = mapInfo["Map"].GetString();
-                map.name        = mapInfo["Name"].GetString();
-                map.description = mapInfo["Description"].GetString();
-                map.image       = mapInfo["Image"].GetString();
-
-                if (mapInfo.Contains("Commands") && mapInfo["Commands"].IsArray()) {
-                    for (int c = 0; c < mapInfo["Commands"].Size(); c++) {
-                        JSONValue command = mapInfo["Commands"][c];
-                        if (command.IsString()) {
-                            map.commands.Push(mapInfo["Commands"][c].GetString());
-                            URHO3D_LOGINFOF("Adding map command %s", map.commands[map.commands.Size() - 1].CString());
-                        }
-                    }
-                }
-                maps.Push(map);
-            }
-            else {
-                URHO3D_LOGERRORF("Map record doesnt contain all the information! Index: %u", i);
-            }
-        }
-    }
-    else {
-        URHO3D_LOGERROR("Data/Config/Maps.json must be an array");
-    }
-
-    return maps;
 }

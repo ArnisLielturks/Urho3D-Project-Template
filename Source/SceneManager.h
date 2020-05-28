@@ -3,6 +3,7 @@
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Timer.h>
 #include <Urho3D/Scene/Scene.h>
+#include <Urho3D/Container/Vector.h>
 
 using namespace Urho3D;
 
@@ -18,6 +19,15 @@ struct LoadingStep {
     bool failed;
     bool autoRemove;
     StringVector dependsOn;
+};
+
+struct MapInfo {
+    String map;
+    String name;
+    String description;
+    String image;
+    StringVector commands;
+    Vector3 startPoint;
 };
 
 class SceneManager : public Object
@@ -55,9 +65,15 @@ public:
 
     void CleanupScene();
 
+    const Vector<MapInfo>& GetAvailableMaps() const;
+
+    const MapInfo* GetCurrentMapInfo() const;
+
 private:
 
     void CleanupLoadingSteps();
+
+    void LoadDefaultMaps();
 
     bool CanLoadingStepRun(LoadingStep& loadingStep);
 
@@ -94,6 +110,18 @@ private:
     void HandleLoadingStepFinished(StringHash eventType, VariantMap& eventData);
 
     /**
+     * Receive loading step should be fixed message
+     */
+    void HandleSkipLoadingStep(StringHash eventType, VariantMap& eventData);
+
+    /**
+     * Add map to the map selection
+     */
+    void HandleAddMap(StringHash eventType, VariantMap& eventData);
+
+    MapInfo* GetMap(const String& filename);
+
+    /**
      * Current active scene
      */
     SharedPtr<Scene> _activeScene;
@@ -117,4 +145,8 @@ private:
      * List of all the loading steps registered in the system
      */
     HashMap<StringHash, LoadingStep> _loadingSteps;
+
+    Vector<MapInfo> _availableMaps;
+
+    MapInfo* _currentMap;
 };

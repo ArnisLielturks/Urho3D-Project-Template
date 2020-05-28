@@ -31,6 +31,7 @@ SceneManager::SceneManager(Context* context) :
         targetProgress(0)
 {
     SubscribeToEvent(E_REGISTER_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleRegisterLoadingStep));
+    SubscribeToEvent(E_ADD_MAP, URHO3D_HANDLER(SceneManager, HandleAddMap));
     SubscribeToEvent(E_LOADING_STEP_CRITICAL_FAIL, [&](StringHash eventType, VariantMap &eventData) {
         UnsubscribeFromEvent(E_UPDATE);
         using namespace LoadingStepCriticalFail;
@@ -40,6 +41,8 @@ SceneManager::SceneManager(Context* context) :
         data["Message"] = eventData[P_DESCRIPTION];
         SendEvent(E_SET_LEVEL, data);
     });
+
+    LoadDefaultMaps();
 }
 
 SceneManager::~SceneManager()
@@ -110,6 +113,7 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     SubscribeToEvent(E_ACK_LOADING_STEP, URHO3D_HANDLER(SceneManager, HandleLoadingStepAck));
     SubscribeToEvent(E_LOADING_STEP_PROGRESS, URHO3D_HANDLER(SceneManager, HandleLoadingStepProgress));
     SubscribeToEvent(E_LOADING_STEP_FINISHED, URHO3D_HANDLER(SceneManager, HandleLoadingStepFinished));
+    SubscribeToEvent(E_LOADING_STEP_SKIP, URHO3D_HANDLER(SceneManager, HandleSkipLoadingStep));
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(SceneManager, HandleUpdate));
     URHO3D_LOGINFO("Scene loaded: " + _activeScene->GetFileName());
@@ -178,8 +182,11 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
                     SendEvent(E_LOADING_STATUS_UPDATE, data);
                     return;
                 }
+
+                VariantMap data;
+                data["Map"] = _activeScene->GetFileName();
                 // Send out event to start this loading step
-                SendEvent((*it).second_.event);
+                SendEvent((*it).second_.event, data);
 
                 // We register that start event was sent out, loading step must send back ACK message
                 // to let us know that the loading step was started, otherwise it will be automatically
@@ -204,6 +211,7 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         UnsubscribeFromEvent(E_ACK_LOADING_STEP);
         UnsubscribeFromEvent(E_LOADING_STEP_PROGRESS);
         UnsubscribeFromEvent(E_LOADING_STEP_FINISHED);
+        UnsubscribeFromEvent(E_LOADING_STEP_SKIP);
 
         CleanupLoadingSteps();
     }
@@ -283,6 +291,47 @@ void SceneManager::HandleLoadingStepFinished(StringHash eventType, VariantMap& e
     URHO3D_LOGINFO("Loading step " + event + " finished");
 }
 
+void SceneManager::HandleSkipLoadingStep(StringHash eventType, VariantMap& eventData)
+{
+    using namespace LoadingStepSkip;
+    String event = eventData[P_EVENT].GetString();
+    if (_loadingSteps.Contains(event)) {
+        _loadingSteps[event].finished = true;
+    }
+}
+
+MapInfo* SceneManager::GetMap(const String& filename)
+{
+    for (auto it = _availableMaps.Begin(); it != _availableMaps.End(); ++it) {
+        if ((*it).map == filename) {
+            return &(*it);
+        }
+    }
+    return nullptr;
+}
+
+void SceneManager::HandleAddMap(StringHash eventType, VariantMap &eventData)
+{
+    using namespace AddMap;
+    String map = eventData[P_MAP].GetString();
+
+    if (GetMap(map)) {
+        URHO3D_LOGWARNINGF("Map '%s' already added to the list", map.CString());
+        return;
+    }
+
+    MapInfo mapData;
+    mapData.map = map;
+    mapData.name = eventData[P_NAME].GetString();
+    mapData.description = eventData[P_DESCRIPTION].GetString();
+    mapData.image = eventData[P_IMAGE].GetString();
+    mapData.startPoint = eventData[P_START_POINT].GetVector3();
+    mapData.commands = eventData[P_COMMANDS].GetStringVector();
+    _availableMaps.Push(mapData);
+
+    URHO3D_LOGINFOF("Map '%s' added to the list", map.CString());
+}
+
 bool SceneManager::CanLoadingStepRun(LoadingStep& loadingStep)
 {
     if (loadingStep.finished) {
@@ -309,4 +358,29 @@ void SceneManager::CleanupScene()
         _activeScene->Remove();
         _activeScene.Reset();
     }
+}
+
+const Vector<MapInfo>& SceneManager::GetAvailableMaps() const
+{
+    return _availableMaps;
+}
+
+void SceneManager::LoadDefaultMaps()
+{
+    using namespace AddMap;
+    VariantMap& data = GetEventDataMap();
+    data[P_MAP] = "Scenes/Flat.xml";
+    data[P_NAME] = "Flatland";
+    data[P_DESCRIPTION] = "Flat map where you could easily fall off";
+    data[P_IMAGE] = "Textures/Box.png";
+
+    StringVector commands;
+    commands.Push("ambient_light 0.1 0.1 0.1");
+    data[P_COMMANDS] = commands;
+    SendEvent(E_ADD_MAP, data);
+}
+
+const MapInfo* SceneManager::GetCurrentMapInfo() const
+{
+    return _currentMap;
 }

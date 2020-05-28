@@ -227,14 +227,10 @@ void BaseLevel::Dispose()
 {
     // Pause the scene, remove all contents from the scene, then remove the scene itself.
     if (_scene) {
-        if (_scene == GetSubsystem<SceneManager>()->GetActiveScene()) {
-            GetSubsystem<SceneManager>()->CleanupScene();
-        } else {
-            _scene->SetUpdateEnabled(false);
-            _scene->Clear();
-            _scene->Remove();
-            _scene.Reset();
-        }
+        _scene->SetUpdateEnabled(false);
+        _scene->Clear();
+        _scene->Remove();
+        _scene.Reset();
     }
 
     // Remove all UI elements from UI sub-system

@@ -28,6 +28,7 @@ struct MapInfo {
     String image;
     StringVector commands;
     Vector3 startPoint;
+    String startNode;
 };
 
 class SceneManager : public Object

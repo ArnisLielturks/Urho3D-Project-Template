@@ -100,6 +100,7 @@ void SceneManager::HandleAsyncSceneLoadingFinished(StringHash eventType, Variant
     using namespace AsyncLoadFinished;
 
     _activeScene->SetUpdateEnabled(false);
+    _currentMap = GetMap(_activeScene->GetFileName());
 
 #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
@@ -327,6 +328,7 @@ void SceneManager::HandleAddMap(StringHash eventType, VariantMap &eventData)
     mapData.image = eventData[P_IMAGE].GetString();
     mapData.startPoint = eventData[P_START_POINT].GetVector3();
     mapData.commands = eventData[P_COMMANDS].GetStringVector();
+    mapData.startNode = eventData[P_START_NODE].GetString();
     _availableMaps.Push(mapData);
 
     URHO3D_LOGINFOF("Map '%s' added to the list", map.CString());

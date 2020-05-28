@@ -156,7 +156,17 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
 
     auto mapInfo = GetSubsystem<SceneManager>()->GetCurrentMapInfo();
     if (mapInfo) {
-        newPlayer->SetSpawnPoint(mapInfo->startPoint);
+        if (!mapInfo->startNode.Empty()) {
+            Node* startNode = _scene->GetChild(mapInfo->startNode, true);
+            if (startNode) {
+                newPlayer->SetSpawnPoint(startNode->GetWorldPosition());
+                URHO3D_LOGINFOF("Start point node");
+            } else {
+                newPlayer->SetSpawnPoint(mapInfo->startPoint);
+            }
+        } else {
+            newPlayer->SetSpawnPoint(mapInfo->startPoint);
+        }
     }
 
     return newPlayer;

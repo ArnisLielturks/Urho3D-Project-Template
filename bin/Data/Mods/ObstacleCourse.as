@@ -24,6 +24,7 @@ void RegisterMap()
     data["Name"] = "Obstacle course";
     data["Description"] = "Finish the obstacle course without falling!";
     data["Image"] = "Textures/Achievements/falling.png";
+    data["StartNode"] = "StartPoint";
 
     Array<String> commands;
     commands.Push("ambient_light 0.6 0.6 0.5");
@@ -31,7 +32,7 @@ void RegisterMap()
     SendEvent("AddMap", data);
 }
 
-void HandleLoadGameMode(StringHash eventType, VariantMap& eventData)
+void HandleLoadObstacleCourse(StringHash eventType, VariantMap& eventData)
 {
     String map = eventData["Map"].GetString();
     if (map != "Mods/ObstacleCourse/ObstacleCourse.xml") {

@@ -63,5 +63,6 @@ namespace SceneManagerEvents {
         URHO3D_PARAM(P_IMAGE, Image); // string - image loaction that should be loaded in the level selection
         URHO3D_PARAM(P_COMMANDS, Commands); // string array - list of console commands that should be run when level starts
         URHO3D_PARAM(P_START_POINT, StartPoint); // Vector3 - where the players should be spawned
+        URHO3D_PARAM(P_START_NODE, StartNode); // string - Start node where players will be spawned
     }
 }

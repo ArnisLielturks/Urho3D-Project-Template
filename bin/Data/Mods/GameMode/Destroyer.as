@@ -37,6 +37,7 @@ class Destroyer : ScriptObject
             }
 
             if (otherBody.node.name == "Character") {
+                SendEvent("BoxDestroyed");
                 node.Remove();
             }
 

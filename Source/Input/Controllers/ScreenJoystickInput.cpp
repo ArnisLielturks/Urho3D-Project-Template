@@ -116,6 +116,7 @@ void ScreenJoystickInput::HandleJoystickDrag(StringHash eventType, VariantMap& e
     {
         IntVector2 p = borderImage->GetPosition();
         borderImage->SetVar("DELTA", IntVector2(p.x_ - X, p.y_ - Y));
+        GetSubsystem<UI>()->SetFocusElement(nullptr);
     }
     else if (eventType == E_DRAGMOVE)
     {

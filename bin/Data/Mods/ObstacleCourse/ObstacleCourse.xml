@@ -5,10 +5,10 @@
 	<attribute name="Smoothing Constant" value="50" />
 	<attribute name="Snap Threshold" value="5" />
 	<attribute name="Elapsed Time" value="0" />
-	<attribute name="Next Replicated Node ID" value="1555" />
-	<attribute name="Next Replicated Component ID" value="4141" />
-	<attribute name="Next Local Node ID" value="16777241" />
-	<attribute name="Next Local Component ID" value="16777495" />
+	<attribute name="Next Replicated Node ID" value="1556" />
+	<attribute name="Next Replicated Component ID" value="4145" />
+	<attribute name="Next Local Node ID" value="16777242" />
+	<attribute name="Next Local Component ID" value="16777507" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
@@ -1393,5 +1393,29 @@
 				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
+	</node>
+	<node id="1555">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 -5 14.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="100 0.1 100" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4141">
+			<attribute name="Is Enabled" value="false" />
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4142" />
+		<component type="RigidBody" id="4143">
+			<attribute name="Physics Position" value="0 -5 14.5" />
+			<attribute name="Is Trigger" value="true" />
+		</component>
+		<component type="ScriptInstance" id="4144">
+			<attribute name="Delayed Method Calls" value="0" />
+			<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Drop.as" />
+			<attribute name="Class Name" value="Drop" />
+		</component>
 	</node>
 </scene>

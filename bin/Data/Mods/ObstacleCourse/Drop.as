@@ -1,9 +1,9 @@
-class Reach : ScriptObject
+class Drop : ScriptObject
 {
-
+    VariantMap nodePositions;
     void Start()
     {
-        node.AddTag("Reach");
+        node.AddTag("Finish");
         // Subscribe physics collisions that concern this scene node
         SubscribeToEvent(node, "NodeCollisionStart", "HandleNodeCollision");
     }
@@ -18,12 +18,11 @@ class Reach : ScriptObject
             if (otherBody.node.vars.Contains("Player")) {
                 VectorBuffer contacts = eventData["Contacts"].GetBuffer();
                 VariantMap data;
-                data["Score"] = 2;
+                data["Score"] = -20;
                 otherBody.node.SendEvent("PlayerScoreAdd", data);
 
-                Vector3 position = node.worldPosition;
-                position.y += 1;
-                otherBody.node.vars["Respawn"] = position;
+                Vector3 pos = otherBody.node.vars["Respawn"].GetVector3();
+                otherBody.node.worldPosition = pos;
             }
         }
     }

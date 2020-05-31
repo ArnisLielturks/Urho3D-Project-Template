@@ -60,7 +60,6 @@ class Destroyer : ScriptObject
             Node@ playerNode = node.vars["LastTouchedNode"].GetPtr();
             if (playerNode !is null) {
                 Node@ playerNode = node.vars["LastTouchedNode"].GetPtr();
-                data["Player"] = node.vars["Player"].GetInt();
                 data["Score"] = 1;
                 playerNode.SendEvent("PlayerScoreAdd", data);
             }

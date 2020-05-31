@@ -207,7 +207,9 @@ void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, Varian
     }
 
     using namespace TouchBegin;
-    auto element = GetSubsystem<UI>()->GetElementAt(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
+    IntVector2 position(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
+    position = GetSubsystem<UI>()->ConvertSystemToUI(position);
+    auto element = GetSubsystem<UI>()->GetElementAt(position);
 
     if (element == _jumpButton) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
@@ -218,6 +220,7 @@ void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, Varian
 
 void ScreenJoystickInput::HandleScreenJoystickTouchEnd(StringHash eventType, VariantMap& eventData)
 {
+    using namespace TouchEnd;
     auto* controllerInput = GetSubsystem<ControllerInput>();
     controllerInput->SetActionState(CTRL_JUMP, false);
     SendEvent("ShowNotification", "Message", "Jumping false");

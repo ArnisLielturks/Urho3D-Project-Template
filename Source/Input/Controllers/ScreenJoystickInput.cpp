@@ -202,11 +202,14 @@ void ScreenJoystickInput::HandleSettings(StringHash eventType, VariantMap& event
 
 void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData)
 {
-    using namespace TouchBegin;
+    if (!_jumpButton || _jumpButton->IsVisible()) {
+        return;
+    }
 
-    // Only interested in events from screen joystick(s)
-    IntVector2 position(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    if (_jumpButton->IsInside(position, false)) {
+    using namespace TouchBegin;
+    auto element = GetSubsystem<UI>()->GetElementAt(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
+
+    if (element == _jumpButton) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
         controllerInput->SetActionState(CTRL_JUMP, true);
         SendEvent("ShowNotification", "Message", "Jumping true");

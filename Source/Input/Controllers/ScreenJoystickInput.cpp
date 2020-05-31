@@ -202,7 +202,7 @@ void ScreenJoystickInput::HandleSettings(StringHash eventType, VariantMap& event
 
 void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData)
 {
-    if (!_jumpButton || _jumpButton->IsVisible()) {
+    if (!_jumpButton || !_jumpButton->IsVisible()) {
         return;
     }
 
@@ -211,7 +211,7 @@ void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, Varian
     position = GetSubsystem<UI>()->ConvertSystemToUI(position);
     auto element = GetSubsystem<UI>()->GetElementAt(position);
 
-    if (element == _jumpButton) {
+    if (element && element == _jumpButton) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
         controllerInput->SetActionState(CTRL_JUMP, true);
         SendEvent("ShowNotification", "Message", "Jumping true");

@@ -37,7 +37,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (logo !is null) {
         logo.Roll(timestep * 20);
     } else {
-        if (timer.GetMSec(false) > 1000) {
+        if (timer.GetMSec(false) > 60000) {
             FindLogo();
             timer.Reset();
         }

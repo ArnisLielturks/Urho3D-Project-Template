@@ -5,10 +5,10 @@
 	<attribute name="Smoothing Constant" value="50" />
 	<attribute name="Snap Threshold" value="5" />
 	<attribute name="Elapsed Time" value="0" />
-	<attribute name="Next Replicated Node ID" value="207" />
-	<attribute name="Next Replicated Component ID" value="597" />
-	<attribute name="Next Local Node ID" value="16777239" />
-	<attribute name="Next Local Component ID" value="16777471" />
+	<attribute name="Next Replicated Node ID" value="1555" />
+	<attribute name="Next Replicated Component ID" value="4141" />
+	<attribute name="Next Local Node ID" value="16777241" />
+	<attribute name="Next Local Component ID" value="16777495" />
 	<attribute name="Variables" />
 	<attribute name="Variable Names" value="" />
 	<component type="Octree" id="1" />
@@ -18,52 +18,15 @@
 		<attribute name="Is Enabled" value="true" />
 		<attribute name="Name" value="" />
 		<attribute name="Tags" />
-		<attribute name="Position" value="-12.0005 8.38979 -14.4196" />
+		<attribute name="Position" value="0 0 0" />
 		<attribute name="Rotation" value="1 0 0 0" />
 		<attribute name="Scale" value="1 1 1" />
 		<attribute name="Variables" />
-		<node id="204">
-			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 -2.3231 18.8651" />
-			<attribute name="Rotation" value="1.91069e-15 1 4.37114e-08 4.37114e-08" />
-			<attribute name="Scale" value="5 0.1 5" />
-			<attribute name="Variables" />
-			<component type="StaticModel" id="594">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
-			</component>
-			<component type="CollisionShape" id="595" />
-			<component type="RigidBody" id="596">
-				<attribute name="Physics Rotation" value="1.91069e-15 1 -4.37114e-08 -4.37114e-08" />
-				<attribute name="Physics Position" value="17 6.06669 4.44546" />
-			</component>
-		</node>
-		<node id="33">
-			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 12.4196" />
-			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="4 0.1 4" />
-			<attribute name="Variables" />
-			<component type="StaticModel" id="83">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
-			</component>
-			<component type="CollisionShape" id="85" />
-			<component type="RigidBody" id="86">
-				<attribute name="Physics Position" value="-1 1.5 -2" />
-			</component>
-		</node>
 		<node id="205">
 			<attribute name="Is Enabled" value="true" />
 			<attribute name="Name" value="StartPoint" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.48979 12.4196" />
+			<attribute name="Position" value="0 2 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
 			<attribute name="Scale" value="16 0.4 16" />
 			<attribute name="Variables" />
@@ -81,470 +44,1353 @@
 				<attribute name="Cast Shadows" value="true" />
 			</component>
 		</node>
-		<node id="86">
+		<node id="210">
 			<attribute name="Is Enabled" value="true" />
 			<attribute name="Name" value="Platform" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 15.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="4 0.1 4" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="240">
+			<component type="StaticModel" id="606">
 				<attribute name="Model" value="Model;Models/Box.mdl" />
 				<attribute name="Material" value="Material;Materials/Box.xml" />
 			</component>
-			<component type="CollisionShape" id="241" />
-			<component type="RigidBody" id="242">
-				<attribute name="Physics Position" value="-1 1.5 1" />
-			</component>
+			<component type="CollisionShape" id="607" />
+			<component type="RigidBody" id="608" />
 		</node>
-		<node id="87">
+	</node>
+	<node id="391">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 2.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="1059">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="1060" />
+		<component type="RigidBody" id="1061">
+			<attribute name="Physics Position" value="0 0 2.5" />
+		</component>
+		<node id="392">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 18.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="243">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="1062">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="244" />
-			<component type="RigidBody" id="245">
-				<attribute name="Physics Position" value="-1 1.5 4" />
+			<component type="ScriptInstance" id="1063">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3114">
+				<attribute name="Physics Position" value="0 0 2.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="88">
+	</node>
+	<node id="1335">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 4.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3481">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3482" />
+		<component type="RigidBody" id="3483">
+			<attribute name="Physics Position" value="0 0 4.5" />
+		</component>
+		<node id="1336">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 21.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="246">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3484">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="247" />
-			<component type="RigidBody" id="248">
-				<attribute name="Physics Position" value="-1 1.5 7" />
+			<component type="ScriptInstance" id="3485">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3486">
+				<attribute name="Physics Position" value="0 0 4.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="89">
+	</node>
+	<node id="1337">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 6.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3487">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3488" />
+		<component type="RigidBody" id="3489">
+			<attribute name="Physics Position" value="0 0 6.5" />
+		</component>
+		<node id="1338">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 24.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="249">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3490">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="250" />
-			<component type="RigidBody" id="251">
-				<attribute name="Physics Position" value="-1 1.5 10" />
+			<component type="ScriptInstance" id="3491">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3492">
+				<attribute name="Physics Position" value="0 0 6.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="90">
+	</node>
+	<node id="1339">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 8.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3493">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3494" />
+		<component type="RigidBody" id="3495">
+			<attribute name="Physics Position" value="0 0 8.5" />
+		</component>
+		<node id="1340">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 27.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="252">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3496">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="253" />
-			<component type="RigidBody" id="254">
-				<attribute name="Physics Position" value="-1 1.5 13" />
+			<component type="ScriptInstance" id="3497">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3498">
+				<attribute name="Physics Position" value="0 0 8.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="91">
+	</node>
+	<node id="1341">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 10.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3499">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3500" />
+		<component type="RigidBody" id="3501">
+			<attribute name="Physics Position" value="0 0 10.5" />
+		</component>
+		<node id="1342">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 30.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="255">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3502">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="256" />
-			<component type="RigidBody" id="257">
-				<attribute name="Physics Position" value="-1 1.5 16" />
+			<component type="ScriptInstance" id="3503">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3504">
+				<attribute name="Physics Position" value="0 0 10.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="92">
+	</node>
+	<node id="1343">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 12.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3505">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3506" />
+		<component type="RigidBody" id="3507">
+			<attribute name="Physics Position" value="0 0 12.5" />
+		</component>
+		<node id="1344">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 33.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="258">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3508">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="259" />
-			<component type="RigidBody" id="260">
-				<attribute name="Physics Position" value="-1 1.5 19" />
+			<component type="ScriptInstance" id="3509">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3510">
+				<attribute name="Physics Position" value="0 0 12.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="93">
+	</node>
+	<node id="1345">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 14.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3511">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3512" />
+		<component type="RigidBody" id="3513">
+			<attribute name="Physics Position" value="0 0 14.5" />
+		</component>
+		<node id="1346">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 36.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="261">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3514">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="262" />
-			<component type="RigidBody" id="263">
-				<attribute name="Physics Position" value="-1 1.5 22" />
+			<component type="ScriptInstance" id="3515">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3516">
+				<attribute name="Physics Position" value="0 0 14.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="94">
+	</node>
+	<node id="1347">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 16.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3517">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3518" />
+		<component type="RigidBody" id="3519">
+			<attribute name="Physics Position" value="0 0 16.5" />
+		</component>
+		<node id="1348">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="11.0005 -6.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="264">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3520">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="265" />
-			<component type="RigidBody" id="266">
-				<attribute name="Physics Position" value="-1 1.5 25" />
+			<component type="ScriptInstance" id="3521">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3522">
+				<attribute name="Physics Position" value="0 0 16.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="136">
+	</node>
+	<node id="1349">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 18.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3523">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3524" />
+		<component type="RigidBody" id="3525">
+			<attribute name="Physics Position" value="0 0 18.5" />
+		</component>
+		<node id="1350">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="13.0005 -5.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="390">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3526">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="391" />
-			<component type="RigidBody" id="392">
-				<attribute name="Physics Position" value="1 2.5 25" />
+			<component type="ScriptInstance" id="3527">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3528">
+				<attribute name="Physics Position" value="0 0 18.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="137">
+	</node>
+	<node id="1351">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 20.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3529">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3530" />
+		<component type="RigidBody" id="3531">
+			<attribute name="Physics Position" value="0 0 20.5" />
+		</component>
+		<node id="1352">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="15.0005 -4.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="393">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3532">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="394" />
-			<component type="RigidBody" id="395">
-				<attribute name="Physics Position" value="3 3.5 25" />
+			<component type="ScriptInstance" id="3533">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3534">
+				<attribute name="Physics Position" value="0 0 20.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="138">
+	</node>
+	<node id="1353">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 22.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3535">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3536" />
+		<component type="RigidBody" id="3537">
+			<attribute name="Physics Position" value="0 0 22.5" />
+		</component>
+		<node id="1354">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="17.0005 -3.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="396">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3538">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="397" />
-			<component type="RigidBody" id="398">
-				<attribute name="Physics Position" value="5 4.5 25" />
+			<component type="ScriptInstance" id="3539">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3540">
+				<attribute name="Physics Position" value="0 0 22.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="139">
+	</node>
+	<node id="1355">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 24.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3541">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3542" />
+		<component type="RigidBody" id="3543">
+			<attribute name="Physics Position" value="0 0 24.5" />
+		</component>
+		<node id="1356">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="19.0005 -2.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="399">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3544">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="400" />
-			<component type="RigidBody" id="401">
-				<attribute name="Physics Position" value="7 5.5 25" />
+			<component type="ScriptInstance" id="3545">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3546">
+				<attribute name="Physics Position" value="0 0 24.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="140">
+	</node>
+	<node id="1357">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 26.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3547">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3548" />
+		<component type="RigidBody" id="3549">
+			<attribute name="Physics Position" value="0 0 26.5" />
+		</component>
+		<node id="1358">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="21.0005 -1.88979 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="402">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3550">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="403" />
-			<component type="RigidBody" id="404">
-				<attribute name="Physics Position" value="9 6.5 25" />
+			<component type="ScriptInstance" id="3551">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3552">
+				<attribute name="Physics Position" value="0 0 26.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="141">
+	</node>
+	<node id="1359">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 28.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3553">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3554" />
+		<component type="RigidBody" id="3555">
+			<attribute name="Physics Position" value="0 0 28.5" />
+		</component>
+		<node id="1360">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="23.0005 -0.889792 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="405">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3556">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="406" />
-			<component type="RigidBody" id="407">
-				<attribute name="Physics Position" value="11 7.5 25" />
+			<component type="ScriptInstance" id="3557">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3558">
+				<attribute name="Physics Position" value="0 0 28.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="142">
+	</node>
+	<node id="1361">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 0 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3559">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3560" />
+		<component type="RigidBody" id="3561">
+			<attribute name="Physics Position" value="0 0 30.5" />
+		</component>
+		<node id="1362">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="25.0005 0.110208 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="408">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3562">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="409" />
-			<component type="RigidBody" id="410">
-				<attribute name="Physics Position" value="13 8.5 25" />
+			<component type="ScriptInstance" id="3563">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3564">
+				<attribute name="Physics Position" value="0 0 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="143">
+	</node>
+	<node id="1455">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="1.5 0.3 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3841">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3842" />
+		<component type="RigidBody" id="3843">
+			<attribute name="Physics Position" value="1.5 0.3 30.5" />
+		</component>
+		<node id="1456">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="27.0005 1.11021 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="411">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3844">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="412" />
-			<component type="RigidBody" id="413">
-				<attribute name="Physics Position" value="15 9.5 25" />
+			<component type="ScriptInstance" id="3845">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3846">
+				<attribute name="Physics Position" value="1.5 0.3 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="144">
+	</node>
+	<node id="1457">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="3 0.6 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3847">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3848" />
+		<component type="RigidBody" id="3849">
+			<attribute name="Physics Position" value="3 0.6 30.5" />
+		</component>
+		<node id="1458">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
+			<attribute name="Name" value="" />
 			<attribute name="Tags" />
-			<attribute name="Position" value="29.0005 2.11021 39.4196" />
+			<attribute name="Position" value="0 0 0" />
 			<attribute name="Rotation" value="1 0 0 0" />
-			<attribute name="Scale" value="1 0.1 1" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="414">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3850">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="415" />
-			<component type="RigidBody" id="416">
-				<attribute name="Physics Position" value="17 10.5 25" />
+			<component type="ScriptInstance" id="3851">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3852">
+				<attribute name="Physics Position" value="3 0.6 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="196">
+	</node>
+	<node id="1459">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="4.5 0.9 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3853">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3854" />
+		<component type="RigidBody" id="3855">
+			<attribute name="Physics Position" value="4.5 0.9 30.5" />
+		</component>
+		<node id="1460">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 1.61021 37.4196" />
-			<attribute name="Rotation" value="0.999759 0.021958 0 0" />
-			<attribute name="Scale" value="1 0.100376 0.999962" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="570">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3856">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="571" />
-			<component type="RigidBody" id="572">
-				<attribute name="Physics Rotation" value="0.999759 0.021958 0 0" />
-				<attribute name="Physics Position" value="17 10 23" />
+			<component type="ScriptInstance" id="3857">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3858">
+				<attribute name="Physics Position" value="4.5 0.9 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="197">
+	</node>
+	<node id="1461">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="6 1.2 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3859">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3860" />
+		<component type="RigidBody" id="3861">
+			<attribute name="Physics Position" value="6 1.2 30.5" />
+		</component>
+		<node id="1462">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 1.11197 35.376" />
-			<attribute name="Rotation" value="0.999055 0.0434655 0 0" />
-			<attribute name="Scale" value="1 0.101496 0.999842" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="573">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3862">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="574" />
-			<component type="RigidBody" id="575">
-				<attribute name="Physics Rotation" value="0.999055 0.0434655 0 0" />
-				<attribute name="Physics Position" value="17 9.50176 20.9564" />
+			<component type="ScriptInstance" id="3863">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3864">
+				<attribute name="Physics Position" value="6 1.2 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="198">
+	</node>
+	<node id="1463">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="7.5 1.5 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3865">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3866" />
+		<component type="RigidBody" id="3867">
+			<attribute name="Physics Position" value="7.5 1.5 30.5" />
+		</component>
+		<node id="1464">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 0.615538 33.2891" />
-			<attribute name="Rotation" value="0.997942 0.0641183 0 0" />
-			<attribute name="Scale" value="1 0.103333 0.999628" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="576">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3868">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="577" />
-			<component type="RigidBody" id="578">
-				<attribute name="Physics Rotation" value="0.997942 0.0641183 0 0" />
-				<attribute name="Physics Position" value="17 9.00533 18.8695" />
+			<component type="ScriptInstance" id="3869">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3870">
+				<attribute name="Physics Position" value="7.5 1.5 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="199">
+	</node>
+	<node id="1465">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="9 1.8 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3871">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3872" />
+		<component type="RigidBody" id="3873">
+			<attribute name="Physics Position" value="9 1.8 30.5" />
+		</component>
+		<node id="1466">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 0.120948 31.1589" />
-			<attribute name="Rotation" value="0.9965 0.0835947 0 0" />
-			<attribute name="Scale" value="1 0.105847 0.999299" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="579">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3874">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="580" />
-			<component type="RigidBody" id="581">
-				<attribute name="Physics Rotation" value="0.9965 0.0835947 0 0" />
-				<attribute name="Physics Position" value="17 8.51074 16.7393" />
+			<component type="ScriptInstance" id="3875">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3876">
+				<attribute name="Physics Position" value="9 1.8 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="200">
+	</node>
+	<node id="1467">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="10.5 2.1 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3877">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3878" />
+		<component type="RigidBody" id="3879">
+			<attribute name="Physics Position" value="10.5 2.1 30.5" />
+		</component>
+		<node id="1468">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 -0.371773 28.9856" />
-			<attribute name="Rotation" value="0.994818 0.101674 0 0" />
-			<attribute name="Scale" value="1 0.108988 0.99884" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="582">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3880">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="583" />
-			<component type="RigidBody" id="584">
-				<attribute name="Physics Rotation" value="0.994818 0.101674 0 0" />
-				<attribute name="Physics Position" value="17 8.01802 14.566" />
+			<component type="ScriptInstance" id="3881">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3882">
+				<attribute name="Physics Position" value="10.5 2.1 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="201">
+	</node>
+	<node id="1469">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="12 2.4 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3883">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3884" />
+		<component type="RigidBody" id="3885">
+			<attribute name="Physics Position" value="12 2.4 30.5" />
+		</component>
+		<node id="1470">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 -0.862573 26.7694" />
-			<attribute name="Rotation" value="0.992985 0.118236 0 0" />
-			<attribute name="Scale" value="1 0.1127 0.998235" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="585">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3886">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="586" />
-			<component type="RigidBody" id="587">
-				<attribute name="Physics Rotation" value="0.992985 0.118236 0 0" />
-				<attribute name="Physics Position" value="17 7.52722 12.3498" />
+			<component type="ScriptInstance" id="3887">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3888">
+				<attribute name="Physics Position" value="12 2.4 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="202">
+	</node>
+	<node id="1471">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="13.5 2.7 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3889">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3890" />
+		<component type="RigidBody" id="3891">
+			<attribute name="Physics Position" value="13.5 2.7 30.5" />
+		</component>
+		<node id="1472">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 -1.35142 24.5105" />
-			<attribute name="Rotation" value="0.991083 0.133249 0 0" />
-			<attribute name="Scale" value="1 0.116924 0.99748" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="588">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3892">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="589" />
-			<component type="RigidBody" id="590">
-				<attribute name="Physics Rotation" value="0.991083 0.133249 0 0" />
-				<attribute name="Physics Position" value="17 7.03837 10.0909" />
+			<component type="ScriptInstance" id="3893">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3894">
+				<attribute name="Physics Position" value="13.5 2.7 30.5" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
-		<node id="203">
+	</node>
+	<node id="1473">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="15 3 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3895">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3896" />
+		<component type="RigidBody" id="3897">
+			<attribute name="Physics Position" value="15 3 30.5" />
+		</component>
+		<node id="1474">
 			<attribute name="Is Enabled" value="true" />
-			<attribute name="Name" value="Platform" />
-			<attribute name="Tags">
-				<string value="TagEditDuplicator" />
-			</attribute>
-			<attribute name="Position" value="29.0005 -1.83827 22.209" />
-			<attribute name="Rotation" value="0.989174 0.146749 0 0" />
-			<attribute name="Scale" value="1 0.121602 0.996572" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
 			<attribute name="Variables" />
-			<component type="StaticModel" id="591">
-				<attribute name="Model" value="Model;Models/Box.mdl" />
-				<attribute name="Material" value="Material;Materials/Box.xml" />
+			<component type="CollisionShape" id="3898">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
 			</component>
-			<component type="CollisionShape" id="592" />
-			<component type="RigidBody" id="593">
-				<attribute name="Physics Rotation" value="0.989174 0.146749 0 0" />
-				<attribute name="Physics Position" value="17 6.55152 7.78937" />
+			<component type="ScriptInstance" id="3899">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3900">
+				<attribute name="Physics Position" value="15 3 30.5" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1475">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="16.5 3.3 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3901">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3902" />
+		<component type="RigidBody" id="3903">
+			<attribute name="Physics Position" value="16.5 3.3 30.5" />
+		</component>
+		<node id="1476">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="3904">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="3905">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3906">
+				<attribute name="Physics Position" value="16.5 3.3 30.5" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1477">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="18 3.6 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3907">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3908" />
+		<component type="RigidBody" id="3909">
+			<attribute name="Physics Position" value="18 3.6 30.5" />
+		</component>
+		<node id="1478">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="3910">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="3911">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3912">
+				<attribute name="Physics Position" value="18 3.6 30.5" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1479">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="19.5 3.9 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3913">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3914" />
+		<component type="RigidBody" id="3915">
+			<attribute name="Physics Position" value="19.5 3.9 30.5" />
+		</component>
+		<node id="1480">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="3916">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="3917">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3918">
+				<attribute name="Physics Position" value="19.5 3.9 30.5" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1481">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 4.2 30.5" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 0.1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="3919">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="3920" />
+		<component type="RigidBody" id="3921">
+			<attribute name="Physics Position" value="21 4.2 30.5" />
+		</component>
+		<node id="1482">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="3922">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="3923">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="3924">
+				<attribute name="Physics Position" value="21 4.2 30.5" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1545">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 4.4 29" />
+		<attribute name="Rotation" value="0.998136 0.0435052 0 0" />
+		<attribute name="Scale" value="1 0.101497 0.999849" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4111">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4112" />
+		<component type="RigidBody" id="4113">
+			<attribute name="Physics Rotation" value="0.999052 0.043545 0 0" />
+			<attribute name="Physics Position" value="21 4.4 29" />
+		</component>
+		<node id="1546">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="4114">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="4115">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="4116">
+				<attribute name="Physics Rotation" value="0.999052 0.043545 0 0" />
+				<attribute name="Physics Position" value="21 4.4 29" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1547">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 4.60259 27.5351" />
+		<attribute name="Rotation" value="0.992986 0.0838823 0 0" />
+		<attribute name="Scale" value="1 0.105857 0.999397" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4117">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4118" />
+		<component type="RigidBody" id="4119">
+			<attribute name="Physics Rotation" value="0.996451 0.0841751 0 0" />
+			<attribute name="Physics Position" value="21 4.60259 27.5351" />
+		</component>
+		<node id="1548">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="4120">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="4121">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="4122">
+				<attribute name="Physics Rotation" value="0.996451 0.0841751 0 0" />
+				<attribute name="Physics Position" value="21 4.60259 27.5351" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1549">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 4.8077 26.1058" />
+		<attribute name="Rotation" value="0.985611 0.119072 0 0" />
+		<attribute name="Scale" value="1 0.112746 0.998643" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4123">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4124" />
+		<component type="RigidBody" id="4125">
+			<attribute name="Physics Rotation" value="0.992781 0.119938 0 0" />
+			<attribute name="Physics Position" value="21 4.8077 26.1058" />
+		</component>
+		<node id="1550">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="4126">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="4127">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="4128">
+				<attribute name="Physics Rotation" value="0.992781 0.119938 0 0" />
+				<attribute name="Physics Position" value="21 4.8077 26.1058" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1551">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="FinishPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 5.01528 22.7126" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="2 0.1 2" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4129">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4130" />
+		<component type="RigidBody" id="4131">
+			<attribute name="Physics Position" value="21 5.01528 22.7126" />
+		</component>
+		<node id="1552">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="4132">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="4133">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Finish.as" />
+				<attribute name="Class Name" value="Finish" />
+			</component>
+			<component type="RigidBody" id="4134">
+				<attribute name="Physics Position" value="21 5.01528 22.7126" />
+				<attribute name="Is Trigger" value="true" />
+			</component>
+		</node>
+	</node>
+	<node id="1553">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="ReachPlatform" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="21 5.01528 24.7126" />
+		<attribute name="Rotation" value="0.977176 0.1484 0 0" />
+		<attribute name="Scale" value="1 0.121726 0.997589" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="4135">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Box.xml" />
+		</component>
+		<component type="CollisionShape" id="4136" />
+		<component type="RigidBody" id="4137">
+			<attribute name="Physics Rotation" value="0.988664 0.150145 0 0" />
+			<attribute name="Physics Position" value="21 5.01528 24.7126" />
+		</component>
+		<node id="1554">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="0 0 0" />
+			<attribute name="Rotation" value="1 0 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="CollisionShape" id="4138">
+				<attribute name="Size" value="1 4 1" />
+				<attribute name="Offset Position" value="0 2 0" />
+			</component>
+			<component type="ScriptInstance" id="4139">
+				<attribute name="Delayed Method Calls" value="0" />
+				<attribute name="Script File" value="ScriptFile;Mods/ObstacleCourse/Reach.as" />
+				<attribute name="Class Name" value="Reach" />
+			</component>
+			<component type="RigidBody" id="4140">
+				<attribute name="Physics Rotation" value="0.988664 0.150145 0 0" />
+				<attribute name="Physics Position" value="21 5.01528 24.7126" />
+				<attribute name="Is Trigger" value="true" />
 			</component>
 		</node>
 	</node>

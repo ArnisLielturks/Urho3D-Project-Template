@@ -214,7 +214,6 @@ void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, Varian
     if (element && element == _jumpButton) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
         controllerInput->SetActionState(CTRL_JUMP, true);
-        SendEvent("ShowNotification", "Message", "Jumping true");
     }
 }
 
@@ -223,5 +222,4 @@ void ScreenJoystickInput::HandleScreenJoystickTouchEnd(StringHash eventType, Var
     using namespace TouchEnd;
     auto* controllerInput = GetSubsystem<ControllerInput>();
     controllerInput->SetActionState(CTRL_JUMP, false);
-    SendEvent("ShowNotification", "Message", "Jumping false");
 }

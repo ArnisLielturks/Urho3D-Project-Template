@@ -35,6 +35,8 @@ private:
     void HandleJumpPress(StringHash eventType, VariantMap& eventData);
     void HandleJumpRelease(StringHash eventType, VariantMap& eventData);
     void HandleSettings(StringHash eventType, VariantMap& eventData);
+    void HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData);
+    void HandleScreenJoystickTouchEnd(StringHash eventType, VariantMap& eventData);
 
     HashMap<int, Vector2> _axisPosition;
 

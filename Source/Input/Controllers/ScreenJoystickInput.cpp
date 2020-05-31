@@ -78,8 +78,11 @@ void ScreenJoystickInput::Show()
     _settingsButton = _screenJoystick->GetChild("Settings", true);
     _jumpButton = _screenJoystick->GetChild("Jump", true);
     SubscribeToEvent(_settingsButton, E_RELEASED, URHO3D_HANDLER(ScreenJoystickInput, HandleSettings));
-    SubscribeToEvent(_jumpButton, E_PRESSED, URHO3D_HANDLER(ScreenJoystickInput, HandleJumpPress));
-    SubscribeToEvent(_jumpButton, E_RELEASED, URHO3D_HANDLER(ScreenJoystickInput, HandleJumpRelease));
+//    SubscribeToEvent(_jumpButton, E_PRESSED, URHO3D_HANDLER(ScreenJoystickInput, HandleJumpPress));
+//    SubscribeToEvent(_jumpButton, E_RELEASED, URHO3D_HANDLER(ScreenJoystickInput, HandleJumpRelease));
+
+    SubscribeToEvent(E_TOUCHBEGIN, URHO3D_HANDLER(ScreenJoystickInput, HandleScreenJoystickTouch));
+    SubscribeToEvent(E_TOUCHEND, URHO3D_HANDLER(ScreenJoystickInput, HandleScreenJoystickTouchEnd));
 
     URHO3D_LOGINFO("Found Axis0");
     SubscribeToEvent(_leftAxisInner, E_DRAGBEGIN, URHO3D_HANDLER(ScreenJoystickInput, HandleJoystickDrag));
@@ -195,4 +198,24 @@ void ScreenJoystickInput::HandleJumpRelease(StringHash eventType, VariantMap &ev
 void ScreenJoystickInput::HandleSettings(StringHash eventType, VariantMap& eventData)
 {
     SendEvent("SettingsButtonPressed");
+}
+
+void ScreenJoystickInput::HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData)
+{
+    using namespace TouchBegin;
+
+    // Only interested in events from screen joystick(s)
+    IntVector2 position(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
+    if (_jumpButton->IsInside(position, false)) {
+        auto* controllerInput = GetSubsystem<ControllerInput>();
+        controllerInput->SetActionState(CTRL_JUMP, true);
+        SendEvent("ShowNotification", "Message", "Jumping true");
+    }
+}
+
+void ScreenJoystickInput::HandleScreenJoystickTouchEnd(StringHash eventType, VariantMap& eventData)
+{
+    auto* controllerInput = GetSubsystem<ControllerInput>();
+    controllerInput->SetActionState(CTRL_JUMP, false);
+    SendEvent("ShowNotification", "Message", "Jumping false");
 }

@@ -26,7 +26,7 @@ private:
     void Save();
     void HandleSetParameter(StringHash eventType, VariantMap& eventData);
     void HandleIncrementParameter(StringHash eventType, VariantMap& eventData);
-    String _fileLocation;
+    String fileLocation_;
 
-    VariantMap _data;
+    VariantMap data_;
 };

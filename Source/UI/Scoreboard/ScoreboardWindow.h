@@ -25,5 +25,5 @@ private:
 
     void CreatePlayerScores();
 
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Window> baseWindow_;
 };

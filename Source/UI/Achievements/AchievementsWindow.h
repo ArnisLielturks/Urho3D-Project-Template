@@ -27,14 +27,14 @@ private:
 
     void HandleAchievementUnlocked(StringHash eventType, VariantMap& eventData);
 
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Window> baseWindow_;
 
     /**
      * Window title bar
      */
-    SharedPtr<UIElement> _titleBar;
+    SharedPtr<UIElement> titleBar_;
 
-    SharedPtr<ListView> _listView;
+    SharedPtr<ListView> listView_;
 
-    SharedPtr<UIElement> _activeLine;
+    SharedPtr<UIElement> activeLine_;
 };

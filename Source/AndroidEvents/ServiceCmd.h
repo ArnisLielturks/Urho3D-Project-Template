@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Urho3D/Core/Object.h>
-
-using namespace Urho3D;
+#include <Urho3D/Core/Mutex.h>
+#include "NSObject.h"
 
 #if defined(__ANDROID__)
 #include <jni.h>
@@ -17,33 +17,40 @@ namespace Urho3D
 class Controls;
 }
 
-class ServiceCmd : public Object
+class ServiceCmd : public Urho3D::Object
 {
     URHO3D_OBJECT(ServiceCmd, Object);
 public:
-    ServiceCmd(Context* context);
+    ServiceCmd(Urho3D::Context* context);
     ~ServiceCmd();
 
     void SendCmdMessage(int cmd, int param);
 
     void ReceiveCmdMessage(int cmd, int status, const char* message);
 
+    static ServiceCmd* instance;
+
+    void Test();
+
+    void Init();
+
 protected:
     void ProcessMessageQueue();
-    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(Urho3D::StringHash eventType, Urho3D::VariantMap& eventData);
 
 private:
     struct MessageData
     {
         int command;
         int status;
-        String message;
+        Urho3D::String message;
     };
 
-    Vector<MessageData> messageList_;
-    Mutex               mutexMessageLock_;
+    Urho3D::Vector<MessageData> messageList_;
+    Urho3D::Mutex               mutexMessageLock_;
 
     bool HasQueueMessage(MessageData& messageData);
     void PopFrontQueue();
     void SendResponseMsg(const MessageData &msg);
+//    TestClass _testClass;
 };

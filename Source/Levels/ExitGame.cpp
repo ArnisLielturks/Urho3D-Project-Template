@@ -13,7 +13,7 @@ using namespace Levels;
 ExitGame::ExitGame(Context* context) :
     BaseLevel(context)
 {
-    _timer.Reset();
+    timer_.Reset();
     SubscribeToEvents();
 }
 
@@ -41,7 +41,7 @@ void ExitGame::SubscribeToEvents()
 
 void ExitGame::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (_timer.GetMSec(false) > 3000) {
+    if (timer_.GetMSec(false) > 3000) {
         GetSubsystem<Engine>()->Exit();
     }
 }

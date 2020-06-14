@@ -47,10 +47,10 @@ protected:
     /**
      * Transparent overlay object
      */
-    SharedPtr<Sprite> _overlay;
+    SharedPtr<Sprite> overlay_;
 
     /**
      * Data which was passed when window was opened
      */
-    VariantMap _data;
+    VariantMap data_;
 };

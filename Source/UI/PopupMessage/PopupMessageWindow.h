@@ -24,8 +24,8 @@ private:
 
     void SubscribeToEvents();
 
-    SharedPtr<Button> _okButton;
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Button> okButton_;
+    SharedPtr<Window> baseWindow_;
 
     Button* CreateButton(const String& text, int width, IntVector2 position);
     Text* CreateLabel(const String& text, int fontSize);

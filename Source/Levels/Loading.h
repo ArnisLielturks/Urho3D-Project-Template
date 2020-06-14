@@ -46,17 +46,17 @@ namespace Levels {
 
         void SearchPlayerNode();
 
-        bool _searchPlayerNode{false};
+        bool searchPlayerNode_{false};
         /**
          * Status message of the current loading step
          */
-        SharedPtr<Text> _status;
+        SharedPtr<Text> status_;
 
         /**
          * Loading bar UI element
          */
-        SharedPtr<Sprite> _loadingBar;
+        SharedPtr<Sprite> loadingBar_;
 
-        String _statusMessage;
+        String statusMessage_;
     };
 }

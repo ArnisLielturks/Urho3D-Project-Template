@@ -23,11 +23,11 @@ private:
 
     void SubscribeToEvents();
 
-    SharedPtr<Button> _continueButton;
-    SharedPtr<Button> _mainMenuButton;
-    SharedPtr<Button> _settingsButton;
-    SharedPtr<Button> _exitButton;
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Button> continueButton_;
+    SharedPtr<Button> mainMenuButton_;
+    SharedPtr<Button> settingsButton_;
+    SharedPtr<Button> exitButton_;
+    SharedPtr<Window> baseWindow_;
 
     Button* CreateButton(const String& text, int width, IntVector2 position);
 };

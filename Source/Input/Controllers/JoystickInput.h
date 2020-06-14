@@ -37,13 +37,13 @@ private:
     void HandleHatMove(StringHash eventType, VariantMap& eventData);
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
-    HashMap<int, Vector2> _axisPosition;
+    HashMap<int, Vector2> axisPosition_;
 
-    bool _joystickAsFirstController;
+    bool joystickAsFirstController_;
 
     // x - move left/right
     // y - move forward/bacward
     // z - rotate x 
     // w - rotate y 
-    Vector4 _joystickMapping;
+    Vector4 joystickMapping_;
 };

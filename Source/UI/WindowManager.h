@@ -56,15 +56,15 @@ private:
     /**
      * List of all active windows objects
      */
-    List<SharedPtr<Object>> _windowList;
+    List<SharedPtr<Object>> windowList_;
 
     /**
      * List of opened windows
      */
-    List<String> _openedWindows;
+    List<String> openedWindows_;
 
     /**
      * Window list which should be destroyed in the next frame
      */
-    List<String> _closeQueue;
+    List<String> closeQueue_;
 };

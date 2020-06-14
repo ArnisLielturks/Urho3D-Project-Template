@@ -57,7 +57,7 @@ void Loading::Init()
 
     SetGlobalVar("PACKET_LIMIT", 10000);
     GetSubsystem<Network>()->RegisterRemoteEvent(E_REMOTE_CLIENT_ID);
-    if (_data.Contains("StartServer") && _data["StartServer"].GetBool()) {
+    if (data_.Contains("StartServer") && data_["StartServer"].GetBool()) {
         SendEvent(E_REGISTER_LOADING_STEP,
                   RegisterLoadingStep::P_NAME, "Starting server",
                   RegisterLoadingStep::P_REMOVE_ON_FINISH, true,
@@ -72,7 +72,7 @@ void Loading::Init()
         });
     }
 
-    if (_data.Contains("ConnectServer") && !_data["ConnectServer"].GetString().Empty()) {
+    if (data_.Contains("ConnectServer") && !data_["ConnectServer"].GetString().Empty()) {
         StringVector dependsOn;
         dependsOn.Push("ConnectServer");
         SendEvent(E_REGISTER_LOADING_STEP,
@@ -83,7 +83,7 @@ void Loading::Init()
         SubscribeToEvent("RetrievePlayerData", [&](StringHash eventType, VariantMap &eventData) {
             SendEvent(E_ACK_LOADING_STEP,
                       RegisterLoadingStep::P_EVENT, "RetrievePlayerData");
-            _searchPlayerNode = true;
+            searchPlayerNode_ = true;
         });
         SendEvent(E_REGISTER_LOADING_STEP,
                   RegisterLoadingStep::P_NAME, "Connecting to server",
@@ -96,7 +96,7 @@ void Loading::Init()
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
-//            GetSubsystem<Network>()->Connect(_data["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->Connect(data_["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->Connect("192.168.8.107", SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
             GetSubsystem<Network>()->Connect("playground-sample.frameskippers.com", 30333, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->WSConnect("wss://playground-server.frameskippers.com/ws", GetSubsystem<SceneManager>()->GetActiveScene());
@@ -112,15 +112,15 @@ void Loading::Init()
         SubscribeToEvent(E_CONNECTFAILED, URHO3D_HANDLER(Loading, HandleConnectFailed));
     }
 
-    _statusMessage = GetSubsystem<SceneManager>()->GetStatusMessage();
+    statusMessage_ = GetSubsystem<SceneManager>()->GetStatusMessage();
     SubscribeToEvent(E_LOADING_STATUS_UPDATE, [&](StringHash eventType, VariantMap& eventData) {
         using namespace LoadingStatusUpdate;
-        _statusMessage = eventData[P_NAME].GetString();
+        statusMessage_ = eventData[P_NAME].GetString();
         UpdateStatusMesage();
     });
 
-    if (_data.Contains("Map")) {
-        GetSubsystem<SceneManager>()->LoadScene(_data["Map"].GetString());
+    if (data_.Contains("Map")) {
+        GetSubsystem<SceneManager>()->LoadScene(data_["Map"].GetString());
     } else {
         GetSubsystem<SceneManager>()->LoadScene("Scenes/Flat.xml");
     }
@@ -179,16 +179,16 @@ void Loading::CreateUI()
 
     sprite->SetObjectAnimation(logoAnimation);
 
-    _status = ui->GetRoot()->CreateChild<Text>();
-    _status->SetHorizontalAlignment(HA_LEFT);
-    _status->SetVerticalAlignment(VA_BOTTOM);
-    _status->SetPosition(20, -30);
-    _status->SetStyleAuto();
-    _status->SetText("Progress: 0%");
-    _status->SetTextEffect(TextEffect::TE_STROKE);
-    _status->SetFontSize(16);
-    _status->SetColor(Color(0.8f, 0.8f, 0.2f));
-    _status->SetBringToBack(true);
+    status_ = ui->GetRoot()->CreateChild<Text>();
+    status_->SetHorizontalAlignment(HA_LEFT);
+    status_->SetVerticalAlignment(VA_BOTTOM);
+    status_->SetPosition(20, -30);
+    status_->SetStyleAuto();
+    status_->SetText("Progress: 0%");
+    status_->SetTextEffect(TextEffect::TE_STROKE);
+    status_->SetFontSize(16);
+    status_->SetColor(Color(0.8f, 0.8f, 0.2f));
+    status_->SetBringToBack(true);
 
 
     SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
@@ -200,7 +200,7 @@ void Loading::CreateUI()
     colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
     animation->AddAttributeAnimation("Color", colorAnimation);
 
-    _status->SetObjectAnimation(animation);
+    status_->SetObjectAnimation(animation);
 
     CreateProgressBar();
 }
@@ -215,9 +215,9 @@ void Loading::UpdateStatusMesage()
 {
     float progress = GetSubsystem<SceneManager>()->GetProgress();
     if (!GetSubsystem<Engine>()->IsHeadless()) {
-        _status->SetText(
+        status_->SetText(
                 String((int) (progress * 100)) + "% "
-                                                 "" + _statusMessage + "...");
+                                                 "" + statusMessage_ + "...");
     }
 }
 
@@ -231,15 +231,15 @@ void Loading::HandleUpdate(StringHash eventType, VariantMap& eventData)
 
     float progress = GetSubsystem<SceneManager>()->GetProgress();
 
-    if (_searchPlayerNode) {
+    if (searchPlayerNode_) {
         SearchPlayerNode();
     }
 
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         UpdateStatusMesage();
 
-        if (_loadingBar) {
-            _loadingBar->SetWidth(
+        if (loadingBar_) {
+            loadingBar_->SetWidth(
                     progress * (GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale() - 20));
         }
     }
@@ -253,10 +253,10 @@ void Loading::SearchPlayerNode()
 {
     if (GetSubsystem<SceneManager>()->GetActiveScene()) {
         using namespace RemoteClientId;
-        int nodeID = _data[P_NODE_ID].GetInt();
+        int nodeID = data_[P_NODE_ID].GetInt();
         auto node = GetSubsystem<SceneManager>()->GetActiveScene()->GetNode(nodeID);
         if (node) {
-            _searchPlayerNode = false;
+            searchPlayerNode_ = false;
             SendEvent(E_LOADING_STEP_FINISHED,
                       LoadingStepFinished::P_EVENT, "RetrievePlayerData");
         }
@@ -268,8 +268,8 @@ void Loading::HandleEndLoading(StringHash eventType, VariantMap& eventData)
     UnsubscribeFromEvent(E_UPDATE);
 
     // Forward event data to the next level
-    _data["Name"] = "Level";
-    SendEvent(E_SET_LEVEL, _data);
+    data_["Name"] = "Level";
+    SendEvent(E_SET_LEVEL, data_);
 }
 
 void Loading::CreateProgressBar()
@@ -278,12 +278,12 @@ void Loading::CreateProgressBar()
         UI *ui = GetSubsystem<UI>();
         ResourceCache *cache = GetSubsystem<ResourceCache>();
         auto *progressBarTexture = cache->GetResource<Texture2D>("Textures/Loading.png");
-        _loadingBar = ui->GetRoot()->CreateChild<Sprite>();
-        _loadingBar->SetTexture(progressBarTexture);
+        loadingBar_ = ui->GetRoot()->CreateChild<Sprite>();
+        loadingBar_->SetTexture(progressBarTexture);
         auto *graphics = GetSubsystem<Graphics>();
         auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
-        _loadingBar->SetPosition(10, height - 30);
-        _loadingBar->SetSize(0, 20);
+        loadingBar_->SetPosition(10, height - 30);
+        loadingBar_->SetSize(0, 20);
 
         SharedPtr<ObjectAnimation> animation(new ObjectAnimation(context_));
         SharedPtr<ValueAnimation> colorAnimation(new ValueAnimation(context_));
@@ -294,13 +294,13 @@ void Loading::CreateProgressBar()
         colorAnimation->SetKeyFrame(2.0f, Color(0.9, 0.9, 0.9));
         animation->AddAttributeAnimation("Color", colorAnimation);
 
-        _loadingBar->SetObjectAnimation(animation);
+        loadingBar_->SetObjectAnimation(animation);
 
         // Reposition loading bar when screen is resized (mostly for web platform)
         SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
             auto *graphics = GetSubsystem<Graphics>();
             auto height = (float) graphics->GetHeight() / GetSubsystem<UI>()->GetScale();
-            _loadingBar->SetPosition(10, height - 30);
+            loadingBar_->SetPosition(10, height - 30);
         });
     }
 }
@@ -347,8 +347,8 @@ void Loading::HandleServerConnected(StringHash eventType, VariantMap& eventData)
 void Loading::HandleRemoteClientID(StringHash eventType, VariantMap& eventData)
 {
     using namespace RemoteClientId;
-    _data[P_NODE_ID] = eventData[P_NODE_ID];
-    _data[P_PLAYER_ID] = eventData[P_PLAYER_ID];
+    data_[P_NODE_ID] = eventData[P_NODE_ID];
+    data_[P_PLAYER_ID] = eventData[P_PLAYER_ID];
     URHO3D_LOGINFOF("Remote node ID=%d received", eventData[P_NODE_ID].GetInt());
     GetSubsystem<SceneManager>()->GetActiveScene()->SetUpdateEnabled(true);
     SendEvent(E_LOADING_STEP_FINISHED,

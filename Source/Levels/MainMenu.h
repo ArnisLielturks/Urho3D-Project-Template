@@ -31,14 +31,14 @@ namespace Levels {
 
         void InitCamera();
 
-        SharedPtr<Button> _newGameButton;
-        SharedPtr<Button> _settingsButton;
-        SharedPtr<Button> _achievementsButton;
-        SharedPtr<Button> _creditsButton;
-        SharedPtr<Button> _exitButton;
-        SharedPtr<Node> _cameraRotateNode;
-        SharedPtr<UIElement> _buttonsContainer;
-        List<SharedPtr<Button>> _dynamicButtons;
+        SharedPtr<Button> newGameButton_;
+        SharedPtr<Button> settingsButton_;
+        SharedPtr<Button> achievementsButton_;
+        SharedPtr<Button> creditsButton_;
+        SharedPtr<Button> exitButton_;
+        SharedPtr<Node> cameraRotateNode_;
+        SharedPtr<UIElement> buttonsContainer_;
+        List<SharedPtr<Button>> dynamicButtons_;
 
         Button* CreateButton(const String& text);
     };

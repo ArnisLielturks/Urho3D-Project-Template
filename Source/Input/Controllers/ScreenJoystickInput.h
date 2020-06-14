@@ -38,18 +38,18 @@ private:
     void HandleScreenJoystickTouch(StringHash eventType, VariantMap& eventData);
     void HandleScreenJoystickTouchEnd(StringHash eventType, VariantMap& eventData);
 
-    HashMap<int, Vector2> _axisPosition;
+    HashMap<int, Vector2> axisPosition_;
 
     // x - move left/right
     // y - move forward/bacward
     // z - rotate x 
     // w - rotate y 
-    Vector4 _joystickMapping;
+    Vector4 joystickMapping_;
 
-    WeakPtr<UIElement> _leftAxis;
-    WeakPtr<UIElement> _leftAxisInner;
-    Vector2 inputValue;
-    SharedPtr<UIElement> _screenJoystick;
-    SharedPtr<UIElement> _settingsButton;
-    SharedPtr<UIElement> _jumpButton;
+    WeakPtr<UIElement> leftAxis_;
+    WeakPtr<UIElement> leftAxisInner_;
+    Vector2 inputValue_;
+    SharedPtr<UIElement> screenJoystick_;
+    SharedPtr<UIElement> settingsButton_;
+    SharedPtr<UIElement> jumpButton_;
 };

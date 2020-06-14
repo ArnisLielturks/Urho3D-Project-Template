@@ -78,17 +78,17 @@ BaseApplication::BaseApplication(Context* context) :
     BehaviourTree::RegisterFactory(context_);
 
 #ifdef __ANDROID__
-    _configurationFile = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
+    configurationFile_ = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR + "/config.cfg";
 #else
 
 #ifdef __EMSCRIPTEN__
-    _configurationFile = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
+    configurationFile_ = GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Config/config.cfg";
 #else
-    _configurationFile = "Data/Config/config.cfg";
+    configurationFile_ = "Data/Config/config.cfg";
 #endif
 #endif
 
-    ConfigManager* configManager = new ConfigManager(context_, _configurationFile);
+    ConfigManager* configManager = new ConfigManager(context_, configurationFile_);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new State(context_));
     context_->RegisterSubsystem(new SceneManager(context_));
@@ -106,7 +106,7 @@ BaseApplication::BaseApplication(Context* context) :
 void BaseApplication::Setup()
 {
     context_->RegisterSubsystem(new ConsoleHandler(context_));
-    LoadINIConfig(_configurationFile);
+    LoadINIConfig(configurationFile_);
 
 //    #if defined(__EMSCRIPTEN__)
 //    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
@@ -169,6 +169,7 @@ void BaseApplication::Setup()
 
 void BaseApplication::Start()
 {
+    GetSubsystem<ServiceCmd>()->Init();
     UI* ui = GetSubsystem<UI>();
     auto cache = GetSubsystem<ResourceCache>();
 //    XMLFile* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -267,7 +268,7 @@ void BaseApplication::LoadConfig(String filename, String prefix, bool isMain)
             // If it's the main config file, we should only then register this
             // config parameter key for saving
             if (isMain) {
-                _globalSettings[StringHash((*it).first_)] = (*it).first_;
+                globalSettings_[StringHash((*it).first_)] = (*it).first_;
             }
             if ((*it).second_.IsBool()) {
                 engine_->SetGlobalVar(prefix + (*it).first_, (*it).second_.GetBool());
@@ -355,7 +356,7 @@ void BaseApplication::HandleAddConfig(StringHash eventType, VariantMap& eventDat
 {
     String paramName = eventData["Name"].GetString();
     if (!paramName.Empty()) {
-        _globalSettings[paramName] = paramName;
+        globalSettings_[paramName] = paramName;
     }
 }
 
@@ -441,7 +442,7 @@ void BaseApplication::SetEngineParameter(String parameter, Variant value)
 {
     engineParameters_[parameter] = value;
     engine_->SetGlobalVar(parameter, value);
-    _globalSettings[parameter] = parameter;
+    globalSettings_[parameter] = parameter;
 }
 
 void BaseApplication::LoadTranslationFiles()

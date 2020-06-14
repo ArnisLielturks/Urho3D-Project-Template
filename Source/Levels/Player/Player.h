@@ -31,7 +31,7 @@ public:
      */
     void SetControllerId(unsigned int id);
 
-    int GetControllerId() { return _controllerId; }
+    int GetControllerId() { return controllerId_; }
 
     void SetName(const String& name);
 
@@ -68,34 +68,34 @@ private:
 
     void HandlePredictPlayerPosition(StringHash eventType, VariantMap& eventData);
 
-    RigidBody* _rigidBody;
-    SharedPtr<Node> _node;
-
-    WeakPtr<Node> _cameraTarget;
-    float _cameraDistance{1.5f};
-
     void ResetPosition();
+
+    RigidBody* rigidBody_;
+    SharedPtr<Node> node_;
+
+    WeakPtr<Node> cameraTarget_;
+    float cameraDistance_{1.5f};
     
     /**
      * Controller ID
      */
-    int _controllerId;
+    int controllerId_;
 
     /**
      * Player controlers
      */
-    Controls _controls;
+    Controls controls_;
 
     /**
      * Is the player on the ground
      */
-    bool _onGround;
+    bool onGround_;
 
-    Terrain* _terrain{nullptr};
+    Terrain* terrain_{nullptr};
 
-    Connection* _connection{nullptr};
+    Connection* connection_{nullptr};
 
-    bool _isControlled{false};
+    bool isControlled_{false};
 
-    Vector3 _spawnPoint;
+    Vector3 spawnPoint_;
 };

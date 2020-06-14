@@ -33,23 +33,23 @@ void KeyboardInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     using namespace KeyDown;
     int key = eventData[P_KEY].GetInt();
 
-    if (key == KEY_ESCAPE && _activeAction > 0) {
+    if (key == KEY_ESCAPE && activeAction_ > 0) {
         GetSubsystem<ControllerInput>()->StopInputMapping();
-        _activeAction = 0;
+        activeAction_ = 0;
         URHO3D_LOGINFO("Control mapping stopped");
         return;
     }
 
-    if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
+    if (activeAction_ > 0 && timer_.GetMSec(false) > 100) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetConfiguredKey(_activeAction, key, "keyboard");
-        _activeAction = 0;
+        controllerInput->SetConfiguredKey(activeAction_, key, "keyboard");
+        activeAction_ = 0;
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], true);
+        controllerInput->SetActionState(mappedKeyToControl_[key], true);
     }
 }
 
@@ -58,21 +58,21 @@ void KeyboardInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
     using namespace KeyUp;
     int key = eventData[P_KEY].GetInt();
 
-    if (_activeAction > 0) {
+    if (activeAction_ > 0) {
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], false);
+        controllerInput->SetActionState(mappedKeyToControl_[key], false);
     }
 }
 
 String KeyboardInput::GetActionKeyName(int action)
 {
-    if (_mappedControlToKey.Contains(action)) {
+    if (mappedControlToKey_.Contains(action)) {
         auto* input = GetSubsystem<Input>();
-        return input->GetKeyName(static_cast<Key>(_mappedControlToKey[action]));
+        return input->GetKeyName(static_cast<Key>(mappedControlToKey_[action]));
     }
 
     return String::EMPTY;

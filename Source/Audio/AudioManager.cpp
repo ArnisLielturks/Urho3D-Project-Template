@@ -9,9 +9,7 @@ using namespace Urho3D;
 using namespace AudioEvents;
 
 AudioManager::AudioManager(Context* context) :
-    Object(context),
-    _multipleMusicTracks(true),
-    _multipleAmbientTracks(true)
+    Object(context)
 {
     Init();
 }
@@ -23,15 +21,15 @@ AudioManager::~AudioManager()
 void AudioManager::Init()
 {
     using namespace AudioDefs;
-    _soundEffects[SOUND_EFFECTS::HIT] = "Sounds/PlayerFistHit.wav";
-    _soundEffects[SOUND_EFFECTS::THROW] = "Sounds/NutThrow.wav";
-    _soundEffects[SOUND_EFFECTS::BUTTON_CLICK] = "Sounds/click.wav";
-    _soundEffects[SOUND_EFFECTS::ACHIEVEMENT] = "Sounds/achievement.wav";
+    soundEffects_[SOUND_EFFECTS::HIT] = "Sounds/PlayerFistHit.wav";
+    soundEffects_[SOUND_EFFECTS::THROW] = "Sounds/NutThrow.wav";
+    soundEffects_[SOUND_EFFECTS::BUTTON_CLICK] = "Sounds/click.wav";
+    soundEffects_[SOUND_EFFECTS::ACHIEVEMENT] = "Sounds/achievement.wav";
 
-    _music[MUSIC::GAME] = "Sounds/music.wav";
-    _music[MUSIC::MENU] = "Sounds/menu.wav";
+    music_[MUSIC::GAME] = "Sounds/music.wav";
+    music_[MUSIC::MENU] = "Sounds/menu.wav";
 
-    _ambientSounds[AMBIENT_SOUNDS::LEVEL] = "Sounds/ambient.wav";
+    ambientSounds_[AMBIENT_SOUNDS::LEVEL] = "Sounds/ambient.wav";
 
     SubscribeToEvents();
 }
@@ -73,19 +71,19 @@ void AudioManager::HandlePlaySound(StringHash eventType, VariantMap& eventData)
     String filename;
     if (index >= 0) {
         if (type == SOUND_EFFECT) {
-            filename = _soundEffects[index];
+            filename = soundEffects_[index];
         }
         if (type == SOUND_MASTER) {
-            // filename = _soundEffects[index];
+            // filename = soundEffects_[index];
         }
         if (type == SOUND_AMBIENT) {
-            filename = _ambientSounds[index];
+            filename = ambientSounds_[index];
         }
         if (type == SOUND_VOICE) {
-            // filename = _soundEffects[index];
+            // filename = soundEffects_[index];
         }
         if (type == SOUND_MUSIC) {
-            filename = _music[index];
+            filename = music_[index];
         }
     } else {
         filename = eventData[P_SOUND_FILE].GetString();
@@ -110,11 +108,11 @@ void AudioManager::PlaySound(String filename, String type, int index)
 {
     //URHO3D_LOGINFO("Playing sound: " + filename + " [" + type + "]");
     StringHash filenameHash(filename);
-    if (type == SOUND_EFFECT && _effectsTimer.Contains(filenameHash) && _effectsTimer[filename].GetMSec(false) < 10) {
+    if (type == SOUND_EFFECT && effectsTimer_.Contains(filenameHash) && effectsTimer_[filename].GetMSec(false) < 10) {
         // Safeguard to disable same sound effect overlapping
         return;
     }
-    _effectsTimer[filename].Reset();
+    effectsTimer_[filename].Reset();
 
      // Get the sound resource
     auto* cache = GetSubsystem<ResourceCache>();
@@ -133,16 +131,16 @@ void AudioManager::PlaySound(String filename, String type, int index)
         } else {
             sound->SetLooped(true);
             if (type == SOUND_MUSIC) {
-                if (!_multipleMusicTracks) {
-                    _musicNodes.Clear();
+                if (!multipleMusicTracks_) {
+                    musicNodes_.Clear();
                 }
-                _musicNodes[index] = node;
+                musicNodes_[index] = node;
             }
             if (type == SOUND_AMBIENT) {
-                if (!_multipleAmbientTracks) {
-                    _ambientNodes.Clear();
+                if (!multipleMusicTracks_) {
+                    ambientNodes_.Clear();
                 }
-                _ambientNodes[index] = node;
+                ambientNodes_[index] = node;
             }
         }
 
@@ -167,13 +165,13 @@ void AudioManager::HandleStopSound(StringHash eventType, VariantMap& eventData)
     }
     if (type == SOUND_AMBIENT) {
         // Disable only specific music
-        if (_ambientNodes[index]) {
-            _ambientNodes.Erase(index);
+        if (ambientNodes_[index]) {
+            ambientNodes_.Erase(index);
         }
 
         // Disable all music
         if (index == -1) {
-            _ambientNodes.Clear();
+            ambientNodes_.Clear();
         }
     }
     if (type == SOUND_VOICE) {
@@ -181,31 +179,31 @@ void AudioManager::HandleStopSound(StringHash eventType, VariantMap& eventData)
     }
     if (type == SOUND_MUSIC) {
         // Disable only specific music
-        if (_musicNodes[index]) {
-            _musicNodes.Erase(index);
+        if (musicNodes_[index]) {
+            musicNodes_.Erase(index);
         }
 
         // Disable all music
         if (index == -1) {
-            _musicNodes.Clear();
+            musicNodes_.Clear();
         }
     }
 }
 
 void AudioManager::AllowMultipleMusicTracks(bool enabled)
 {
-    _multipleMusicTracks = enabled;
+    multipleMusicTracks_ = enabled;
 }
 
 void AudioManager::AllowMultipleAmbientTracks(bool enabled)
 {
-    _multipleAmbientTracks = enabled;
+    multipleMusicTracks_ = enabled;
 }
 
 void AudioManager::HandleStopAllSounds(StringHash eventType, VariantMap& eventData)
 {
-    _musicNodes.Clear();
-    _ambientNodes.Clear();
+    musicNodes_.Clear();
+    ambientNodes_.Clear();
 }
 
 void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData)
@@ -220,12 +218,12 @@ void AudioManager::HandleButtonClick(StringHash eventType, VariantMap& eventData
 
 SoundSource3D* AudioManager::AddEffectToNode(Node* node, unsigned int index)
 {
-    return CreateNodeSound(node, _soundEffects[index], SOUND_EFFECT);
+    return CreateNodeSound(node, soundEffects_[index], SOUND_EFFECT);
 }
 
 SoundSource3D* AudioManager::AddMusicToNode(Node* node, unsigned int index)
 {
-    return CreateNodeSound(node, _music[index], SOUND_MUSIC);
+    return CreateNodeSound(node, music_[index], SOUND_MUSIC);
 }
 
 SoundSource3D* AudioManager::CreateNodeSound(Node* node, const String& filename, const String& type)

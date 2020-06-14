@@ -42,9 +42,9 @@ void BehaviourTree::LoadConfig(const String& config)
             if (field == "type") {
                 if (value.IsString()) {
                     if (value.GetString() == "Sequence") {
-                        _rootNode.nodeType = SEQUENCE;
+                        rootNode_.nodeType = SEQUENCE;
                     } else if (value.GetString() == "Selector") {
-                        _rootNode.nodeType = SELECTOR;
+                        rootNode_.nodeType = SELECTOR;
                     }
                 }
             }
@@ -54,22 +54,22 @@ void BehaviourTree::LoadConfig(const String& config)
 
 const Controls& BehaviourTree::GetControls()
 {
-    return _controls;
+    return controls_;
 }
 
 void BehaviourTree::FixedUpdate(float timeStep)
 {
-    _controls.yaw_ += timeStep * 50;
+    controls_.yaw_ += timeStep * 50;
 }
 
 void BehaviourTree::SubscribeToEvents()
 {
-    _controls.Set(CTRL_FORWARD, true);
+    controls_.Set(CTRL_FORWARD, true);
     SendEvent(E_CONSOLE_COMMAND_ADD,
             ConsoleCommandAdd::P_NAME, "behaviour_debug",
             ConsoleCommandAdd::P_EVENT, "#behaviour_debug",
             ConsoleCommandAdd::P_DESCRIPTION, "Change behaviour tree state");
     SubscribeToEvent("#behaviour_debug", [&](StringHash eventType, VariantMap& eventData) {
-        _controls.Set(CTRL_FORWARD, true);
+        controls_.Set(CTRL_FORWARD, true);
     });
 }

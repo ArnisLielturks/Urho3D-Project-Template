@@ -37,9 +37,9 @@ void PlayerState::OnNodeSet(Node* node)
 
     if (node) {
         auto *cache = GetSubsystem<ResourceCache>();
-        _label = node->GetParent()->CreateChild("Label", LOCAL);
+        label_ = node->GetParent()->CreateChild("Label", LOCAL);
 
-        auto text3D = _label->CreateComponent<Text3D>();
+        auto text3D = label_->CreateComponent<Text3D>();
         text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
         text3D->SetColor(Color::GRAY);
         text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
@@ -47,38 +47,38 @@ void PlayerState::OnNodeSet(Node* node)
 //    text3D->SetViewMask(~(1 << _controllerId));
 
 //    if (!SHOW_LABELS) {
-//        _label->SetEnabled(false);
+//        label_->SetEnabled(false);
 //    }
     }
 }
 
 int PlayerState::GetScore() const
 {
-    return _score;
+    return score_;
 }
 
 void PlayerState::SetScore(int value)
 {
-    _score = value;
-    if (_score < 0) {
-        _score = 0;
+    score_ = value;
+    if (score_ < 0) {
+        score_ = 0;
     }
     OnScoreChanged();
 }
 
 void PlayerState::AddScore(int value)
 {
-    _score += value;
-    if (_score < 0) {
-        _score = 0;
+    score_ += value;
+    if (score_ < 0) {
+        score_ = 0;
     }
 
     VariantMap notificationData;
     if (value < 0) {
         notificationData["Status"] = "Error";
-        notificationData["Message"] = _name + " lost " + String(-value) + " points";
+        notificationData["Message"] = name_ + " lost " + String(-value) + " points";
     } else {
-        notificationData["Message"] = _name + " got " + String(value) + " points";
+        notificationData["Message"] = name_ + " got " + String(value) + " points";
     }
     SendEvent("ShowNotification", notificationData);
 
@@ -95,11 +95,11 @@ void PlayerState::HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventDa
 
 void PlayerState::OnScoreChanged()
 {
-    URHO3D_LOGINFOF("Player %d Score %d", _playerId, _score);
-    if (_playerId >= 0) {
+    URHO3D_LOGINFOF("Player %d Score %d", playerId_, score_);
+    if (playerId_ >= 0) {
         VariantMap players = GetGlobalVar("Players").GetVariantMap();
         VariantMap playerData = players[String(GetPlayerID())].GetVariantMap();
-        playerData["Score"] = _score;
+        playerData["Score"] = score_;
         playerData["ID"] = GetPlayerID();
         playerData["Name"] = GetPlayerName();
         players[String(GetPlayerID())] = playerData;
@@ -111,40 +111,40 @@ void PlayerState::OnScoreChanged()
 
 void PlayerState::SetPlayerID(int id)
 {
-    _playerId = id;
+    playerId_ = id;
 }
 
 int PlayerState::GetPlayerID() const
 {
-    return _playerId;
+    return playerId_;
 }
 
 void PlayerState::SetPlayerName(const String& name)
 {
-    _name = name;
+    name_ = name;
     OnScoreChanged();
     MarkNetworkUpdate();
 
-    if (_label) {
-        _label->GetComponent<Text3D>()->SetText(name);
+    if (label_) {
+        label_->GetComponent<Text3D>()->SetText(name);
     }
 }
 
 const String& PlayerState::GetPlayerName() const
 {
-    return _name;
+    return name_;
 }
 
 void PlayerState::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (_label) {
-        _label->SetPosition(node_->GetPosition() + Vector3::UP * 0.2);
+    if (label_) {
+        label_->SetPosition(node_->GetPosition() + Vector3::UP * 0.2);
     }
 }
 
 void PlayerState::HideLabel()
 {
-    if (_label) {
-        _label->SetEnabled(false);
+    if (label_) {
+        label_->SetEnabled(false);
     }
 }

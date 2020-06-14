@@ -94,37 +94,37 @@ private:
     /**
      * All sound effects map
      */
-    HashMap<unsigned int, String> _soundEffects;
+    HashMap<unsigned int, String> soundEffects_;
 
     /**
      * All music tracks map
      */
-    HashMap<unsigned int, String> _music;
+    HashMap<unsigned int, String> music_;
 
     /**
      * All active music track nodes
      */
-    HashMap<int, SharedPtr<Node>> _musicNodes;
+    HashMap<int, SharedPtr<Node>> musicNodes_;
 
     /**
      * All ambient sound tracks map
      */
-    HashMap<unsigned int, String> _ambientSounds;
+    HashMap<unsigned int, String> ambientSounds_;
 
     /**
      * All active ambient sound nodes
      */
-    HashMap<int, SharedPtr<Node>> _ambientNodes;
+    HashMap<int, SharedPtr<Node>> ambientNodes_;
 
     /**
      * Allow multiple music tracks to play
      */
-    bool _multipleMusicTracks;
+    bool multipleMusicTracks_{true};
 
     /**
      * Allow multiple ambient tracks to play
      */
-    bool _multipleAmbientTracks;
+    bool multipleAmbientTracks_{true};
 
-    HashMap<StringHash, Timer> _effectsTimer;
+    HashMap<StringHash, Timer> effectsTimer_;
 };

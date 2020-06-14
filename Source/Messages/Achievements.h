@@ -135,33 +135,33 @@ private:
     /**
      * Active achievement list
      */
-    List<SharedPtr<SingleAchievement>> _activeAchievements;
+    List<SharedPtr<SingleAchievement>> activeAchievements_;
 
     /**
      * Only 1 achievement is allowed at a time,
      * so all additional achievements are added to the queue
      */
-    List<VariantMap> _achievementQueue;
+    List<VariantMap> achievementQueue_;
 
     /**
      * Disable achievements from showing, all incoming achievements
      * will be added to the queue. This might be useful to avoid showing achievements
      * on Splash or Credits screens for example
      */
-    bool _showAchievements;
+    bool showAchievements_;
 
     /**
      * All registered achievements
      */
-    HashMap<StringHash, List<AchievementRule>> _registeredAchievements;
+    HashMap<StringHash, List<AchievementRule>> registeredAchievements_;
 
     /**
      * All achievements
      */
-    List<AchievementRule> _achievements{};
+    List<AchievementRule> achievements_;
 
     /**
      * Current achievement progress
      */
-    HashMap<String, int> _progress;
+    HashMap<String, int> progress_;
 };

@@ -25,7 +25,7 @@ const static float CREDITS_SCROLL_SPEED = 50.0f;
 namespace Levels {
     Credits::Credits(Context* context) :
             BaseLevel(context),
-            _offset(0)
+            offset_(0)
     {
     }
 
@@ -57,14 +57,14 @@ namespace Levels {
 
     void Credits::CreateUI()
     {
-        _timer.Reset();
+        timer_.Reset();
         UI* ui = GetSubsystem<UI>();
         ResourceCache* cache = GetSubsystem<ResourceCache>();
 
-        _creditsBase = ui->GetRoot()->CreateChild<UIElement>();
-        _creditsBase->SetAlignment(HA_CENTER, VA_TOP);
-        _creditsBase->SetStyleAuto();
-        _creditsBase->SetLayout(LayoutMode::LM_VERTICAL, 20);
+        creditsBase_ = ui->GetRoot()->CreateChild<UIElement>();
+        creditsBase_->SetAlignment(HA_CENTER, VA_TOP);
+        creditsBase_->SetStyleAuto();
+        creditsBase_->SetLayout(LayoutMode::LM_VERTICAL, 20);
 
         const int HEADER_SIZE = 30;
         const int HEADER_MARGIN = 6;
@@ -103,8 +103,8 @@ namespace Levels {
         CreateSingleLine("Special thanks to the creators", HEADER_SIZE);
         CreateSingleLine("of the Urho3D engine!", HEADER_SIZE);
 
-        _offset = GetSubsystem<Graphics>()->GetHeight() * 1.1 / GetSubsystem<UI>()->GetScale();
-        _creditsBase->SetPosition(0, _offset);
+        offset_ = GetSubsystem<Graphics>()->GetHeight() * 1.1 / GetSubsystem<UI>()->GetScale();
+        creditsBase_->SetPosition(0, offset_);
         SubscribeToEvents();
 
         GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_REWARDED, 1);
@@ -135,11 +135,11 @@ namespace Levels {
             UnsubscribeFromEvent(E_UPDATE);
             HandleEndCredits(true);
         }
-        _offset -= timestep * CREDITS_SCROLL_SPEED * GetSubsystem<UI>()->GetScale();
-        _creditsBase->SetPosition(_creditsBase->GetPosition().x_, _offset);
+        offset_ -= timestep * CREDITS_SCROLL_SPEED * GetSubsystem<UI>()->GetScale();
+        creditsBase_->SetPosition(creditsBase_->GetPosition().x_, offset_);
 
-        if (_credits.Back()) {
-            if (_credits.Back()->GetScreenPosition().y_ < -100) {
+        if (credits_.Back()) {
+            if (credits_.Back()->GetScreenPosition().y_ < -100) {
                 HandleEndCredits(false);
             }
         }
@@ -159,10 +159,10 @@ namespace Levels {
 
     UIElement* Credits::CreateEmptyLine(int height)
     {
-        SharedPtr<UIElement> line(_creditsBase->CreateChild<UIElement>());
+        SharedPtr<UIElement> line(creditsBase_->CreateChild<UIElement>());
         line->SetAlignment(HA_CENTER, VA_TOP);
         line->SetFixedHeight(height);
-        _credits.Push(line);
+        credits_.Push(line);
         return line;
     }
 

@@ -41,16 +41,16 @@ void MouseInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     using namespace MouseButtonDown;
     int key = eventData[P_BUTTON].GetInt();
 
-    if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
+    if (activeAction_ > 0 && timer_.GetMSec(false) > 100) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetConfiguredKey(_activeAction, key, "mouse");
-        _activeAction = 0;
+        controllerInput->SetConfiguredKey(activeAction_, key, "mouse");
+        activeAction_ = 0;
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], true);
+        controllerInput->SetActionState(mappedKeyToControl_[key], true);
     }
 }
 
@@ -59,25 +59,25 @@ void MouseInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
     using namespace MouseButtonUp;
     int key = eventData[P_BUTTON].GetInt();
 
-    if (_activeAction > 0) {
+    if (activeAction_ > 0) {
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], false);
+        controllerInput->SetActionState(mappedKeyToControl_[key], false);
     }
 }
 
 void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 {
     using namespace MouseMove;
-    float dx = eventData[P_DX].GetInt() * _sensitivityX;
-    float dy = eventData[P_DY].GetInt() * _sensitivityY;
-    if (_invertX) {
+    float dx = eventData[P_DX].GetInt() * sensitivityX_;
+    float dy = eventData[P_DY].GetInt() * sensitivityY_;
+    if (invertX_) {
         dx *= -1.0f;
     }
-    if (_invertY) {
+    if (invertY_) {
         dy *= -1.0f;
     }
     ControllerInput* controllerInput = GetSubsystem<ControllerInput>();
@@ -87,9 +87,9 @@ void MouseInput::HandleMouseMove(StringHash eventType, VariantMap& eventData)
 
 String MouseInput::GetActionKeyName(int action)
 {
-    if (_mappedControlToKey.Contains(action)) {
+    if (mappedControlToKey_.Contains(action)) {
         auto* input = GetSubsystem<Input>();
-        int key = _mappedControlToKey[action];
+        int key = mappedControlToKey_[action];
         if (key == MOUSEB_LEFT) {
             return "MOUSEB_LEFT";
         }
@@ -106,10 +106,10 @@ String MouseInput::GetActionKeyName(int action)
 
 void MouseInput::LoadConfig()
 {
-    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
-    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
-    _invertX = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX", false);
-    _invertY = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY", false);
+    sensitivityX_ = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
+    sensitivityY_ = GetSubsystem<ConfigManager>()->GetFloat("mouse", "Sensitivity", 1.0f);
+    invertX_ = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertX", false);
+    invertY_ = GetSubsystem<ConfigManager>()->GetBool("mouse", "InvertY", false);
 }
 
 void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -123,8 +123,8 @@ void MouseInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
         {
             if (state->delta_.x_ || state->delta_.y_)
             {
-                float yaw = _sensitivityX * state->delta_.x_;
-                float pitch = _sensitivityY * state->delta_.y_;
+                float yaw = sensitivityX_ * state->delta_.x_;
+                float pitch = sensitivityY_ * state->delta_.y_;
                 controllerInput->UpdateYaw(yaw);
                 controllerInput->UpdatePitch(pitch);
             }

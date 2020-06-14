@@ -13,7 +13,7 @@ ScoreboardWindow::ScoreboardWindow(Context* context) :
 
 ScoreboardWindow::~ScoreboardWindow()
 {
-    _baseWindow->Remove();
+    baseWindow_->Remove();
 }
 
 void ScoreboardWindow::Init()
@@ -25,12 +25,12 @@ void ScoreboardWindow::Init()
 
 void ScoreboardWindow::Create()
 {
-    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetSize(300, 300);
-    _baseWindow->BringToFront();
-    _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, 20, IntRect(20, 20, 20, 20));
+    baseWindow_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    baseWindow_->SetStyleAuto();
+    baseWindow_->SetAlignment(HA_CENTER, VA_CENTER);
+    baseWindow_->SetSize(300, 300);
+    baseWindow_->BringToFront();
+    baseWindow_->SetLayout(LayoutMode::LM_VERTICAL, 20, IntRect(20, 20, 20, 20));
 
     CreatePlayerScores();
     //URHO3D_LOGINFO("Player scores " + String(GetGlobalVar("PlayerScores").Get));
@@ -49,10 +49,10 @@ void ScoreboardWindow::HandleScoresUpdated(StringHash eventType, VariantMap& eve
 
 void ScoreboardWindow::CreatePlayerScores()
 {
-    _baseWindow->RemoveAllChildren();
+    baseWindow_->RemoveAllChildren();
 
     {
-        auto container = _baseWindow->CreateChild<UIElement>();
+        auto container = baseWindow_->CreateChild<UIElement>();
         container->SetAlignment(HA_LEFT, VA_TOP);
         container->SetLayout(LM_HORIZONTAL, 20);
 
@@ -79,7 +79,7 @@ void ScoreboardWindow::CreatePlayerScores()
     VariantMap players = GetGlobalVar("Players").GetVariantMap();
     for (auto it = players.Begin(); it != players.End(); ++it) {
         VariantMap playerData = (*it).second_.GetVariantMap();
-        auto container = _baseWindow->CreateChild<UIElement>();
+        auto container = baseWindow_->CreateChild<UIElement>();
         container->SetAlignment(HA_LEFT, VA_TOP);
         container->SetLayout(LM_HORIZONTAL, 20);
 

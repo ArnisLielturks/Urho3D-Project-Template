@@ -16,36 +16,36 @@ BaseWindow::BaseWindow(Context* context):
 BaseWindow::~BaseWindow()
 {
     Dispose();
-    if (_overlay) {
-        _overlay->Remove();
+    if (overlay_) {
+        overlay_->Remove();
     }
 }
 
 Sprite* BaseWindow::CreateOverlay()
 {
-    if (_overlay) {
-        _overlay->Remove();
+    if (overlay_) {
+        overlay_->Remove();
     }
     auto* cache = GetSubsystem<ResourceCache>();
 
-    _overlay = GetSubsystem<UI>()->GetRoot()->CreateChild<Sprite>();
-    _overlay->SetEnabled(true);
-    _overlay->SetPosition(0, 0);
-    _overlay->SetTexture(cache->GetResource<Texture2D>("Textures/Transparent.png"));
-    _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
-    _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
-    _overlay->SetBlendMode(BlendMode::BLEND_ALPHA);
+    overlay_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Sprite>();
+    overlay_->SetEnabled(true);
+    overlay_->SetPosition(0, 0);
+    overlay_->SetTexture(cache->GetResource<Texture2D>("Textures/Transparent.png"));
+    overlay_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+    overlay_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
+    overlay_->SetBlendMode(BlendMode::BLEND_ALPHA);
 
     // In cases where resolution is changed, we have to resize the overlay to match the new resolution
     SubscribeToEvent(E_VIDEO_SETTINGS_CHANGED, [&](StringHash eventType, VariantMap& eventData) {
-        _overlay->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
-        _overlay->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
+        overlay_->SetFixedWidth(GetSubsystem<Graphics>()->GetWidth() / GetSubsystem<UI>()->GetScale());
+        overlay_->SetFixedHeight(GetSubsystem<Graphics>()->GetHeight() / GetSubsystem<UI>()->GetScale());
     });
 
-    return _overlay;
+    return overlay_;
 }
 
 void BaseWindow::SetData(VariantMap data)
 {
-    _data = data;
+    data_ = data;
 }

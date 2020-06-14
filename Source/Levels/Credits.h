@@ -54,18 +54,18 @@ namespace Levels {
         /**
          * Credits window lifetime timer
          */
-        Timer _timer;
+        Timer timer_;
 
         /**
          * Credits view content
          */
-        Vector<SharedPtr<UIElement>> _credits;
+        Vector<SharedPtr<UIElement>> credits_;
 
         /**
          * Credits base UI view
          */
-        SharedPtr<UIElement> _creditsBase;
+        SharedPtr<UIElement> creditsBase_;
 
-        float _offset;
+        float offset_;
     };
 }

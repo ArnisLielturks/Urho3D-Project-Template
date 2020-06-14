@@ -10,7 +10,7 @@
 void SingleAchievement::RegisterObject(Context* context)
 {
     context->RegisterFactory<SingleAchievement>();
-    URHO3D_ATTRIBUTE("Offset", float, _offset, 1, AM_FILE);
+    URHO3D_ATTRIBUTE("Offset", float, offset_, 1, AM_FILE);
 }
 
 SingleAchievement::SingleAchievement(Context* context) :
@@ -21,47 +21,47 @@ SingleAchievement::SingleAchievement(Context* context) :
     auto *cache = GetSubsystem<ResourceCache>();
     auto *font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    _baseWindow = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_LEFT, VA_BOTTOM);
-    _baseWindow->SetSize(300, 100);
-    _baseWindow->BringToFront();
+    baseWindow_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Window>();
+    baseWindow_->SetStyleAuto();
+    baseWindow_->SetAlignment(HA_LEFT, VA_BOTTOM);
+    baseWindow_->SetSize(300, 100);
+    baseWindow_->BringToFront();
 
-    _baseWindow->SetBringToBack(true);
+    baseWindow_->SetBringToBack(true);
 
-    _sprite = _baseWindow->CreateChild<Sprite>();
-    _sprite->SetSize(80, 80);
-    _sprite->SetAlignment(HA_LEFT, VA_TOP);
-    _sprite->SetPosition(10, 10);
+    sprite_ = baseWindow_->CreateChild<Sprite>();
+    sprite_->SetSize(80, 80);
+    sprite_->SetAlignment(HA_LEFT, VA_TOP);
+    sprite_->SetPosition(10, 10);
 
-    _title = _baseWindow->CreateChild<Text>();
-    _title->SetFont(font, 10);
-    _title->SetAlignment(HA_LEFT, VA_CENTER);
-    _title->SetPosition(100, 0);
-    _title->SetWordwrap(true);
-    _title->SetWidth(_baseWindow->GetWidth() - _sprite->GetWidth() - 20);
+    title_ = baseWindow_->CreateChild<Text>();
+    title_->SetFont(font, 10);
+    title_->SetAlignment(HA_LEFT, VA_CENTER);
+    title_->SetPosition(100, 0);
+    title_->SetWordwrap(true);
+    title_->SetWidth(baseWindow_->GetWidth() - sprite_->GetWidth() - 20);
 }
 
 SingleAchievement::~SingleAchievement()
 {
-    _baseWindow->Remove();
+    baseWindow_->Remove();
     UnsubscribeFromEvent(E_POSTUPDATE);
 }
 
 void SingleAchievement::SetImage(String image)
 {
     auto* cache = GetSubsystem<ResourceCache>();
-    _sprite->SetTexture(cache->GetResource<Texture2D>(image));
+    sprite_->SetTexture(cache->GetResource<Texture2D>(image));
 }
 
 void SingleAchievement::SetMessage(String message) {
-    _message = "";
-    _title->SetText(message);
+    message_ = "";
+    title_->SetText(message);
 }
 
 String SingleAchievement::GetMessage()
 {
-    return _message;
+    return message_;
 }
 
 void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -70,7 +70,7 @@ void SingleAchievement::HandlePostUpdate(StringHash eventType, VariantMap& event
 
     UpdateAttributeAnimations(eventData[P_TIMESTEP].GetFloat());
 
-    _baseWindow->SetPosition(_offset, -10);
+    baseWindow_->SetPosition(offset_, -10);
 }
 
 void SingleAchievement::OnAttributeAnimationAdded()

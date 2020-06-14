@@ -1,0 +1,179 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '8.0'
+
+target 'AngelScript' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for AngelScript
+
+end
+
+target 'Box2D' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Box2D
+
+end
+
+target 'Bullet' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Bullet
+
+end
+
+target 'Civetweb' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Civetweb
+
+end
+
+target 'Detour' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Detour
+
+end
+
+target 'DetourCrowd' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for DetourCrowd
+
+end
+
+target 'DetourTileCache' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for DetourTileCache
+
+end
+
+target 'ETCPACK' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for ETCPACK
+
+end
+
+target 'FreeType' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for FreeType
+
+end
+
+target 'ik' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for ik
+
+end
+
+target 'Lua' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Lua
+
+end
+
+target 'LZ4' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for LZ4
+
+end
+
+target 'ProjectTemplate' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for ProjectTemplate
+  pod 'Google-Mobile-Ads-SDK'
+
+end
+
+target 'PugiXml' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for PugiXml
+
+end
+
+target 'Recast' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Recast
+
+end
+
+target 'SDL' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for SDL
+
+end
+
+target 'SLikeNet' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for SLikeNet
+
+end
+
+target 'StanHull' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for StanHull
+
+end
+
+target 'toluapp' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for toluapp
+
+end
+
+target 'Urho3D' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Urho3D
+
+end
+
+target 'Urho3DPlayer' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for Urho3DPlayer
+
+end
+
+target 'WebP' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for WebP
+
+end

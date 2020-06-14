@@ -90,19 +90,19 @@ void ModLoader::LoadASMods()
         URHO3D_LOGINFO("Loading mod: " + (*it));
         SharedPtr<ScriptFile> scriptFile(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>("Mods/" + (*it)));
         if (scriptFile) {
-            _asMods.Push(scriptFile);
-            _asScriptMap["Mods/" + (*it)] = scriptFile;
+            asMods_.Push(scriptFile);
+            asScriptMap_["Mods/" + (*it)] = scriptFile;
         }
     }
 
     URHO3D_LOGINFO("Initializing all loaded AS mods");
-    for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
+    for (auto it = asMods_.Begin(); it != asMods_.End(); ++it) {
         if ((*it)->Execute("void Start()")) {
         }
     }
 
     if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", _asMods.Size());
+        GetSubsystem<DebugHud>()->SetAppStats("Total AS mods loaded", asMods_.Size());
     }
     #endif
 }
@@ -113,21 +113,21 @@ void ModLoader::LoadLuaMods()
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     // Scan Data/Mods directory for all *.as files
-    GetSubsystem<FileSystem>()->ScanDir(_luaMods, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Mods"), String("*.lua"), SCAN_FILES, false);
-    URHO3D_LOGINFO("Total LUA mods found: " + String(_luaMods.Size()));
+    GetSubsystem<FileSystem>()->ScanDir(luaMods_, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Mods"), String("*.lua"), SCAN_FILES, false);
+    URHO3D_LOGINFO("Total LUA mods found: " + String(luaMods_.Size()));
 
     auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
     for (auto it = packageFiles.Begin(); it != packageFiles.End(); ++it) {
         auto files = (*it)->GetEntryNames();
         for (auto it2 = files.Begin(); it2 != files.End(); ++it2) {
             if ((*it2).StartsWith("Mods/") && (*it2).EndsWith(".lua") && (*it2).Split('/')  .Size() == 2) {
-                _luaMods.Push((*it2).Split('/').At(1));
+                luaMods_.Push((*it2).Split('/').At(1));
             }
         }
     }
 
     // Load each of the *.lua files and launch their Start() method
-    for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {
+    for (auto it = luaMods_.Begin(); it != luaMods_.End(); ++it) {
         URHO3D_LOGINFO("Loading mod: " + (*it));
         auto luaScript = GetSubsystem<LuaScript>();
         if (luaScript->ExecuteFile("Mods/" + (*it)))
@@ -140,7 +140,7 @@ void ModLoader::LoadLuaMods()
     }
 
     if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", _luaMods.Size());
+        GetSubsystem<DebugHud>()->SetAppStats("Total LUA mods loaded", luaMods_.Size());
     }
     #endif
 }
@@ -154,7 +154,7 @@ void ModLoader::SubscribeToEvents()
 void ModLoader::Dispose()
 {
     #ifdef URHO3D_ANGELSCRIPT
-    _asMods.Clear();
+    asMods_.Clear();
     #endif
 }
 
@@ -162,7 +162,7 @@ void ModLoader::Reload()
 {
     #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<ConfigManager>()->GetBool("game", "LoadMods", true)) {
-        for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
+        for (auto it = asMods_.Begin(); it != asMods_.End(); ++it) {
             if ((*it)) {
                 (*it)->Execute("void Stop()");
                 (*it)->Execute("void Start()");
@@ -193,13 +193,13 @@ void ModLoader::CheckAllMods()
 {
     Vector<String> result;
     #ifdef URHO3D_ANGELSCRIPT
-    result.Reserve(_asMods.Size());
-    for (auto it = _asMods.Begin(); it != _asMods.End(); ++it) {
+    result.Reserve(asMods_.Size());
+    for (auto it = asMods_.Begin(); it != asMods_.End(); ++it) {
         result.Push((*it)->GetName());
     }
     #endif
     #ifdef URHO3D_LUA
-    for (auto it = _luaMods.Begin(); it != _luaMods.End(); ++it) {
+    for (auto it = luaMods_.Begin(); it != luaMods_.End(); ++it) {
         result.Push((*it));
     }
     #endif
@@ -222,25 +222,25 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
         return;
     }
 
-    if (_asScriptMap.Contains(filename)) {
+    if (asScriptMap_.Contains(filename)) {
         URHO3D_LOGINFO("Reloading mod " + filename);
-        if (_asScriptMap[filename]->GetFunction("void Stop()")) {
-            _asScriptMap[filename]->Execute("void Stop()");
+        if (asScriptMap_[filename]->GetFunction("void Stop()")) {
+            asScriptMap_[filename]->Execute("void Stop()");
         }
         auto* cache = GetSubsystem<ResourceCache>();
         cache->ReleaseResource<ScriptFile>(filename, true);
-        _asScriptMap[filename].Reset();
+        asScriptMap_[filename].Reset();
 
-        _asScriptMap[filename] = cache->GetResource<ScriptFile>(filename);
-        if (!_asScriptMap[filename]) {
+        asScriptMap_[filename] = cache->GetResource<ScriptFile>(filename);
+        if (!asScriptMap_[filename]) {
             URHO3D_LOGWARNING("Mod '" + filename + "' removed!");
-            _asScriptMap.Erase(filename);
+            asScriptMap_.Erase(filename);
 
            CheckAllMods();
 
         } else {
-            if (_asScriptMap[filename]->GetFunction("void Start()")) {
-                _asScriptMap[filename]->Execute("void Start()");
+            if (asScriptMap_[filename]->GetFunction("void Start()")) {
+                asScriptMap_[filename]->Execute("void Start()");
             }
         }
     } else {
@@ -254,24 +254,24 @@ void ModLoader::HandleReloadScript(StringHash eventType, VariantMap& eventData)
             if ("Mods/" + (*it) == filename) {
                 auto* cache = GetSubsystem<ResourceCache>();
                 // Try to load the script file
-                _asScriptMap[filename] = cache->GetResource<ScriptFile>(filename);
-                if (!_asScriptMap[filename]) {
+                asScriptMap_[filename] = cache->GetResource<ScriptFile>(filename);
+                if (!asScriptMap_[filename]) {
                     URHO3D_LOGWARNING("Mod '" + filename + "' can't be loaded!");
-                    _asScriptMap.Erase(filename);
+                    asScriptMap_.Erase(filename);
                 } else {
-                    if (_asScriptMap[filename]->GetFunction("void Start()")) {
-                        _asScriptMap[filename]->Execute("void Start()");
+                    if (asScriptMap_[filename]->GetFunction("void Start()")) {
+                        asScriptMap_[filename]->Execute("void Start()");
                     }
                 }
             }
         }
-        for (auto it = _asScriptMap.Begin(); it != _asScriptMap.End(); ++it) {
+        for (auto it = asScriptMap_.Begin(); it != asScriptMap_.End(); ++it) {
             if (!loadedMods.Contains((*it).first_)) {
-                if (_asScriptMap[(*it).first_]->GetFunction("void Stop()")) {
-                    _asScriptMap[(*it).first_]->Execute("void Stop()");
+                if (asScriptMap_[(*it).first_]->GetFunction("void Stop()")) {
+                    asScriptMap_[(*it).first_]->Execute("void Stop()");
                 }
                 URHO3D_LOGWARNING("Unloading mod '" + (*it).first_ + "'");
-                _asScriptMap.Erase((*it).first_);
+                asScriptMap_.Erase((*it).first_);
             }
         }
         CheckAllMods();

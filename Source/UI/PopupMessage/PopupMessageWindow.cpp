@@ -17,8 +17,8 @@ PopupMessageWindow::PopupMessageWindow(Context* context) :
 
 PopupMessageWindow::~PopupMessageWindow()
 {
-    _okButton->Remove();
-    _baseWindow->Remove();
+    okButton_->Remove();
+    baseWindow_->Remove();
 }
 
 void PopupMessageWindow::Init()
@@ -32,21 +32,21 @@ void PopupMessageWindow::Create()
 {
     auto* localization = GetSubsystem<Localization>();
 
-    _baseWindow = CreateOverlay()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetLayoutMode(LM_VERTICAL);
-    _baseWindow->SetLayoutSpacing(10);
-    _baseWindow->SetLayoutBorder(IntRect(10, 10, 10, 10));
-    _baseWindow->SetWidth(300);
-    _baseWindow->BringToFront();
-    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1);
+    baseWindow_ = CreateOverlay()->CreateChild<Window>();
+    baseWindow_->SetStyleAuto();
+    baseWindow_->SetAlignment(HA_CENTER, VA_CENTER);
+    baseWindow_->SetLayoutMode(LM_VERTICAL);
+    baseWindow_->SetLayoutSpacing(10);
+    baseWindow_->SetLayoutBorder(IntRect(10, 10, 10, 10));
+    baseWindow_->SetWidth(300);
+    baseWindow_->BringToFront();
+    baseWindow_->GetParent()->SetPriority(baseWindow_->GetParent()->GetPriority() + 1);
 
     Color color = Color::GREEN;
-    if (_data.Contains("Type")) {
-        if (_data["Type"].GetString() == "warning") {
+    if (data_.Contains("Type")) {
+        if (data_["Type"].GetString() == "warning") {
             color = Color::YELLOW;
-        } else if (_data["Type"].GetString() == "error") {
+        } else if (data_["Type"].GetString() == "error") {
             color = Color::RED;
         }
     }
@@ -60,25 +60,25 @@ void PopupMessageWindow::Create()
     colorAnimation->SetInterpolationMethod(InterpMethod::IM_LINEAR);
     animation->AddAttributeAnimation("Color", colorAnimation);
 
-    _baseWindow->SetObjectAnimation(animation);
+    baseWindow_->SetObjectAnimation(animation);
 
-    auto title = CreateLabel(_data["Title"].GetString(), 16);
+    auto title = CreateLabel(data_["Title"].GetString(), 16);
 
-    auto message = CreateLabel(_data["Message"].GetString(), 12);
+    auto message = CreateLabel(data_["Message"].GetString(), 12);
 
-    _okButton = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
+    okButton_ = CreateButton(localization->Get("OK"), 80, IntVector2(20, 0));
 
-    SubscribeToEvent(_okButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    SubscribeToEvent(okButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "PopupMessageWindow";
         SendEvent(E_CLOSE_WINDOW, data);
 
 //        String type;
-//        if (_data["Type"].GetString() == "info") {
+//        if (data_["Type"].GetString() == "info") {
 //            type = "warning";
-//        } else if (_data["Type"].GetString() == "warning") {
+//        } else if (data_["Type"].GetString() == "warning") {
 //            type = "error";
-//        } else if (_data["Type"].GetString() == "error") {
+//        } else if (data_["Type"].GetString() == "error") {
 //            type = "info";
 //        }
 //        data["Title"] = type;
@@ -100,7 +100,7 @@ Button* PopupMessageWindow::CreateButton(const String& text, int width, IntVecto
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* uiElement = _baseWindow->CreateChild<UIElement>();
+    auto* uiElement = baseWindow_->CreateChild<UIElement>();
     uiElement->SetFixedHeight(30);
 
     auto* button = uiElement->CreateChild<Button>();
@@ -122,7 +122,7 @@ Text* PopupMessageWindow::CreateLabel(const String& text, int fontSize)
     auto *cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* uiElement = _baseWindow->CreateChild<UIElement>();
+    auto* uiElement = baseWindow_->CreateChild<UIElement>();
     uiElement->SetMinHeight(30);
 
     // Create log element to view latest logs from the system

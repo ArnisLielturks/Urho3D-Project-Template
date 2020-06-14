@@ -26,25 +26,25 @@ void Notifications::Init()
     SubscribeToEvents();
 
     // Create light animation
-    notificationAnimation = new ObjectAnimation(context_);
+    notificationAnimation_ = new ObjectAnimation(context_);
 
     // Create light position animation
-    positionAnimation = new ValueAnimation(context_);
+    positionAnimation_ = new ValueAnimation(context_);
     // Use spline interpolation method
-    positionAnimation->SetInterpolationMethod(IM_SPLINE);
+    positionAnimation_->SetInterpolationMethod(IM_SPLINE);
     // Set spline tension
-    positionAnimation->SetSplineTension(0.7f);
-    positionAnimation->SetKeyFrame(0.0f, IntVector2(-10, -300));
-    positionAnimation->SetKeyFrame(7.0f, IntVector2(-10, -600));
-    notificationAnimation->AddAttributeAnimation("Position", positionAnimation);
+    positionAnimation_->SetSplineTension(0.7f);
+    positionAnimation_->SetKeyFrame(0.0f, IntVector2(-10, -300));
+    positionAnimation_->SetKeyFrame(7.0f, IntVector2(-10, -600));
+    notificationAnimation_->AddAttributeAnimation("Position", positionAnimation_);
 
-    opacityAnimation = new ValueAnimation(context_);
-    opacityAnimation->SetKeyFrame(0.0f, 0.0f);
-    opacityAnimation->SetKeyFrame(1.0f, 1.0f);
-    opacityAnimation->SetKeyFrame(4.0f, 1.0f);
-    opacityAnimation->SetKeyFrame(5.0f, 0.0f);
-    opacityAnimation->SetKeyFrame(10.0f, 0.0f);
-    notificationAnimation->AddAttributeAnimation("Opacity", opacityAnimation);
+    opacityAnimation_ = new ValueAnimation(context_);
+    opacityAnimation_->SetKeyFrame(0.0f, 0.0f);
+    opacityAnimation_->SetKeyFrame(1.0f, 1.0f);
+    opacityAnimation_->SetKeyFrame(4.0f, 1.0f);
+    opacityAnimation_->SetKeyFrame(5.0f, 0.0f);
+    opacityAnimation_->SetKeyFrame(10.0f, 0.0f);
+    notificationAnimation_->AddAttributeAnimation("Opacity", opacityAnimation_);
 }
 
 void Notifications::SubscribeToEvents()
@@ -68,12 +68,12 @@ void Notifications::HandleNewNotification(StringHash eventType, VariantMap& even
     data.message = message;
     data.color = color;
 
-    if (_timer.GetMSec(false) < NOTIFICATION_OVERLAP_TIME) {
-        if (_messageQueue.Size() >= 10) {
+    if (timer_.GetMSec(false) < NOTIFICATION_OVERLAP_TIME) {
+        if (messageQueue_.Size() >= 10) {
             return;
         }
-        _messageQueue.Push(data);
-        URHO3D_LOGINFOF("Too many notification request, pushing notification on queue. Queue size %d", _messageQueue.Size());
+        messageQueue_.Push(data);
+        URHO3D_LOGINFOF("Too many notification request, pushing notification on queue. Queue size %d", messageQueue_.Size());
         return;
     }
     CreateNewNotification(data);
@@ -88,7 +88,7 @@ void Notifications::CreateNewNotification(NotificationData data)
     // Notification must appear on top of everything
     messageContainer->SetPriority(99999);
     messageContainer->SetTexture(cache->GetResource<Texture2D>("Textures/Gray.png"));
-    messageContainer->SetObjectAnimation(notificationAnimation);
+    messageContainer->SetObjectAnimation(notificationAnimation_);
     messageContainer->SetLayout(LM_HORIZONTAL, 0, IntRect(8, 8, 8, 8));
     // Align Text center-screen
     messageContainer->SetHorizontalAlignment(HA_RIGHT);
@@ -107,9 +107,9 @@ void Notifications::CreateNewNotification(NotificationData data)
     messageElement->SetColor(data.color);
     messageElement->SetFont(font, fontSize);
 
-    _messages.Push(messageContainer);
+    messages_.Push(messageContainer);
 
-    _timer.Reset();
+    timer_.Reset();
 }
 
 void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -117,28 +117,28 @@ void Notifications::HandleUpdate(StringHash eventType, VariantMap& eventData)
     using namespace Update;
 
     float timeStep = eventData[P_TIMESTEP].GetFloat();
-    for (auto it = _messages.Begin(); it != _messages.End(); ++it) {
+    for (auto it = messages_.Begin(); it != messages_.End(); ++it) {
         if (!(*it)) {
-            _messages.Erase(it);
+            messages_.Erase(it);
             return;
         }
         float lifetime = (*it)->GetVar("Lifetime").GetFloat();
         if (lifetime <= 0) {
             (*it)->Remove();
-            _messages.Erase(it);
+            messages_.Erase(it);
             return; 
         }
         lifetime -= timeStep;
         (*it)->SetVar("Lifetime", lifetime);
     }
 
-    if (_timer.GetMSec(false) > 1000 && !_messageQueue.Empty()) {
-        CreateNewNotification(_messageQueue.Front());
-        _messageQueue.PopFront();
+    if (timer_.GetMSec(false) > 1000 && !messageQueue_.Empty()) {
+        CreateNewNotification(messageQueue_.Front());
+        messageQueue_.PopFront();
     }
 }
 
 void Notifications::HandleGameEnd(StringHash eventType, VariantMap& eventData)
 {
-    _messages.Clear();
+    messages_.Clear();
 }

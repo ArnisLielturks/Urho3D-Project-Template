@@ -8,6 +8,11 @@
 #include "../Global.h"
 #include "StateEvents.h"
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/emscripten.h>
+#include <emscripten/bind.h>
+#endif
+
 State::State(Context* context) :
     Object(context)
 {
@@ -16,7 +21,7 @@ State::State(Context* context) :
         GetSubsystem<FileSystem>()->CreateDir(directory);
         URHO3D_LOGINFO("Creating savegame directory " + directory);
     }
-    _fileLocation = directory + "/save.json";
+    fileLocation_ = directory + "/save.json";
     Load();
     SubscribeToEvents();
 }
@@ -39,22 +44,31 @@ void State::SubscribeToEvents()
 void State::Load()
 {
     JSONFile file(context_);
-    if (file.LoadFile(_fileLocation)) {
+#ifndef __EMSCRIPTEN__
+    if (file.LoadFile(fileLocation_)) {
         JSONValue value = file.GetRoot();
-        _data = value.GetVariantMap();
+        data_ = value.GetVariantMap();
         URHO3D_LOGINFO("Savegame loaded");
     }
+#endif
 }
 
 void State::Save()
 {
     JSONFile file(context_);
-    file.GetRoot().SetVariantMap(_data);
-    if (file.SaveFile(_fileLocation)) {
-        URHO3D_LOGINFO("Savegame file saved in " + _fileLocation);
+    file.GetRoot().SetVariantMap(data_);
+#ifndef __EMSCRIPTEN__
+    if (file.SaveFile(fileLocation_)) {
+        URHO3D_LOGINFO("Savegame file saved in " + fileLocation_);
     } else {
-        URHO3D_LOGERROR("Failed to save state in " + _fileLocation);
+        URHO3D_LOGERROR("Failed to save state in " + fileLocation_);
     }
+#else
+//    EM_ASM({
+//        console.log('Storing state', $0);
+//        window.localStorage.setItem('name', 'Obaseki Nosa');
+//    }, file.ToString().CString());
+#endif
 }
 
 void State::HandleSetParameter(StringHash eventType, VariantMap& eventData)
@@ -74,7 +88,7 @@ void State::HandleIncrementParameter(StringHash eventType, VariantMap& eventData
 void State::SetValue(const String& name, const Variant& value, bool save)
 {
     URHO3D_LOGINFO("Updating state parameter: " + name);
-    _data[name] = value;
+    data_[name] = value;
     if (save) {
         Save();
     }
@@ -82,5 +96,5 @@ void State::SetValue(const String& name, const Variant& value, bool save)
 
 const Variant& State::GetValue(const String& name)
 {
-    return _data[name];
+    return data_[name];
 }

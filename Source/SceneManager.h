@@ -47,17 +47,17 @@ public:
     /**
      * Currently active scene
      */
-    SharedPtr<Scene>& GetActiveScene() { return _activeScene; }
+    SharedPtr<Scene>& GetActiveScene() { return activeScene_; }
 
     /**
      * Scene loading progress
      */
-    float GetProgress() { return progress; }
+    float GetProgress() { return progress_; }
 
     /**
      * Current loading status
      */
-    const String& GetStatusMessage() const { return _loadingStatus; }
+    const String& GetStatusMessage() const { return loadingStatus_; }
 
     /**
      * Set current progress to 0
@@ -125,29 +125,29 @@ private:
     /**
      * Current active scene
      */
-    SharedPtr<Scene> _activeScene;
+    SharedPtr<Scene> activeScene_;
 
     /**
      * Current progress
      */
-    float progress;
+    float progress_{0.0f};
 
     /**
      * Target progress, `progress` variable will reach `targetProgress` in few seconds
      */
-    float targetProgress;
+    float targetProgress_{0.0f};
 
     /**
      * Current loading status
      */
-    String _loadingStatus;
+    String loadingStatus_;
 
     /**
      * List of all the loading steps registered in the system
      */
-    HashMap<StringHash, LoadingStep> _loadingSteps;
+    HashMap<StringHash, LoadingStep> loadingSteps_;
 
-    Vector<MapInfo> _availableMaps;
+    Vector<MapInfo> availableMaps_;
 
-    MapInfo* _currentMap;
+    MapInfo* currentMap_;
 };

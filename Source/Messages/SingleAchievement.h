@@ -58,12 +58,12 @@ private:
      * X position on the screen
      * Animated over time
      */
-    float _offset;
+    float offset_;
 
     /**
      * Achievement title
      */
-    String _message;
+    String message_;
 
     /**
      * Object variables
@@ -73,15 +73,15 @@ private:
     /**
      * Achievement item window
      */
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Window> baseWindow_;
 
     /**
      * Achievement item image
      */
-    SharedPtr<Sprite> _sprite;
+    SharedPtr<Sprite> sprite_;
 
     /**
      * Achievement item text
      */
-    SharedPtr<Text> _title;
+    SharedPtr<Text> title_;
 };

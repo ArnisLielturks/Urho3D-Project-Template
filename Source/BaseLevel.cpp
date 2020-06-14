@@ -26,7 +26,7 @@ BaseLevel::BaseLevel(Context* context) :
 Object(context)
 {
     SubscribeToBaseEvents();
-    _scene = GetSubsystem<SceneManager>()->GetActiveScene();
+    scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
     SetGlobalVar("CameraFov", 80);
 }
 
@@ -60,9 +60,9 @@ void BaseLevel::SubscribeToBaseEvents()
         if (params.Size() == 3) {
             float near = ToFloat(params[1]);
             float far = ToFloat(params[2]);
-            for (int i = 0; i < _cameras.Size(); i++) {
-                _cameras[i]->GetComponent<Camera>()->SetNearClip(near);
-                _cameras[i]->GetComponent<Camera>()->SetFarClip(far);
+            for (int i = 0; i < cameras_.Size(); i++) {
+                cameras_[i]->GetComponent<Camera>()->SetNearClip(near);
+                cameras_[i]->GetComponent<Camera>()->SetFarClip(far);
                 URHO3D_LOGINFOF("Updating camera %d, near=%f, far=%f", i, near, far);
             }
         }
@@ -91,21 +91,21 @@ void BaseLevel::SubscribeToBaseEvents()
 
 void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
 {
-    _data = eventData;
+    data_ = eventData;
     Init();
     SubscribeToEvents();
 
-    if (_scene) {
-        Node *zoneNode = _scene->CreateChild("Zone", LOCAL);
-        _defaultZone = zoneNode->CreateComponent<Zone>();
-        _defaultZone->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
-        _defaultZone->SetAmbientColor(Color(0.0f, 0.0f, 0.0f));
-        _defaultZone->SetFogStart(50.0f);
-        _defaultZone->SetFogEnd(300.0f);
+    if (scene_) {
+        Node *zoneNode = scene_->CreateChild("Zone", LOCAL);
+        defaultZone_ = zoneNode->CreateComponent<Zone>();
+        defaultZone_->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+        defaultZone_->SetAmbientColor(Color(0.0f, 0.0f, 0.0f));
+        defaultZone_->SetFogStart(50.0f);
+        defaultZone_->SetFogEnd(300.0f);
 
-        if (_data.Contains("Commands")) {
+        if (data_.Contains("Commands")) {
             URHO3D_LOGINFO("Calling map commands");
-            StringVector commands = _data["Commands"].GetStringVector();
+            StringVector commands = data_["Commands"].GetStringVector();
             for (auto it = commands.Begin(); it != commands.End(); ++it) {
                 using namespace ConsoleCommand;
                 SendEvent(
@@ -120,15 +120,15 @@ void BaseLevel::HandleStart(StringHash eventType, VariantMap& eventData)
 
 void BaseLevel::Run()
 {
-    if (_scene) {
-        _scene->SetUpdateEnabled(true);
+    if (scene_) {
+        scene_->SetUpdateEnabled(true);
     }
 }
 
 void BaseLevel::Pause()
 {
-    if (_scene) {
-        _scene->SetUpdateEnabled(false);
+    if (scene_) {
+        scene_->SetUpdateEnabled(false);
     }
 }
 
@@ -152,7 +152,7 @@ void BaseLevel::SubscribeToEvents()
             ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#ambient_light", [&](StringHash eventType, VariantMap &eventData) {
-        if (!_scene) {
+        if (!scene_) {
             URHO3D_LOGWARNING("No scene to update");
             return;
         }
@@ -165,7 +165,7 @@ void BaseLevel::SubscribeToEvents()
         const float r = ToFloat(params[1]);
         const float g = ToFloat(params[2]);
         const float b = ToFloat(params[3]);
-        _defaultZone->SetAmbientColor(Color(r, g, b));
+        defaultZone_->SetAmbientColor(Color(r, g, b));
     });
 
     SendEvent(
@@ -176,7 +176,7 @@ void BaseLevel::SubscribeToEvents()
             ConsoleCommandAdd::P_OVERWRITE, true
     );
     SubscribeToEvent("#fog", [&](StringHash eventType, VariantMap &eventData) {
-        if (!_scene) {
+        if (!scene_) {
             URHO3D_LOGWARNING("No scene to update");
             return;
         }
@@ -188,8 +188,8 @@ void BaseLevel::SubscribeToEvents()
 
         const float start = ToFloat(params[1]);
         const float end = ToFloat(params[2]);
-        _defaultZone->SetFogStart(start);
-        _defaultZone->SetFogEnd(end);
+        defaultZone_->SetFogStart(start);
+        defaultZone_->SetFogEnd(end);
     });
 }
 
@@ -209,8 +209,8 @@ void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
         if (value > 160) {
             value = 160;
         }
-        if (!_cameras.Empty()) {
-            for (auto it = _cameras.Begin(); it != _cameras.End(); ++it) {
+        if (!cameras_.Empty()) {
+            for (auto it = cameras_.Begin(); it != cameras_.End(); ++it) {
                 Node* cameraNode = (*it).second_;
                 cameraNode->GetComponent<Camera>()->SetFov(value);
                 SetGlobalVar("CameraFov", value);
@@ -226,11 +226,11 @@ void BaseLevel::HandleFovChange(StringHash eventType, VariantMap& eventData)
 void BaseLevel::Dispose()
 {
     // Pause the scene, remove all contents from the scene, then remove the scene itself.
-    if (_scene) {
-        _scene->SetUpdateEnabled(false);
-        _scene->Clear();
-        _scene->Remove();
-        _scene.Reset();
+    if (scene_) {
+        scene_->SetUpdateEnabled(false);
+        scene_->Clear();
+        scene_->Remove();
+        scene_.Reset();
     }
 
     // Remove all UI elements from UI sub-system
@@ -355,10 +355,10 @@ void BaseLevel::InitViewports(Vector<int> playerIndexes)
         return;
     }
     renderer->SetNumViewports(playerIndexes.Size());
-    _viewports.Clear();
-    _cameras.Clear();
+    viewports_.Clear();
+    cameras_.Clear();
 
-    if (!_scene) {
+    if (!scene_) {
         return;
     }
 
@@ -378,7 +378,7 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
 
     // Create camera and define viewport. We will be doing load / save, so it's convenient to create the camera outside the scene,
     // so that it won't be destroyed and recreated, and we don't have to redefine the viewport on load
-    SharedPtr<Node> cameraNode(_scene->CreateChild("Camera", LOCAL));
+    SharedPtr<Node> cameraNode(scene_->CreateChild("Camera", LOCAL));
     cameraNode->SetPosition(Vector3(0, 1, 0));
     Camera* camera = cameraNode->CreateComponent<Camera>(LOCAL);
     camera->SetFarClip(1000.0f);
@@ -391,7 +391,7 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
     GetSubsystem<Audio>()->SetListener(cameraNode->GetComponent<SoundListener>());
     //GetSubsystem<Audio>()->SetListener(nullptr);
 
-    SharedPtr<Viewport> viewport(new Viewport(context_, _scene, camera, rects[index]));
+    SharedPtr<Viewport> viewport(new Viewport(context_, scene_, camera, rects[index]));
 
     Renderer* renderer = GetSubsystem<Renderer>();
     renderer->SetViewport(index, viewport);
@@ -399,8 +399,8 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
     auto cache = GetSubsystem<ResourceCache>();
     viewport->SetRenderPath(cache->GetResource<XMLFile>("RenderPaths/ForwardDepth.xml"));
 
-    _viewports[controllerIndex] = viewport;
-    _cameras[controllerIndex] = cameraNode;
+    viewports_[controllerIndex] = viewport;
+    cameras_[controllerIndex] = cameraNode;
 }
 
 void BaseLevel::ApplyPostProcessEffects()

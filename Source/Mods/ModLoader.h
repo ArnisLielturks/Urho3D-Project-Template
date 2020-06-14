@@ -74,17 +74,17 @@ private:
     /**
      * List of all the loaded mods
      */
-    Vector<SharedPtr<ScriptFile>> _asMods;
+    Vector<SharedPtr<ScriptFile>> asMods_;
 
     #ifdef URHO3D_ANGELSCRIPT
     /**
      * Script location, script object map
      */
-    HashMap<String, SharedPtr<ScriptFile>> _asScriptMap;
+    HashMap<String, SharedPtr<ScriptFile>> asScriptMap_;
     #endif
 
     #ifdef URHO3D_LUA
-    Vector<String> _luaMods;
+    Vector<String> luaMods_;
     #endif
 };
 #endif

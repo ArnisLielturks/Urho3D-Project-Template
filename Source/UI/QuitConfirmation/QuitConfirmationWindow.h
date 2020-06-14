@@ -22,9 +22,9 @@ private:
 
     void SubscribeToEvents();
 
-    SharedPtr<Button> _yesButton;
-    SharedPtr<Button> _noButton;
-    SharedPtr<Window> _baseWindow;
+    SharedPtr<Button> yesButton_;
+    SharedPtr<Button> noButton_;
+    SharedPtr<Window> baseWindow_;
 
     Button* CreateButton(const String& text);
 };

@@ -29,8 +29,8 @@ private:
 
     void CreateLevelSelection();
 
-    SharedPtr<Window> _baseWindow;
-    SharedPtr<UIElement> _levelSelection;
-    SharedPtr<CheckBox> _startServer;
-    SharedPtr<CheckBox> _connectServer;
+    SharedPtr<Window> baseWindow_;
+    SharedPtr<UIElement> levelSelection_;
+    SharedPtr<CheckBox> startServer_;
+    SharedPtr<CheckBox> connectServer_;
 };

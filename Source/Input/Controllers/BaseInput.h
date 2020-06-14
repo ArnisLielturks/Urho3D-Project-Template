@@ -12,12 +12,12 @@ class BaseInput : public Object
 public:
     BaseInput(Context* context):
         Object(context),
-        _activeAction(0),
-        _sensitivityX(0.1f),
-        _sensitivityY(0.1f),
-        _deadzone(0.1f),
-        _invertX(false),
-        _invertY(false)
+        activeAction_(0),
+        sensitivityX_(0.1f),
+        sensitivityY_(0.1f),
+        deadzone_(0.1f),
+        invertX_(false),
+        invertY_(false)
     {
     }
 
@@ -36,12 +36,12 @@ public:
      * Bind key to specific action
      */
     void SetKeyToAction(int key, int action) {
-        _mappedKeyToControl[key] = action;
-        _mappedControlToKey[action] = key;
+        mappedKeyToControl_[key] = action;
+        mappedControlToKey_[action] = key;
     }
 
     bool IsActionUsed(int action) {
-        return _mappedControlToKey.Contains(action);
+        return mappedControlToKey_.Contains(action);
     }
 
     /**
@@ -49,7 +49,7 @@ public:
      */
     HashMap<int, int> GetConfigMap()
     {
-        return _mappedControlToKey;
+        return mappedControlToKey_;
     }
 
     /**
@@ -57,7 +57,7 @@ public:
      */
     void StartMappingAction(int action)
     {
-        _activeAction = action;
+        activeAction_ = action;
     }
 
     /**
@@ -65,8 +65,8 @@ public:
      */
     void StopMappingAction()
     {
-        _activeAction = 0;
-        _timer.Reset();
+        activeAction_ = 0;
+        timer_.Reset();
     }
 
     /**
@@ -74,20 +74,20 @@ public:
      */
     void ReleaseAction(int action)
     {
-        for (auto it = _mappedControlToKey.Begin(); it != _mappedControlToKey.End(); ++it) {
+        for (auto it = mappedControlToKey_.Begin(); it != mappedControlToKey_.End(); ++it) {
             int keyCode = (*it).second_;
             int actionCode = (*it).first_;
             if (action == actionCode) {
-                _mappedControlToKey.Erase(actionCode);
-                _mappedKeyToControl.Erase(keyCode);
+                mappedControlToKey_.Erase(actionCode);
+                mappedKeyToControl_.Erase(keyCode);
             }
         }
-        for (auto it = _mappedKeyToControl.Begin(); it != _mappedKeyToControl.End(); ++it) {
+        for (auto it = mappedKeyToControl_.Begin(); it != mappedKeyToControl_.End(); ++it) {
             int keyCode = (*it).first_;
             int actionCode = (*it).second_;
             if (action == actionCode) {
-                _mappedKeyToControl.Erase(keyCode);
-                _mappedControlToKey.Erase(actionCode);
+                mappedKeyToControl_.Erase(keyCode);
+                mappedControlToKey_.Erase(actionCode);
             }
         }
     }
@@ -97,100 +97,100 @@ public:
      */
     void ReleaseKey(int key)
     {
-        for (auto it = _mappedKeyToControl.Begin(); it != _mappedKeyToControl.End(); ++it) {
+        for (auto it = mappedKeyToControl_.Begin(); it != mappedKeyToControl_.End(); ++it) {
             int keyCode = (*it).first_;
             int actionCode = (*it).second_;
             if (key == keyCode) {
-                _mappedKeyToControl.Erase(keyCode);
-                _mappedControlToKey.Erase(actionCode);
+                mappedKeyToControl_.Erase(keyCode);
+                mappedControlToKey_.Erase(actionCode);
             }
         }
-        for (auto it = _mappedControlToKey.Begin(); it != _mappedControlToKey.End(); ++it) {
+        for (auto it = mappedControlToKey_.Begin(); it != mappedControlToKey_.End(); ++it) {
             int keyCode = (*it).second_;
             int actionCode = (*it).first_;
             if (key == keyCode) {
-                _mappedControlToKey.Erase(actionCode);
-                _mappedKeyToControl.Erase(keyCode);
+                mappedControlToKey_.Erase(actionCode);
+                mappedKeyToControl_.Erase(keyCode);
             }
         }
     }
 
     void SetInvertX(bool enabled)
     {
-        _invertX = enabled;
+        invertX_ = enabled;
     }
 
     bool GetInvertX()
     {
-        return _invertX;
+        return invertX_;
     }
 
     void SetInvertY(bool enabled)
     {
-        _invertY = enabled;
+        invertY_ = enabled;
     }
 
     bool GetInvertY()
     {
-        return _invertY;
+        return invertY_;
     }
 
     void SetSensitivityX(float value)
     {
-        if (value < _minSensitivity) {
-            value = _minSensitivity;
+        if (value < minSensitivity_) {
+            value = minSensitivity_;
         }
-        _sensitivityX = value;
+        sensitivityX_ = value;
     }
 
     float GetSensitivityX()
     {
-        return _sensitivityX;
+        return sensitivityX_;
     }
 
     void SetSensitivityY(float value)
     {
-        if (value < _minSensitivity) {
-            value = _minSensitivity;
+        if (value < minSensitivity_) {
+            value = minSensitivity_;
         }
-        _sensitivityY = value;
+        sensitivityY_ = value;
     }
 
     float GetSensitivityY()
     {
-        return _sensitivityY;
+        return sensitivityY_;
     }
 
     void SetDeadzone(float value)
     {
-        _deadzone = value;
+        deadzone_ = value;
     }
 
     float GetDeadzone()
     {
-        return _deadzone;
+        return deadzone_;
     }
 
 protected:
 
     void SetMinSensitivity(float value)
     {
-        _minSensitivity = value;
+        minSensitivity_ = value;
     }
 
     // Control against key map
-    HashMap<int, int> _mappedControlToKey;
+    HashMap<int, int> mappedControlToKey_;
     // key against control map
-    HashMap<int, int> _mappedKeyToControl;
+    HashMap<int, int> mappedKeyToControl_;
 
-    int _activeAction;
+    int activeAction_;
 
-    Timer _timer;
+    Timer timer_;
 
-    bool _invertX;
-    bool _invertY;
-    float _sensitivityX;
-    float _sensitivityY;
-    float _minSensitivity;
-    float _deadzone;
+    bool invertX_;
+    bool invertY_;
+    float sensitivityX_;
+    float sensitivityY_;
+    float minSensitivity_;
+    float deadzone_;
 };

@@ -47,7 +47,7 @@ private:
 
     void LoadConfig(const String& config);
 
-    Controls _controls;
+    Controls controls_;
 
-    BTNode _rootNode;
+    BTNode rootNode_;
 };

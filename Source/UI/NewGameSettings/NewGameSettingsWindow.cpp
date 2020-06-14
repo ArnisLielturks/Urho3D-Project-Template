@@ -26,7 +26,7 @@ NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
 
 NewGameSettingsWindow::~NewGameSettingsWindow()
 {
-    _baseWindow->Remove();
+    baseWindow_->Remove();
 }
 
 void NewGameSettingsWindow::Init()
@@ -40,15 +40,15 @@ void NewGameSettingsWindow::Create()
 {
     auto* localization = GetSubsystem<Localization>();
 
-    _baseWindow = CreateOverlay()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
-    _baseWindow->BringToFront();
-    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1000);
+    baseWindow_ = CreateOverlay()->CreateChild<Window>();
+    baseWindow_->SetStyleAuto();
+    baseWindow_->SetAlignment(HA_CENTER, VA_CENTER);
+    baseWindow_->SetLayout(LayoutMode::LM_VERTICAL, MARGIN, IntRect(MARGIN, MARGIN, MARGIN, MARGIN));
+    baseWindow_->BringToFront();
+    baseWindow_->GetParent()->SetPriority(baseWindow_->GetParent()->GetPriority() + 1000);
 
     // Create Window 'titlebar' container
-    UIElement* titleBar =_baseWindow->CreateChild<UIElement>();
+    UIElement* titleBar =baseWindow_->CreateChild<UIElement>();
     titleBar->SetVerticalAlignment(VA_TOP);
     titleBar->SetLayoutMode(LM_HORIZONTAL);
     titleBar->SetLayoutBorder(IntRect(0, 4, 0, 4));
@@ -85,14 +85,14 @@ void NewGameSettingsWindow::Create()
     CreateLevelSelection();
 
 #ifndef __EMSCRIPTEN__
-    _startServer = CreateCheckbox("Start server");
+    startServer_ = CreateCheckbox("Start server");
 #endif
-    _connectServer = CreateCheckbox("Connect to server");
+    connectServer_ = CreateCheckbox("Connect to server");
 #ifdef __EMSCRIPTEN__
-    _connectServer->SetChecked(true);
+    connectServer_->SetChecked(true);
 #endif
 
-    titleBar->SetFixedSize(_levelSelection->GetWidth(), 24);
+    titleBar->SetFixedSize(levelSelection_->GetWidth(), 24);
 }
 
 void NewGameSettingsWindow::SubscribeToEvents()
@@ -101,7 +101,7 @@ void NewGameSettingsWindow::SubscribeToEvents()
 
 CheckBox* NewGameSettingsWindow::CreateCheckbox(const String& label)
 {
-    UIElement* options = _baseWindow->CreateChild<UIElement>();
+    UIElement* options = baseWindow_->CreateChild<UIElement>();
     options->SetLayout(LayoutMode::LM_HORIZONTAL, MARGIN);
     Text* labelElement = options->CreateChild<Text>();
     labelElement->SetStyleAuto();
@@ -134,10 +134,10 @@ Button* NewGameSettingsWindow::CreateButton(UIElement *parent, const String& tex
 
 void NewGameSettingsWindow::CreateLevelSelection()
 {
-    _levelSelection = _baseWindow->CreateChild<UIElement>();
-    _levelSelection->SetPosition(0, 0);
-    _levelSelection->SetFixedHeight(IMAGE_SIZE);
-    _levelSelection->SetLayout(LayoutMode::LM_HORIZONTAL, MARGIN);
+    levelSelection_ = baseWindow_->CreateChild<UIElement>();
+    levelSelection_->SetPosition(0, 0);
+    levelSelection_->SetFixedHeight(IMAGE_SIZE);
+    levelSelection_->SetLayout(LayoutMode::LM_HORIZONTAL, MARGIN);
 
     auto cache = GetSubsystem<ResourceCache>();
     auto font = cache->GetResource<Font>(APPLICATION_FONT);
@@ -146,7 +146,7 @@ void NewGameSettingsWindow::CreateLevelSelection()
 
     for (auto it = maps.Begin(); it != maps.End(); ++it) {
 
-        UIElement *mapView = _levelSelection->CreateChild<UIElement>();
+        UIElement *mapView = levelSelection_->CreateChild<UIElement>();
         mapView->SetLayout(LayoutMode::LM_VERTICAL, 5);
 
         auto button = CreateButton(mapView, "", IMAGE_SIZE, IntVector2(0, 0));
@@ -164,9 +164,9 @@ void NewGameSettingsWindow::CreateLevelSelection()
             data["Map"] = button->GetVar("Map");
             data["Commands"] = button->GetVar("Commands");
 #ifndef __EMSCRIPTEN__
-            data["StartServer"] = _startServer->IsChecked();
+            data["StartServer"] = startServer_->IsChecked();
 #endif
-            data["ConnectServer"] = _connectServer->IsChecked() && !_startServer->IsChecked() ? "127.0.0.1" : String::EMPTY;
+            data["ConnectServer"] = connectServer_->IsChecked() && !startServer_->IsChecked() ? "127.0.0.1" : String::EMPTY;
             SendEvent(E_SET_LEVEL, data);
         });
 

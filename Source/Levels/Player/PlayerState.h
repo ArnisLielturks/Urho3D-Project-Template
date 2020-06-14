@@ -31,11 +31,12 @@ private:
     void HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventData);
     void HandlePostUpdate(StringHash eventType, VariantMap& eventData);
     void OnScoreChanged();
-    int _score{0};
-    int _playerId{-1};
-    String _name;
+
+    int score_{0};
+    int playerId_{-1};
+    String name_;
     /**
      * 3D Text player label node
      */
-    SharedPtr<Node> _label;
+    SharedPtr<Node> label_;
 };

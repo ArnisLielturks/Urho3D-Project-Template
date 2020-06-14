@@ -97,10 +97,10 @@ private:
     /**
      * Global configuration
      */
-    VariantMap _globalSettings;
+    VariantMap globalSettings_;
 
     /**
      * Main configuration file
      */
-    String _configurationFile;
+    String configurationFile_;
 };

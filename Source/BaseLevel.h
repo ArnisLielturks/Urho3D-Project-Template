@@ -66,24 +66,24 @@ protected:
     /**
      * Level scene
      */
-    SharedPtr<Scene> _scene;
+    SharedPtr<Scene> scene_;
 
     /**
      * Data which was passed trough LevelManager
      */
-    VariantMap _data;
+    VariantMap data_;
 
     /**
      * All available viewports in the scene
      * mapped against specific controller
      */
-    HashMap<int, SharedPtr<Viewport>> _viewports;
+    HashMap<int, SharedPtr<Viewport>> viewports_;
 
     /**
      * All available cameras in the scene
      * mapped against specific controller
      */
-    HashMap<int, SharedPtr<Node>> _cameras;
+    HashMap<int, SharedPtr<Node>> cameras_;
 
-    SharedPtr<Zone> _defaultZone;
+    SharedPtr<Zone> defaultZone_;
 };

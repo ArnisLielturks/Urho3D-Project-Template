@@ -9,14 +9,14 @@
 
 JoystickInput::JoystickInput(Context* context) :
     BaseInput(context),
-    _joystickAsFirstController(true)
+    joystickAsFirstController_(true)
 {
     SetMinSensitivity(2.0f);
 
     Init();
     auto* input = GetSubsystem<Input>();
     for (int i = 0; i < input->GetNumJoysticks(); i++) {
-        _axisPosition[i] = Vector2::ZERO;
+        axisPosition_[i] = Vector2::ZERO;
     }
 }
 
@@ -45,12 +45,12 @@ void JoystickInput::SubscribeToEvents()
 
 void JoystickInput::SetJoystickAsFirstController(bool enabled)
 {
-    _joystickAsFirstController = enabled;
+    joystickAsFirstController_ = enabled;
 }
 
 bool JoystickInput::GetJoystickAsFirstController()
 {
-    return _joystickAsFirstController;
+    return joystickAsFirstController_;
 }
 
 void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
@@ -58,22 +58,22 @@ void JoystickInput::HandleKeyDown(StringHash eventType, VariantMap& eventData)
     using namespace JoystickButtonDown;
     int key = eventData[P_BUTTON].GetInt();
     int joystick = eventData[P_JOYSTICKID].GetInt();
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         joystick++;
     }
     auto* input = GetSubsystem<Input>();
     //URHO3D_LOGINFO("Joystick down " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
-    if (_activeAction > 0 && _timer.GetMSec(false) > 100) {
+    if (activeAction_ > 0 && timer_.GetMSec(false) > 100) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetConfiguredKey(_activeAction, key, "joystick");
-        _activeAction = 0;
+        controllerInput->SetConfiguredKey(activeAction_, key, "joystick");
+        activeAction_ = 0;
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], true, joystick);
+        controllerInput->SetActionState(mappedKeyToControl_[key], true, joystick);
     }
 
     if (GetSubsystem<DebugHud>()) {
@@ -86,19 +86,19 @@ void JoystickInput::HandleKeyUp(StringHash eventType, VariantMap& eventData)
     using namespace JoystickButtonDown;
     int key = eventData[P_BUTTON].GetInt();
     int joystick = eventData[P_JOYSTICKID].GetInt();
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         joystick++;
     }
     auto* input = GetSubsystem<Input>();
     //URHO3D_LOGINFO("Joystick up " + input->GetKeyName(static_cast<Key>(key)) + " => " + String(key));
 
-    if (_activeAction > 0) {
+    if (activeAction_ > 0) {
         return;
     }
 
-    if (_mappedKeyToControl.Contains(key)) {
+    if (mappedKeyToControl_.Contains(key)) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
-        controllerInput->SetActionState(_mappedKeyToControl[key], false, joystick);
+        controllerInput->SetActionState(mappedKeyToControl_[key], false, joystick);
     }
 
     if (GetSubsystem<DebugHud>()) {
@@ -111,7 +111,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
     using namespace JoystickAxisMove;
     int joystick = eventData[P_JOYSTICKID].GetInt();
 
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         joystick++;
     }
     int buttonId = eventData[P_AXIS].GetInt();
@@ -121,11 +121,11 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
         GetSubsystem<DebugHud>()->SetAppStats("JoyAxisMove" + String(buttonId), position);
     }
 
-    if (Abs(position) < _deadzone) {
+    if (Abs(position) < deadzone_) {
         position = 0.0f;
     }
     //URHO3D_LOGINFO("Joystick ID : " + String(joystick) + " => " + String(buttonId) + " => " + String(position));
-    if (buttonId == _joystickMapping.y_) {
+    if (buttonId == joystickMapping_.y_) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
         if (position < 0) {
             controllerInput->SetActionState(CTRL_FORWARD, true, joystick);
@@ -140,7 +140,7 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
             controllerInput->SetActionState(CTRL_BACK, false, joystick);
         }
     }
-    if (buttonId == _joystickMapping.x_) {
+    if (buttonId == joystickMapping_.x_) {
         auto* controllerInput = GetSubsystem<ControllerInput>();
         if (position < 0) {
             controllerInput->SetActionState(CTRL_LEFT, true, joystick);
@@ -155,17 +155,17 @@ void JoystickInput::HandleAxisMove(StringHash eventType, VariantMap& eventData)
             controllerInput->SetActionState(CTRL_RIGHT, false, joystick);
         }
     }
-    if (buttonId == _joystickMapping.z_) {
-        if (_invertX) {
+    if (buttonId == joystickMapping_.z_) {
+        if (invertX_) {
             position *= -1.0f;
         }
-        _axisPosition[joystick].x_ = position;
+        axisPosition_[joystick].x_ = position;
     }
-    if (buttonId == _joystickMapping.w_) {
-        if (_invertY) {
+    if (buttonId == joystickMapping_.w_) {
+        if (invertY_) {
             position *= -1.0f;
         }
-        _axisPosition[joystick].y_ = position;
+        axisPosition_[joystick].y_ = position;
     }
 }
 
@@ -173,7 +173,7 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
 {
     using namespace JoystickHatMove;
     int joystick = eventData[P_JOYSTICKID].GetInt();
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         joystick++;
     }
     int buttonId = eventData[P_HAT].GetInt();
@@ -185,21 +185,21 @@ void JoystickInput::HandleHatMove(StringHash eventType, VariantMap& eventData)
     }
 
     if (buttonId == 0) {
-        if (_invertX) {
+        if (invertX_) {
             position *= -1.0f;
         }
-        _axisPosition[joystick].x_ = position;
-        if (Abs(_axisPosition[joystick].x_) < _deadzone) {
-            _axisPosition[joystick].x_ = 0;
+        axisPosition_[joystick].x_ = position;
+        if (Abs(axisPosition_[joystick].x_) < deadzone_) {
+            axisPosition_[joystick].x_ = 0;
         }
     }
     if (buttonId == 1) {
-        if (_invertY) {
+        if (invertY_) {
             position *= -1.0f;
         }
-        _axisPosition[joystick].y_ = position;
-        if (Abs(_axisPosition[joystick].y_) < _deadzone) {
-            _axisPosition[joystick].y_ = 0;
+        axisPosition_[joystick].y_ = position;
+        if (Abs(axisPosition_[joystick].y_) < deadzone_) {
+            axisPosition_[joystick].y_ = 0;
         }
     }
 }
@@ -208,17 +208,17 @@ void JoystickInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     auto* controllerInput = GetSubsystem<ControllerInput>();
     auto* input = GetSubsystem<Input>();
-    for (auto it = _axisPosition.Begin(); it != _axisPosition.End(); ++it) {
-        controllerInput->UpdateYaw((*it).second_.x_ * _sensitivityX, (*it).first_);
-        controllerInput->UpdatePitch((*it).second_.y_ * _sensitivityX, (*it).first_);
+    for (auto it = axisPosition_.Begin(); it != axisPosition_.End(); ++it) {
+        controllerInput->UpdateYaw((*it).second_.x_ * sensitivityX_, (*it).first_);
+        controllerInput->UpdatePitch((*it).second_.y_ * sensitivityX_, (*it).first_);
     }
 }
 
 String JoystickInput::GetActionKeyName(int action)
 {
-    if (_mappedControlToKey.Contains(action)) {
+    if (mappedControlToKey_.Contains(action)) {
         auto* input = GetSubsystem<Input>();
-        return "Joy_" + String(_mappedControlToKey[action]);
+        return "Joy_" + String(mappedControlToKey_[action]);
     }
 
     return String::EMPTY;
@@ -228,11 +228,11 @@ void JoystickInput::HandleJoystickConnected(StringHash eventType, VariantMap& ev
 {
     using namespace JoystickConnected;
     int id = eventData[P_JOYSTICKID].GetInt();
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         id++;
     }
     URHO3D_LOGINFO("Joystick connected : " + String(id));
-    _axisPosition[id] = Vector2::ZERO;
+    axisPosition_[id] = Vector2::ZERO;
     auto* controllerInput = GetSubsystem<ControllerInput>();
     controllerInput->CreateController(id);
 }
@@ -241,25 +241,25 @@ void JoystickInput::HandleJoystickDisconnected(StringHash eventType, VariantMap&
 {
     using namespace JoystickDisconnected;
     int id = eventData[P_JOYSTICKID].GetInt();
-    if (!_joystickAsFirstController) {
+    if (!joystickAsFirstController_) {
         id++;
     }
     URHO3D_LOGINFO("Joystick disconnected : " + String(id));
-    _axisPosition.Erase(id);
+    axisPosition_.Erase(id);
     auto* controllerInput = GetSubsystem<ControllerInput>();
     controllerInput->DestroyController(id);
 }
 
 void JoystickInput::LoadConfig()
 {
-    _sensitivityX = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 1.0f);
-    _sensitivityY = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 1.0f);
-    _invertX = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false);
-    _invertY = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false);
+    sensitivityX_ = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityX", 1.0f);
+    sensitivityY_ = GetSubsystem<ConfigManager>()->GetFloat("joystick", "SensitivityY", 1.0f);
+    invertX_ = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertX", false);
+    invertY_ = GetSubsystem<ConfigManager>()->GetBool("joystick", "InvertY", false);
 
     //TODO put these settings inside controllers tab
-    _joystickMapping.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis", 0);
-    _joystickMapping.y_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveYAxis", 1);
-    _joystickMapping.z_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateXAxis");
-    _joystickMapping.w_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateYAxis");
+    joystickMapping_.x_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveXAxis", 0);
+    joystickMapping_.y_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "MoveYAxis", 1);
+    joystickMapping_.z_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateXAxis");
+    joystickMapping_.w_ = GetSubsystem<ConfigManager>()->GetInt("joystick", "RotateYAxis");
 }

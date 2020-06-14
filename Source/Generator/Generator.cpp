@@ -13,8 +13,8 @@ using namespace ConsoleHandlerEvents;
 Generator::Generator(Context* context) :
     Object(context)
 {
-    _generatedImage = new Image(context);
-    _generatedImage->SetSize(256, 256, 3);
+    generatedImage_ = new Image(context);
+    generatedImage_->SetSize(256, 256, 3);
     SubscribeToEvents();
 }
 
@@ -28,18 +28,18 @@ Image* Generator::GenerateImage(double frequency, int octaves, int seed)
     octaves = Clamp(octaves, 1, 16);
 
     PerlinNoise perlin(seed);
-    for (int x = 0; x < _generatedImage->GetWidth(); x++) {
-        for (int y = 0; y < _generatedImage->GetHeight(); y++) {
+    for (int x = 0; x < generatedImage_->GetWidth(); x++) {
+        for (int y = 0; y < generatedImage_->GetHeight(); y++) {
             float dx = x / frequency;
             float dy = y / frequency;
             auto result = perlin.octaveNoise(dx, dy, octaves);
             result *= 0.4;
             result += 0.4;
-            _generatedImage->SetPixel(x, y, Color(result, result, result));
+            generatedImage_->SetPixel(x, y, Color(result, result, result));
         }
     }
 
-    return _generatedImage;
+    return generatedImage_;
 }
 
 void Generator::SubscribeToEvents()
@@ -141,5 +141,5 @@ void Generator::SubscribeToEvents()
 
 void Generator::Save()
 {
-    _generatedImage->SavePNG("Data/Textures/HeightMap.png");
+    generatedImage_->SavePNG("Data/Textures/HeightMap.png");
 }

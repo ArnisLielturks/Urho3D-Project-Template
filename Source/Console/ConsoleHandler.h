@@ -67,10 +67,10 @@ private:
     /**
      * Registered console commands
      */
-    HashMap<String, SingleConsoleCommand> _registeredConsoleCommands;
+    HashMap<String, SingleConsoleCommand> registeredConsoleCommands_;
 
     /**
      * Console handler in the engine
      */
-    SharedPtr<Console> _console;
+    SharedPtr<Console> console_;
 };

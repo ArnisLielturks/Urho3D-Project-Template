@@ -18,12 +18,12 @@ static int SPLASH_TIME = 3000;
 
 Splash::Splash(Context* context) :
     BaseLevel(context),
-    _logoIndex(0)
+    logoIndex_(0)
 {
     // List of different logos that multiple splash screens will show
-    _logos.Reserve(1);
-    _logos.Push("Textures/UrhoIcon.png");
-//    _logos.Push("Textures/Achievements/retro-controller.png");
+    logos_.Reserve(1);
+    logos_.Push("Textures/UrhoIcon.png");
+//    logos_.Push("Textures/Achievements/retro-controller.png");
 }
 
 Splash::~Splash()
@@ -57,15 +57,15 @@ void Splash::CreateScene()
 
 void Splash::CreateUI()
 {
-    _timer.Reset();
+    timer_.Reset();
     UI* ui = GetSubsystem<UI>();
     ResourceCache* cache = GetSubsystem<ResourceCache>();
 
     // Get the current logo index
-    _logoIndex = _data["LogoIndex"].GetInt();
+    logoIndex_ = data_["LogoIndex"].GetInt();
 
     // Get the Urho3D fish texture
-    auto* decalTex = cache->GetResource<Texture2D>(_logos[_logoIndex]);
+    auto* decalTex = cache->GetResource<Texture2D>(logos_[logoIndex_]);
     // Create a new sprite, set it to use the texture
     SharedPtr<Sprite> sprite(new Sprite(context_));
     sprite->SetTexture(decalTex);
@@ -132,7 +132,7 @@ void Splash::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (input->IsMouseVisible()) {
         input->SetMouseVisible(false);
     }
-    if (_timer.GetMSec(false) > SPLASH_TIME) {
+    if (timer_.GetMSec(false) > SPLASH_TIME) {
         HandleEndSplash();
     }
 }
@@ -141,13 +141,13 @@ void Splash::HandleEndSplash()
 {
     UnsubscribeFromEvent(E_UPDATE);
     VariantMap& data = GetEventDataMap();
-    _logoIndex++;
-    if (_logoIndex >= _logos.Size()) {
+    logoIndex_++;
+    if (logoIndex_ >= logos_.Size()) {
         data["Name"] = "MainMenu";
     } else {
-        // We still have logos to show, inform next Splash screen to use the next logo from the `_logos` vector
+        // We still have logos to show, inform next Splash screen to use the next logo from the `logos_` vector
         data["Name"] = "Splash";
-        data["LogoIndex"] = _logoIndex;
+        data["LogoIndex"] = logoIndex_;
     }
     SendEvent(E_SET_LEVEL, data);
 }

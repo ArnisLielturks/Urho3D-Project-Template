@@ -4,6 +4,7 @@
 #include <Urho3D/Graphics/Terrain.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Network/Connection.h>
+#include <Urho3D/Graphics/CustomGeometry.h>
 #include "../BaseLevel.h"
 #include "Player/Player.h"
 
@@ -35,6 +36,8 @@ namespace Levels {
         void StartAudio();
         void StopAllAudio();
 
+        void CreateStuff();
+
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
         void HandleWindowClosed(StringHash eventType, VariantMap& eventData);
@@ -53,13 +56,15 @@ namespace Levels {
 
         SharedPtr<Player> CreatePlayer(int controllerId, bool controllable, const String& name = String::EMPTY, int nodeID = -1);
 
-        bool _showScoreboard;
+        bool showScoreboard_;
 
-        bool _drawDebug;
+        bool drawDebug_;
 
-        HashMap<int, SharedPtr<Player>> _players;
-        HashMap<Connection*, SharedPtr<Player>> _remotePlayers;
+        HashMap<int, SharedPtr<Player>> players_;
+        HashMap<Connection*, SharedPtr<Player>> remotePlayers_;
 
-        SharedPtr<Terrain> _terrain;
+        SharedPtr<Terrain> terrain_;
+
+        CustomGeometry* geometry_;
     };
 }

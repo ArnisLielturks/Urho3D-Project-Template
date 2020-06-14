@@ -97,7 +97,7 @@ public:
     /**
      * Get Multiple controller support
      */
-    bool GetMultipleControllerSupport() { return _multipleControllerSupport; }
+    bool GetMultipleControllerSupport() { return multipleControllerSupport_; }
 
     /**
      * Detect if mapping is in progress
@@ -213,32 +213,32 @@ private:
     /**
      * Action key to string map
      */
-    HashMap<int, String> _controlMapNames;
+    HashMap<int, String> controlMapNames_;
 
     /**
      * Active controls
      */
-    HashMap<int, Controls> _controls;
+    HashMap<int, Controls> controls_;
 
     /**
      * All input handlers
      */
-    HashMap<int, SharedPtr<BaseInput>> _inputHandlers;
+    HashMap<int, SharedPtr<BaseInput>> inputHandlers_;
 
     /**
      * Multiple controller support
      */
-    bool _multipleControllerSupport;
+    bool multipleControllerSupport_;
 
     /**
      * Currently active action for input mapping
      */
-    int _activeAction;
+    int activeAction_;
 
     /**
      * Timer to detect how long ago the input mapping has been stopped by the KEY_ESCAPE press
      * IsMappingInProgress() returns true in those cases for very small amount of time to avoid duplicate
      * KEY_ESCAPE pressing handling
      */
-    Timer _mappingTimer;
+    Timer mappingTimer_;
 };

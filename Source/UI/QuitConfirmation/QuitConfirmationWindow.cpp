@@ -19,9 +19,9 @@ QuitConfirmationWindow::QuitConfirmationWindow(Context* context) :
 
 QuitConfirmationWindow::~QuitConfirmationWindow()
 {
-    _yesButton->Remove();
-    _noButton->Remove();
-    _baseWindow->Remove();
+    yesButton_->Remove();
+    noButton_->Remove();
+    baseWindow_->Remove();
 }
 
 void QuitConfirmationWindow::Init()
@@ -40,16 +40,16 @@ void QuitConfirmationWindow::Create()
 
     auto* localization = GetSubsystem<Localization>();
 
-    _baseWindow = CreateOverlay()->CreateChild<Window>();
-    _baseWindow->SetStyleAuto();
-    _baseWindow->SetAlignment(HA_CENTER, VA_CENTER);
-    _baseWindow->SetWidth(300);
-    _baseWindow->SetMinHeight(50);
-    _baseWindow->SetLayout(LM_VERTICAL, 10, IntRect(10, 10, 10, 10));
-    _baseWindow->BringToFront();
-    _baseWindow->GetParent()->SetPriority(_baseWindow->GetParent()->GetPriority() + 1000);
+    baseWindow_ = CreateOverlay()->CreateChild<Window>();
+    baseWindow_->SetStyleAuto();
+    baseWindow_->SetAlignment(HA_CENTER, VA_CENTER);
+    baseWindow_->SetWidth(300);
+    baseWindow_->SetMinHeight(50);
+    baseWindow_->SetLayout(LM_VERTICAL, 10, IntRect(10, 10, 10, 10));
+    baseWindow_->BringToFront();
+    baseWindow_->GetParent()->SetPriority(baseWindow_->GetParent()->GetPriority() + 1000);
 
-    SharedPtr<UIElement> titleContainer(_baseWindow->CreateChild<UIElement>());
+    SharedPtr<UIElement> titleContainer(baseWindow_->CreateChild<UIElement>());
     titleContainer->SetLayoutMode(LM_HORIZONTAL);
     auto title = titleContainer->CreateChild<Text>();
     title->SetStyleAuto();
@@ -57,11 +57,11 @@ void QuitConfirmationWindow::Create()
     title->SetTextAlignment(HA_CENTER);
     title->SetFontSize(24);
 
-    SharedPtr<UIElement> buttonsContainer(_baseWindow->CreateChild<UIElement>());
+    SharedPtr<UIElement> buttonsContainer(baseWindow_->CreateChild<UIElement>());
     buttonsContainer->SetLayout(LM_HORIZONTAL, 10);
 
-    _yesButton = CreateButton(localization->Get("YES"));
-    SubscribeToEvent(_yesButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    yesButton_ = CreateButton(localization->Get("YES"));
+    SubscribeToEvent(yesButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         SendEvent(E_CLOSE_ALL_WINDOWS);
 
         VariantMap& data = GetEventDataMap();
@@ -69,16 +69,16 @@ void QuitConfirmationWindow::Create()
         SendEvent(E_SET_LEVEL, data);
     });
 
-    _noButton = CreateButton(localization->Get("NO"));
-    SubscribeToEvent(_noButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    noButton_ = CreateButton(localization->Get("NO"));
+    SubscribeToEvent(noButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(E_CLOSE_WINDOW, data);
     });
 
-    buttonsContainer->AddChild(_yesButton);
-    buttonsContainer->AddChild(_noButton);
-    _baseWindow->UpdateLayout();
+    buttonsContainer->AddChild(yesButton_);
+    buttonsContainer->AddChild(noButton_);
+    baseWindow_->UpdateLayout();
 }
 
 void QuitConfirmationWindow::SubscribeToEvents()

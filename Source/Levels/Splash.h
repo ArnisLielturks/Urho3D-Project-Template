@@ -35,16 +35,16 @@ namespace Levels {
         /**
          * Timer to check splash screen lifetime
          */
-        Timer _timer;
+        Timer timer_;
 
         /**
          * Current logo index
          */
-        int _logoIndex;
+        int logoIndex_;
 
         /**
          * List of all the logos that splash screen should show
          */
-        Vector<String> _logos;
+        Vector<String> logos_;
     };
 }

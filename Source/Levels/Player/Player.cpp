@@ -32,8 +32,8 @@ Player::Player(Context* context):
 
 Player::~Player()
 {
-    if (_node) {
-        _node->Remove();
+    if (node_) {
+        node_->Remove();
     }
 }
 
@@ -85,54 +85,54 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     auto* cache = GetSubsystem<ResourceCache>();
 
     // Create the scene node & visual representation. This will be a replicated object
-    _node = scene->CreateChild("Player");
-    auto playerState = _node->CreateComponent<PlayerState>(REPLICATED);
-    playerState->SetPlayerID(_controllerId);
-    URHO3D_LOGINFOF("Creating player node=%d, playerstate=%d", _node->GetID(), playerState->GetID());
-    _node->SetVar("Player", _controllerId);
+    node_ = scene->CreateChild("Player");
+    auto playerState = node_->CreateComponent<PlayerState>(REPLICATED);
+    playerState->SetPlayerID(controllerId_);
+    URHO3D_LOGINFOF("Creating player node=%d, playerstate=%d", node_->GetID(), playerState->GetID());
+    node_->SetVar("Player", controllerId_);
 
-    _node->SetPosition(Vector3(0, 2, 0));
-    _node->SetScale(0.5f);
+    node_->SetPosition(Vector3(0, 2, 0));
+    node_->SetScale(0.5f);
 
-    auto* ballObject = _node->CreateComponent<StaticModel>();
+    auto* ballObject = node_->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
     ballObject->SetMaterial(cache->GetResource<Material>("Materials/Ball.xml"));
     ballObject->SetCastShadows(true);
 
     // Create the physics components
-    _rigidBody = _node->CreateComponent<RigidBody>(LOCAL);
-    _rigidBody->SetMass(5.0f);
-    _rigidBody->SetFriction(2.0f);
+    rigidBody_ = node_->CreateComponent<RigidBody>(LOCAL);
+    rigidBody_->SetMass(5.0f);
+    rigidBody_->SetFriction(2.0f);
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
-    _rigidBody->SetLinearDamping(0.8f);
-    _rigidBody->SetAngularDamping(0.8f);
-    _rigidBody->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND);
+    rigidBody_->SetLinearDamping(0.8f);
+    rigidBody_->SetAngularDamping(0.8f);
+    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND);
 
-    auto* shape = _node->CreateComponent<CollisionShape>();
+    auto* shape = node_->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
 
-    SubscribeToEvent(_node, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
+    SubscribeToEvent(node_, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
 
-    _terrain = terrain;
+    terrain_ = terrain;
 
     ResetPosition();
 }
 
 void Player::FindNode(Scene* scene, int id)
 {
-    _node = scene->GetNode(id);
-    if (_node) {
-        _node->SetInterceptNetworkUpdate("Network Position", true);
-        _node->GetComponent<PlayerState>()->HideLabel();
+    node_ = scene->GetNode(id);
+    if (node_) {
+        node_->SetInterceptNetworkUpdate("Network Position", true);
+        node_->GetComponent<PlayerState>()->HideLabel();
         SubscribeToEvent(E_INTERCEPTNETWORKUPDATE, URHO3D_HANDLER(Player, HandlePredictPlayerPosition));
     }
 }
 
 void Player::ResetPosition()
 {
-    Vector3 position = _spawnPoint;
-    if (_terrain) {
-        position.y_ = _terrain->GetHeight(position) + 1.0f;
+    Vector3 position = spawnPoint_;
+    if (terrain_) {
+        position.y_ = terrain_->GetHeight(position) + 1.0f;
     }
     GetNode()->SetWorldPosition(position);
 
@@ -142,18 +142,18 @@ void Player::ResetPosition()
 
 void Player::SetControllerId(unsigned int id)
 {
-    _controllerId = id;
+    controllerId_ = id;
 }
 
 Node* Player::GetNode()
 {
-    return _node.Get();
+    return node_.Get();
 }
 
 void Player::SetControllable(bool value)
 {
-    _isControlled = value;
-    if (_isControlled) {
+    isControlled_ = value;
+    if (isControlled_) {
         if (GetNode() && GetNode()->HasComponent<BehaviourTree>()) {
             GetNode()->RemoveComponent<BehaviourTree>();
         }
@@ -175,28 +175,28 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
             // We are not following our player node, so we must not control it
             serverConnection->SetControls(Controls());
         } else {
-            serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(_controllerId));
+            serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(controllerId_));
         }
         return;
     }
 
-    if (_node->GetPosition().y_ < -20) {
+    if (node_->GetPosition().y_ < -20) {
         ResetPosition();
 
         VariantMap &data = GetEventDataMap();
-        data["Player"] = _controllerId;
+        data["Player"] = controllerId_;
         SendEvent("FallOffTheMap", data);
-        _node->GetComponent<PlayerState>()->AddScore(-10);
+        node_->GetComponent<PlayerState>()->AddScore(-10);
     }
 
     Controls controls;
     float movementSpeed = MOVE_TORQUE;
 
-    if (_isControlled) {
-        if (_connection) {
-            controls = _connection->GetControls();
+    if (isControlled_) {
+        if (connection_) {
+            controls = connection_->GetControls();
         } else if (!IsCameraTargetSet()) {
-            controls = GetSubsystem<ControllerInput>()->GetControls(_controllerId);
+            controls = GetSubsystem<ControllerInput>()->GetControls(controllerId_);
         }
     } else {
         controls = GetNode()->GetComponent<BehaviourTree>()->GetControls();
@@ -214,9 +214,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         if (controls.extraData_.Contains(forward)) {
             strength = controls.extraData_[forward].GetFloat();
         }
-        _rigidBody->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed * strength);
-        if (!_onGround) {
-            _rigidBody->ApplyForce(rotation * Vector3::FORWARD * movementSpeed * strength);
+        rigidBody_->ApplyTorque(rotation * Vector3::RIGHT * movementSpeed * strength);
+        if (!onGround_) {
+            rigidBody_->ApplyForce(rotation * Vector3::FORWARD * movementSpeed * strength);
         }
     }
     if (controls.IsDown(CTRL_BACK)) {
@@ -225,9 +225,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         if (controls.extraData_.Contains(backward)) {
             strength = controls.extraData_[backward].GetFloat();
         }
-        _rigidBody->ApplyTorque(rotation * Vector3::LEFT * movementSpeed * strength);
-        if (!_onGround) {
-            _rigidBody->ApplyForce(rotation * Vector3::BACK * movementSpeed * strength);
+        rigidBody_->ApplyTorque(rotation * Vector3::LEFT * movementSpeed * strength);
+        if (!onGround_) {
+            rigidBody_->ApplyForce(rotation * Vector3::BACK * movementSpeed * strength);
         }
     }
     if (controls.IsDown(CTRL_LEFT)) {
@@ -236,9 +236,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         if (controls.extraData_.Contains(left)) {
             strength = controls.extraData_[left].GetFloat();
         }
-        _rigidBody->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed * strength);
-        if (!_onGround) {
-            _rigidBody->ApplyForce(rotation * Vector3::LEFT * movementSpeed * strength);
+        rigidBody_->ApplyTorque(rotation * Vector3::FORWARD * movementSpeed * strength);
+        if (!onGround_) {
+            rigidBody_->ApplyForce(rotation * Vector3::LEFT * movementSpeed * strength);
         }
     }
     if (controls.IsDown(CTRL_RIGHT)) {
@@ -247,17 +247,17 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         if (controls.extraData_.Contains(right)) {
             strength = controls.extraData_[right].GetFloat();
         }
-        _rigidBody->ApplyTorque(rotation * Vector3::BACK * movementSpeed * strength);
-        if (!_onGround) {
-            _rigidBody->ApplyForce(rotation * Vector3::RIGHT * movementSpeed * strength);
+        rigidBody_->ApplyTorque(rotation * Vector3::BACK * movementSpeed * strength);
+        if (!onGround_) {
+            rigidBody_->ApplyForce(rotation * Vector3::RIGHT * movementSpeed * strength);
         }
     }
-    if (controls.IsPressed(CTRL_JUMP, _controls) && _onGround) {
-        _rigidBody->ApplyImpulse(Vector3::UP * JUMP_FORCE);
+    if (controls.IsPressed(CTRL_JUMP, controls_) && onGround_) {
+        rigidBody_->ApplyImpulse(Vector3::UP * JUMP_FORCE);
     }
 
-    _controls = controls;
-    _onGround = false;
+    controls_ = controls;
+    onGround_ = false;
 }
 
 void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
@@ -275,29 +275,29 @@ void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
         /*float contactImpulse = */contacts.ReadFloat();
 
         // If contact is below node center and pointing up, assume it's a ground contact
-        if (contactPosition.y_ < (_node->GetPosition().y_ + 1.0f))
+        if (contactPosition.y_ < (node_->GetPosition().y_ + 1.0f))
         {
             float level = contactNormal.y_;
             if (level > 0.75)
-                _onGround = true;
+                onGround_ = true;
         }
     }
 }
 
 void Player::SetClientConnection(Connection* connection)
 {
-    _connection = connection;
+    connection_ = connection;
 }
 
 void Player::SetCameraTarget(Node* target)
 {
-    _cameraTarget = target;
+    cameraTarget_ = target;
 }
 
 Node* Player::GetCameraTarget()
 {
-    if (_cameraTarget) {
-        return _cameraTarget;
+    if (cameraTarget_) {
+        return cameraTarget_;
     }
 
     return GetNode();
@@ -305,23 +305,23 @@ Node* Player::GetCameraTarget()
 
 bool Player::IsCameraTargetSet()
 {
-    return _cameraTarget && _cameraTarget != _node;
+    return cameraTarget_ && cameraTarget_ != node_;
 }
 
 void Player::SetCameraDistance(float distance)
 {
-    _cameraDistance = distance;
+    cameraDistance_ = distance;
 }
 
 float Player::GetCameraDistance()
 {
-    return _cameraDistance;
+    return cameraDistance_;
 }
 
 void Player::SetName(const String& name)
 {
-    if (_node) {
-        _node->GetOrCreateComponent<PlayerState>()->SetPlayerName(name);
+    if (node_) {
+        node_->GetOrCreateComponent<PlayerState>()->SetPlayerName(name);
     }
 }
 
@@ -331,7 +331,7 @@ void Player::HandlePredictPlayerPosition(StringHash eventType, VariantMap& event
     String name = eventData[P_NAME].GetString();
     Node* node = static_cast<Node*>(eventData[P_SERIALIZABLE].GetPtr());
     Vector3 position = eventData[P_VALUE].GetVector3();
-//    _node->SetWorldPosition(position);
+//    node_->SetWorldPosition(position);
 //    URHO3D_LOGINFOF("HandlePredictPlayerPosition %s", (position - node->GetPosition()).ToString().CString());
     const AttributeInfo& attr = node->GetAttributes()->At(eventData[P_INDEX].GetInt());
     node->OnSetAttribute(attr, eventData[P_VALUE]);
@@ -339,5 +339,5 @@ void Player::HandlePredictPlayerPosition(StringHash eventType, VariantMap& event
 
 void Player::SetSpawnPoint(Vector3 position)
 {
-    _spawnPoint = position;
+    spawnPoint_ = position;
 }

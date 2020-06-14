@@ -21,6 +21,6 @@ namespace Levels {
 
         void CreateUI();
 
-        Timer _timer;
+        Timer timer_;
     };
 }

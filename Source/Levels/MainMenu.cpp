@@ -61,10 +61,10 @@ void MainMenu::Init()
 void MainMenu::CreateScene()
 {
     // Create a simple background scene for the menu
-    _scene = new Scene(context_);
-    _scene->CreateComponent<Octree>();
+    scene_ = new Scene(context_);
+    scene_->CreateComponent<Octree>();
     auto xmlFile = GetSubsystem<ResourceCache>()->GetResource<XMLFile>("Scenes/Menu.xml");
-    _scene->LoadXML(xmlFile->GetRoot());
+    scene_->LoadXML(xmlFile->GetRoot());
 
     InitCamera();
 
@@ -74,7 +74,7 @@ void MainMenu::CreateScene()
 
 #ifdef URHO3D_ANGELSCRIPT
     if (GetSubsystem<Script>()) {
-        GetSubsystem<Script>()->SetDefaultScene(_scene);
+        GetSubsystem<Script>()->SetDefaultScene(scene_);
     }
 #endif
 }
@@ -88,10 +88,10 @@ void MainMenu::InitCamera()
         return;
     }
 
-    _cameraRotateNode = _scene->CreateChild("CameraRotate");
-    _cameraRotateNode->AddChild(_cameras[0]);
-    _cameras[0]->SetPosition(Vector3(1, 2, 1));
-    _cameras[0]->LookAt(Vector3(0, 0, 0));
+    cameraRotateNode_ = scene_->CreateChild("CameraRotate");
+    cameraRotateNode_->AddChild(cameras_[0]);
+    cameras_[0]->SetPosition(Vector3(1, 2, 1));
+    cameras_[0]->LookAt(Vector3(0, 0, 0));
 }
 
 void MainMenu::SubscribeToEvents()
@@ -109,27 +109,27 @@ void MainMenu::CreateUI()
         input->SetMouseVisible(true);
     }
 
-    if (_data.Contains("Message")) {
+    if (data_.Contains("Message")) {
         auto* localization = GetSubsystem<Localization>();
 
         VariantMap& data = GetEventDataMap();
         data["Title"] = localization->Get("WARNING");
-        data["Message"] = _data["Message"].GetString();
+        data["Message"] = data_["Message"].GetString();
         data["Name"] = "PopupMessageWindow";
-        data["Type"] = _data.Contains("Type") ? _data["Type"].GetString() : "warning";
+        data["Type"] = data_.Contains("Type") ? data_["Type"].GetString() : "warning";
         data["ClosePrevious"] = true;
         SendEvent(E_OPEN_WINDOW, data);
     }
     auto* localization = GetSubsystem<Localization>();
 
-    _buttonsContainer = GetSubsystem<UI>()->GetRoot()->CreateChild<UIElement>();
-    _buttonsContainer->SetFixedWidth(300);
-    _buttonsContainer->SetLayout(LM_VERTICAL, 10);
-    _buttonsContainer->SetAlignment(HA_RIGHT, VA_BOTTOM);
-    _buttonsContainer->SetPosition(-10, -10);
+    buttonsContainer_ = GetSubsystem<UI>()->GetRoot()->CreateChild<UIElement>();
+    buttonsContainer_->SetFixedWidth(300);
+    buttonsContainer_->SetLayout(LM_VERTICAL, 10);
+    buttonsContainer_->SetAlignment(HA_RIGHT, VA_BOTTOM);
+    buttonsContainer_->SetPosition(-10, -10);
 
-    _newGameButton = CreateButton(localization->Get("NEW_GAME"));
-    SubscribeToEvent(_newGameButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    newGameButton_ = CreateButton(localization->Get("NEW_GAME"));
+    SubscribeToEvent(newGameButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "NewGameSettingsWindow";
         SendEvent(E_OPEN_WINDOW, data);
@@ -141,38 +141,38 @@ void MainMenu::CreateUI()
         VariantMap item = (*it).second_.GetVariantMap();
         SharedPtr<Button> button(CreateButton(item["Name"].GetString()));
         button->SetVar("EventToCall", item["Event"].GetString());
-        _dynamicButtons.Push(button);
-        SubscribeToEvent(_dynamicButtons.Back(), E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        dynamicButtons_.Push(button);
+        SubscribeToEvent(dynamicButtons_.Back(), E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
             using namespace Released;
             Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
             SendEvent(button->GetVar("EventToCall").GetString());
         });
     }
 
-    _settingsButton = CreateButton(localization->Get("SETTINGS"));
-    SubscribeToEvent(_settingsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    settingsButton_ = CreateButton(localization->Get("SETTINGS"));
+    SubscribeToEvent(settingsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "SettingsWindow";
         SendEvent(E_OPEN_WINDOW, data);
     });
 
-    _achievementsButton = CreateButton(localization->Get("ACHIEVEMENTS"));
-    SubscribeToEvent(_achievementsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    achievementsButton_ = CreateButton(localization->Get("ACHIEVEMENTS"));
+    SubscribeToEvent(achievementsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "AchievementsWindow";
         SendEvent(E_OPEN_WINDOW, data);
     });
 
-    _creditsButton = CreateButton(localization->Get("CREDITS"));
-    SubscribeToEvent(_creditsButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    creditsButton_ = CreateButton(localization->Get("CREDITS"));
+    SubscribeToEvent(creditsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "Credits";
         SendEvent(E_SET_LEVEL, data);
     });
 
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-    _exitButton = CreateButton(localization->Get("EXIT"));
-    SubscribeToEvent(_exitButton, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+    exitButton_ = CreateButton(localization->Get("EXIT"));
+    SubscribeToEvent(exitButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
         VariantMap& data = GetEventDataMap();
         data["Name"] = "QuitConfirmationWindow";
         SendEvent(E_OPEN_WINDOW, data);
@@ -196,7 +196,7 @@ Button* MainMenu::CreateButton(const String& text)
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
 
-    auto* button = _buttonsContainer->CreateChild<Button>();
+    auto* button = buttonsContainer_->CreateChild<Button>();
     button->SetStyleAuto();
     button->SetFixedHeight(50);
     button->SetFocusMode(FM_FOCUSABLE);
@@ -223,8 +223,8 @@ void MainMenu::HandleUpdate(StringHash eventType, VariantMap& eventData)
     elapsedTime += timestep;
 
     float pos = 2.0 + Sin(elapsedTime * 20.0) + 1.0;
-    _cameras[0]->SetPosition(Vector3(pos, pos, pos));
-    _cameras[0]->LookAt(Vector3(0, 0, 0));
+    cameras_[0]->SetPosition(Vector3(pos, pos, pos));
+    cameras_[0]->LookAt(Vector3(0, 0, 0));
 
-    _cameraRotateNode->Yaw(timestep * 10);
+    cameraRotateNode_->Yaw(timestep * 10);
 }

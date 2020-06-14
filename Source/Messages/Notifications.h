@@ -48,10 +48,10 @@ private:
     /**
      * List of all active messages
      */
-    Vector<SharedPtr<UIElement>> _messages;
-    SharedPtr<ObjectAnimation> notificationAnimation;
-    SharedPtr<ValueAnimation> positionAnimation;
-    SharedPtr<ValueAnimation> opacityAnimation;
-    List<NotificationData> _messageQueue;
-    Timer _timer;
+    Vector<SharedPtr<UIElement>> messages_;
+    SharedPtr<ObjectAnimation> notificationAnimation_;
+    SharedPtr<ValueAnimation> positionAnimation_;
+    SharedPtr<ValueAnimation> opacityAnimation_;
+    List<NotificationData> messageQueue_;
+    Timer timer_;
 };

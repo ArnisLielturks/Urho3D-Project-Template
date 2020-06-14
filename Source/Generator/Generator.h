@@ -18,7 +18,7 @@ public:
 
     Image* GenerateImage(double frequency, int octaves, int seed);
 
-    Image* GetImage() const { return _generatedImage; };
+    Image* GetImage() const { return generatedImage_; };
 
     void Save();
 
@@ -28,5 +28,5 @@ private:
      */
     void SubscribeToEvents();
 
-    SharedPtr<Image> _generatedImage;
+    SharedPtr<Image> generatedImage_;
 };

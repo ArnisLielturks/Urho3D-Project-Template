@@ -42,6 +42,7 @@ void PlayerState::OnNodeSet(Node* node)
         auto text3D = label_->CreateComponent<Text3D>();
         text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
         text3D->SetColor(Color::GRAY);
+        text3D->SetViewMask(VIEW_MASK_GUI);
         text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
         text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
 //    text3D->SetViewMask(~(1 << _controllerId));

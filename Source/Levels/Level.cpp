@@ -13,9 +13,11 @@
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Engine/Engine.h>
-#include <Urho3D/Graphics/StaticModel.h>
-#include <Urho3D/Graphics/CustomGeometry.h>
 #include <Urho3D/Graphics/Model.h>
+#include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Camera.h>
+#include <Urho3D/Graphics/Graphics.h>
+
 #include "../Generator/Generator.h"
 #include "Level.h"
 #include "../CustomEvents.h"
@@ -33,7 +35,7 @@
 #include "../Audio/AudioEvents.h"
 #include "../NetworkEvents.h"
 #include "../SceneManager.h"
-#include "../Generator/PerlinNoise.h"
+#include "Voxel/VoxelWorld.h"
 
 using namespace Levels;
 using namespace ConsoleHandlerEvents;
@@ -55,12 +57,18 @@ Level::Level(Context* context) :
 Level::~Level()
 {
     StopAllAudio();
+    if (GetSubsystem<VoxelWorld>()) {
+        context_->RemoveSubsystem<VoxelWorld>();
+    }
 }
 
 void Level::RegisterObject(Context* context)
 {
     context->RegisterFactory<Level>();
     Player::RegisterObject(context);
+
+    VoxelWorld::RegisterObject(context);
+    Chunk::RegisterObject(context);
 }
 
 void Level::Init()
@@ -93,6 +101,8 @@ void Level::Init()
 
     // Create the UI content
     CreateUI();
+
+    CreateVoxelWorld();
 
     if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Terrain.xml") {
         auto cache = GetSubsystem<ResourceCache>();
@@ -134,349 +144,25 @@ void Level::Init()
     }
 
     if (!GetSubsystem<Network>()->GetServerConnection()) {
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 0; i++) {
             players_[100 + i] = CreatePlayer(100 + i, false, "Bot " + String(100 + i));
             URHO3D_LOGINFO("Bot created");
         }
     }
 
-    GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
-
-    CreateStuff();
+//    GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
 }
 
-const int SIZE = 16;
-struct Chunk {
-    int data[SIZE][SIZE][SIZE];
-};
-
-bool haveNeighborLeft(Chunk* chunk, int x, int y, int z) {
-    if (x > 0) {
-        if (chunk->data[x - 1][y][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborRight(Chunk* chunk, int x, int y, int z) {
-    if (x < SIZE - 1) {
-        if (chunk->data[x + 1][y][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborTop(Chunk* chunk, int x, int y, int z) {
-    if (y < SIZE - 1) {
-        if (chunk->data[x][y + 1][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborBottom(Chunk* chunk, int x, int y, int z) {
-    if (y > 0) {
-        if (chunk->data[x][y - 1][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborBack(Chunk* chunk, int x, int y, int z) {
-    if (z < SIZE - 1) {
-        if (chunk->data[x][y][z + 1] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborFront(Chunk* chunk, int x, int y, int z) {
-    if (z > 0) {
-        if (chunk->data[x][y][z - 1] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void Level::CreateStuff()
+void Level::CreateVoxelWorld()
 {
-    Chunk chunk;
-    PerlinNoise perlin(1);
-    float frequency = 10;
-    float octaves = 2;
-    for (int x = 0; x < SIZE; ++x) {
-        for (int z = 0; z < SIZE; z++) {
-            float dx = x / frequency;
-            float dy = z / frequency;
-            double result = perlin.octaveNoise(dx, dy, octaves);
-            int y = result * SIZE;
-            for (int i = 0; i < SIZE; i++) {
-                chunk.data[x][i][z] = (i <= y) ? 1 : 0;
-            }
-        }
+    if (!GetSubsystem<VoxelWorld>()) {
+        context_->RegisterSubsystem(new VoxelWorld(context_));
     }
-
-    geometry_ = new CustomGeometry(context_);
-    geometry_->BeginGeometry(0, TRIANGLE_LIST);
-    geometry_->SetNumGeometries(1);
-
-    auto cache = GetSubsystem<ResourceCache>();
-
-    for (int x = 0; x < SIZE; ++x) {
-        for (int y = 0; y < SIZE; ++y) {
-            for (int z = 0; z < SIZE; ++z) {
-                if (chunk.data[x][y][z] > 0) {
-//                    Node *test = scene_->CreateChild("Test");
-//                    test->SetScale(1.0f);
-//                    test->SetPosition(Vector3(x, y, z));
-//                    StaticModel* object = test->CreateComponent<StaticModel>();
-//                    object->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
-//                    object->SetMaterial(cache->GetResource<Material>("Materials/Box.xml"));
-                    if (!haveNeighborTop(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::UP);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::UP);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::UP);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::UP);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::UP);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::UP);
-                    }
-                    if (!haveNeighborBottom(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                    }
-                    if (!haveNeighborLeft(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                    }
-                    if (!haveNeighborRight(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                    }
-                    if (!haveNeighborFront(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, -0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                    }
-                    if (!haveNeighborBack(&chunk, x, y, z)) {
-                        Vector3 position(x, y, z);
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-
-                        geometry_->DefineVertex(position + Vector3(-0.5, 0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-
-                        geometry_->DefineVertex(position + Vector3(0.5, -0.5, 0.5));
-                        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-                        geometry_->DefineNormal(Vector3::BACK);
-                    }
-                }
-            }
-        }
-    }
-//        }
-//    }
-
-//    for (int i = 0; i < 6; i++) {
-
-//        geometry_->DefineVertex(Vector3(-0.5, 0.5, -0.5));
-//        geometry_->DefineTexCoord(Vector2(0.0, 0.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//
-//        geometry_->DefineVertex(Vector3(-0.5, 0.5, 0.5));
-//        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//
-//        geometry_->DefineVertex(Vector3(0.5, 0.5, -0.5));
-//        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//
-//        geometry_->DefineVertex(Vector3(-0.5, 0.5, 0.5));
-//        geometry_->DefineTexCoord(Vector2(0.0, 1.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//
-//        geometry_->DefineVertex(Vector3(0.5, 0.5, 0.5));
-//        geometry_->DefineTexCoord(Vector2(1.0, 1.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//
-//        geometry_->DefineVertex(Vector3(0.5, 0.5, -0.5));
-//        geometry_->DefineTexCoord(Vector2(1.0, 0.0));
-//        geometry_->DefineNormal(Vector3::UP);
-//    }
-
-    //LEFT
-
-
-    geometry_->Commit();
-    geometry_->GetLodGeometry(0, 0);
-
-    Node *test = scene_->CreateChild("Test");
-    test->SetScale(1.0f);
-    test->SetPosition(Vector3(0.0f, 0.3, 0.0f));
-    StaticModel* object = test->CreateComponent<StaticModel>();
-
-    Model* model = new Model(context_);
-    model->SetNumGeometries(1);
-    model->SetGeometry(0, 0, geometry_->GetLodGeometry(0, 0));
-
-    object->SetModel(model);
-    object->SetMaterial(cache->GetResource<Material>("Materials/Ball.xml"));
-
-    auto *body = test->CreateComponent<RigidBody>();
-    body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-    auto *shape = test->CreateComponent<CollisionShape>();
-    shape->SetTriangleMesh(object->GetModel(), 0);
 }
 
 SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const String& name, int nodeID)
 {
     SharedPtr<Player> newPlayer(new Player(context_));
-    if (nodeID > 0) {
-        newPlayer->FindNode(scene_, nodeID);
-    } else {
-        newPlayer->CreateNode(scene_, controllerId, terrain_);
-    }
-    newPlayer->SetControllable(controllable);
-    newPlayer->SetControllerId(controllerId);
-    if (!name.Empty()) {
-        newPlayer->SetName(name);
-    }
 
     auto mapInfo = GetSubsystem<SceneManager>()->GetCurrentMapInfo();
     if (mapInfo) {
@@ -493,6 +179,18 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
         }
     }
 
+    if (nodeID > 0) {
+        newPlayer->FindNode(scene_, nodeID);
+    } else {
+        newPlayer->CreateNode(scene_, controllerId, terrain_);
+    }
+    newPlayer->SetControllable(controllable);
+    newPlayer->SetControllerId(controllerId);
+    if (!name.Empty()) {
+        newPlayer->SetName(name);
+    }
+
+    GetSubsystem<VoxelWorld>()->AddObserver(newPlayer->GetNode());
     return newPlayer;
 }
 
@@ -542,6 +240,7 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(Level, HandleKeyDown));
     SubscribeToEvent(E_KEYUP, URHO3D_HANDLER(Level, HandleKeyUp));
     SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Level, HandlePostRenderUpdate));
+    SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Level, HandleMappedControlPressed));
 
     SubscribeToEvent(E_CLIENTCONNECTED, URHO3D_HANDLER(Level, HandleClientConnected));
     SubscribeToEvent(E_CLIENTDISCONNECTED, URHO3D_HANDLER(Level, HandleClientDisconnected));
@@ -663,6 +362,7 @@ void Level::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
     }
     scene_->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
     scene_->GetComponent<PhysicsWorld>()->SetDebugRenderer(scene_->GetComponent<DebugRenderer>());
+//    scene_->GetComponent<Octree>()->DrawDebugGeometry(scene_->GetComponent<DebugRenderer>(), true);
 }
 
 void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
@@ -828,5 +528,71 @@ void Level::HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventDat
     if (players_.Contains(playerId)) {
         players_[playerId]->SetCameraTarget(targetNode);
         players_[playerId]->SetCameraDistance(cameraDistance);
+    }
+}
+
+bool Level::RaycastFromCamera(Camera* camera, float maxDistance, Vector3& hitPos, Vector3& hitNormal, Drawable*& hitDrawable) {
+    hitDrawable = nullptr;
+
+    UI* ui = GetSubsystem<UI>();
+    Input* input = GetSubsystem<Input>();
+    IntVector2 pos = ui->GetCursorPosition();
+    // Check the cursor is visible and there is no UI element in front of the cursor
+    if (input->IsMouseVisible() || ui->GetElementAt(pos, true))
+        return false;
+
+    Graphics* graphics = GetSubsystem<Graphics>();
+    Ray cameraRay = camera->GetScreenRay((float)pos.x_ / graphics->GetWidth(), (float)pos.y_ / graphics->GetHeight());
+    // Pick only geometry objects, not eg. zones or lights, only get the first (closest) hit
+    PODVector<RayQueryResult> results;
+    RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY, VIEW_MASK_CHUNK);
+    scene_->GetComponent<Octree>()->RaycastSingle(query);
+    if (results.Size()) {
+        RayQueryResult& result = results[0];
+        hitPos = result.position_;
+        hitNormal = result.normal_;
+        hitDrawable = result.drawable_;
+        return true;
+    }
+
+    return false;
+}
+
+void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MappedControlPressed;
+    int action = eventData[P_ACTION].GetInt();
+    if (action == CTRL_ACTION) {
+        int controllerId = eventData[P_CONTROLLER].GetInt();
+        if (cameras_.Contains(controllerId)) {
+            Camera* camera = cameras_[controllerId]->GetComponent<Camera>();
+            Vector3 hitPosition;
+            Vector3 hitNormal;
+            Drawable* hitDrawable;
+            bool hit = RaycastFromCamera(camera, 30.0f, hitPosition, hitNormal, hitDrawable);
+            if (hit) {
+                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
+                VariantMap& data = GetEventDataMap();
+                data["Position"] = hitPosition - hitNormal * 0.5f;
+                data["ControllerId"] = eventData[P_CONTROLLER];
+                hitDrawable->GetNode()->SendEvent("ChunkHit", data);
+            }
+        }
+    } else if (action == CTRL_SECONDARY) {
+        int controllerId = eventData[P_CONTROLLER].GetInt();
+        if (cameras_.Contains(controllerId)) {
+            Camera* camera = cameras_[controllerId]->GetComponent<Camera>();
+            Vector3 hitPosition;
+            Vector3 hitNormal;
+            Drawable* hitDrawable;
+            bool hit = RaycastFromCamera(camera, 30.0f, hitPosition, hitNormal, hitDrawable);
+            if (hit) {
+//                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString());
+                VariantMap& data = GetEventDataMap();
+                data["Position"] = hitPosition + hitNormal * 0.5f;
+                data["ControllerId"] = eventData[P_CONTROLLER];
+                hitDrawable->GetNode()->SendEvent("ChunkAdd", data);
+            }
+        }
     }
 }

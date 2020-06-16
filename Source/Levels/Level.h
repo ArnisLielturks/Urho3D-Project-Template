@@ -36,7 +36,7 @@ namespace Levels {
         void StartAudio();
         void StopAllAudio();
 
-        void CreateStuff();
+        void CreateVoxelWorld();
 
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);
@@ -51,6 +51,10 @@ namespace Levels {
         void HandleClientDisconnected(StringHash eventType, VariantMap& eventData);
         void HandleServerConnected(StringHash eventType, VariantMap& eventData);
         void HandleServerDisconnected(StringHash eventType, VariantMap& eventData);
+        void HandleMappedControlPressed(StringHash eventType, VariantMap& eventData);
+
+        bool RaycastFromCamera(Camera* camera, float maxDistance, Vector3& hitPos, Vector3& hitNormal, Drawable*& hitDrawable);
+
         void ShowPauseMenu();
         void PauseMenuHidden();
 
@@ -64,7 +68,5 @@ namespace Levels {
         HashMap<Connection*, SharedPtr<Player>> remotePlayers_;
 
         SharedPtr<Terrain> terrain_;
-
-        CustomGeometry* geometry_;
     };
 }

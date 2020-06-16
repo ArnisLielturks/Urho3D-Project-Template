@@ -15,7 +15,7 @@ class Player : public Object
 
 public:
     explicit Player(Context* context);
-    ~Player();
+    virtual ~Player();
 
     static void RegisterObject(Context* context);
 
@@ -38,7 +38,7 @@ public:
     /**
      * Get created player node
      */
-    Node* GetNode();
+    SharedPtr<Node> GetNode();
 
     /**
      * Set if this instance can be controleld with the user input
@@ -74,7 +74,7 @@ private:
     SharedPtr<Node> node_;
 
     WeakPtr<Node> cameraTarget_;
-    float cameraDistance_{1.5f};
+    float cameraDistance_{0.0f};
     
     /**
      * Controller ID
@@ -98,4 +98,6 @@ private:
     bool isControlled_{false};
 
     Vector3 spawnPoint_;
+
+    SharedPtr<Node> noclipNode_;
 };

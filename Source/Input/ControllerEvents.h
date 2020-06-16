@@ -16,11 +16,13 @@ namespace ControllerEvents {
     URHO3D_EVENT(E_MAPPED_CONTROL_PRESSED, MappedControlPressed)
     {
         URHO3D_PARAM(P_ACTION, Action); // int
+        URHO3D_PARAM(P_CONTROLLER, Controller); // int
     }
 
     URHO3D_EVENT(E_MAPPED_CONTROL_RELEASED, MappedControlReleased)
     {
         URHO3D_PARAM(P_ACTION, Action); // int
+        URHO3D_PARAM(P_CONTROLLER, Controller); // int
     }
 
     // controller/joystick removed

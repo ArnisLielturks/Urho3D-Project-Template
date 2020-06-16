@@ -14,7 +14,6 @@ class GameObject : ScriptObject
         {
             duration -= timeStep;
             if (duration <= 0) {
-                log.Info("Removing particle effect");
                 node.Remove();
             }
         }

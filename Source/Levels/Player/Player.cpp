@@ -17,6 +17,7 @@
 #include "../../BehaviourTree/BehaviourTree.h"
 #include "PlayerState.h"
 #include "../../Console/ConsoleHandlerEvents.h"
+#include "../Voxel/VoxelWorld.h"
 
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
@@ -33,6 +34,9 @@ Player::Player(Context* context):
 Player::~Player()
 {
     if (node_) {
+        if (GetSubsystem<VoxelWorld>()) {
+            GetSubsystem<VoxelWorld>()->RemoveObserver(node_);
+        }
         node_->Remove();
     }
 }
@@ -76,6 +80,41 @@ void Player::RegisterConsoleCommands()
         }
         JUMP_FORCE = ToFloat(params[1]);
     });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "noclip",
+            ConsoleCommandAdd::P_EVENT, "#noclip",
+            ConsoleCommandAdd::P_DESCRIPTION, "Enable/Disable noclip mode",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#noclip", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 1) {
+            URHO3D_LOGERROR("This command doesn't have any arguments!");
+            return;
+        }
+        if (noclipNode_) {
+            SetCameraDistance(1.5f);
+            SetCameraTarget(nullptr);
+            GetSubsystem<VoxelWorld>()->RemoveObserver(noclipNode_);
+            noclipNode_->Remove();
+            noclipNode_.Reset();
+        } else {
+            noclipNode_ = node_->GetScene()->CreateChild("Noclip", LOCAL);
+            noclipNode_->SetWorldPosition(node_->GetWorldPosition());
+            SetCameraTarget(noclipNode_);
+            SetCameraDistance(0.0f);
+
+            GetSubsystem<VoxelWorld>()->AddObserver(noclipNode_);
+
+            // Clear server connection controls
+            auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
+            if (serverConnection) {
+                serverConnection->SetControls(Controls());
+            }
+        }
+    });
 }
 
 void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
@@ -92,12 +131,13 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     node_->SetVar("Player", controllerId_);
 
     node_->SetPosition(Vector3(0, 2, 0));
-    node_->SetScale(0.5f);
+    node_->SetScale(1.0f);
 
     auto* ballObject = node_->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
     ballObject->SetMaterial(cache->GetResource<Material>("Materials/Ball.xml"));
     ballObject->SetCastShadows(true);
+    ballObject->SetViewMask(VIEW_MASK_PLAYER);
 
     // Create the physics components
     rigidBody_ = node_->CreateComponent<RigidBody>(LOCAL);
@@ -106,7 +146,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     rigidBody_->SetLinearDamping(0.8f);
     rigidBody_->SetAngularDamping(0.8f);
-    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND);
+    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
 
     auto* shape = node_->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);
@@ -138,6 +178,8 @@ void Player::ResetPosition()
 
     GetNode()->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
     GetNode()->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
+
+    URHO3D_LOGINFO("Reset position " + spawnPoint_.ToString());
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -145,9 +187,9 @@ void Player::SetControllerId(unsigned int id)
     controllerId_ = id;
 }
 
-Node* Player::GetNode()
+SharedPtr<Node> Player::GetNode()
 {
-    return node_.Get();
+    return node_;
 }
 
 void Player::SetControllable(bool value)
@@ -170,24 +212,6 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
     auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
-    if (serverConnection) {
-        if (IsCameraTargetSet()) {
-            // We are not following our player node, so we must not control it
-            serverConnection->SetControls(Controls());
-        } else {
-            serverConnection->SetControls(GetSubsystem<ControllerInput>()->GetControls(controllerId_));
-        }
-        return;
-    }
-
-    if (node_->GetPosition().y_ < -20) {
-        ResetPosition();
-
-        VariantMap &data = GetEventDataMap();
-        data["Player"] = controllerId_;
-        SendEvent("FallOffTheMap", data);
-        node_->GetComponent<PlayerState>()->AddScore(-10);
-    }
 
     Controls controls;
     float movementSpeed = MOVE_TORQUE;
@@ -200,6 +224,40 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         }
     } else {
         controls = GetNode()->GetComponent<BehaviourTree>()->GetControls();
+    }
+
+    if (noclipNode_) {
+        noclipNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+        // Movement speed as world units per second
+        const float MOVE_SPEED = 10.0f;
+        // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
+        if (controls.IsDown(CTRL_FORWARD))
+            noclipNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_BACK))
+            noclipNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_LEFT))
+            noclipNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_RIGHT))
+            noclipNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+        return;
+    }
+    if (serverConnection) {
+        if (IsCameraTargetSet()) {
+            // We are not following our player node, so we must not control it
+            serverConnection->SetControls(Controls());
+        } else {
+            serverConnection->SetControls(controls);
+        }
+        return;
+    }
+
+    if (node_->GetPosition().y_ < -SIZE_Y * 1.5) {
+        ResetPosition();
+
+        VariantMap &data = GetEventDataMap();
+        data["Player"] = controllerId_;
+        SendEvent("FallOffTheMap", data);
+        node_->GetComponent<PlayerState>()->AddScore(-10);
     }
 
     if (controls.IsDown(CTRL_SPRINT)) {
@@ -305,7 +363,7 @@ Node* Player::GetCameraTarget()
 
 bool Player::IsCameraTargetSet()
 {
-    return cameraTarget_ && cameraTarget_ != node_;
+    return cameraTarget_ && cameraTarget_ != node_ && !noclipNode_;
 }
 
 void Player::SetCameraDistance(float distance)

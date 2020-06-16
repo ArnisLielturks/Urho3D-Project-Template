@@ -3,6 +3,7 @@ Node@ ground = null;
 
 void Start()
 {
+    return;
     SubscribeToEvent("LoadGamemode", "HandleLoadGameMode");
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");

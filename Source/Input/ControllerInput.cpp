@@ -36,6 +36,7 @@ ControllerInput::ControllerInput(Context* context) :
     controlMapNames_[CTRL_RIGHT]    = "Strafe right";
     controlMapNames_[CTRL_JUMP]     = "Jump";
     controlMapNames_[CTRL_ACTION]   = "Primary action";
+    controlMapNames_[CTRL_SECONDARY] = "Secondary action";
     controlMapNames_[CTRL_SPRINT]   = "Sprint";
     controlMapNames_[CTRL_UP]       = "Move up";
     controlMapNames_[CTRL_SCREENSHOT] = "Take screenshot";
@@ -71,6 +72,8 @@ void ControllerInput::LoadConfig()
     inputHandlers_[ControllerType::KEYBOARD]->SetKeyToAction(KEY_D, CTRL_RIGHT);
     inputHandlers_[ControllerType::KEYBOARD]->SetKeyToAction(KEY_SPACE, CTRL_JUMP);
     inputHandlers_[ControllerType::KEYBOARD]->SetKeyToAction(KEY_LSHIFT, CTRL_SPRINT);
+    inputHandlers_[ControllerType::MOUSE]->SetKeyToAction(MOUSEB_LEFT, CTRL_ACTION);
+    inputHandlers_[ControllerType::MOUSE]->SetKeyToAction(MOUSEB_RIGHT, CTRL_SECONDARY);
 #endif
 
     for (auto it = controlMapNames_.Begin(); it != controlMapNames_.End(); ++it) {
@@ -350,11 +353,13 @@ void ControllerInput::SetActionState(int action, bool active, int index, float s
             using namespace MappedControlPressed;
             VariantMap &data = GetEventDataMap();
             data[P_ACTION] = action;
+            data[P_CONTROLLER] = index;
             SendEvent(E_MAPPED_CONTROL_PRESSED, data);
         } else {
             using namespace MappedControlReleased;
             VariantMap &data = GetEventDataMap();
             data[P_ACTION] = action;
+            data[P_CONTROLLER] = index;
             SendEvent(E_MAPPED_CONTROL_RELEASED, data);
         }
     }

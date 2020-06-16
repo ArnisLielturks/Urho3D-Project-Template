@@ -375,7 +375,7 @@ void SceneManager::LoadDefaultMaps()
     data[P_IMAGE] = "Textures/Box.png";
 
     StringVector commands;
-    commands.Push("ambient_light 0.1 0.1 0.1");
+    commands.Push("ambient_light 0.5 0.5 0.5");
     data[P_COMMANDS] = commands;
     SendEvent(E_ADD_MAP, data);
 }

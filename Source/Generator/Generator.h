@@ -20,6 +20,8 @@ public:
 
     Image* GetImage() const { return generatedImage_; };
 
+    void GenerateTextures();
+
     void Save();
 
 private:

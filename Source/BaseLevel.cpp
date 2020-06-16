@@ -385,7 +385,7 @@ void BaseLevel::CreateSingleCamera(int index, int totalCount, int controllerInde
     camera->SetNearClip(0.1f);
     camera->SetFov(GetGlobalVar("CameraFov").GetFloat());
     cameraNode->CreateComponent<SoundListener>();
-    camera->SetViewMask(1 << controllerIndex);
+//    camera->SetViewMask(1 << controllerIndex);
 
     //TODO only the last camera will be the sound listener
     GetSubsystem<Audio>()->SetListener(cameraNode->GetComponent<SoundListener>());

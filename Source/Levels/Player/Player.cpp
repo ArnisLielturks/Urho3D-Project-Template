@@ -95,18 +95,20 @@ void Player::RegisterConsoleCommands()
             return;
         }
         if (noclipNode_) {
-            SetCameraDistance(1.5f);
-            SetCameraTarget(nullptr);
-            GetSubsystem<VoxelWorld>()->RemoveObserver(noclipNode_);
+//            SetCameraDistance(1.5f);
+//            SetCameraTarget(nullptr);
+//            GetSubsystem<VoxelWorld>()->RemoveObserver(noclipNode_);
             noclipNode_->Remove();
             noclipNode_.Reset();
+            rigidBody_->SetLinearFactor(Vector3::ONE);
         } else {
             noclipNode_ = node_->GetScene()->CreateChild("Noclip", LOCAL);
             noclipNode_->SetWorldPosition(node_->GetWorldPosition());
-            SetCameraTarget(noclipNode_);
-            SetCameraDistance(0.0f);
+            rigidBody_->SetLinearFactor(Vector3::ZERO);
+//            SetCameraTarget(noclipNode_);
+//            SetCameraDistance(0.0f);
 
-            GetSubsystem<VoxelWorld>()->AddObserver(noclipNode_);
+//            GetSubsystem<VoxelWorld>()->AddObserver(noclipNode_);
 
             // Clear server connection controls
             auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
@@ -131,7 +133,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     node_->SetVar("Player", controllerId_);
 
     node_->SetPosition(Vector3(0, 2, 0));
-    node_->SetScale(1.0f);
+    node_->SetScale(0.9f);
 
     auto* ballObject = node_->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
@@ -178,8 +180,6 @@ void Player::ResetPosition()
 
     GetNode()->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
     GetNode()->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
-
-    URHO3D_LOGINFO("Reset position " + spawnPoint_.ToString());
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -227,18 +227,34 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     }
 
     if (noclipNode_) {
-        noclipNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+//        noclipNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
+//        // Movement speed as world units per second
+//        const float MOVE_SPEED = 10.0f;
+//        // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
+//        if (controls.IsDown(CTRL_FORWARD))
+//            noclipNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+//        if (controls.IsDown(CTRL_BACK))
+//            noclipNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+//        if (controls.IsDown(CTRL_LEFT))
+//            noclipNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+//        if (controls.IsDown(CTRL_RIGHT))
+//            noclipNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+        node_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
         // Movement speed as world units per second
-        const float MOVE_SPEED = 10.0f;
+        float MOVE_SPEED = 10.0f;
+        if (controls.IsDown(CTRL_SPRINT)) {
+            MOVE_SPEED *= 2;
+        }
         // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
         if (controls.IsDown(CTRL_FORWARD))
-            noclipNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+            node_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
         if (controls.IsDown(CTRL_BACK))
-            noclipNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+            node_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
         if (controls.IsDown(CTRL_LEFT))
-            noclipNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+            node_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
         if (controls.IsDown(CTRL_RIGHT))
-            noclipNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+            node_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+
         return;
     }
     if (serverConnection) {
@@ -251,14 +267,14 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         return;
     }
 
-    if (node_->GetPosition().y_ < -SIZE_Y * 1.5) {
-        ResetPosition();
-
-        VariantMap &data = GetEventDataMap();
-        data["Player"] = controllerId_;
-        SendEvent("FallOffTheMap", data);
-        node_->GetComponent<PlayerState>()->AddScore(-10);
-    }
+//    if (node_->GetPosition().y_ < -SIZE_Y * 1.5) {
+//        ResetPosition();
+//
+//        VariantMap &data = GetEventDataMap();
+//        data["Player"] = controllerId_;
+//        SendEvent("FallOffTheMap", data);
+//        node_->GetComponent<PlayerState>()->AddScore(-10);
+//    }
 
     if (controls.IsDown(CTRL_SPRINT)) {
         movementSpeed *= 2;

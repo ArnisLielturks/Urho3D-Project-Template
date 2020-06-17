@@ -102,7 +102,9 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    CreateVoxelWorld();
+    if (!GetSubsystem<Network>()->GetServerConnection()) {
+        CreateVoxelWorld();
+    }
 
     if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Terrain.xml") {
         auto cache = GetSubsystem<ResourceCache>();
@@ -190,7 +192,9 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
         newPlayer->SetName(name);
     }
 
-    GetSubsystem<VoxelWorld>()->AddObserver(newPlayer->GetNode());
+    if (GetSubsystem<VoxelWorld>()) {
+        GetSubsystem<VoxelWorld>()->AddObserver(newPlayer->GetNode());
+    }
     return newPlayer;
 }
 
@@ -518,7 +522,7 @@ void Level::HandlePlayerTargetChanged(StringHash eventType, VariantMap& eventDat
     using namespace PlayerEvents::SetPlayerCameraTarget;
     int playerId = eventData[P_ID].GetInt();
     Node* targetNode = nullptr;
-    float cameraDistance = 1.5f;
+    float cameraDistance = 0.0f;
     if (eventData.Contains(P_NODE)) {
         targetNode = static_cast<Node*>(eventData[P_NODE].GetPtr());
     }

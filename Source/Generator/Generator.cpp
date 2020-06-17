@@ -7,6 +7,7 @@
 #include "PerlinNoise.h"
 #include "../SceneManagerEvents.h"
 #include "../Console/ConsoleHandlerEvents.h"
+#include "../Levels/Voxel/Chunk.h"
 
 using namespace ConsoleHandlerEvents;
 
@@ -148,85 +149,50 @@ void Generator::Save()
 void Generator::GenerateTextures()
 {
     SharedPtr<Image> combined(new Image(context_));
-    // Dirt
-    SharedPtr<Image> dirt(new Image(context_));
-    dirt->LoadFile("Data/Textures/dirt.png");
-    dirt->SetSize(64 * 6, 64, 4);
-    for (int i = 0; i < 6; i++) {
-        Color color = Color::GREEN;
-        switch(i) {
-            // TOP
-            case 0:
-                color = Color(0.00,0.30,0.10);
-                break;
-            default:
-                color = Color(0.60,0.30,0.00);
-                break;
-        }
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
-                if (x < 4 || x >= 60 || y < 4 || y >= 60) {
-                    dirt->SetPixel(i * 64 + x, y, Color::BLACK);
-                } else {
-                    dirt->SetPixel(i * 64 + x, y, color);
+
+    struct TextureColors {
+        bool singleColor;
+        Color colors[6];
+    };
+    Vector<TextureColors> textures;
+    TextureColors stone;
+    stone.singleColor = true;
+    stone.colors[0] = Color(0.41,0.41,0.41);
+    textures.Push(stone);
+
+    TextureColors dirt;
+    dirt.singleColor = false;
+    dirt.colors[0] =  Color(0.00,0.30,0.10);
+    dirt.colors[1] = Color(0.60,0.30,0.00);
+    dirt.colors[2] = Color(0.60,0.30,0.00);
+    dirt.colors[3] = Color(0.60,0.30,0.00);
+    dirt.colors[4] = Color(0.60,0.30,0.00);
+    dirt.colors[5] = Color(0.60,0.30,0.00);
+    dirt.colors[6] = Color(0.60,0.30,0.00);
+    textures.Push(dirt);
+
+    TextureColors sand;
+    sand.singleColor = true;
+    sand.colors[0] = Color(0.93,0.79,0.69);
+    textures.Push(sand);
+
+    combined->SetSize(32 * 6, 32 * textures.Size(), 4);
+    int border = 2;
+    for (int t = 0; t < textures.Size(); t++) {
+        for (int i = 0; i < 6; i++) {
+            for (int x = 0; x < 32; x++) {
+                for (int y = 0; y < 32; y++) {
+                    if (x < border || x >= 32 - border || y < border || y >= 32 - border) {
+                        combined->SetPixel(i * 32 + x, t * 32 + y, Color::BLACK);
+                    } else {
+                        if (textures.At(t).singleColor) {
+                            combined->SetPixel(i * 32 + x, t * 32 + y, textures.At(t).colors[0]);
+                        } else {
+                            combined->SetPixel(i * 32 + x, t * 32 + y, textures.At(t).colors[i]);
+                        }
+                    }
                 }
             }
-        }
-    }
-    dirt->SaveFile("Data/Textures/dirt.png");
-
-    // Stone
-    SharedPtr<Image> stone(new Image(context_));
-    stone->LoadFile("Data/Textures/stone.png");
-    stone->SetSize(64 * 6, 64, 4);
-    for (int i = 0; i < 6; i++) {
-        Color color = Color(0.41,0.41,0.41);
-        color.a_ = 1.0f;
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
-                if (x < 4 || x >= 60 || y < 4 || y >= 60) {
-                    stone->SetPixel(i * 64 + x, y, Color::BLACK);
-                } else {
-                    stone->SetPixel(i * 64 + x, y, color);
-                }
-            }
-        }
-    }
-    stone->SaveFile("Data/Textures/stone.png");
-
-    // Stone
-    SharedPtr<Image> sand(new Image(context_));
-    sand->LoadFile("Data/Textures/sand.png");
-    sand->SetSize(64 * 6, 64, 4);
-    for (int i = 0; i < 6; i++) {
-        Color color = Color(0.93,0.79,0.69);
-        color.a_ = 1.0f;
-        for (int x = 0; x < 64; x++) {
-            for (int y = 0; y < 64; y++) {
-                if (x < 4 || x >= 60 || y < 4 || y >= 60) {
-                    sand->SetPixel(i * 64 + x, y, Color::BLACK);
-                } else {
-                    sand->SetPixel(i * 64 + x, y, color);
-                }
-            }
-        }
-    }
-    sand->SaveFile("Data/Textures/sand.png");
-
-    combined->SetSize(64 * 6, 64 * 3, 4);
-    for (int x = 0; x < dirt->GetWidth(); x++) {
-        for (int y = 0; y < dirt->GetHeight(); y++) {
-            combined->SetPixel(x, y, dirt->GetPixel(x, y));
-        }
-    }
-    for (int x = 0; x < stone->GetWidth(); x++) {
-        for (int y = 0; y < stone->GetHeight(); y++) {
-            combined->SetPixel(x, 64 + y, stone->GetPixel(x, y));
-        }
-    }
-    for (int x = 0; x < sand->GetWidth(); x++) {
-        for (int y = 0; y < sand->GetHeight(); y++) {
-            combined->SetPixel(x, 128 + y, sand->GetPixel(x, y));
         }
     }
     combined->SaveFile("Data/Textures/combined.png");

@@ -42,7 +42,7 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (!pendingChunks_.Empty() && updateTimer_.GetMSec(false) > 100) {
+    if (!pendingChunks_.Empty() && updateTimer_.GetMSec(false) > 10) {
         updateTimer_.Reset();
         CreateChunk(pendingChunks_.Front());
         pendingChunks_.PopFront();
@@ -64,12 +64,25 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
             }
         }
     }
+
+    if (cleanupTimer_.GetMSec(false) > 10) {
+        cleanupTimer_.Reset();
+        UnloadChunks();
+    }
 }
 
 void VoxelWorld::CreateChunk(const Vector3& position)
 {
     chunks_.Push(SharedPtr<Chunk>(new Chunk(context_)));
-    chunks_.Back()->Init(1, scene_, position);
+    ChunkType type;
+    if (position.y_ == -SIZE_Y) {
+        type = ChunkType::TERRAIN;
+    } else if (position.y_ > -SIZE_Y) {
+        type = ChunkType::SKY;
+    } else {
+        type = ChunkType::GROUND;
+    }
+    chunks_.Back()->Init(1, scene_, position, type);
 }
 
 Vector3 VoxelWorld::GetNodeToChunkPosition(Node* node)
@@ -102,15 +115,19 @@ void VoxelWorld::HandleChunkExited(StringHash eventType, VariantMap& eventData)
 
 }
 
-void VoxelWorld::LoadChunk(Vector3 position)
+void VoxelWorld::LoadChunk(Vector3 position, bool loadImmediately)
 {
-    position.y_ = -SIZE_Y - 2;
+//    position.y_ = -SIZE_Y;
     if (!IsChunkLoaded(position) && !IsChunkPending(position)) {
-        CreateChunk(position);
+        if (loadImmediately) {
+            CreateChunk(position);
+        } else {
+            pendingChunks_.Push(position);
+        }
         URHO3D_LOGINFO("Loading chunk" + position.ToString());
     }
     Vector<Vector3> positions;
-    // Same level
+
     positions.Push(Vector3(position + Vector3::LEFT * SIZE_X));
     positions.Push(Vector3(position + Vector3::RIGHT * SIZE_X));
     positions.Push(Vector3(position + Vector3::FORWARD * SIZE_Z));
@@ -122,33 +139,37 @@ void VoxelWorld::LoadChunk(Vector3 position)
     positions.Push(Vector3(position + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     // Up
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::RIGHT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y));
-//
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
-//
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y));
+
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
+
 //    // Down
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::RIGHT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y));
-//
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
-//    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y));
+
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     for (auto it = positions.Begin(); it != positions.End(); ++it) {
         if(!IsChunkLoaded((*it)) && !IsChunkPending((*it))) {
-            pendingChunks_.Push((*it));
             URHO3D_LOGINFO("Loading neighbor chunk " + (*it).ToString());
+            if (loadImmediately) {
+                CreateChunk((*it));
+            } else {
+                pendingChunks_.Push((*it));
+            }
         }
     }
 }
@@ -184,8 +205,7 @@ Vector3 VoxelWorld::GetWorldToChunkPosition(Vector3& position)
 {
     return Vector3(
             Floor(position.x_ / SIZE_X) * SIZE_X,
-//        Floor(position.y_ / SIZE_Y) * SIZE_Y,
-            -SIZE_Y - 2,
+        Floor(position.y_ / SIZE_Y) * SIZE_Y,
             Floor(position.z_ / SIZE_Z) * SIZE_Z
     );
 }
@@ -193,4 +213,22 @@ Vector3 VoxelWorld::GetWorldToChunkPosition(Vector3& position)
 void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
 {
     removeBlocks_.Push(position);
+}
+
+
+void VoxelWorld::UnloadChunks()
+{
+    if (chunks_.Size() < 5) {
+//        return;
+    }
+    float maxDistanceSquared = 50 * 50;
+    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
+        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
+            float distance = ((*obIt)->GetWorldPosition() - (*chIt)->GetPosition()).LengthSquared();
+            if (distance > maxDistanceSquared) {
+                chunks_.Erase(chIt);
+                return;
+            }
+        }
+    }
 }

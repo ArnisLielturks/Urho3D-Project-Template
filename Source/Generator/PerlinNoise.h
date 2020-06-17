@@ -36,12 +36,14 @@ public:
 
     void reseed(int seed)
     {
-        for (size_t i = 0; i < 256; ++i)
+        SetRandomSeed(seed);
+        for (size_t i = 0; i < 512; ++i)
         {
             randomNumbers[i] = static_cast<std::uint8_t>(i);
+            randomNumbers[i] = Random();
         }
 
-        std::shuffle(std::begin(randomNumbers), std::begin(randomNumbers) + 512, std::default_random_engine(seed));
+//        std::begin(randomNumbers), std::begin(randomNumbers) + 512, std::default_random_engine(seed);
     }
 
     double noise(double x) const
@@ -56,9 +58,9 @@ public:
 
     double noise(double x, double y, double z) const
     {
-        const int X = static_cast<int>(Floor(x)) & 255;
-        const int Y = static_cast<int>(Floor(y)) & 255;
-        const int Z = static_cast<int>(Floor(z)) & 255;
+        const int X = static_cast<int>(Floor(x)) & 512;
+        const int Y = static_cast<int>(Floor(y)) & 512;
+        const int Z = static_cast<int>(Floor(z)) & 512;
 
         x -= Floor(x);
         y -= Floor(y);

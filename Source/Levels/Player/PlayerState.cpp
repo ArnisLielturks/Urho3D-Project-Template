@@ -96,7 +96,6 @@ void PlayerState::HandlePlayerScoreAdd(StringHash eventType, VariantMap& eventDa
 
 void PlayerState::OnScoreChanged()
 {
-    URHO3D_LOGINFOF("Player %d Score %d", playerId_, score_);
     if (playerId_ >= 0) {
         VariantMap players = GetGlobalVar("Players").GetVariantMap();
         VariantMap playerData = players[String(GetPlayerID())].GetVariantMap();

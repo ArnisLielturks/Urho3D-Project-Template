@@ -373,6 +373,7 @@ void SceneManager::LoadDefaultMaps()
     data[P_NAME] = "Flatland";
     data[P_DESCRIPTION] = "Flat map where you could easily fall off";
     data[P_IMAGE] = "Textures/Box.png";
+    data[P_START_POINT] = Vector3(0, 1, 0);
 
     StringVector commands;
     commands.Push("ambient_light 0.5 0.5 0.5");

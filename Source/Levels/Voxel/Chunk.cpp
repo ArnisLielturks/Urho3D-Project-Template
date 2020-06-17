@@ -5,7 +5,6 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Physics/RigidBody.h>
-#include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Graphics/Octree.h>
@@ -14,140 +13,151 @@
 #include <Urho3D/Graphics/OctreeQuery.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Physics/PhysicsEvents.h>
+#include <Urho3D/Physics/PhysicsWorld.h>
+#include <Urho3D/Physics/CollisionShape.h>
 #include <Urho3D/UI/Text3D.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/Resource/JSONFile.h>
+#include <Urho3D/IO/FileSystem.h>
 #include "../../Generator/PerlinNoise.h"
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
+#include "../../Console/ConsoleHandlerEvents.h"
 
 using namespace VoxelEvents;
+using namespace ConsoleHandlerEvents;
+
+void SaveToFile(const WorkItem* item, unsigned threadIndex)
+{
+    Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
+    JSONFile file(chunk->context_);
+    JSONValue& root = file.GetRoot();
+    for (int x = 0; x < SIZE_X; ++x) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                root.Set(String(x) + "_" + String(y) + "_" + String(z), chunk->data[x][y][z]);
+            }
+        }
+    }
+    if(!chunk->GetSubsystem<FileSystem>()->DirExists("World")) {
+        chunk->GetSubsystem<FileSystem>()->CreateDir("World");
+    }
+    Vector3 position = chunk->position_;
+    file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_));
+}
 
 void GenerateMesh(const WorkItem* item, unsigned threadIndex)
 {
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
-    PerlinNoise perlin(chunk->seed_);
-    PerlinNoise perlin2(chunk->seed_ + 1);
-    float octaves = 8;
-    float frequency = 15.41f;
-    // Terrain
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int z = 0; z < SIZE_Z; z++) {
-            double dx = 0.001f + (chunk->position_.x_ + x) / frequency;
-            double dz = 0.001f + (chunk->position_.z_ + z) / frequency;
-            double result = perlin.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
-            result *= perlin2.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
-            int y = result * SIZE_Y;
-            for (int i = 0; i < SIZE_Y; i++) {
-                chunk->data[x][i][z] = (i == 0 || i <= y) ? 1 : 0;
+    Vector3 position = chunk->position_;
+
+    JSONFile file(chunk->context_);
+    JSONValue& root = file.GetRoot();
+    String filename = "World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_);
+    if(chunk->GetSubsystem<FileSystem>()->FileExists(filename)) {
+        file.LoadFile(filename);
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int y = 0; y < SIZE_Y; y++) {
+                for (int z = 0; z < SIZE_Z; z++) {
+                    chunk->data[x][y][z] = root[String(x) + "_" + String(y) + "_" + String(z)].GetInt();
+                }
             }
         }
-    }
+        URHO3D_LOGINFO("Loaded chunk from file");
+    } else {
 
-    octaves = 16;
-    frequency = 33.3f;
-    // Stone
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int y = 0; y < SIZE_Y; y++) {
+        PerlinNoise perlin(chunk->seed_);
+        PerlinNoise perlin2(chunk->seed_ + 1);
+        float octaves = 16;
+        float frequency = 55.33f;
+        float frequency2 = 222.11f;
+
+        // Terrain
+        for (int x = 0; x < SIZE_X; ++x) {
             for (int z = 0; z < SIZE_Z; z++) {
-                double dx = 0.001f + (chunk->position_.x_ + x) / frequency;
-                double dy = 0.001f + (chunk->position_.y_ + y) / frequency;
-                double dz = 0.001f + (chunk->position_.z_ + z) / frequency;
-                double result = perlin.octaveNoise(dx, dy, dz, octaves);
-                if (result > 0.5 && chunk->data[x][y][z] > 0) {
-                    chunk->data[x][y][z] = 2;
+                if (chunk->type_ == ChunkType::TERRAIN) {
+                    double dx = (position.x_ + x) / frequency;
+                    double dz = (position.z_ + z) / frequency;
+                    double dx2 = (position.x_ + x) / frequency2;
+                    double dz2 = (position.z_ + z) / frequency2;
+//            URHO3D_LOGINFO("GenerateMesh chunk position " + chunk->position_.ToString() + ", X:" + String(x) + "; Z:" + String(z) + "; DX: " + String(dx) + "; DZ: " + String(dz));
+                    double result = perlin.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
+//            result *= perlin2.octaveNoise(dx2, dz2, octaves) * 0.5 + 0.5;
+                    int y = result * SIZE_Y;
+                    for (int i = 0; i < SIZE_Y; i++) {
+                        chunk->data[x][i][z] = (i == 0 || i <= y) ? BlockType::STONE : 0;
+                    }
+                } else if (chunk->type_ == ChunkType::SKY) {
+                    for (int i = 0; i < SIZE_Y; i++) {
+                        chunk->data[x][i][z] = BlockType::AIR;
+                    }
+                } else {
+                    for (int i = 0; i < SIZE_Y; i++) {
+                        chunk->data[x][i][z] = BlockType::STONE;
+                    }
+                }
+            }
+        }
+
+        octaves = 16;
+        frequency = 33.3f;
+        // Dirt
+        if (chunk->type_ == ChunkType::TERRAIN) {
+            for (int x = 0; x < SIZE_X; ++x) {
+                for (int y = 0; y < SIZE_Y; y++) {
+                    for (int z = 0; z < SIZE_Z; z++) {
+                        double dx = (position.x_ + x) / frequency;
+                        double dy = (position.y_ + y) / frequency;
+                        double dz = (position.z_ + z) / frequency;
+                        double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
+                        if (result > 0.1 && chunk->data[x][y][z] > 0) {
+                            chunk->data[x][y][z] = BlockType::DIRT;
+                        }
+                    }
+                }
+            }
+        }
+
+        octaves = 16;
+        frequency = 40.33f;
+        // Sand
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int y = 0; y < SIZE_Y; y++) {
+                for (int z = 0; z < SIZE_Z; z++) {
+                    double dx = (position.x_ + x) / frequency;
+                    double dy = (position.y_ + y) / frequency;
+                    double dz = (position.z_ + z) / frequency;
+                    double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
+                    if (result > 0.7 && chunk->data[x][y][z] > 0) {
+                        chunk->data[x][y][z] = BlockType::SAND;
+                    }
+                }
+            }
+        }
+
+        octaves = 16;
+        frequency = 66.67f;
+        // Caves
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int y = 0; y < SIZE_Y; y++) {
+                for (int z = 0; z < SIZE_Z; z++) {
+                    double dx = (position.x_ + x) / frequency;
+                    double dy = (position.y_ + y) / frequency;
+                    double dz = (position.z_ + z) / frequency;
+                    double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
+
+                    if (result > 0.65) {
+                        if (y > 0) {
+                            chunk->data[x][y][z] = BlockType::AIR;
+                        }
+                    }
                 }
             }
         }
     }
-
-    octaves = 16;
-    frequency = 40.33f;
-    // Sand
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                double dx = 0.001f + (chunk->position_.x_ + x) / frequency;
-                double dy = 0.001f + (chunk->position_.y_ + y) / frequency;
-                double dz = 0.001f + (chunk->position_.z_ + z) / frequency;
-                double result = perlin.octaveNoise(dx, dy, dz, octaves);
-                if (result > 0.5 && chunk->data[x][y][z] > 0) {
-                    chunk->data[x][y][z] = 3;
-                }
-            }
-        }
-    }
-
-    octaves = 16;
-    frequency = 53.67f;
-    // Caves
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                double dx = 0.001f + (chunk->position_.x_ + x) / frequency;
-                double dy = 0.001f + (chunk->position_.y_ + y) / frequency;
-                double dz = 0.001f + (chunk->position_.z_ + z) / frequency;
-                double result = perlin.octaveNoise(dx, dy, dz, octaves);
-                if (result > 0.0) {
-                    chunk->data[x][y][z] = 0;
-                }
-            }
-        }
-    }
-}
-
-bool haveNeighborLeft(Chunk* chunk, int x, int y, int z) {
-    if (x > 0) {
-        if (chunk->data[x - 1][y][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborRight(Chunk* chunk, int x, int y, int z) {
-    if (x < SIZE_X - 1) {
-        if (chunk->data[x + 1][y][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborTop(Chunk* chunk, int x, int y, int z) {
-    if (y < SIZE_Y - 1) {
-        if (chunk->data[x][y + 1][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborBottom(Chunk* chunk, int x, int y, int z) {
-    if (y > 0) {
-        if (chunk->data[x][y - 1][z] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborBack(Chunk* chunk, int x, int y, int z) {
-    if (z < SIZE_Z - 1) {
-        if (chunk->data[x][y][z + 1] > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool haveNeighborFront(Chunk* chunk, int x, int y, int z) {
-    if (z > 0) {
-        if (chunk->data[x][y][z - 1] > 0) {
-            return true;
-        }
-    }
-    return false;
+    chunk->geometry_ = new CustomGeometry(chunk->context_);
+    chunk->GenerateGeometry();
 }
 
 Chunk::Chunk(Context* context):
@@ -157,9 +167,9 @@ Object(context)
 
 Chunk::~Chunk()
 {
-    if (node_) {
-        node_->Remove();
-    }
+    URHO3D_LOGINFO("Destroying chunk " + position_.ToString());
+
+    RemoveNode();
 }
 
 void Chunk::RegisterObject(Context* context)
@@ -167,243 +177,252 @@ void Chunk::RegisterObject(Context* context)
     context->RegisterFactory<Chunk>();
 }
 
-void Chunk::Init(int seed, Scene* scene, const Vector3& position)
+void Chunk::Init(int seed, Scene* scene, const Vector3& position, ChunkType type)
 {
+    type_ = type;
     seed_ = seed;
     scene_ = scene;
     position_ = position;
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
-    workItem_ = workQueue->GetFreeItem();
-    workItem_->priority_ = M_MAX_UNSIGNED;
-    workItem_->workFunction_ = GenerateMesh;
-    workItem_->aux_ = this;
-    // send E_WORKITEMCOMPLETED event after finishing WorkItem
-    workItem_->sendEvent_ = true;
+    generateWorkItem_ = workQueue->GetFreeItem();
+    generateWorkItem_->priority_ = M_MAX_UNSIGNED;
+    generateWorkItem_->workFunction_ = GenerateMesh;
+    generateWorkItem_->aux_ = this;
+    generateWorkItem_->sendEvent_ = true;
 
-    workItem_->start_ = nullptr;
-    workItem_->end_ = nullptr;
-    workQueue->AddWorkItem(workItem_);
+    generateWorkItem_->start_ = nullptr;
+    generateWorkItem_->end_ = nullptr;
+    workQueue->AddWorkItem(generateWorkItem_);
 
     SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Chunk, HandlePostRenderUpdate));
-    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleMeshLoaded));
+    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
 }
 
 void Chunk::UpdateGeometry()
 {
-    geometry_->SetDynamic(true);
-    geometry_->BeginGeometry(0, TRIANGLE_LIST);
+    geometry_->Commit();
+    geometry_->SetCastShadows(true);
+
+    auto cache = GetSubsystem<ResourceCache>();
+    geometry_->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+
+    auto *shape = node_->GetComponent<CollisionShape>();
+    if (geometry_->GetNumVertices(0) > 0) {
+        shape->SetCustomTriangleMesh(geometry_);
+    } else {
+        shape->SetEnabled(false);
+    }
+}
+
+void Chunk::GenerateGeometry()
+{
+    geometry_->SetDynamic(false);
     geometry_->SetNumGeometries(1);
+    geometry_->BeginGeometry(0, TRIANGLE_LIST);
     geometry_->SetViewMask(VIEW_MASK_CHUNK);
 
     auto cache = GetSubsystem<ResourceCache>();
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int y = 0; y < SIZE_Y; ++y) {
-            for (int z = 0; z < SIZE_Z; ++z) {
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
                 if (data[x][y][z] > 0) {
                     int blockId = data[x][y][z];
                     Vector3 position(x, y, z);
-//                    Node *node_ = scene_->CreateChild("Test");
-//                    node_->SetScale(1.0f);
-//                    node_->SetPosition(Vector3(x, y, z));
-//                    StaticModel* object = node_->CreateComponent<StaticModel>();
-//                    object->SetModel(cache->GetResource<Model>("Models/Box.mdl"));
-//                    object->SetMaterial(cache->GetResource<Material>("Materials/Box.xml"));
-//                    continue;
-                    if (!haveNeighborTop(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         // tri2
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::UP);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
                     }
-                    if (!haveNeighborBottom(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                         // tri2
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::DOWN);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
                     }
-                    if (!haveNeighborLeft(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
 //                        // tri2
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::LEFT);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
                     }
-                    if (!haveNeighborRight(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         // tri2
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::RIGHT);
                         geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
                     }
-                    if (!haveNeighborFront(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         // tri2
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::FORWARD);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
                     }
-                    if (!haveNeighborBack(this, x, y, z)) {
+                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
                         // tri1
                         geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(0.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         // tri2
                         geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(0.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(1.0, 0.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
 
                         geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, blockId, Vector2(1.0, 1.0)));
+                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
                         geometry_->DefineNormal(Vector3::BACK);
                         geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
                     }
@@ -411,7 +430,6 @@ void Chunk::UpdateGeometry()
             }
         }
     }
-    geometry_->Commit();
 }
 
 void Chunk::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
@@ -459,19 +477,14 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         }
         return;
     }
-    if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_] > 0) {
-        int blockId = data[blockPosition.x_][blockPosition.y_][blockPosition.z_];
-        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = 0;
-        URHO3D_LOGINFOF("Controller %d removed block %d", eventData["ControllerId"].GetInt(), blockId);
-//        URHO3D_LOGINFOF("Chunk hit world pos: %s; chunk pos: %d %d %d, ID = %d", pos.ToString().CString(), x, y, z, node_->GetID());
+    if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_]) {
+//        int blockId = data[blockPosition.x_][blockPosition.y_][blockPosition.z_];
+        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = BlockType::AIR;
+        URHO3D_LOGINFO("Removing block " + blockPosition.ToString());
+        GenerateGeometry();
         UpdateGeometry();
-        auto *shape = node_->GetComponent<CollisionShape>();
-        if (geometry_->GetNumVertices(0) > 0) {
-            shape->SetCustomTriangleMesh(geometry_);
-        } else {
-            shape->SetEnabled(false);
-        }
     }
+    Save();
 }
 
 void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
@@ -480,17 +493,22 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
     auto blockPosition = GetChunkBlock(position);
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
-        neighborChunk->GetNode()->SendEvent("ChunkAdd", eventData);
+        if (neighborChunk) {
+            neighborChunk->GetNode()->SendEvent("ChunkAdd", eventData);
+        } else {
+            URHO3D_LOGERROR("Neighbor chunk doesn't exist at position " + position.ToString());
+        }
         return;
     }
     if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_] == 0) {
         data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = 1;
         URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
+        GenerateGeometry();
         UpdateGeometry();
-        auto *shape = node_->GetComponent<CollisionShape>();
-        shape->SetCustomTriangleMesh(geometry_);
     }
+
+    Save();
 }
 
 const Vector3& Chunk::GetPosition()
@@ -498,55 +516,18 @@ const Vector3& Chunk::GetPosition()
     return position_;
 }
 
-void Chunk::HandleMeshLoaded(StringHash eventType, VariantMap& eventData)
+void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
 {
     using namespace WorkItemCompleted;
     WorkItem* workItem = reinterpret_cast<WorkItem*>(eventData[P_ITEM].GetPtr());
-    if (workItem_->aux_ == this) {
-        node_ = scene_->CreateChild("Chunk");
-        node_->SetScale(1.0f);
-        node_->SetWorldPosition(position_);
-
-        geometry_ = node_->GetOrCreateComponent<CustomGeometry>();
-        geometry_->SetCastShadows(true);
-        auto cache = GetSubsystem<ResourceCache>();
-        geometry_->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
-        UpdateGeometry();
-
-        Model* model = new Model(context_);
-        model->SetNumGeometries(1);
-        model->SetGeometry(0, 0, geometry_->GetLodGeometry(0, 0));
-
-        auto *body = node_->CreateComponent<RigidBody>();
-        body->SetMass(0);
-        body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-        auto *shape = node_->CreateComponent<CollisionShape>();
-        if (geometry_->GetNumVertices(0) > 0) {
-            shape->SetCustomTriangleMesh(geometry_);
-        }
-
-        triggerNode_ = node_->CreateChild("ChunkTrigger");
-        auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
-        triggerBody->SetTrigger(true);
-        triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
-        auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
-        triggerShape->SetBox(Vector3(SIZE_X + 0.1f, SIZE_Y + 0.1f, SIZE_Z + 0.1f), Vector3(SIZE_X / 2 - 0.5f, SIZE_Y / 2 - 0.5f, SIZE_Z / 2 - 0.5f));
-
-        SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
-        SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
-        SubscribeToEvent(triggerNode_, E_NODECOLLISIONSTART, URHO3D_HANDLER(Chunk, HandlePlayerEntered));
-        SubscribeToEvent(triggerNode_, E_NODECOLLISIONEND, URHO3D_HANDLER(Chunk, HandlePlayerExited));
-
-        Node* label = node_->CreateChild("Label", LOCAL);
-
-        auto text3D = label->CreateComponent<Text3D>();
-        text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-        text3D->SetColor(Color::GRAY);
-        text3D->SetViewMask(VIEW_MASK_GUI);
-        text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-        text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-        text3D->SetText(position_.ToString());
-        label->SetPosition(Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
+    if (workItem->aux_ != this) {
+        return;
+    }
+    if (workItem->workFunction_ == GenerateMesh) {
+        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
+        CreateNode();
+    } else if (workItem->workFunction_ == SaveToFile) {
+        URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
     }
 }
 
@@ -563,6 +544,7 @@ void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
     // Get the other colliding body, make sure it is moving (has nonzero mass)
     auto* otherNode = static_cast<Node*>(eventData[P_OTHERNODE].GetPtr());
 //    URHO3D_LOGINFO("Name: " + otherNode->GetName() + " ID : " + String(otherNode->GetID()));
+    visitors_++;
 }
 
 void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
@@ -571,13 +553,14 @@ void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
     VariantMap& data = GetEventDataMap();
     data[P_POSITION] = position_;
     SendEvent(E_CHUNK_EXITED, data);
+    visitors_--;
 }
 
-Vector2 Chunk::GetTextureCoord(BlockSide side, int blockType, Vector2 position)
+Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position)
 {
     int textureCount = 3;
     Vector2 quadSize(1.0f / 6, 1.0f / textureCount);
-    float typeOffset = (blockType - 1) * quadSize.y_;
+    float typeOffset = (static_cast<int>(blockType) - 1) * quadSize.y_;
     switch (side) {
         case BlockSide::TOP: {
             return Vector2(quadSize.x_ * 0.0f + quadSize.x_ * position.x_, quadSize.y_ * position.y_ + typeOffset);
@@ -607,4 +590,123 @@ bool Chunk::IsPointInsideChunk(Vector3 pointPosition)
     box.min_ = position_;
     box.max_ = position_ + Vector3(SIZE_X, SIZE_Y, SIZE_Z);
     return box.IsInside(pointPosition);
+}
+
+void Chunk::Save()
+{
+    WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+    auto workItem = workQueue->GetFreeItem();
+    workItem->priority_ = M_MAX_UNSIGNED;
+    workItem->workFunction_ = SaveToFile;
+    workItem->aux_ = this;
+    // send E_WORKITEMCOMPLETED event after finishing WorkItem
+    workItem->sendEvent_ = true;
+
+    workItem->start_ = nullptr;
+    workItem->end_ = nullptr;
+    workQueue->AddWorkItem(workItem);
+}
+
+void Chunk::CreateNode()
+{
+    auto cache = GetSubsystem<ResourceCache>();
+    node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
+    node_->SetScale(1.0f);
+    node_->SetWorldPosition(position_);
+    node_->AddComponent(geometry_, scene_->GetFreeComponentID(LOCAL), LOCAL);
+
+    auto *body = node_->CreateComponent<RigidBody>(LOCAL);
+    body->SetMass(0);
+    body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
+    auto *shape = node_->CreateComponent<CollisionShape>(LOCAL);
+    if (geometry_->GetNumVertices(0) > 0) {
+        shape->SetCustomTriangleMesh(geometry_);
+    }
+
+    UpdateGeometry();
+
+    triggerNode_ = node_->CreateChild("ChunkTrigger");
+    auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
+    triggerBody->SetTrigger(true);
+    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
+    auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
+    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
+
+    SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
+    SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
+    SubscribeToEvent(triggerNode_, E_NODECOLLISIONSTART, URHO3D_HANDLER(Chunk, HandlePlayerEntered));
+    SubscribeToEvent(triggerNode_, E_NODECOLLISIONEND, URHO3D_HANDLER(Chunk, HandlePlayerExited));
+
+    label_ = node_->CreateChild("Label", LOCAL);
+    auto text3D = label_->CreateComponent<Text3D>();
+    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+    text3D->SetColor(Color::GRAY);
+    text3D->SetViewMask(VIEW_MASK_GUI);
+    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+    text3D->SetText(position_.ToString());
+    text3D->SetFontSize(32);
+    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
+    scene_->AddChild(node_);
+}
+
+void Chunk::RemoveNode()
+{
+    if (node_) {
+        node_->Remove();
+    }
+    if (label_) {
+        label_->Remove();
+    }
+    if (triggerNode_) {
+        triggerNode_->Remove();
+    }
+}
+
+bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
+{
+    switch(side) {
+        case BlockSide::TOP:
+            if (y < SIZE_Y - 1) {
+                if (data[x][y + 1][z] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case BlockSide::BOTTOM:
+            if (y > 0) {
+                if (data[x][y - 1][z] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case BlockSide::LEFT:
+            if (x > 0) {
+                if (data[x - 1][y][z] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case BlockSide::RIGHT:
+            if (x < SIZE_X - 1) {
+                if (data[x + 1][y][z] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case BlockSide::FRONT:
+            if (z > 0) {
+                if (data[x][y][z - 1] > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case BlockSide::BACK:
+            if (z < SIZE_Z - 1) {
+                if (data[x][y][z + 1] > 0) {
+                    return true;
+                }
+            }
+            return false;
+    }
 }

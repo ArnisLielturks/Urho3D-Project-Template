@@ -21,7 +21,8 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
     void HandleChunkExited(StringHash eventType, VariantMap& eventData);
-    void LoadChunk(Vector3 position);
+    void LoadChunk(Vector3 position, bool loadImmediately = false);
+    void UnloadChunks();
     Vector3 GetNodeToChunkPosition(Node* node);
     bool IsChunkLoaded(Vector3 position);
     bool IsChunkPending(Vector3 position);
@@ -33,6 +34,7 @@ private:
     List<WeakPtr<Node>> observers_;
     List<Vector3> pendingChunks_;
     Timer updateTimer_;
+    Timer cleanupTimer_;
     Scene* scene_;
     List<Vector3> removeBlocks_;
 };

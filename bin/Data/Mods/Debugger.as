@@ -70,6 +70,7 @@ void HandleModsLoaded(StringHash eventType, VariantMap& eventData)
  */
 void DrawModNames()
 {
+    return;
     if (mods.empty) {
         return;
     }

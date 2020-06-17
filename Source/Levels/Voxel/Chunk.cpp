@@ -23,10 +23,8 @@
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
-#include "../../Console/ConsoleHandlerEvents.h"
 
 using namespace VoxelEvents;
-using namespace ConsoleHandlerEvents;
 
 void SaveToFile(const WorkItem* item, unsigned threadIndex)
 {
@@ -52,6 +50,10 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
     Vector3 position = chunk->position_;
 
+    static float terrainHeight = 0.0f;
+    if (chunk->type_ == ChunkType::TERRAIN) {
+        terrainHeight = position.y_;
+    }
     JSONFile file(chunk->context_);
     JSONValue& root = file.GetRoot();
     String filename = "World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_);
@@ -69,95 +71,72 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
 
         PerlinNoise perlin(chunk->seed_);
         PerlinNoise perlin2(chunk->seed_ + 1);
+        PerlinNoise perlin3(chunk->seed_ + 2);
         float octaves = 16;
-        float frequency = 55.33f;
-        float frequency2 = 222.11f;
+        float frequency = 3333.33f;
+        float frequency2 = 333.11f;
 
         // Terrain
         for (int x = 0; x < SIZE_X; ++x) {
             for (int z = 0; z < SIZE_Z; z++) {
-                if (chunk->type_ == ChunkType::TERRAIN) {
-                    double dx = (position.x_ + x) / frequency;
-                    double dz = (position.z_ + z) / frequency;
-                    double dx2 = (position.x_ + x) / frequency2;
-                    double dz2 = (position.z_ + z) / frequency2;
+                double dx = (position.x_ + x) / frequency;
+                double dz = (position.z_ + z) / frequency;
+                double dx2 = (position.x_ + x) / frequency2;
+                double dz2 = (position.z_ + z) / frequency2;
 //            URHO3D_LOGINFO("GenerateMesh chunk position " + chunk->position_.ToString() + ", X:" + String(x) + "; Z:" + String(z) + "; DX: " + String(dx) + "; DZ: " + String(dz));
-                    double result = perlin.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
-//            result *= perlin2.octaveNoise(dx2, dz2, octaves) * 0.5 + 0.5;
-                    int y = result * SIZE_Y;
-                    for (int i = 0; i < SIZE_Y; i++) {
-                        chunk->data[x][i][z] = (i == 0 || i <= y) ? BlockType::STONE : 0;
-                    }
-                } else if (chunk->type_ == ChunkType::SKY) {
-                    for (int i = 0; i < SIZE_Y; i++) {
-                        chunk->data[x][i][z] = BlockType::AIR;
-                    }
-                } else {
-                    for (int i = 0; i < SIZE_Y; i++) {
-                        chunk->data[x][i][z] = BlockType::STONE;
-                    }
-                }
-            }
-        }
-
-        octaves = 16;
-        frequency = 33.3f;
-        // Dirt
-        if (chunk->type_ == ChunkType::TERRAIN) {
-            for (int x = 0; x < SIZE_X; ++x) {
+                double result = perlin.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
+                double result2 = perlin2.octaveNoise(dx2, dz2, octaves) * 0.5 + 0.5;
+                double result3 = perlin2.octaveNoise(dx, dz2, octaves) * 0.5 + 0.5;
+                result *= result2 * result3;
+                int limit = result * 100;
                 for (int y = 0; y < SIZE_Y; y++) {
-                    for (int z = 0; z < SIZE_Z; z++) {
-                        double dx = (position.x_ + x) / frequency;
-                        double dy = (position.y_ + y) / frequency;
-                        double dz = (position.z_ + z) / frequency;
-                        double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
-                        if (result > 0.1 && chunk->data[x][y][z] > 0) {
-                            chunk->data[x][y][z] = BlockType::DIRT;
+                    int currentLevel = position.y_ + y;
+                    if (currentLevel < limit) {
+                        float heightToSurface = limit - currentLevel;
+                        if (heightToSurface <= 10) {
+                            float percentage = (10.0f - heightToSurface) / 10.0f;
+                            float threshold = perlin.octaveNoise(dx, (position.y_ + y) * frequency, dz, octaves) * 0.5 + 0.5;
+                            if (percentage > threshold * 1.8) {
+                                chunk->data[x][y][z] = BlockType::DIRT;
+                            } else if (percentage > threshold * 1.4) {
+                                chunk->data[x][y][z] = BlockType::SAND;
+                            } else {
+                                chunk->data[x][y][z] = BlockType::STONE;
+                            }
+                        } else {
+                            chunk->data[x][y][z] = BlockType::STONE;
                         }
+                    } else {
+                        chunk->data[x][y][z] = BlockType::AIR;
                     }
                 }
             }
         }
 
-        octaves = 16;
-        frequency = 40.33f;
-        // Sand
-        for (int x = 0; x < SIZE_X; ++x) {
-            for (int y = 0; y < SIZE_Y; y++) {
-                for (int z = 0; z < SIZE_Z; z++) {
-                    double dx = (position.x_ + x) / frequency;
-                    double dy = (position.y_ + y) / frequency;
-                    double dz = (position.z_ + z) / frequency;
-                    double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
-                    if (result > 0.7 && chunk->data[x][y][z] > 0) {
-                        chunk->data[x][y][z] = BlockType::SAND;
-                    }
-                }
-            }
-        }
-
-        octaves = 16;
-        frequency = 66.67f;
+        octaves = 1;
+        frequency = 33.67f;
+        frequency2 = 44.67f;
         // Caves
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
                     double dx = (position.x_ + x) / frequency;
-                    double dy = (position.y_ + y) / frequency;
-                    double dz = (position.z_ + z) / frequency;
+                    double dy = (position.y_ + y) / frequency * 31.2;
+                    double dz = (position.z_ + z) / frequency * 3.4f;
                     double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
-
+//                    double result2 = perlin.octaveNoise(dx / frequency2, dy / frequency2, dz / frequency2) * 0.5 + 0.5;
+//                    double result3 = perlin.octaveNoise(dx / frequency2 / frequency, dy / frequency2 / frequency, dz / frequency2 / frequency) * 0.5 + 0.5;
+//                    result *= result2;
                     if (result > 0.65) {
-                        if (y > 0) {
-                            chunk->data[x][y][z] = BlockType::AIR;
-                        }
+                        chunk->data[x][y][z] = BlockType::AIR;
                     }
+//                    else {
+//                        chunk->data[x][y][z] = BlockType::AIR;
+//                    }
                 }
             }
         }
     }
-    chunk->geometry_ = new CustomGeometry(chunk->context_);
-    chunk->GenerateGeometry();
 }
 
 Chunk::Chunk(Context* context):
@@ -167,8 +146,6 @@ Object(context)
 
 Chunk::~Chunk()
 {
-    URHO3D_LOGINFO("Destroying chunk " + position_.ToString());
-
     RemoveNode();
 }
 
@@ -524,7 +501,7 @@ void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
         return;
     }
     if (workItem->workFunction_ == GenerateMesh) {
-        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
+//        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
         CreateNode();
     } else if (workItem->workFunction_ == SaveToFile) {
         URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
@@ -609,6 +586,8 @@ void Chunk::Save()
 
 void Chunk::CreateNode()
 {
+    geometry_ = new CustomGeometry(context_);
+
     auto cache = GetSubsystem<ResourceCache>();
     node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
     node_->SetScale(1.0f);
@@ -618,11 +597,9 @@ void Chunk::CreateNode()
     auto *body = node_->CreateComponent<RigidBody>(LOCAL);
     body->SetMass(0);
     body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-    auto *shape = node_->CreateComponent<CollisionShape>(LOCAL);
-    if (geometry_->GetNumVertices(0) > 0) {
-        shape->SetCustomTriangleMesh(geometry_);
-    }
+    node_->CreateComponent<CollisionShape>(LOCAL);
 
+    GenerateGeometry();
     UpdateGeometry();
 
     triggerNode_ = node_->CreateChild("ChunkTrigger");
@@ -631,6 +608,7 @@ void Chunk::CreateNode()
     triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
     auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
     triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
+    triggerNode_->SetScale(2.0f);
 
     SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));

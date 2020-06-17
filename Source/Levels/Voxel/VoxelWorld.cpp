@@ -42,7 +42,7 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (!pendingChunks_.Empty() && updateTimer_.GetMSec(false) > 10) {
+    if (!pendingChunks_.Empty() && updateTimer_.GetMSec(false) > 1) {
         updateTimer_.Reset();
         CreateChunk(pendingChunks_.Front());
         pendingChunks_.PopFront();
@@ -65,7 +65,7 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
     }
 
-    if (cleanupTimer_.GetMSec(false) > 10) {
+    if (cleanupTimer_.GetMSec(false) > 1) {
         cleanupTimer_.Reset();
         UnloadChunks();
     }
@@ -124,7 +124,7 @@ void VoxelWorld::LoadChunk(Vector3 position, bool loadImmediately)
         } else {
             pendingChunks_.Push(position);
         }
-        URHO3D_LOGINFO("Loading chunk" + position.ToString());
+//        URHO3D_LOGINFO("Loading chunk" + position.ToString());
     }
     Vector<Vector3> positions;
 
@@ -164,7 +164,7 @@ void VoxelWorld::LoadChunk(Vector3 position, bool loadImmediately)
 
     for (auto it = positions.Begin(); it != positions.End(); ++it) {
         if(!IsChunkLoaded((*it)) && !IsChunkPending((*it))) {
-            URHO3D_LOGINFO("Loading neighbor chunk " + (*it).ToString());
+//            URHO3D_LOGINFO("Loading neighbor chunk " + (*it).ToString());
             if (loadImmediately) {
                 CreateChunk((*it));
             } else {
@@ -221,7 +221,8 @@ void VoxelWorld::UnloadChunks()
     if (chunks_.Size() < 5) {
 //        return;
     }
-    float maxDistanceSquared = 50 * 50;
+    float distance = SIZE_X * 20;
+    float maxDistanceSquared = distance * distance;
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
             float distance = ((*obIt)->GetWorldPosition() - (*chIt)->GetPosition()).LengthSquared();

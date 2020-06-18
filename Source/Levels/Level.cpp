@@ -301,6 +301,25 @@ void Level::RegisterConsoleCommands()
         }
         drawDebug_ = !drawDebug_;
     });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "seed",
+            ConsoleCommandAdd::P_EVENT, "#seed",
+            ConsoleCommandAdd::P_DESCRIPTION, "Change world seed",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#seed", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Seed parameter is required!");
+            return;
+        }
+        int seed = ToInt(params[1]);
+        if (!GetSubsystem<ChunkGenerator>()) {
+            GetSubsystem<ChunkGenerator>()->SetSeed(seed);
+        }
+    });
 }
 
 

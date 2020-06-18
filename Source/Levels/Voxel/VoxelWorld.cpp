@@ -5,18 +5,59 @@
 #include "VoxelWorld.h"
 #include "../../SceneManager.h"
 #include "VoxelEvents.h"
+#include "../../Console/ConsoleHandlerEvents.h"
 #include "ChunkGenerator.h"
 
 using namespace VoxelEvents;
+using namespace ConsoleHandlerEvents;
+
+int VoxelWorld::visibleDistance = 10;
+int VoxelWorld::activeDistance = 5;
 
 VoxelWorld::VoxelWorld(Context* context):
     Object(context)
 {
-    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(VoxelWorld, HandleUpdate));
     scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
 
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(VoxelWorld, HandleUpdate));
     SubscribeToEvent(E_CHUNK_ENTERED, URHO3D_HANDLER(VoxelWorld, HandleChunkEntered));
     SubscribeToEvent(E_CHUNK_EXITED, URHO3D_HANDLER(VoxelWorld, HandleChunkExited));
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "chunk_visible_distance",
+            ConsoleCommandAdd::P_EVENT, "#chunk_visible_distance",
+            ConsoleCommandAdd::P_DESCRIPTION, "How far away the generated chunks are visible",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#chunk_visible_distance", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("radius parameter is required!");
+            return;
+        }
+        int value = ToInt(params[1]);
+        VoxelWorld::visibleDistance = value;
+        URHO3D_LOGINFOF("Changing chunk visibility radius to %d", value);
+    });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "chunk_active_distance",
+            ConsoleCommandAdd::P_EVENT, "#chunk_active_distance",
+            ConsoleCommandAdd::P_DESCRIPTION, "How far aways the chunks are active",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#chunk_active_distance", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("radius parameter is required!");
+            return;
+        }
+        int value = ToInt(params[1]);
+        VoxelWorld::activeDistance = value;
+        URHO3D_LOGINFOF("Changing chunk active radius to %d", value);
+    });
 }
 
 void VoxelWorld::RegisterObject(Context* context)
@@ -43,17 +84,14 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (!pendingChunks_.Empty() && updateTimer_.GetMSec(false) > 1) {
-        updateTimer_.Reset();
-        CreateChunk(pendingChunks_.Front());
+    if (!pendingChunks_.Empty()) {
+        String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
+        chunks_[id] = pendingChunks_.Front();
         pendingChunks_.PopFront();
-        if (GetSubsystem<DebugHud>()) {
-            GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", chunks_.Size());
-        }
+        chunks_[id]->Generate();
     }
 
-    if (!removeBlocks_.Empty() && updateTimer_.GetMSec(false) > 100) {
-        updateTimer_.Reset();
+    if (!removeBlocks_.Empty()) {
         auto chunk = GetChunkByPosition(removeBlocks_.Front());
         if (chunk) {
             VariantMap& data = GetEventDataMap();
@@ -66,8 +104,8 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
     }
 
-    if (cleanupTimer_.GetMSec(false) > 50) {
-        cleanupTimer_.Reset();
+    if (updateTimer_.GetMSec(false) > 10) {
+        updateTimer_.Reset();
         UpdateChunks();
     }
 }
@@ -75,16 +113,8 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void VoxelWorld::CreateChunk(const Vector3& position)
 {
     String id = GetChunkIdentificator(position);
-    chunks_[id] = SharedPtr<Chunk>(new Chunk(context_));
-    ChunkType type;
-    if (position.y_ == -SIZE_Y) {
-        type = ChunkType::TERRAIN;
-    } else if (position.y_ > -SIZE_Y) {
-        type = ChunkType::SKY;
-    } else {
-        type = ChunkType::GROUND;
-    }
-    chunks_[id]->Init(1, scene_, position, type);
+    pendingChunks_.Push(SharedPtr<Chunk>(new Chunk(context_)));
+    pendingChunks_.Back()->Init(scene_, position);
 }
 
 Vector3 VoxelWorld::GetNodeToChunkPosition(Node* node)
@@ -114,15 +144,11 @@ void VoxelWorld::HandleChunkExited(StringHash eventType, VariantMap& eventData)
 
 }
 
-void VoxelWorld::LoadChunk(const Vector3& position, bool loadImmediately)
+void VoxelWorld::LoadChunk(const Vector3& position)
 {
 //    position.y_ = -SIZE_Y;
     if (!IsChunkLoaded(position) && !IsChunkPending(position)) {
-        if (loadImmediately) {
-            CreateChunk(position);
-        } else {
-            pendingChunks_.Push(position);
-        }
+        CreateChunk(position);
 //        URHO3D_LOGINFO("Loading chunk" + position.ToString());
     }
     Vector<Vector3> positions;
@@ -177,12 +203,7 @@ void VoxelWorld::LoadChunk(const Vector3& position, bool loadImmediately)
 
     for (auto it = positions.Begin(); it != positions.End(); ++it) {
         if(!IsChunkLoaded((*it)) && !IsChunkPending((*it))) {
-//            URHO3D_LOGINFO("Loading neighbor chunk " + (*it).ToString());
-            if (loadImmediately) {
-                CreateChunk((*it));
-            } else {
-                pendingChunks_.Push((*it));
-            }
+            CreateChunk((*it));
         }
     }
 }
@@ -190,7 +211,7 @@ void VoxelWorld::LoadChunk(const Vector3& position, bool loadImmediately)
 bool VoxelWorld::IsChunkPending(const Vector3& position)
 {
     for (auto it = pendingChunks_.Begin(); it != pendingChunks_.End(); ++it) {
-        if (IsEqualPositions((*it), position)) {
+        if (IsEqualPositions((*it)->GetPosition(), position)) {
             return true;
         }
     }
@@ -236,6 +257,19 @@ void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
 
 void VoxelWorld::UpdateChunks()
 {
+    if (chunks_.Empty()) {
+        URHO3D_LOGWARNING("All chunks were destroyed, regenerating chunks around players!");
+        // In case player moved to quickly trough the world and the chunks
+        // were not loading as fast
+        for (auto it = observers_.Begin(); it != observers_.End(); ++it) {
+            LoadChunk((*it)->GetPosition());
+        }
+    }
+
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", chunks_.Size());
+    }
+
     int counter = 0;
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         if ((*chIt).second_ && (*chIt).second_->IsActive()) {
@@ -246,10 +280,8 @@ void VoxelWorld::UpdateChunks()
         GetSubsystem<DebugHud>()->SetAppStats("Active chunks", counter);
     }
 
-    float activeDistance = SIZE_X * 2;
-    float visibleDistance = SIZE_X * 5;
-    float maxActiveDistanceSquared = activeDistance * activeDistance;
-    float maxVisibleDistanceSquared = visibleDistance * visibleDistance;
+    float activeBlockDistance = SIZE_X * ( activeDistance + 1);
+    float visibleBlockDistance = SIZE_X * ( visibleDistance + 1);
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         if ((*chIt).second_) {
             (*chIt).second_->MarkForDeletion(true);
@@ -262,11 +294,15 @@ void VoxelWorld::UpdateChunks()
                 return;
             }
             Vector3 chunkPosition = (*chIt).second_->GetPosition();
-            float distance = ((*obIt)->GetWorldPosition() - (*chIt).second_->GetPosition()).LengthSquared();
-            if (distance < maxVisibleDistanceSquared) {
+            auto distance = (*obIt)->GetWorldPosition() - (*chIt).second_->GetPosition();
+            distance.x_ = Abs(distance.x_);
+            distance.y_ = Abs(distance.y_);
+            distance.z_ = Abs(distance.z_);
+
+            if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
                 (*chIt).second_->MarkForDeletion(false);
             }
-            if (distance < maxActiveDistanceSquared) {
+            if (distance.x_ <= activeBlockDistance && distance.y_ <= activeBlockDistance && distance.z_ <= activeBlockDistance) {
                 (*chIt).second_->MarkActive(true);
             }
         }

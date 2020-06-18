@@ -19,7 +19,8 @@ class Chunk : public Object {
 
     static void RegisterObject(Context* context);
 public:
-    void Init(int seed, Scene* scene, const Vector3& position, ChunkType type);
+    void Init(Scene* scene, const Vector3& position);
+    void Generate();
     const Vector3& GetPosition();
     const BoundingBox& GetBoundingBox();
     Node* GetNode() { return node_; }
@@ -51,12 +52,10 @@ private:
     SharedPtr<Node> node_;
     SharedPtr<Node> triggerNode_;
     SharedPtr<Node> label_;
-    int seed_;
     Scene* scene_;
     Vector3 position_;
     SharedPtr<WorkItem> generateWorkItem_;
     int visitors_{0};
-    ChunkType type_;
     BlockType data[SIZE_X][SIZE_Y][SIZE_Z];
     bool shouldDelete_;
     bool isActive_;

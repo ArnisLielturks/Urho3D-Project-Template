@@ -19,6 +19,7 @@ void ChunkGenerator::RegisterObject(Context* context)
 
 void ChunkGenerator::SetSeed(int seed)
 {
+    URHO3D_LOGINFOF("Changing world generating seed to %d", seed);
     perlin_.reseed(seed);
 }
 

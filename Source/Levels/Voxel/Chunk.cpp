@@ -19,7 +19,6 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/IO/FileSystem.h>
-#include "../../Generator/PerlinNoise.h"
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
@@ -51,10 +50,6 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
     Vector3 position = chunk->position_;
 
-    static float terrainHeight = 0.0f;
-    if (chunk->type_ == ChunkType::TERRAIN) {
-        terrainHeight = position.y_;
-    }
     JSONFile file(chunk->context_);
     JSONValue& root = file.GetRoot();
     String filename = "World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_);
@@ -110,12 +105,37 @@ void Chunk::RegisterObject(Context* context)
     context->RegisterFactory<Chunk>();
 }
 
-void Chunk::Init(int seed, Scene* scene, const Vector3& position, ChunkType type)
+void Chunk::Init(Scene* scene, const Vector3& position)
 {
-    type_ = type;
-    seed_ = seed;
     scene_ = scene;
     position_ = position;
+
+    auto cache = GetSubsystem<ResourceCache>();
+    node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
+    node_->SetScale(1.0f);
+    node_->SetWorldPosition(position_);
+
+    triggerNode_ = node_->CreateChild("ChunkTrigger");
+    auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
+    triggerBody->SetTrigger(true);
+    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
+    auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
+    triggerNode_->SetScale(VoxelWorld::visibleDistance);
+    Vector3 offset = Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) / triggerNode_->GetScale();
+    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) - offset);
+
+    SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Chunk, HandlePostRenderUpdate));
+    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
+
+    SubscribeToEvent("#chunk_visible_distance", [&](StringHash eventType, VariantMap& eventData) {
+        if (triggerNode_) {
+            triggerNode_->SetScale(VoxelWorld::visibleDistance);
+        }
+    });
+}
+
+void Chunk::Generate()
+{
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     generateWorkItem_ = workQueue->GetFreeItem();
     generateWorkItem_->priority_ = M_MAX_UNSIGNED;
@@ -126,9 +146,6 @@ void Chunk::Init(int seed, Scene* scene, const Vector3& position, ChunkType type
     generateWorkItem_->start_ = nullptr;
     generateWorkItem_->end_ = nullptr;
     workQueue->AddWorkItem(generateWorkItem_);
-
-    SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Chunk, HandlePostRenderUpdate));
-    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
 }
 
 void Chunk::UpdateGeometry()
@@ -470,7 +487,7 @@ void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
     VariantMap& data = GetEventDataMap();
     data[P_POSITION] = position_;
     SendEvent(E_CHUNK_ENTERED, data);
-    URHO3D_LOGINFO("Chunk " + position_.ToString() + " player entered");
+//    URHO3D_LOGINFO("Chunk " + position_.ToString() + " player entered");
 
     using namespace NodeCollisionStart;
 
@@ -543,11 +560,6 @@ void Chunk::Save()
 void Chunk::CreateNode()
 {
     geometry_ = new CustomGeometry(context_);
-
-    auto cache = GetSubsystem<ResourceCache>();
-    node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
-    node_->SetScale(1.0f);
-    node_->SetWorldPosition(position_);
     node_->AddComponent(geometry_, scene_->GetFreeComponentID(LOCAL), LOCAL);
 
     auto *body = node_->CreateComponent<RigidBody>(LOCAL);
@@ -558,20 +570,13 @@ void Chunk::CreateNode()
     GenerateGeometry();
     UpdateGeometry();
 
-    triggerNode_ = node_->CreateChild("ChunkTrigger");
-    auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
-    triggerBody->SetTrigger(true);
-    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
-    auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
-    triggerNode_->SetScale(1.0f);
-    Vector3 offset = Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) / triggerNode_->GetScale();
-    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) - offset);
 
     SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
     SubscribeToEvent(triggerNode_, E_NODECOLLISIONSTART, URHO3D_HANDLER(Chunk, HandlePlayerEntered));
     SubscribeToEvent(triggerNode_, E_NODECOLLISIONEND, URHO3D_HANDLER(Chunk, HandlePlayerExited));
 
+    auto cache = GetSubsystem<ResourceCache>();
     label_ = node_->CreateChild("Label", LOCAL);
     auto text3D = label_->CreateComponent<Text3D>();
     text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);

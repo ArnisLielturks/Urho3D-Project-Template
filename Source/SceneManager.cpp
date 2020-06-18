@@ -377,6 +377,10 @@ void SceneManager::LoadDefaultMaps()
 
     StringVector commands;
     commands.Push("ambient_light 0.5 0.5 0.5");
+    commands.Push("noclip");
+    commands.Push("chunk_visible_distance 1");
+    commands.Push("debugger");
+    commands.Push("debug_geometry");
     data[P_COMMANDS] = commands;
     SendEvent(E_ADD_MAP, data);
 }

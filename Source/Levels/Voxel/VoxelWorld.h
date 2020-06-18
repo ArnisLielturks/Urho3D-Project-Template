@@ -17,11 +17,13 @@ class VoxelWorld : public Object {
     void RemoveObserver(SharedPtr<Node> observer);
     SharedPtr<Chunk> GetChunkByPosition(const Vector3& position);
     void RemoveBlockAtPosition(const Vector3& position);
+    static int visibleDistance;
+    static int activeDistance;
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
     void HandleChunkExited(StringHash eventType, VariantMap& eventData);
-    void LoadChunk(const Vector3& position, bool loadImmediately = false);
+    void LoadChunk(const Vector3& position);
     void UpdateChunks();
     Vector3 GetNodeToChunkPosition(Node* node);
     bool IsChunkLoaded(const Vector3& position);
@@ -33,9 +35,8 @@ private:
 
 //    List<SharedPtr<Chunk>> chunks_;
     List<WeakPtr<Node>> observers_;
-    List<Vector3> pendingChunks_;
+    List<SharedPtr<Chunk>> pendingChunks_;
     Timer updateTimer_;
-    Timer cleanupTimer_;
     Scene* scene_;
     List<Vector3> removeBlocks_;
     HashMap<String, SharedPtr<Chunk>> chunks_;

@@ -11,6 +11,7 @@
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Scene/SceneEvents.h>
+#include <Urho3D/Graphics/Light.h>
 #include "Player.h"
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
@@ -149,6 +150,10 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     rigidBody_->SetLinearDamping(0.8f);
     rigidBody_->SetAngularDamping(0.8f);
     rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
+
+    auto light = node_->CreateComponent<Light>();
+    light->SetRadius(10.0f);
+    light->SetLightType(LIGHT_POINT);
 
     auto* shape = node_->CreateComponent<CollisionShape>();
     shape->SetSphere(1.0f);

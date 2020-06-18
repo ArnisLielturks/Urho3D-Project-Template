@@ -35,7 +35,7 @@ private:
 
 //    List<SharedPtr<Chunk>> chunks_;
     List<WeakPtr<Node>> observers_;
-    List<SharedPtr<Chunk>> pendingChunks_;
+    List<Chunk*> pendingChunks_;
     Timer updateTimer_;
     Scene* scene_;
     List<Vector3> removeBlocks_;

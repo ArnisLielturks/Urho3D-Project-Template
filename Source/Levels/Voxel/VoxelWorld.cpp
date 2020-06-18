@@ -11,8 +11,8 @@
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
-int VoxelWorld::visibleDistance = 10;
-int VoxelWorld::activeDistance = 5;
+int VoxelWorld::visibleDistance = 5;
+int VoxelWorld::activeDistance = 3;
 
 VoxelWorld::VoxelWorld(Context* context):
     Object(context)
@@ -87,8 +87,8 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (!pendingChunks_.Empty()) {
         String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
         chunks_[id] = pendingChunks_.Front();
-        pendingChunks_.PopFront();
         chunks_[id]->Generate();
+        pendingChunks_.PopFront();
     }
 
     if (!removeBlocks_.Empty()) {
@@ -113,7 +113,7 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void VoxelWorld::CreateChunk(const Vector3& position)
 {
     String id = GetChunkIdentificator(position);
-    pendingChunks_.Push(SharedPtr<Chunk>(new Chunk(context_)));
+    pendingChunks_.Push(new Chunk(context_));
     pendingChunks_.Back()->Init(scene_, position);
 }
 

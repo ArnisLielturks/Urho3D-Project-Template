@@ -376,11 +376,12 @@ void SceneManager::LoadDefaultMaps()
     data[P_START_POINT] = Vector3(0, 1, 0);
 
     StringVector commands;
-    commands.Push("ambient_light 0.5 0.5 0.5");
-    commands.Push("noclip");
-    commands.Push("chunk_visible_distance 1");
-    commands.Push("debugger");
-    commands.Push("debug_geometry");
+    commands.Push("ambient_light 0 0 0");
+    commands.Push("fog 0 100'");
+//    commands.Push("noclip");
+//    commands.Push("chunk_visible_distance 1");
+//    commands.Push("debugger");
+//    commands.Push("debug_geometry");
     data[P_COMMANDS] = commands;
     SendEvent(E_ADD_MAP, data);
 }

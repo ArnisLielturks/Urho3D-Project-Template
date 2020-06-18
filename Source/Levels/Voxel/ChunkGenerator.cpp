@@ -94,7 +94,7 @@ BlockType ChunkGenerator::GetCaveBlockType(const Vector3& blockPosition, BlockTy
     float result3 = perlin_.octaveNoise(blockPosition.x_ / smoothness3, blockPosition.z_ / smoothness3, 6) * 0.5 + 0.5;
     float result = result1 * result2 * result3;
 
-    if (result > 0.2f) {
+    if (result > 0.18f) {
         return BlockType::AIR;
     }
 

@@ -2,7 +2,7 @@
 
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Mutex.h>
-#include "NSObject.h"
+//#include "NSObject.h"
 
 #if defined(__ANDROID__)
 #include <jni.h>
@@ -52,5 +52,4 @@ private:
     bool HasQueueMessage(MessageData& messageData);
     void PopFrontQueue();
     void SendResponseMsg(const MessageData &msg);
-//    TestClass _testClass;
 };

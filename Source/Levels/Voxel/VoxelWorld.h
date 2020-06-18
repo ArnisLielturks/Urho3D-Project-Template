@@ -21,20 +21,22 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
     void HandleChunkExited(StringHash eventType, VariantMap& eventData);
-    void LoadChunk(Vector3 position, bool loadImmediately = false);
-    void UnloadChunks();
+    void LoadChunk(const Vector3& position, bool loadImmediately = false);
+    void UpdateChunks();
     Vector3 GetNodeToChunkPosition(Node* node);
-    bool IsChunkLoaded(Vector3 position);
-    bool IsChunkPending(Vector3 position);
+    bool IsChunkLoaded(const Vector3& position);
+    bool IsChunkPending(const Vector3& position);
     bool IsEqualPositions(Vector3 a, Vector3 b);
-    Vector3 GetWorldToChunkPosition(Vector3& position);
+    Vector3 GetWorldToChunkPosition(const Vector3& position);
     void CreateChunk(const Vector3& position);
+    String GetChunkIdentificator(const Vector3& position);
 
-    List<SharedPtr<Chunk>> chunks_;
+//    List<SharedPtr<Chunk>> chunks_;
     List<WeakPtr<Node>> observers_;
     List<Vector3> pendingChunks_;
     Timer updateTimer_;
     Timer cleanupTimer_;
     Scene* scene_;
     List<Vector3> removeBlocks_;
+    HashMap<String, SharedPtr<Chunk>> chunks_;
 };

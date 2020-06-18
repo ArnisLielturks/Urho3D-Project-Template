@@ -3,6 +3,8 @@
 #include <iterator>
 #include <Urho3D/Math/MathDefs.h>
 
+using namespace Urho3D;
+
 class PerlinNoise
 {
 private:
@@ -32,6 +34,10 @@ public:
     explicit PerlinNoise(int seed)
     {
         reseed(seed);
+    }
+
+    explicit PerlinNoise()
+    {
     }
 
     void reseed(int seed)

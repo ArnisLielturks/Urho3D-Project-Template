@@ -168,7 +168,6 @@ void Generator::GenerateTextures()
     dirt.colors[3] = Color(0.60,0.30,0.00);
     dirt.colors[4] = Color(0.60,0.30,0.00);
     dirt.colors[5] = Color(0.60,0.30,0.00);
-    dirt.colors[6] = Color(0.60,0.30,0.00);
     textures.Push(dirt);
 
     TextureColors sand;
@@ -176,8 +175,13 @@ void Generator::GenerateTextures()
     sand.colors[0] = Color(0.93,0.79,0.69);
     textures.Push(sand);
 
+    TextureColors coal;
+    coal.singleColor = true;
+    coal.colors[0] = Color(0.21,0.27,0.31);
+    textures.Push(coal);
+
     combined->SetSize(32 * 6, 32 * textures.Size(), 4);
-    int border = 2;
+    int border = 1;
     for (int t = 0; t < textures.Size(); t++) {
         for (int i = 0; i < 6; i++) {
             for (int x = 0; x < 32; x++) {

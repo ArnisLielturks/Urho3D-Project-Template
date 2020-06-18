@@ -36,6 +36,8 @@
 #include "../NetworkEvents.h"
 #include "../SceneManager.h"
 #include "Voxel/VoxelWorld.h"
+#include "Voxel/VoxelEvents.h"
+#include "Voxel/ChunkGenerator.h"
 
 using namespace Levels;
 using namespace ConsoleHandlerEvents;
@@ -45,6 +47,7 @@ using namespace WindowEvents;
 using namespace AudioEvents;
 using namespace CustomEvents;
 using namespace NetworkEvents;
+using namespace VoxelEvents;
 
 static int REMOTE_PLAYER_ID = 1000;
 
@@ -59,6 +62,7 @@ Level::~Level()
     StopAllAudio();
     if (GetSubsystem<VoxelWorld>()) {
         context_->RemoveSubsystem<VoxelWorld>();
+        context_->RemoveSubsystem<ChunkGenerator>();
     }
 }
 
@@ -69,6 +73,7 @@ void Level::RegisterObject(Context* context)
 
     VoxelWorld::RegisterObject(context);
     Chunk::RegisterObject(context);
+    ChunkGenerator::RegisterObject(context);
 }
 
 void Level::Init()
@@ -160,6 +165,10 @@ void Level::CreateVoxelWorld()
     if (!GetSubsystem<VoxelWorld>()) {
         context_->RegisterSubsystem(new VoxelWorld(context_));
     }
+    if (!GetSubsystem<ChunkGenerator>()) {
+        context_->RegisterSubsystem(new ChunkGenerator(context_));
+        GetSubsystem<ChunkGenerator>()->SetSeed(1);
+    }
 }
 
 SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const String& name, int nodeID)
@@ -190,6 +199,14 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
     newPlayer->SetControllerId(controllerId);
     if (!name.Empty()) {
         newPlayer->SetName(name);
+    }
+
+    if (GetSubsystem<ChunkGenerator>()) {
+        Vector3 spawnPoint = newPlayer->GetSpawnPoint();
+        spawnPoint.y_ = GetSubsystem<ChunkGenerator>()->GetTerrainHeight(spawnPoint);
+        spawnPoint.y_ += 2;
+        newPlayer->SetSpawnPoint(spawnPoint);
+        newPlayer->ResetPosition();
     }
 
     if (GetSubsystem<VoxelWorld>()) {
@@ -252,6 +269,7 @@ void Level::SubscribeToEvents()
     SubscribeToEvent(E_SERVERDISCONNECTED, URHO3D_HANDLER(Level, HandleServerDisconnected));
 
     SubscribeToEvent(E_CONTROLLER_ADDED, URHO3D_HANDLER(Level, HandleControllerConnected));
+    SubscribeToEvent(E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
     SubscribeToEvent(E_CONTROLLER_REMOVED, URHO3D_HANDLER(Level, HandleControllerDisconnected));
 
     SubscribeToEvent(E_VIDEO_SETTINGS_CHANGED, URHO3D_HANDLER(Level, HandleVideoSettingsChanged));

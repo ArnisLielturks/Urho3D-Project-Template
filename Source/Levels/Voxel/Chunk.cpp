@@ -23,6 +23,7 @@
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
+#include "ChunkGenerator.h"
 
 using namespace VoxelEvents;
 
@@ -62,77 +63,32 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    chunk->data[x][y][z] = root[String(x) + "_" + String(y) + "_" + String(z)].GetInt();
+                    chunk->data[x][y][z] = static_cast<BlockType>(root[String(x) + "_" + String(y) + "_" + String(z)].GetInt());
                 }
             }
         }
         URHO3D_LOGINFO("Loaded chunk from file");
     } else {
 
-        PerlinNoise perlin(chunk->seed_);
-        PerlinNoise perlin2(chunk->seed_ + 1);
-        PerlinNoise perlin3(chunk->seed_ + 2);
-        float octaves = 16;
-        float frequency = 3333.33f;
-        float frequency2 = 333.11f;
-
+        auto chunkGenerator = chunk->GetSubsystem<ChunkGenerator>();
         // Terrain
         for (int x = 0; x < SIZE_X; ++x) {
             for (int z = 0; z < SIZE_Z; z++) {
-                double dx = (position.x_ + x) / frequency;
-                double dz = (position.z_ + z) / frequency;
-                double dx2 = (position.x_ + x) / frequency2;
-                double dz2 = (position.z_ + z) / frequency2;
-//            URHO3D_LOGINFO("GenerateMesh chunk position " + chunk->position_.ToString() + ", X:" + String(x) + "; Z:" + String(z) + "; DX: " + String(dx) + "; DZ: " + String(dz));
-                double result = perlin.octaveNoise(dx, dz, octaves) * 0.5 + 0.5;
-                double result2 = perlin2.octaveNoise(dx2, dz2, octaves) * 0.5 + 0.5;
-                double result3 = perlin2.octaveNoise(dx, dz2, octaves) * 0.5 + 0.5;
-                result *= result2 * result3;
-                int limit = result * 100;
+                Vector3 blockPosition = position + Vector3(x, 0, z);
+                int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
                 for (int y = 0; y < SIZE_Y; y++) {
-                    int currentLevel = position.y_ + y;
-                    if (currentLevel < limit) {
-                        float heightToSurface = limit - currentLevel;
-                        if (heightToSurface <= 10) {
-                            float percentage = (10.0f - heightToSurface) / 10.0f;
-                            float threshold = perlin.octaveNoise(dx, (position.y_ + y) * frequency, dz, octaves) * 0.5 + 0.5;
-                            if (percentage > threshold * 1.8) {
-                                chunk->data[x][y][z] = BlockType::DIRT;
-                            } else if (percentage > threshold * 1.4) {
-                                chunk->data[x][y][z] = BlockType::SAND;
-                            } else {
-                                chunk->data[x][y][z] = BlockType::STONE;
-                            }
-                        } else {
-                            chunk->data[x][y][z] = BlockType::STONE;
-                        }
-                    } else {
-                        chunk->data[x][y][z] = BlockType::AIR;
-                    }
+                    blockPosition.y_ = position.y_ + y;
+                    chunk->data[x][y][z] = chunkGenerator->GetBlockType(blockPosition, surfaceHeight);
                 }
             }
         }
 
-        octaves = 1;
-        frequency = 33.67f;
-        frequency2 = 44.67f;
         // Caves
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    double dx = (position.x_ + x) / frequency;
-                    double dy = (position.y_ + y) / frequency * 31.2;
-                    double dz = (position.z_ + z) / frequency * 3.4f;
-                    double result = perlin.octaveNoise(dx, dy, dz, octaves) * 0.5 + 0.5;
-//                    double result2 = perlin.octaveNoise(dx / frequency2, dy / frequency2, dz / frequency2) * 0.5 + 0.5;
-//                    double result3 = perlin.octaveNoise(dx / frequency2 / frequency, dy / frequency2 / frequency, dz / frequency2 / frequency) * 0.5 + 0.5;
-//                    result *= result2;
-                    if (result > 0.65) {
-                        chunk->data[x][y][z] = BlockType::AIR;
-                    }
-//                    else {
-//                        chunk->data[x][y][z] = BlockType::AIR;
-//                    }
+                    Vector3 blockPosition = position + Vector3(x, y, z);
+                    chunk->data[x][y][z] = chunkGenerator->GetCaveBlockType(blockPosition, chunk->data[x][y][z]);
                 }
             }
         }
@@ -478,7 +434,7 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         return;
     }
     if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_] == 0) {
-        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = 1;
+        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = BlockType::DIRT;
         URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
         GenerateGeometry();
@@ -514,7 +470,7 @@ void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
     VariantMap& data = GetEventDataMap();
     data[P_POSITION] = position_;
     SendEvent(E_CHUNK_ENTERED, data);
-//    URHO3D_LOGINFO("Chunk " + position_.ToString() + " player entered");
+    URHO3D_LOGINFO("Chunk " + position_.ToString() + " player entered");
 
     using namespace NodeCollisionStart;
 
@@ -522,6 +478,14 @@ void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
     auto* otherNode = static_cast<Node*>(eventData[P_OTHERNODE].GetPtr());
 //    URHO3D_LOGINFO("Name: " + otherNode->GetName() + " ID : " + String(otherNode->GetID()));
     visitors_++;
+
+//    for (int i = 0; i < 6; i++) {
+////        if (!visibleNeighbors_[i]) {
+//            if (neighbors_[i]) {
+//                neighbors_[i]->SetVisible(visibleNeighbors_[i]);
+//            }
+////        }
+//    }
 }
 
 void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
@@ -535,7 +499,7 @@ void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
 
 Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position)
 {
-    int textureCount = 3;
+    int textureCount = static_cast<int>(BlockType::NONE) - 1;
     Vector2 quadSize(1.0f / 6, 1.0f / textureCount);
     float typeOffset = (static_cast<int>(blockType) - 1) * quadSize.y_;
     switch (side) {
@@ -559,14 +523,6 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
         }
     }
     return position;
-}
-
-bool Chunk::IsPointInsideChunk(Vector3 pointPosition)
-{
-    BoundingBox box;
-    box.min_ = position_;
-    box.max_ = position_ + Vector3(SIZE_X, SIZE_Y, SIZE_Z);
-    return box.IsInside(pointPosition);
 }
 
 void Chunk::Save()
@@ -607,8 +563,9 @@ void Chunk::CreateNode()
     triggerBody->SetTrigger(true);
     triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
     auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
-    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
-    triggerNode_->SetScale(2.0f);
+    triggerNode_->SetScale(1.0f);
+    Vector3 offset = Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) / triggerNode_->GetScale();
+    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) - offset);
 
     SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
@@ -626,6 +583,11 @@ void Chunk::CreateNode()
     text3D->SetFontSize(32);
     label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
     scene_->AddChild(node_);
+
+    using namespace ChunkGenerated;
+    VariantMap data = GetEventDataMap();
+    data[P_POSITION] = position_;
+    SendEvent(E_CHUNK_GENERATED);
 }
 
 void Chunk::RemoveNode()
@@ -639,6 +601,11 @@ void Chunk::RemoveNode()
     if (triggerNode_) {
         triggerNode_->Remove();
     }
+
+    using namespace ChunkRemoved;
+    VariantMap data = GetEventDataMap();
+    data[P_POSITION] = position_;
+    SendEvent(E_CHUNK_REMOVED);
 }
 
 bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
@@ -686,5 +653,39 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
                 }
             }
             return false;
+    }
+}
+
+void Chunk::MarkForDeletion(bool value)
+{
+    shouldDelete_ = value;
+}
+
+bool Chunk::IsMarkedForDeletion()
+{
+    return shouldDelete_;
+}
+
+void Chunk::MarkActive(bool value)
+{
+    isActive_ = value;
+}
+
+bool Chunk::IsActive()
+{
+    return isActive_;
+}
+
+void Chunk::SetActive()
+{
+    if (node_) {
+        auto shape = node_->GetComponent<CollisionShape>();
+        if (shape) {
+            shape->SetEnabled(isActive_);
+        }
+        auto body = node_->GetComponent<RigidBody>();
+        if (body) {
+            body->SetEnabled(isActive_);
+        }
     }
 }

@@ -3,10 +3,18 @@
 
 namespace VoxelEvents {
     URHO3D_EVENT(E_CHUNK_ENTERED, ChunkEntered) {
-        URHO3D_PARAM(P_POSITION, Position); // Vector3 chunk position that was entered
+        URHO3D_PARAM(P_POSITION, Position); // Vector3 - chunk position that was entered
     }
 
     URHO3D_EVENT(E_CHUNK_EXITED, ChunkExited) {
-        URHO3D_PARAM(P_POSITION, Position); // Vector3 chunk position that was entered
+        URHO3D_PARAM(P_POSITION, Position); // Vector3 - chunk position that was entered
+    }
+
+    URHO3D_EVENT(E_CHUNK_GENERATED, ChunkGenerated) {
+        URHO3D_PARAM(P_POSITION, Position); // Vector3 - chunk position
+    }
+
+    URHO3D_EVENT(E_CHUNK_REMOVED, ChunkRemoved) {
+        URHO3D_PARAM(P_POSITION, Position); // Vector3 - chunk position
     }
 }

@@ -54,7 +54,9 @@ public:
     float GetCameraDistance();
 
     void SetSpawnPoint(Vector3 position);
+    const Vector3& GetSpawnPoint() { return spawnPoint_; };
 
+    void ResetPosition();
 private:
 
     bool IsCameraTargetSet();
@@ -67,8 +69,6 @@ private:
     void HandleNodeCollision(StringHash eventType, VariantMap& eventData);
 
     void HandlePredictPlayerPosition(StringHash eventType, VariantMap& eventData);
-
-    void ResetPosition();
 
     RigidBody* rigidBody_;
     SharedPtr<Node> node_;

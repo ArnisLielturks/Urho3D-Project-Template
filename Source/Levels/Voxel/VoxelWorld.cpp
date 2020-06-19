@@ -2,17 +2,21 @@
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Math/Ray.h>
+#include <Urho3D/Container/Vector.h>
+#include <Urho3D/Graphics/Octree.h>
 #include "VoxelWorld.h"
 #include "../../SceneManager.h"
 #include "VoxelEvents.h"
 #include "../../Console/ConsoleHandlerEvents.h"
 #include "ChunkGenerator.h"
+#include "../../Global.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
 int VoxelWorld::visibleDistance = 5;
-int VoxelWorld::activeDistance = 3;
+int VoxelWorld::activeDistance = 5;
 
 VoxelWorld::VoxelWorld(Context* context):
     Object(context)
@@ -22,6 +26,7 @@ VoxelWorld::VoxelWorld(Context* context):
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(VoxelWorld, HandleUpdate));
     SubscribeToEvent(E_CHUNK_ENTERED, URHO3D_HANDLER(VoxelWorld, HandleChunkEntered));
     SubscribeToEvent(E_CHUNK_EXITED, URHO3D_HANDLER(VoxelWorld, HandleChunkExited));
+    SubscribeToEvent(E_CHUNK_GENERATED, URHO3D_HANDLER(VoxelWorld, HandleChunkGenerated));
 
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
@@ -58,6 +63,42 @@ VoxelWorld::VoxelWorld(Context* context):
         VoxelWorld::activeDistance = value;
         URHO3D_LOGINFOF("Changing chunk active radius to %d", value);
     });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "chunk_load_per_frame",
+            ConsoleCommandAdd::P_EVENT, "#chunk_load_per_frame",
+            ConsoleCommandAdd::P_DESCRIPTION, "How many chunks to attempt to load in a single frame",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#chunk_load_per_frame", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("amount parameter is required!");
+            return;
+        }
+        int value = ToInt(params[1]);
+        loadChunksPerFrame_ = value;
+        URHO3D_LOGINFOF("Chunks loaded per frame change to %d", value);
+    });
+
+//    SendEvent(
+//            E_CONSOLE_COMMAND_ADD,
+//            ConsoleCommandAdd::P_NAME, "chunk_visibility_update",
+//            ConsoleCommandAdd::P_EVENT, "#chunk_visibility_update",
+//            ConsoleCommandAdd::P_DESCRIPTION, "Hide chunks when they are not visible",
+//            ConsoleCommandAdd::P_OVERWRITE, true
+//    );
+//    SubscribeToEvent("#chunk_visibility_update", [&](StringHash eventType, VariantMap& eventData) {
+//        StringVector params = eventData["Parameters"].GetStringVector();
+//        if (params.Size() != 2) {
+//            URHO3D_LOGERROR("visiblity parameter is required!");
+//            return;
+//        }
+//        int value = ToBool(params[1]);
+//        Chunk::visibilityUpdate_ = value;
+//        URHO3D_LOGINFOF("Chunk visiblitity updated to %d", value);
+//    });
 }
 
 void VoxelWorld::RegisterObject(Context* context)
@@ -69,8 +110,7 @@ void VoxelWorld::AddObserver(SharedPtr<Node> observer)
 {
     observers_.Push(observer);
     URHO3D_LOGINFO("Adding observer to voxel world!");
-    Vector3 position = GetNodeToChunkPosition(observer);
-    LoadChunk(position);
+    LoadChunk(observer->GetWorldPosition());
 }
 
 void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
@@ -84,11 +124,16 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
-    if (!pendingChunks_.Empty()) {
+    int loadedChunkCounter = 0;
+    while (!pendingChunks_.Empty()) {
+        loadedChunkCounter++;
         String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
         chunks_[id] = pendingChunks_.Front();
         chunks_[id]->Generate();
         pendingChunks_.PopFront();
+        if (loadedChunkCounter > loadChunksPerFrame_) {
+            break;
+        }
     }
 
     if (!removeBlocks_.Empty()) {
@@ -141,15 +186,17 @@ void VoxelWorld::HandleChunkEntered(StringHash eventType, VariantMap& eventData)
 
 void VoxelWorld::HandleChunkExited(StringHash eventType, VariantMap& eventData)
 {
+}
 
+void VoxelWorld::HandleChunkGenerated(StringHash eventType, VariantMap& eventData)
+{
 }
 
 void VoxelWorld::LoadChunk(const Vector3& position)
 {
-//    position.y_ = -SIZE_Y;
-    if (!IsChunkLoaded(position) && !IsChunkPending(position)) {
-        CreateChunk(position);
-//        URHO3D_LOGINFO("Loading chunk" + position.ToString());
+    Vector3 fixedChunkPosition = GetWorldToChunkPosition(position);
+    if (!IsChunkLoaded(fixedChunkPosition) && !IsChunkPending(fixedChunkPosition)) {
+        CreateChunk(fixedChunkPosition);
     }
     Vector<Vector3> positions;
 
@@ -157,7 +204,7 @@ void VoxelWorld::LoadChunk(const Vector3& position)
     //Terrain blocks only
 //    for (int x = -5; x < 5; x++) {
 //        for (int z = -5; z < 5; z++) {
-//            Vector3 terrain = Vector3(position + Vector3::FORWARD * SIZE_Z * z + Vector3::LEFT * SIZE_X * x);
+//            Vector3 terrain = Vector3(fixedChunkPosition + Vector3::FORWARD * SIZE_Z * z + Vector3::LEFT * SIZE_X * x);
 //            terrain.y_ = GetSubsystem<ChunkGenerator>()->GetTerrainHeight(terrain);
 //            positions.Push(terrain);
 ////            positions.Push(terrain + Vector3::UP * SIZE_Y);
@@ -167,39 +214,39 @@ void VoxelWorld::LoadChunk(const Vector3& position)
 //    pq2ws
 
     // Same
-    positions.Push(Vector3(position + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::FORWARD * SIZE_Z));
-    positions.Push(Vector3(position + Vector3::BACK * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::FORWARD * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::BACK * SIZE_Z));
 
-    positions.Push(Vector3(position + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     // Up
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y));
 
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::UP * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     // Down
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y));
 
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
-    positions.Push(Vector3(position + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::BACK * SIZE_Z + Vector3::RIGHT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::LEFT * SIZE_X));
+    positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     for (auto it = positions.Begin(); it != positions.End(); ++it) {
         if(!IsChunkLoaded((*it)) && !IsChunkPending((*it))) {
@@ -226,18 +273,12 @@ bool VoxelWorld::IsEqualPositions(Vector3 a, Vector3 b)
 
 SharedPtr<Chunk> VoxelWorld::GetChunkByPosition(const Vector3& position)
 {
-    if (IsChunkLoaded(position)) {
-        return chunks_[GetChunkIdentificator(position)];
+    Vector3 fixedPositon = GetWorldToChunkPosition(position);
+    if (IsChunkLoaded(fixedPositon)) {
+        return chunks_[GetChunkIdentificator(fixedPositon)];
     }
 
     return nullptr;
-//    for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
-//        if ((*it)->IsPointInsideChunk(position)) {
-//            return (*it);
-//        }
-//    }
-//
-//    return nullptr;
 }
 
 Vector3 VoxelWorld::GetWorldToChunkPosition(const Vector3& position)
@@ -269,6 +310,9 @@ void VoxelWorld::UpdateChunks()
     if (GetSubsystem<DebugHud>()) {
         GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", chunks_.Size());
     }
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("PendingChuml", chunks_.Size());
+    }
 
     int counter = 0;
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
@@ -280,21 +324,25 @@ void VoxelWorld::UpdateChunks()
         GetSubsystem<DebugHud>()->SetAppStats("Active chunks", counter);
     }
 
-    float activeBlockDistance = SIZE_X * ( activeDistance + 1);
-    float visibleBlockDistance = SIZE_X * ( visibleDistance + 1);
+    float activeBlockDistance = SIZE_X * ( activeDistance + 2);
+    float visibleBlockDistance = SIZE_X * ( visibleDistance + 2);
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         if ((*chIt).second_) {
             (*chIt).second_->MarkForDeletion(true);
             (*chIt).second_->MarkActive(false);
         }
     }
+//    int visibleChunks = 0;
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
             if (!(*chIt).second_) {
-                return;
+                continue;
             }
-            Vector3 chunkPosition = (*chIt).second_->GetPosition();
-            auto distance = (*obIt)->GetWorldPosition() - (*chIt).second_->GetPosition();
+//            if ((*chIt).second_->IsVisible()) {
+//                visibleChunks++;
+//            }
+            const Vector3& chunkPosition = (*chIt).second_->GetPosition();
+            auto distance = (*obIt)->GetWorldPosition() - chunkPosition;
             distance.x_ = Abs(distance.x_);
             distance.y_ = Abs(distance.y_);
             distance.z_ = Abs(distance.z_);
@@ -308,13 +356,43 @@ void VoxelWorld::UpdateChunks()
         }
     }
 
+//    if (GetSubsystem<DebugHud>()) {
+//        GetSubsystem<DebugHud>()->SetAppStats("Visible chunks", visibleChunks);
+//    }
+
+    for (auto it = pendingChunks_.Begin(); it != pendingChunks_.End(); ++it) {
+        bool visible = false;
+        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
+            const Vector3& chunkPosition = (*it)->GetPosition();
+            auto distance = (*obIt)->GetWorldPosition() - chunkPosition;
+            distance.x_ = Abs(distance.x_);
+            distance.y_ = Abs(distance.y_);
+            distance.z_ = Abs(distance.z_);
+
+            if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
+                visible = true;
+                break;
+            }
+        }
+        if (!visible) {
+            delete (*it);
+            it = pendingChunks_.Erase(it);
+            if (it == pendingChunks_.End()) {
+                break;
+            }
+        }
+    }
+
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         if ((*chIt).second_) {
             if ((*chIt).second_->IsMarkedForDeletion()) {
-                chunks_.Erase(chIt);
-                return;
+                chIt = chunks_.Erase(chIt);
+            }
+            if (chunks_.End() == chIt) {
+                break;
             }
             (*chIt).second_->SetActive();
+//            (*chIt).second_->UpdateVisibility();
         }
     }
 }
@@ -324,3 +402,37 @@ String VoxelWorld::GetChunkIdentificator(const Vector3& position)
 
     return String(position.x_ / SIZE_X) + "_" +  String(position.y_ / SIZE_Y) + "_" + String(position.z_ / SIZE_Z);
 }
+
+//
+//void VoxelWorld::RaycastFromObservers() {
+//    scene_->GetComponent<Octree>()->
+//    return;
+//    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
+//        bool visible = false;
+//        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
+//            Vector3 hitPosition;
+//            Vector3 hitNormal;
+//            Drawable *hitDrawable = nullptr;
+//
+//            Ray ray;
+//            ray.origin_ = (*obIt)->GetWorldPosition();
+//            Vector3 direction = ((*chIt).second_->GetPosition() - ray.origin_);
+//            ray.direction_ = direction.Normalized();
+//
+//            PODVector<RayQueryResult>
+//            results;
+//            RayOctreeQuery query(results, ray, RAY_TRIANGLE, 1000, DRAWABLE_GEOMETRY, VIEW_MASK_CHUNK);
+//            scene_->GetComponent<Octree>()->RaycastSingle(query);
+//            if (results.Size()) {
+//                RayQueryResult &result = results[0];
+//                hitPosition = result.position_;
+//                hitNormal = result.normal_;
+//                hitDrawable = result.drawable_;
+//                if (hitDrawable->GetNode()->GetID() == (*chIt).second_->GetNode()->GetID()) {
+//                    visible = true;
+//                }
+//            }
+//        }
+//        (*chIt).second_->SetVisibility(visible);
+//    }
+//}

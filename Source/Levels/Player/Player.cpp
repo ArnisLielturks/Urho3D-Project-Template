@@ -149,7 +149,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
     rigidBody_->SetLinearDamping(0.8f);
     rigidBody_->SetAngularDamping(0.8f);
-    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
+    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER | COLLISION_MASK_CHUNK_LOADER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
 
     auto light = node_->CreateComponent<Light>();
     light->SetRadius(10.0f);

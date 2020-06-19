@@ -149,6 +149,11 @@ void SceneManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
         targetProgress_ = (float)completed / ( (float) loadingSteps_.Size() + 1.0f );
 
+        if (!(*it).second_.map.Empty() && (*it).second_.map != activeScene_->GetFileName()) {
+            (*it).second_.finished = true;
+            continue;
+        }
+
         if (CanLoadingStepRun((*it).second_)) {
 
             //TODO: implement fix for web builds as the loading steps might take longer to execute
@@ -235,6 +240,7 @@ void SceneManager::HandleRegisterLoadingStep(StringHash eventType, VariantMap& e
     LoadingStep step;
     step.name     = eventData[P_NAME].GetString();
     step.event    = eventData[P_EVENT].GetString();
+    step.map      = eventData[P_MAP].GetString();
     step.ackSent  = false;
     step.finished = false;
     step.failed   = false;
@@ -369,21 +375,38 @@ void SceneManager::LoadDefaultMaps()
 {
     using namespace AddMap;
     VariantMap& data = GetEventDataMap();
-    data[P_MAP] = "Scenes/Flat.xml";
-    data[P_NAME] = "Flatland";
-    data[P_DESCRIPTION] = "Flat map where you could easily fall off";
-    data[P_IMAGE] = "Textures/Box.png";
-    data[P_START_POINT] = Vector3(0, 1, 0);
+    {
+        data[P_MAP] = "Scenes/Flat.xml";
+        data[P_NAME] = "Flatland";
+        data[P_DESCRIPTION] = "Flat map where you could easily fall off";
+        data[P_IMAGE] = "Textures/flat-platform.png";
+        data[P_START_POINT] = Vector3(0, 1, 0);
 
-    StringVector commands;
-    commands.Push("ambient_light 0 0 0");
-    commands.Push("fog 0 100'");
-//    commands.Push("noclip");
-//    commands.Push("chunk_visible_distance 1");
+        StringVector commands;
+        commands.Push("ambient_light 0.5 0.5 0.5");
+        commands.Push("fog 0 100'");
+        data[P_COMMANDS] = commands;
+        SendEvent(E_ADD_MAP, data);
+    }
+
+    {
+        // Voxel
+        data[P_MAP] = "Scenes/Voxel.xml";
+        data[P_NAME] = "Voxel";
+        data[P_DESCRIPTION] = "Voxel based map";
+        data[P_IMAGE] = "Textures/cube.png";
+        data[P_START_POINT] = Vector3(0, 1, 0);
+
+        StringVector commands;
+        commands.Push("ambient_light 0.8 0.8 0.8");
+        commands.Push("fog 0 500'");
+    commands.Push("noclip");
+//        commands.Push("chunk_visible_distance 1");
 //    commands.Push("debugger");
-//    commands.Push("debug_geometry");
-    data[P_COMMANDS] = commands;
-    SendEvent(E_ADD_MAP, data);
+    commands.Push("debug_geometry");
+        data[P_COMMANDS] = commands;
+        SendEvent(E_ADD_MAP, data);
+    }
 }
 
 const MapInfo* SceneManager::GetCurrentMapInfo() const

@@ -2,6 +2,7 @@
 #include <Urho3D/Core/Object.h>
 #include "../../Generator/PerlinNoise.h"
 #include "VoxelDefs.h"
+#include "../../Generator/SimplexNoise.h"
 
 using namespace Urho3D;
 
@@ -18,4 +19,5 @@ public:
     void SetSeed(int seed);
 private:
     PerlinNoise perlin_;
+    SimplexNoise simplexNoise_;
 };

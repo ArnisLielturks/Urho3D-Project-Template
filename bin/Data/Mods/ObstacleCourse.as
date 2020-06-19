@@ -7,6 +7,7 @@ void Start()
     VariantMap data;
     data["Name"] = "Initializing obstacle course";
     data["Event"] = loadingEventName;
+    data["Map"] = "Mods/ObstacleCourse/ObstacleCourse.xml";
     SendEvent("RegisterLoadingStep", data);
 
     RegisterMap();
@@ -23,7 +24,7 @@ void RegisterMap()
     data["Map"] = "Mods/ObstacleCourse/ObstacleCourse.xml";
     data["Name"] = "Obstacle course";
     data["Description"] = "Finish the obstacle course without falling!";
-    data["Image"] = "Textures/Achievements/falling.png";
+    data["Image"] = "Textures/slalom.png";
     data["StartNode"] = "StartPoint";
 
     Array<String> commands;

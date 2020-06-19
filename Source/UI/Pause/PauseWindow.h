@@ -20,7 +20,7 @@ protected:
     virtual void Create() override;
 
 private:
-
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void SubscribeToEvents();
 
     SharedPtr<Button> continueButton_;

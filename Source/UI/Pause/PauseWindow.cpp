@@ -4,6 +4,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/Font.h>
+#include <Urho3D/Core/CoreEvents.h>
 #include "PauseWindow.h"
 #include "../../Global.h"
 #include "../../LevelManagerEvents.h"
@@ -88,6 +89,7 @@ void PauseWindow::Create()
 
 void PauseWindow::SubscribeToEvents()
 {
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(PauseWindow, HandleUpdate));
 }
 
 Button* PauseWindow::CreateButton(const String& text, int width, IntVector2 position)
@@ -107,4 +109,15 @@ Button* PauseWindow::CreateButton(const String& text, int width, IntVector2 posi
     buttonText->SetText(text);
 
     return button;
+}
+
+void PauseWindow::HandleUpdate(StringHash eventType, VariantMap& eventData) {
+    Input *input = GetSubsystem<Input>();
+    if (!input->IsMouseVisible()) {
+        input->SetMouseVisible(true);
+    }
+    if (input->GetKeyPress(KEY_BACKSPACE)) {
+        UnsubscribeFromEvent(E_UPDATE);
+        SendEvent(E_CLOSE_ALL_WINDOWS);
+    }
 }

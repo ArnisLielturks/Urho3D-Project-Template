@@ -107,7 +107,7 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    if (!GetSubsystem<Network>()->GetServerConnection()) {
+    if (!GetSubsystem<Network>()->GetServerConnection() && data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Voxel.xml") {
         CreateVoxelWorld();
     }
 

@@ -3,7 +3,6 @@ Node@ ground = null;
 
 void Start()
 {
-    return;
     SubscribeToEvent("LoadGamemode", "HandleLoadGameMode");
     SubscribeToEvent("BoxDestroyed", "HandleBoxDestroyed");
     SubscribeToEvent("BoxDropped", "HandleBoxDropped");
@@ -13,6 +12,7 @@ void Start()
     VariantMap data;
     data["Name"] = "Initializing GameMode";
     data["Event"] = "LoadGamemode";
+    data["Map"] = "Scenes/Flat.xml";
     SendEvent("RegisterLoadingStep", data);
 
     data["Event"] = "BoxDestroyed";

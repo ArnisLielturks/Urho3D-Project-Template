@@ -11,6 +11,7 @@
 #include <Urho3D/Graphics/Graphics.h>
 #include <Urho3D/Graphics/StaticModel.h>
 #include <Urho3D/Graphics/OctreeQuery.h>
+#include <Urho3D/Graphics/Geometry.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Physics/PhysicsEvents.h>
 #include <Urho3D/Physics/PhysicsWorld.h>
@@ -19,12 +20,58 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/IO/FileSystem.h>
+#include <Urho3D/Container/Vector.h>
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
 #include "ChunkGenerator.h"
+//#include "../../PolyVox/CubicSurfaceExtractor.h"
+//#include "../../PolyVox/MarchingCubesSurfaceExtractor.h"
+//#include "../../PolyVox/Mesh.h"
+//#include "../../PolyVox/RawVolume.h"
 
 using namespace VoxelEvents;
+
+bool Chunk::visibilityUpdate_ = true;
+
+//Use the PolyVox namespace
+//using namespace PolyVox;
+
+//void createSphereInVolume(RawVolume<uint8_t>& volData, float fRadius)
+//{
+//    //This vector hold the position of the center of the volume
+//    Vector3DFloat v3dVolCenter(volData.getWidth() / 2, volData.getHeight() / 2, volData.getDepth() / 2);
+//
+//    //This three-level for loop iterates over every voxel in the volume
+//    for (int z = 0; z < volData.getDepth(); z++)
+//    {
+//        for (int y = 0; y < volData.getHeight(); y++)
+//        {
+//            for (int x = 0; x < volData.getWidth(); x++)
+//            {
+//                //Store our current position as a vector...
+//                Vector3DFloat v3dCurrentPos(x, y, z);
+//                //And compute how far the current position is from the center of the volume
+//                float fDistToCenter = (v3dCurrentPos - v3dVolCenter).length();
+//
+//                uint8_t uVoxelValue = 0;
+//
+//                //If the current voxel is less than 'radius' units from the center then we make it solid.
+//                if (fDistToCenter <= fRadius)
+//                {
+//                    //Our new voxel value
+//                    uVoxelValue = 255;
+//                }
+//
+//
+//
+//                //Wrte the voxel value into the volume
+//                volData.setVoxel(x, y, z, uVoxelValue);
+//            }
+//        }
+//    }
+//}
+
 
 void SaveToFile(const WorkItem* item, unsigned threadIndex)
 {
@@ -47,6 +94,7 @@ void SaveToFile(const WorkItem* item, unsigned threadIndex)
 
 void GenerateMesh(const WorkItem* item, unsigned threadIndex)
 {
+
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
     Vector3 position = chunk->position_;
 
@@ -58,7 +106,10 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    chunk->data[x][y][z] = static_cast<BlockType>(root[String(x) + "_" + String(y) + "_" + String(z)].GetInt());
+                    String key = String(x) + "_" + String(y) + "_" + String(z);
+                    if (root.Contains(key)) {
+                        chunk->data[x][y][z] = static_cast<BlockType>(root[key].GetInt());
+                    }
                 }
             }
         }
@@ -97,6 +148,18 @@ Object(context)
 
 Chunk::~Chunk()
 {
+    if (generateWorkItem_) {
+        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+        if (workQueue) {
+            workQueue->RemoveWorkItem(generateWorkItem_);
+        }
+    }
+    if (saveWorkItem_) {
+        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+        if (workQueue) {
+            workQueue->RemoveWorkItem(saveWorkItem_);
+        }
+    }
     RemoveNode();
 }
 
@@ -118,9 +181,10 @@ void Chunk::Init(Scene* scene, const Vector3& position)
     triggerNode_ = node_->CreateChild("ChunkTrigger");
     auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
     triggerBody->SetTrigger(true);
-    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_PLAYER);
+    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_CHUNK_LOADER);
     auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
-    triggerNode_->SetScale(VoxelWorld::visibleDistance);
+    triggerNode_->SetWorldScale(VoxelWorld::visibleDistance);
+
     SubscribeToEvent(triggerNode_, E_NODECOLLISIONSTART, URHO3D_HANDLER(Chunk, HandlePlayerEntered));
     SubscribeToEvent(triggerNode_, E_NODECOLLISIONEND, URHO3D_HANDLER(Chunk, HandlePlayerExited));
 
@@ -132,9 +196,10 @@ void Chunk::Init(Scene* scene, const Vector3& position)
 
     SubscribeToEvent("#chunk_visible_distance", [&](StringHash eventType, VariantMap& eventData) {
         if (triggerNode_) {
-            triggerNode_->SetScale(VoxelWorld::visibleDistance);
+            triggerNode_->SetWorldScale(VoxelWorld::visibleDistance);
         }
     });
+//    SetVisibility(false);
 }
 
 void Chunk::Generate()
@@ -165,20 +230,218 @@ void Chunk::UpdateGeometry()
     } else {
         shape->SetEnabled(false);
     }
+//    UpdateVisibility();
 }
 
 void Chunk::GenerateGeometry()
 {
+//    // Create an empty volume and then place a sphere in it
+//    HashMap<Vector3, int> materials;
+//    RawVolume<uint8_t> volData(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(SIZE_X, SIZE_Y, SIZE_Z)));
+//    createSphereInVolume(volData, 3);
+//
+//    // Extract the surface for the specified region of the volume. Uncomment the line for the kind of surface extraction you want to see.
+//    Region region;
+//    region.setLowerX(0);
+//    region.setLowerY(0);
+//    region.setLowerZ(0);
+//    region.setUpperX(SIZE_X);
+//    region.setUpperY(SIZE_Y);
+//    region.setUpperZ(SIZE_Z);
+//    auto mesh = extractCubicMesh(&volData, region);
+//    //auto mesh = extractMarchingCubesMesh(&volData, volData.getEnclosingRegion());
+//
+//    // The surface extractor outputs the mesh in an efficient compressed format which is not directly suitable for rendering. The easiest approach is to
+//    // decode this on the CPU as shown below, though more advanced applications can upload the compressed mesh to the GPU and decompress in shader code.
+//    auto decodedMesh = decodeMesh(mesh);
+//
+//
+//    vb_->SetShadowed(true);
+//    vb_->SetSize(8, MASK_POSITION | MASK_NORMAL | MASK_TEXCOORD1, false);
+//    vb_->SetDataRange(decodedMesh.getRawVertexData(), 0, decodedMesh.getNoOfVertices());
+
+//    if (vb.GetVertexCount() != vertices_.Size() || vb.GetElementMask() != elementMask_)
+//        vb.SetSize(vertices_.Size(), elementMask_, false);
+
+//    unsigned char* dest = (unsigned char*) vb_->Lock(0, decodedMesh.getNoOfVertices(), true);
+
+//    if (dest) {
+//        for (auto i = 0; i < decodedMesh.getNoOfVertices(); ++i) {
+////            if (elementMask_ & MASK_POSITION) {
+//                auto vertex = decodedMesh.getVertex(i);
+//                *((Vector3*)dest) = Vector3(vertex.position.getX(), vertex.position.getY(), vertex.position.getZ());
+//                dest += sizeof(Vector3);
+////            }
+////            if (elementMask_ & MASK_NORMAL) {
+//                *((Vector3*)dest) = Vector3(vertex.normal.getX(), vertex.normal.getY(), vertex.normal.getZ());
+//                dest += sizeof(Vector3);
+////            }
+////            if (elementMask_ & MASK_COLOR) {
+////                *((unsigned*)dest) = vertices_[i].color_.ToUInt();
+////                dest += sizeof(unsigned);
+////            }
+////            if (elementMask_ & MASK_TEXCOORD1) {
+//            float pos = i * 2.0 / decodedMesh.getNoOfVertices();
+//                *((Vector2*)dest) = Vector2(pos, pos);
+//                dest += sizeof(Vector2);
+////            }
+////            if (elementMask_ & MASK_TEXCOORD2) {
+////                *((Vector2*)dest) = vertices_[i].texCoord2_;
+////                dest += sizeof(Vector2);
+////            }
+////            if (elementMask_ & MASK_CUBETEXCOORD1) {
+////                *((Vector3*)dest) = vertices_[i].cubeTexCoord1_;
+////                dest += sizeof(Vector3);
+////            }
+////            if (elementMask_ & MASK_CUBETEXCOORD2) {
+////                *((Vector3*)dest) = vertices_[i].cubeTexCoord2_;
+////                dest += sizeof(Vector3);
+////            }
+////            if (elementMask_ & MASK_TANGENT) {
+////                *((Vector4*)dest) = vertices_[i].tangent_;
+////                dest += sizeof(Vector4);
+////            }
+//        }
+//    } else {
+//        URHO3D_LOGERROR("Failed to lock vertex buffer");
+//    }
+//    vb_->Unlock();
+//
+//
+////    auto vertexData = decodedMesh.getRawVertexData();
+////    auto vertex0 = decodedMesh.getVertex(0);
+////    for (int i = 0; i < decodedMesh.getNoOfVertices(); i++) {
+////        auto vertex = decodedMesh.getVertex(i);
+////    }
+//
+//    Urho3D::Vector<unsigned short> indices(decodedMesh.getNoOfIndices());
+//
+//    for (int i = 0; i < decodedMesh.getNoOfIndices(); i++) {
+//        auto indexData = decodedMesh.getIndex(i);
+//        indices[i] = static_cast<unsigned short>(indexData);
+//    }
+//
+//    ib_->SetShadowed(true);
+//    ib_->SetSize(decodedMesh.getNoOfIndices(), false);
+//    ib_->SetData(indices.Buffer());
+////    ib_->SetDataRange(decodedMesh.getRawIndexData(), 0, decodedMesh.getNoOfIndices());
+//
+//    URHO3D_LOGINFOF("VB Size %d => %d", decodedMesh.getNoOfVertices(), vb_->GetVertexCount());
+//    URHO3D_LOGINFOF("IB Size %d => %d", decodedMesh.getNoOfIndices(), ib_->GetIndexCount());
+//
+//    chunkGeometry_->SetVertexBuffer(0, vb_);
+//    chunkGeometry_->SetIndexBuffer(ib_);
+//    chunkGeometry_->SetDrawRange(TRIANGLE_LIST, 0, decodedMesh.getNoOfIndices());
+//
+//    chunkModel_ = new Model(context_);
+//    chunkModel_->SetNumGeometries(1);
+//    chunkModel_->SetGeometry(0, 0, chunkGeometry_);
+//    auto staticModel = node_->CreateComponent<StaticModel>();
+//    staticModel->SetModel(chunkModel_);
+//    auto cache = GetSubsystem<ResourceCache>();
+//    staticModel->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+//    staticModel->SetCastShadows(true);
+//
+//    return;
     geometry_->SetDynamic(false);
     geometry_->SetNumGeometries(1);
     geometry_->BeginGeometry(0, TRIANGLE_LIST);
     geometry_->SetViewMask(VIEW_MASK_CHUNK);
+    geometry_->SetOccluder(true);
+    geometry_->SetOccludee(true);
 
-    auto cache = GetSubsystem<ResourceCache>();
+//    int vertices = 0;
+//    for (int x = 0; x < SIZE_X; x++) {
+//        for (int y = 0; y < SIZE_Y; y++) {
+//            for (int z = 0; z < SIZE_Z; z++) {
+//                if (data[x][y][z] > 0) {
+//                    int blockId = data[x][y][z];
+//                    Vector3 position(x, y, z);
+//                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    vb_->SetShadowed(true);
+//    vb_->SetSize(8, MASK_POSITION | MASK_NORMAL | MASK_COLOR | MASK_TEXCOORD1 | MASK_TANGENT, false);
+//    unsigned char* dest = (unsigned char*) vb_->Lock(0, vertices, true);
+//    for (int x = 0; x < SIZE_X; x++) {
+//        for (int y = 0; y < SIZE_Y; y++) {
+//            for (int z = 0; z < SIZE_Z; z++) {
+//                if (data[x][y][z] > 0) {
+//                    int blockId = data[x][y][z];
+//                    Vector3 position(x, y, z);
+//                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
+//                        *((Vector3*)dest) = Vector3(x, y, z);
+//                        dest += sizeof(Vector3);
+//                        *((Vector3*)dest) = Vector3::UP;
+//                        dest += sizeof(Vector3);
+//                        *((unsigned*)dest) = 244 * 233 * 100;
+//                        dest += sizeof(unsigned);
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
+//                        vertices += 4;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    vb_->Unlock();
+    for (int i = 0; i < 6; i++) {
+        sideTransparent_[i] = true;
+    }
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
                 if (data[x][y][z] > 0) {
+
+                    if (x == 0) {
+                        sideTransparent_[static_cast<int>(BlockSide::LEFT)] = false;
+                    }
+                    if (x == SIZE_X - 1) {
+                        sideTransparent_[static_cast<int>(BlockSide::RIGHT)] = false;
+                    }
+                    if (y == 0) {
+                        sideTransparent_[static_cast<int>(BlockSide::BOTTOM)] = false;
+                    }
+                    if (y == SIZE_Y - 1) {
+                        sideTransparent_[static_cast<int>(BlockSide::TOP)] = false;
+                    }
+                    if (z == 0) {
+                        sideTransparent_[static_cast<int>(BlockSide::BACK)] = false;
+                    }
+                    if (z == SIZE_Z - 1) {
+                        sideTransparent_[static_cast<int>(BlockSide::FRONT)] = false;
+                    }
                     int blockId = data[x][y][z];
                     Vector3 position(x, y, z);
                     if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
@@ -383,6 +646,15 @@ void Chunk::GenerateGeometry()
             }
         }
     }
+
+//    for (int i = 0; i < 6; i++) {
+//        if (sideTransparent_[i]) {
+//            auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+//            if (neighbor) {
+//                neighbor->UpdateVisibility();
+//            }
+//        }
+//    }
 }
 
 void Chunk::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
@@ -446,7 +718,7 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
     auto blockPosition = GetChunkBlock(position);
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
-        if (neighborChunk) {
+        if (neighborChunk && neighborChunk->GetNode()) {
             neighborChunk->GetNode()->SendEvent("ChunkAdd", eventData);
         } else {
             URHO3D_LOGERROR("Neighbor chunk doesn't exist at position " + position.ToString());
@@ -479,8 +751,10 @@ void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
     if (workItem->workFunction_ == GenerateMesh) {
 //        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
         CreateNode();
+        generateWorkItem_.Reset();
     } else if (workItem->workFunction_ == SaveToFile) {
         URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
+        saveWorkItem_.Reset();
     }
 }
 
@@ -548,22 +822,28 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
 void Chunk::Save()
 {
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
-    auto workItem = workQueue->GetFreeItem();
-    workItem->priority_ = M_MAX_UNSIGNED;
-    workItem->workFunction_ = SaveToFile;
-    workItem->aux_ = this;
+    saveWorkItem_ = workQueue->GetFreeItem();
+    saveWorkItem_->priority_ = M_MAX_UNSIGNED;
+    saveWorkItem_->workFunction_ = SaveToFile;
+    saveWorkItem_->aux_ = this;
     // send E_WORKITEMCOMPLETED event after finishing WorkItem
-    workItem->sendEvent_ = true;
+    saveWorkItem_->sendEvent_ = true;
 
-    workItem->start_ = nullptr;
-    workItem->end_ = nullptr;
-    workQueue->AddWorkItem(workItem);
+    saveWorkItem_->start_ = nullptr;
+    saveWorkItem_->end_ = nullptr;
+    workQueue->AddWorkItem(saveWorkItem_);
+
 }
 
 void Chunk::CreateNode()
 {
+    chunkGeometry_ = new Geometry(context_);
+    vb_ = new VertexBuffer(context_);
+    ib_ = new IndexBuffer(context_);
+
     geometry_ = new CustomGeometry(context_);
     node_->AddComponent(geometry_, scene_->GetFreeComponentID(LOCAL), LOCAL);
+
 
     auto *body = node_->CreateComponent<RigidBody>(LOCAL);
     body->SetMass(0);
@@ -584,10 +864,19 @@ void Chunk::CreateNode()
     text3D->SetViewMask(VIEW_MASK_GUI);
     text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
     text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-    text3D->SetText(position_.ToString());
+    int count = 0;
+    for (int i = 0; i < 6; i++) {
+        if (sideTransparent_[i]) {
+            count++;
+        }
+    }
+    text3D->SetText(position_.ToString() + " Sides transparent:" + String(count));
     text3D->SetFontSize(32);
     label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
     scene_->AddChild(node_);
+
+    MarkActive(false);
+    SetActive();
 
     using namespace ChunkGenerated;
     VariantMap data = GetEventDataMap();
@@ -694,3 +983,80 @@ void Chunk::SetActive()
         }
     }
 }
+
+void Chunk::UpdateVisibility()
+{
+    return;
+    int visibleSides = 0;
+    auto topChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y);
+    if (topChunk && topChunk->IsSideTransparent(BlockSide::BOTTOM)) {
+        visibleSides++;
+    }
+    auto bottomChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::DOWN * SIZE_Y);
+    if (bottomChunk && bottomChunk->IsSideTransparent(BlockSide::TOP)) {
+        visibleSides++;
+    }
+    auto leftChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::LEFT * SIZE_X);
+    if (leftChunk && leftChunk->IsSideTransparent(BlockSide::RIGHT)) {
+        visibleSides++;
+    }
+    auto rightChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::RIGHT * SIZE_X);
+    if (rightChunk && rightChunk->IsSideTransparent(BlockSide::LEFT)) {
+        visibleSides++;
+    }
+    auto frontChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z);
+    if (frontChunk && frontChunk->IsSideTransparent(BlockSide::BACK)) {
+        visibleSides++;
+    }
+    auto backChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::BACK * SIZE_Z);
+    if (backChunk && backChunk->IsSideTransparent(BlockSide::FRONT)) {
+        visibleSides++;
+    }
+    if (label_) {
+        label_->GetComponent<Text3D>()->SetText("Visible neighbor sides " + String(visibleSides));
+    }
+    URHO3D_LOGINFO("Chunkk update visibility " + position_.ToString() + " visible sides=" + String(visibleSides));
+    visible_ = visibleSides > 0;
+    if (!visibilityUpdate_) {
+        visible_ = true;
+    }
+    if (geometry_) {
+        geometry_->SetEnabled(visible_);
+    }
+}
+
+bool Chunk::IsSideTransparent(BlockSide side)
+{
+    return sideTransparent_[side];
+}
+
+bool Chunk::IsVisible()
+{
+    return visible_;
+}
+
+SharedPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
+{
+    switch(side) {
+        case BlockSide::TOP:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y * 0.5);
+        case BlockSide::BOTTOM:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::DOWN * SIZE_Y * 0.5);
+        case BlockSide::LEFT:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::LEFT * SIZE_X * 0.5);
+        case BlockSide::RIGHT:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::RIGHT * SIZE_X * 0.5);
+        case BlockSide::FRONT:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z * 0.5);
+        case BlockSide::BACK:
+            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::BACK * SIZE_Z * 0.5);
+    }
+}
+//
+//void Chunk::SetVisibility(bool value)
+//{
+//    visible_ = value;
+//    if (geometry_) {
+//        geometry_->SetEnabled(visible_);
+//    }
+//}

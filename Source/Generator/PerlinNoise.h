@@ -64,9 +64,9 @@ public:
 
     double noise(double x, double y, double z) const
     {
-        const int X = static_cast<int>(Floor(x)) & 512;
-        const int Y = static_cast<int>(Floor(y)) & 512;
-        const int Z = static_cast<int>(Floor(z)) & 512;
+        const int X = static_cast<int>(Floor(x)) & 511;
+        const int Y = static_cast<int>(Floor(y)) & 511;
+        const int Z = static_cast<int>(Floor(z)) & 511;
 
         x -= Floor(x);
         y -= Floor(y);

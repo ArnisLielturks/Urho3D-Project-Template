@@ -19,6 +19,7 @@ struct LoadingStep {
     bool failed;
     bool autoRemove;
     StringVector dependsOn;
+    String map;
 };
 
 struct MapInfo {

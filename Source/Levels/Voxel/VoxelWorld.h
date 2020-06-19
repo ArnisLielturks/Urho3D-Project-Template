@@ -23,6 +23,7 @@ private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
     void HandleChunkExited(StringHash eventType, VariantMap& eventData);
+    void HandleChunkGenerated(StringHash eventType, VariantMap& eventData);
     void LoadChunk(const Vector3& position);
     void UpdateChunks();
     Vector3 GetNodeToChunkPosition(Node* node);
@@ -33,6 +34,8 @@ private:
     void CreateChunk(const Vector3& position);
     String GetChunkIdentificator(const Vector3& position);
 
+//    void RaycastFromObservers();
+
 //    List<SharedPtr<Chunk>> chunks_;
     List<WeakPtr<Node>> observers_;
     List<Chunk*> pendingChunks_;
@@ -40,4 +43,5 @@ private:
     Scene* scene_;
     List<Vector3> removeBlocks_;
     HashMap<String, SharedPtr<Chunk>> chunks_;
+    int loadChunksPerFrame_{1};
 };

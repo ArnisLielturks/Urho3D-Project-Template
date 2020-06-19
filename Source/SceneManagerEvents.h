@@ -41,6 +41,7 @@ namespace SceneManagerEvents {
         URHO3D_PARAM(P_NAME, Name); // string - name of the loading step
         URHO3D_PARAM(P_REMOVE_ON_FINISH, RemoveOnFinish); // bool - automatically remove this loading step when finished
         URHO3D_PARAM(P_DEPENDS_ON, DependsOn); // String array - other loading step events that should be run before this
+        URHO3D_PARAM(P_MAP, Map); // string - in which level this loading step should appear
     }
 
     // Called when new loading step is about to start

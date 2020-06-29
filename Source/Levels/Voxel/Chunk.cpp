@@ -21,57 +21,15 @@
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/IO/FileSystem.h>
 #include <Urho3D/Container/Vector.h>
+#include <Urho3D/Core/Profiler.h>
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
 #include "ChunkGenerator.h"
-//#include "../../PolyVox/CubicSurfaceExtractor.h"
-//#include "../../PolyVox/MarchingCubesSurfaceExtractor.h"
-//#include "../../PolyVox/Mesh.h"
-//#include "../../PolyVox/RawVolume.h"
 
 using namespace VoxelEvents;
 
 bool Chunk::visibilityUpdate_ = true;
-
-//Use the PolyVox namespace
-//using namespace PolyVox;
-
-//void createSphereInVolume(RawVolume<uint8_t>& volData, float fRadius)
-//{
-//    //This vector hold the position of the center of the volume
-//    Vector3DFloat v3dVolCenter(volData.getWidth() / 2, volData.getHeight() / 2, volData.getDepth() / 2);
-//
-//    //This three-level for loop iterates over every voxel in the volume
-//    for (int z = 0; z < volData.getDepth(); z++)
-//    {
-//        for (int y = 0; y < volData.getHeight(); y++)
-//        {
-//            for (int x = 0; x < volData.getWidth(); x++)
-//            {
-//                //Store our current position as a vector...
-//                Vector3DFloat v3dCurrentPos(x, y, z);
-//                //And compute how far the current position is from the center of the volume
-//                float fDistToCenter = (v3dCurrentPos - v3dVolCenter).length();
-//
-//                uint8_t uVoxelValue = 0;
-//
-//                //If the current voxel is less than 'radius' units from the center then we make it solid.
-//                if (fDistToCenter <= fRadius)
-//                {
-//                    //Our new voxel value
-//                    uVoxelValue = 255;
-//                }
-//
-//
-//
-//                //Wrte the voxel value into the volume
-//                volData.setVoxel(x, y, z, uVoxelValue);
-//            }
-//        }
-//    }
-//}
-
 
 void SaveToFile(const WorkItem* item, unsigned threadIndex)
 {
@@ -81,7 +39,7 @@ void SaveToFile(const WorkItem* item, unsigned threadIndex)
     for (int x = 0; x < SIZE_X; ++x) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                root.Set(String(x) + "_" + String(y) + "_" + String(z), chunk->data[x][y][z]);
+                root.Set(String(x) + "_" + String(y) + "_" + String(z), chunk->data_[x][y][z].type);
             }
         }
     }
@@ -108,7 +66,7 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
                 for (int z = 0; z < SIZE_Z; z++) {
                     String key = String(x) + "_" + String(y) + "_" + String(z);
                     if (root.Contains(key)) {
-                        chunk->data[x][y][z] = static_cast<BlockType>(root[key].GetInt());
+                        chunk->data_[x][y][z].type = static_cast<BlockType>(root[key].GetInt());
                     }
                 }
             }
@@ -124,7 +82,7 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
                 int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
                 for (int y = 0; y < SIZE_Y; y++) {
                     blockPosition.y_ = position.y_ + y;
-                    chunk->data[x][y][z] = chunkGenerator->GetBlockType(blockPosition, surfaceHeight);
+                    chunk->data_[x][y][z].type = chunkGenerator->GetBlockType(blockPosition, surfaceHeight);
                 }
             }
         }
@@ -134,7 +92,404 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
                     Vector3 blockPosition = position + Vector3(x, y, z);
-                    chunk->data[x][y][z] = chunkGenerator->GetCaveBlockType(blockPosition, chunk->data[x][y][z]);
+                    chunk->data_[x][y][z].type = chunkGenerator->GetCaveBlockType(blockPosition, chunk->data_[x][y][z].type);
+                }
+            }
+        }
+    }
+}
+
+void GenerateVertices(const WorkItem* item, unsigned threadIndex)
+{
+    Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
+    if (!chunk || chunk->shouldDelete_) {
+        return;
+    }
+    chunk->vertices_.Clear();
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                if (chunk->data_[x][y][z].type != BlockType::AIR && !chunk->shouldDelete_) {
+                    int blockId = chunk->data_[x][y][z].type;
+                    Vector3 position(x, y, z);
+                    if (!chunk->BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 1.0);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 0.0f);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 1.0);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 1.0);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 0.0f);
+                            vertex.normal = Vector3::UP;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
+                    if (!chunk->BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 1.0);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
+                            vertex.normal = Vector3::DOWN;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
+                    if (!chunk->BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 1.0);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+//                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 1.0);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
+                            vertex.normal = Vector3::LEFT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
+                    if (!chunk->BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 0.0f);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 1.0);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 0.0f);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 1.0);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 1.0);
+                            vertex.normal = Vector3::RIGHT;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(0.0f, 0.0f, -1.0f, -1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
+                    if (!chunk->BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
+                            vertex.normal = Vector3::FORWARD;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
+                    if (!chunk->BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
+                        // tri1
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 0.0f, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        // tri2
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(1.0, 1.0, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 1.0, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+
+                        {
+                            ChunkVertex vertex;
+                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
+                            vertex.normal = Vector3::BACK;
+                            vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
+                            vertex.tangent = Vector4(1.0f, 0.0f,  0.0f,  1.0f);
+                            chunk->vertices_.Push(vertex);
+                        }
+                    }
                 }
             }
         }
@@ -144,10 +499,19 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
 Chunk::Chunk(Context* context):
 Object(context)
 {
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                data_[x][y][z].type = BlockType::AIR;
+                data_[x][y][z].color = Color::BLACK;
+            }
+        }
+    }
 }
 
 Chunk::~Chunk()
 {
+    WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     if (generateWorkItem_) {
         WorkQueue *workQueue = GetSubsystem<WorkQueue>();
         if (workQueue) {
@@ -158,6 +522,12 @@ Chunk::~Chunk()
         WorkQueue *workQueue = GetSubsystem<WorkQueue>();
         if (workQueue) {
             workQueue->RemoveWorkItem(saveWorkItem_);
+        }
+    }
+    if (generateGeometryWorkItem_) {
+        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+        if (workQueue) {
+            workQueue->RemoveWorkItem(generateGeometryWorkItem_);
         }
     }
     RemoveNode();
@@ -218,7 +588,20 @@ void Chunk::Generate()
 
 void Chunk::UpdateGeometry()
 {
+    geometry_->SetDynamic(false);
+    geometry_->SetNumGeometries(1);
+    geometry_->BeginGeometry(0, TRIANGLE_LIST);
+    for (auto it = vertices_.Begin(); it != vertices_.End(); ++it) {
+        geometry_->DefineVertex((*it).position);
+        geometry_->DefineTexCoord((*it).uvCoords);
+//        geometry_->DefineNormal((*it).normal);
+//        geometry_->DefineTangent((*it).tangent);
+        geometry_->DefineColor((*it).color);
+    }
     geometry_->Commit();
+    geometry_->SetViewMask(VIEW_MASK_CHUNK);
+    geometry_->SetOccluder(true);
+    geometry_->SetOccludee(true);
     geometry_->SetCastShadows(true);
 
     auto cache = GetSubsystem<ResourceCache>();
@@ -235,426 +618,16 @@ void Chunk::UpdateGeometry()
 
 void Chunk::GenerateGeometry()
 {
-//    // Create an empty volume and then place a sphere in it
-//    HashMap<Vector3, int> materials;
-//    RawVolume<uint8_t> volData(PolyVox::Region(Vector3DInt32(0, 0, 0), Vector3DInt32(SIZE_X, SIZE_Y, SIZE_Z)));
-//    createSphereInVolume(volData, 3);
-//
-//    // Extract the surface for the specified region of the volume. Uncomment the line for the kind of surface extraction you want to see.
-//    Region region;
-//    region.setLowerX(0);
-//    region.setLowerY(0);
-//    region.setLowerZ(0);
-//    region.setUpperX(SIZE_X);
-//    region.setUpperY(SIZE_Y);
-//    region.setUpperZ(SIZE_Z);
-//    auto mesh = extractCubicMesh(&volData, region);
-//    //auto mesh = extractMarchingCubesMesh(&volData, volData.getEnclosingRegion());
-//
-//    // The surface extractor outputs the mesh in an efficient compressed format which is not directly suitable for rendering. The easiest approach is to
-//    // decode this on the CPU as shown below, though more advanced applications can upload the compressed mesh to the GPU and decompress in shader code.
-//    auto decodedMesh = decodeMesh(mesh);
-//
-//
-//    vb_->SetShadowed(true);
-//    vb_->SetSize(8, MASK_POSITION | MASK_NORMAL | MASK_TEXCOORD1, false);
-//    vb_->SetDataRange(decodedMesh.getRawVertexData(), 0, decodedMesh.getNoOfVertices());
+    WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+    generateGeometryWorkItem_ = workQueue->GetFreeItem();
+    generateGeometryWorkItem_->priority_ = M_MAX_UNSIGNED;
+    generateGeometryWorkItem_->workFunction_ = GenerateVertices;
+    generateGeometryWorkItem_->aux_ = this;
+    generateGeometryWorkItem_->sendEvent_ = true;
 
-//    if (vb.GetVertexCount() != vertices_.Size() || vb.GetElementMask() != elementMask_)
-//        vb.SetSize(vertices_.Size(), elementMask_, false);
-
-//    unsigned char* dest = (unsigned char*) vb_->Lock(0, decodedMesh.getNoOfVertices(), true);
-
-//    if (dest) {
-//        for (auto i = 0; i < decodedMesh.getNoOfVertices(); ++i) {
-////            if (elementMask_ & MASK_POSITION) {
-//                auto vertex = decodedMesh.getVertex(i);
-//                *((Vector3*)dest) = Vector3(vertex.position.getX(), vertex.position.getY(), vertex.position.getZ());
-//                dest += sizeof(Vector3);
-////            }
-////            if (elementMask_ & MASK_NORMAL) {
-//                *((Vector3*)dest) = Vector3(vertex.normal.getX(), vertex.normal.getY(), vertex.normal.getZ());
-//                dest += sizeof(Vector3);
-////            }
-////            if (elementMask_ & MASK_COLOR) {
-////                *((unsigned*)dest) = vertices_[i].color_.ToUInt();
-////                dest += sizeof(unsigned);
-////            }
-////            if (elementMask_ & MASK_TEXCOORD1) {
-//            float pos = i * 2.0 / decodedMesh.getNoOfVertices();
-//                *((Vector2*)dest) = Vector2(pos, pos);
-//                dest += sizeof(Vector2);
-////            }
-////            if (elementMask_ & MASK_TEXCOORD2) {
-////                *((Vector2*)dest) = vertices_[i].texCoord2_;
-////                dest += sizeof(Vector2);
-////            }
-////            if (elementMask_ & MASK_CUBETEXCOORD1) {
-////                *((Vector3*)dest) = vertices_[i].cubeTexCoord1_;
-////                dest += sizeof(Vector3);
-////            }
-////            if (elementMask_ & MASK_CUBETEXCOORD2) {
-////                *((Vector3*)dest) = vertices_[i].cubeTexCoord2_;
-////                dest += sizeof(Vector3);
-////            }
-////            if (elementMask_ & MASK_TANGENT) {
-////                *((Vector4*)dest) = vertices_[i].tangent_;
-////                dest += sizeof(Vector4);
-////            }
-//        }
-//    } else {
-//        URHO3D_LOGERROR("Failed to lock vertex buffer");
-//    }
-//    vb_->Unlock();
-//
-//
-////    auto vertexData = decodedMesh.getRawVertexData();
-////    auto vertex0 = decodedMesh.getVertex(0);
-////    for (int i = 0; i < decodedMesh.getNoOfVertices(); i++) {
-////        auto vertex = decodedMesh.getVertex(i);
-////    }
-//
-//    Urho3D::Vector<unsigned short> indices(decodedMesh.getNoOfIndices());
-//
-//    for (int i = 0; i < decodedMesh.getNoOfIndices(); i++) {
-//        auto indexData = decodedMesh.getIndex(i);
-//        indices[i] = static_cast<unsigned short>(indexData);
-//    }
-//
-//    ib_->SetShadowed(true);
-//    ib_->SetSize(decodedMesh.getNoOfIndices(), false);
-//    ib_->SetData(indices.Buffer());
-////    ib_->SetDataRange(decodedMesh.getRawIndexData(), 0, decodedMesh.getNoOfIndices());
-//
-//    URHO3D_LOGINFOF("VB Size %d => %d", decodedMesh.getNoOfVertices(), vb_->GetVertexCount());
-//    URHO3D_LOGINFOF("IB Size %d => %d", decodedMesh.getNoOfIndices(), ib_->GetIndexCount());
-//
-//    chunkGeometry_->SetVertexBuffer(0, vb_);
-//    chunkGeometry_->SetIndexBuffer(ib_);
-//    chunkGeometry_->SetDrawRange(TRIANGLE_LIST, 0, decodedMesh.getNoOfIndices());
-//
-//    chunkModel_ = new Model(context_);
-//    chunkModel_->SetNumGeometries(1);
-//    chunkModel_->SetGeometry(0, 0, chunkGeometry_);
-//    auto staticModel = node_->CreateComponent<StaticModel>();
-//    staticModel->SetModel(chunkModel_);
-//    auto cache = GetSubsystem<ResourceCache>();
-//    staticModel->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
-//    staticModel->SetCastShadows(true);
-//
-//    return;
-    geometry_->SetDynamic(false);
-    geometry_->SetNumGeometries(1);
-    geometry_->BeginGeometry(0, TRIANGLE_LIST);
-    geometry_->SetViewMask(VIEW_MASK_CHUNK);
-    geometry_->SetOccluder(true);
-    geometry_->SetOccludee(true);
-
-//    int vertices = 0;
-//    for (int x = 0; x < SIZE_X; x++) {
-//        for (int y = 0; y < SIZE_Y; y++) {
-//            for (int z = 0; z < SIZE_Z; z++) {
-//                if (data[x][y][z] > 0) {
-//                    int blockId = data[x][y][z];
-//                    Vector3 position(x, y, z);
-//                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    vb_->SetShadowed(true);
-//    vb_->SetSize(8, MASK_POSITION | MASK_NORMAL | MASK_COLOR | MASK_TEXCOORD1 | MASK_TANGENT, false);
-//    unsigned char* dest = (unsigned char*) vb_->Lock(0, vertices, true);
-//    for (int x = 0; x < SIZE_X; x++) {
-//        for (int y = 0; y < SIZE_Y; y++) {
-//            for (int z = 0; z < SIZE_Z; z++) {
-//                if (data[x][y][z] > 0) {
-//                    int blockId = data[x][y][z];
-//                    Vector3 position(x, y, z);
-//                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
-//                        *((Vector3*)dest) = Vector3(x, y, z);
-//                        dest += sizeof(Vector3);
-//                        *((Vector3*)dest) = Vector3::UP;
-//                        dest += sizeof(Vector3);
-//                        *((unsigned*)dest) = 244 * 233 * 100;
-//                        dest += sizeof(unsigned);
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
-//                        vertices += 4;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    vb_->Unlock();
-    for (int i = 0; i < 6; i++) {
-        sideTransparent_[i] = true;
-    }
-    for (int x = 0; x < SIZE_X; x++) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                if (data[x][y][z] > 0) {
-
-                    if (x == 0) {
-                        sideTransparent_[static_cast<int>(BlockSide::LEFT)] = false;
-                    }
-                    if (x == SIZE_X - 1) {
-                        sideTransparent_[static_cast<int>(BlockSide::RIGHT)] = false;
-                    }
-                    if (y == 0) {
-                        sideTransparent_[static_cast<int>(BlockSide::BOTTOM)] = false;
-                    }
-                    if (y == SIZE_Y - 1) {
-                        sideTransparent_[static_cast<int>(BlockSide::TOP)] = false;
-                    }
-                    if (z == 0) {
-                        sideTransparent_[static_cast<int>(BlockSide::BACK)] = false;
-                    }
-                    if (z == SIZE_Z - 1) {
-                        sideTransparent_[static_cast<int>(BlockSide::FRONT)] = false;
-                    }
-                    int blockId = data[x][y][z];
-                    Vector3 position(x, y, z);
-                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::UP);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-                    }
-                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::DOWN);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-                    }
-                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-//                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::LEFT);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-                    }
-                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::RIGHT);
-                        geometry_->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
-                    }
-                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::FORWARD);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-                    }
-                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
-                        // tri1
-                        geometry_->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        // tri2
-                        geometry_->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-
-                        geometry_->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
-                        geometry_->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
-                        geometry_->DefineNormal(Vector3::BACK);
-                        geometry_->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
-                    }
-                }
-            }
-        }
-    }
-
-//    for (int i = 0; i < 6; i++) {
-//        if (sideTransparent_[i]) {
-//            auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
-//            if (neighbor) {
-//                neighbor->UpdateVisibility();
-//            }
-//        }
-//    }
+    generateGeometryWorkItem_->start_ = nullptr;
+    generateGeometryWorkItem_->end_ = nullptr;
+    workQueue->AddWorkItem(generateGeometryWorkItem_);
 }
 
 void Chunk::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
@@ -702,12 +675,53 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         }
         return;
     }
-    if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_]) {
+    if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type) {
 //        int blockId = data[blockPosition.x_][blockPosition.y_][blockPosition.z_];
-        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = BlockType::AIR;
+        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::AIR;
         URHO3D_LOGINFO("Removing block " + blockPosition.ToString());
         GenerateGeometry();
-        UpdateGeometry();
+        if (blockPosition.x_ == 0) {
+            auto neighbor = GetNeighbor(BlockSide::LEFT);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor left");
+                neighbor->Render();
+            }
+        }
+        if (blockPosition.x_ == SIZE_X - 1) {
+            auto neighbor = GetNeighbor(BlockSide::RIGHT);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor right");
+                neighbor->Render();
+            }
+        }
+        if (blockPosition.y_ == 0) {
+            auto neighbor = GetNeighbor(BlockSide::BOTTOM);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor bottom");
+                neighbor->Render();
+            }
+        }
+        if (blockPosition.y_ == SIZE_Y - 1) {
+            auto neighbor = GetNeighbor(BlockSide::TOP);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor top");
+                neighbor->Render();
+            }
+        }
+        if (blockPosition.z_ == 0) {
+            auto neighbor = GetNeighbor(BlockSide::FRONT);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor back");
+                neighbor->Render();
+            }
+        }
+        if (blockPosition.z_ == SIZE_Z - 1) {
+            auto neighbor = GetNeighbor(BlockSide::BACK);
+            if (neighbor) {
+                URHO3D_LOGINFO("Rerendering neigbhbor front");
+                neighbor->Render();
+            }
+        }
     }
     Save();
 }
@@ -725,12 +739,12 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         }
         return;
     }
-    if (data[blockPosition.x_][blockPosition.y_][blockPosition.z_] == 0) {
-        data[blockPosition.x_][blockPosition.y_][blockPosition.z_] = BlockType::DIRT;
-        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
+    if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::AIR) {
+        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::LIGHT;
+        CalculateLight();
+//        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
         GenerateGeometry();
-        UpdateGeometry();
     }
 
     Save();
@@ -752,6 +766,8 @@ void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
 //        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
         CreateNode();
         generateWorkItem_.Reset();
+    } else if (workItem->workFunction_ == GenerateVertices) {
+        UpdateGeometry();
     } else if (workItem->workFunction_ == SaveToFile) {
         URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
         saveWorkItem_.Reset();
@@ -821,6 +837,7 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
 
 void Chunk::Save()
 {
+    return;
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     saveWorkItem_ = workQueue->GetFreeItem();
     saveWorkItem_->priority_ = M_MAX_UNSIGNED;
@@ -837,10 +854,6 @@ void Chunk::Save()
 
 void Chunk::CreateNode()
 {
-    chunkGeometry_ = new Geometry(context_);
-    vb_ = new VertexBuffer(context_);
-    ib_ = new IndexBuffer(context_);
-
     geometry_ = new CustomGeometry(context_);
     node_->AddComponent(geometry_, scene_->GetFreeComponentID(LOCAL), LOCAL);
 
@@ -851,28 +864,21 @@ void Chunk::CreateNode()
     node_->CreateComponent<CollisionShape>(LOCAL);
 
     GenerateGeometry();
-    UpdateGeometry();
 
     SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
 
     auto cache = GetSubsystem<ResourceCache>();
-    label_ = node_->CreateChild("Label", LOCAL);
-    auto text3D = label_->CreateComponent<Text3D>();
-    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-    text3D->SetColor(Color::GRAY);
-    text3D->SetViewMask(VIEW_MASK_GUI);
-    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-    int count = 0;
-    for (int i = 0; i < 6; i++) {
-        if (sideTransparent_[i]) {
-            count++;
-        }
-    }
-    text3D->SetText(position_.ToString() + " Sides transparent:" + String(count));
-    text3D->SetFontSize(32);
-    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
+//    label_ = node_->CreateChild("Label", LOCAL);
+//    auto text3D = label_->CreateComponent<Text3D>();
+//    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+//    text3D->SetColor(Color::GRAY);
+//    text3D->SetViewMask(VIEW_MASK_GUI);
+//    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+//    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+//    text3D->SetText(position_.ToString());
+//    text3D->SetFontSize(32);
+//    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
     scene_->AddChild(node_);
 
     MarkActive(false);
@@ -906,47 +912,77 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
 {
     switch(side) {
         case BlockSide::TOP:
-            if (y < SIZE_Y - 1) {
-                if (data[x][y + 1][z] > 0) {
-                    return true;
+            if (y == SIZE_Y - 1) {
+                auto neighbor = GetNeighbor(BlockSide::TOP);
+                if (neighbor && neighbor->GetBlockValue(x, 0, z) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (y + 1 < SIZE_Y) {
+                if (data_[x][y + 1][z].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         case BlockSide::BOTTOM:
-            if (y > 0) {
-                if (data[x][y - 1][z] > 0) {
-                    return true;
+            if (y == 0) {
+                auto neighbor = GetNeighbor(BlockSide::BOTTOM);
+                if (neighbor && neighbor->GetBlockValue(x, SIZE_Y - 1, z) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (y > 0) {
+                if (data_[x][y - 1][z].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         case BlockSide::LEFT:
-            if (x > 0) {
-                if (data[x - 1][y][z] > 0) {
-                    return true;
+            if (x == 0) {
+                auto neighbor = GetNeighbor(BlockSide::LEFT);
+                if (neighbor && neighbor->GetBlockValue(SIZE_X - 1, y, z) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (x > 0) {
+                if (data_[x - 1][y][z].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         case BlockSide::RIGHT:
-            if (x < SIZE_X - 1) {
-                if (data[x + 1][y][z] > 0) {
-                    return true;
+            if (x == SIZE_X - 1) {
+                auto neighbor = GetNeighbor(BlockSide::RIGHT);
+                if (neighbor && neighbor->GetBlockValue(0, y, z) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (x + 1 < SIZE_X) {
+                if (data_[x + 1][y][z].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         case BlockSide::FRONT:
-            if (z > 0) {
-                if (data[x][y][z - 1] > 0) {
-                    return true;
+            if (z == 0) {
+                auto neighbor = GetNeighbor(BlockSide::FRONT);
+                if (neighbor && neighbor->GetBlockValue(x, y, SIZE_Z - 1) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (z > 0) {
+                if (data_[x][y][z - 1].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         case BlockSide::BACK:
-            if (z < SIZE_Z - 1) {
-                if (data[x][y][z + 1] > 0) {
-                    return true;
+            if (z == SIZE_Z - 1) {
+                auto neighbor = GetNeighbor(BlockSide::BACK);
+                if (neighbor && neighbor->GetBlockValue(x, y, 0) == BlockType::AIR) {
+                    return false;
+                }
+            } else if (z + 1 < SIZE_Z) {
+                if (data_[x][y][z + 1].type == BlockType::AIR) {
+                    return false;
                 }
             }
-            return false;
+            return true;
     }
 }
 
@@ -984,72 +1020,66 @@ void Chunk::SetActive()
     }
 }
 
-void Chunk::UpdateVisibility()
-{
-    return;
-    int visibleSides = 0;
-    auto topChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y);
-    if (topChunk && topChunk->IsSideTransparent(BlockSide::BOTTOM)) {
-        visibleSides++;
-    }
-    auto bottomChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::DOWN * SIZE_Y);
-    if (bottomChunk && bottomChunk->IsSideTransparent(BlockSide::TOP)) {
-        visibleSides++;
-    }
-    auto leftChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::LEFT * SIZE_X);
-    if (leftChunk && leftChunk->IsSideTransparent(BlockSide::RIGHT)) {
-        visibleSides++;
-    }
-    auto rightChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::RIGHT * SIZE_X);
-    if (rightChunk && rightChunk->IsSideTransparent(BlockSide::LEFT)) {
-        visibleSides++;
-    }
-    auto frontChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z);
-    if (frontChunk && frontChunk->IsSideTransparent(BlockSide::BACK)) {
-        visibleSides++;
-    }
-    auto backChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::BACK * SIZE_Z);
-    if (backChunk && backChunk->IsSideTransparent(BlockSide::FRONT)) {
-        visibleSides++;
-    }
-    if (label_) {
-        label_->GetComponent<Text3D>()->SetText("Visible neighbor sides " + String(visibleSides));
-    }
-    URHO3D_LOGINFO("Chunkk update visibility " + position_.ToString() + " visible sides=" + String(visibleSides));
-    visible_ = visibleSides > 0;
-    if (!visibilityUpdate_) {
-        visible_ = true;
-    }
-    if (geometry_) {
-        geometry_->SetEnabled(visible_);
-    }
-}
-
-bool Chunk::IsSideTransparent(BlockSide side)
-{
-    return sideTransparent_[side];
-}
-
 bool Chunk::IsVisible()
 {
     return visible_;
 }
 
-SharedPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
+WeakPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
 {
+    if (neighbors_.Contains(side) && neighbors_[side]) {
+        return neighbors_[side];
+    }
+
+    WeakPtr<Chunk> neighbor = nullptr;
     switch(side) {
         case BlockSide::TOP:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y);
+            break;
         case BlockSide::BOTTOM:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::DOWN * SIZE_Y * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::DOWN * SIZE_Y);
+            break;
         case BlockSide::LEFT:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::LEFT * SIZE_X * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::LEFT * SIZE_X);
+            break;
         case BlockSide::RIGHT:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::RIGHT * SIZE_X * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::RIGHT * SIZE_X);
+            break;
         case BlockSide::FRONT:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::BACK * SIZE_Z);
+            break;
         case BlockSide::BACK:
-            return GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::BACK * SIZE_Z * 0.5);
+            neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z);
+            break;
+    }
+    neighbors_[side] = neighbor;
+    return neighbors_[side];
+}
+
+BlockType Chunk::GetBlockValue(int x, int y, int z)
+{
+    return data_[x][y][z].type;
+}
+
+void Chunk::Render(bool neighborLoaded)
+{
+    if (neighborLoaded) {
+        if (loadedNeighbors_ < 6) {
+            loadedNeighbors_ = 0;
+            URHO3D_LOGINFO("Chunk " + position_.ToString() + " render from neighbor required");
+            for (int i = 0; i < 6; i++) {
+                if (GetNeighbor(static_cast<BlockSide>(i))) {
+                    loadedNeighbors_++;
+                }
+            }
+            if (geometry_) {
+                GenerateGeometry();
+            }
+        }
+    } else {
+        if (geometry_) {
+            GenerateGeometry();
+        }
     }
 }
 //
@@ -1060,3 +1090,111 @@ SharedPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
 //        geometry_->SetEnabled(visible_);
 //    }
 //}
+
+void Chunk::RenderNeighbors()
+{
+    for (int i = 0; i < 6; i++) {
+        auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+        if (neighbor) {
+            neighbor->Render(true);
+        }
+    }
+}
+
+void Chunk::PropogateLight(IntVector3 position)
+{
+    for (int x = -4; x <= 4; x++) {
+        for (int y = -4; y <= 4; y++) {
+            for (int z = -4; z <= 4; z++) {
+                IntVector3 neighborBlockPosition = position;
+                neighborBlockPosition.x_ += x;
+                neighborBlockPosition.y_ += y;
+                neighborBlockPosition.z_ += z;
+                int distance = x * x + y * y + z * z;
+                Color color = Color::WHITE * (1.0 - Sqrt(distance) / 4.0);
+                if (IsBlockInsideChunk(neighborBlockPosition)) {
+                    data_[neighborBlockPosition.x_][neighborBlockPosition.y_][neighborBlockPosition.z_].color += color;
+                } else {
+                    auto block = GetNeighborBlockByLocalPosition(neighborBlockPosition);
+                    if (block) {
+                        block->color += color;
+                    }
+                }
+            }
+        }
+    }
+}
+
+VoxelBlock* Chunk::GetNeighborBlockByLocalPosition(IntVector3 position)
+{
+    if (position.x_ < 0) {
+        auto neighbor = GetNeighbor(BlockSide::LEFT);
+        if (neighbor) {
+            position.x_ = SIZE_X - position.x_;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    if (position.x_ >= SIZE_X) {
+        auto neighbor = GetNeighbor(BlockSide::RIGHT);
+        if (neighbor) {
+            position.x_ = position.x_ - SIZE_X;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    if (position.y_ < 0) {
+        auto neighbor = GetNeighbor(BlockSide::BOTTOM);
+        if (neighbor) {
+            position.y_ = SIZE_Y - position.y_;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    if (position.y_ >= SIZE_Y) {
+        auto neighbor = GetNeighbor(BlockSide::TOP);
+        if (neighbor) {
+            position.y_ = position.y_ - SIZE_Y;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    if (position.z_ < 0) {
+        auto neighbor = GetNeighbor(BlockSide::FRONT);
+        if (neighbor) {
+            position.z_ = SIZE_Z - position.z_;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    if (position.z_ >= SIZE_Z) {
+        auto neighbor = GetNeighbor(BlockSide::BACK);
+        if (neighbor) {
+            position.z_ = position.z_ - SIZE_Z;
+            return neighbor->GetBlockAt(position);
+        }
+    }
+
+    return nullptr;
+}
+
+VoxelBlock* Chunk::GetBlockAt(IntVector3 position)
+{
+    if (IsBlockInsideChunk(position)) {
+        return &data_[position.x_][position.y_][position.z_];
+    }
+    return nullptr;
+}
+
+void Chunk::CalculateLight()
+{
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                if (data_[x][y][z].type == BlockType::LIGHT) {
+                    PropogateLight(IntVector3(x, y, z));
+                }
+            }
+        }
+    }
+}

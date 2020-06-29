@@ -180,6 +180,11 @@ void Generator::GenerateTextures()
     coal.colors[0] = Color(0.21,0.27,0.31);
     textures.Push(coal);
 
+    TextureColors light;
+    light.singleColor = true;
+    light.colors[0] = Color(0.9, 0.8, 0.1);
+    textures.Push(light);
+
     combined->SetSize(32 * 6, 32 * textures.Size(), 4);
     int border = 1;
     for (int t = 0; t < textures.Size(); t++) {

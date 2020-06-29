@@ -403,7 +403,7 @@ void SceneManager::LoadDefaultMaps()
     commands.Push("noclip");
 //        commands.Push("chunk_visible_distance 1");
 //    commands.Push("debugger");
-    commands.Push("debug_geometry");
+//    commands.Push("debug_geometry");
         data[P_COMMANDS] = commands;
         SendEvent(E_ADD_MAP, data);
     }

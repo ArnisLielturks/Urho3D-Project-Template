@@ -1,4 +1,7 @@
 #pragma once
+#include <Urho3D/Math/Color.h>
+
+using namespace Urho3D;
 
 enum BlockSide {
     TOP,
@@ -15,11 +18,11 @@ enum BlockType {
     DIRT,
     SAND,
     COAL,
+    LIGHT,
     NONE
 };
 
-enum ChunkType {
-    SKY,
-    TERRAIN,
-    GROUND
+struct VoxelBlock {
+    BlockType type;
+    Color color;
 };

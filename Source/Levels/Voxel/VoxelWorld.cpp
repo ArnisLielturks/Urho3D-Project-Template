@@ -15,8 +15,8 @@
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
-int VoxelWorld::visibleDistance = 5;
-int VoxelWorld::activeDistance = 5;
+int VoxelWorld::visibleDistance = 1;
+int VoxelWorld::activeDistance = 1;
 
 VoxelWorld::VoxelWorld(Context* context):
     Object(context)
@@ -130,6 +130,7 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
         String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
         chunks_[id] = pendingChunks_.Front();
         chunks_[id]->Generate();
+        chunks_[id]->RenderNeighbors();
         pendingChunks_.PopFront();
         if (loadedChunkCounter > loadChunksPerFrame_) {
             break;
@@ -211,7 +212,6 @@ void VoxelWorld::LoadChunk(const Vector3& position)
 //            positions.Push(terrain + Vector3::DOWN * SIZE_Y);
 //        }
 //    }
-//    pq2ws
 
     // Same
     positions.Push(Vector3(fixedChunkPosition + Vector3::LEFT * SIZE_X));
@@ -274,8 +274,9 @@ bool VoxelWorld::IsEqualPositions(Vector3 a, Vector3 b)
 SharedPtr<Chunk> VoxelWorld::GetChunkByPosition(const Vector3& position)
 {
     Vector3 fixedPositon = GetWorldToChunkPosition(position);
-    if (IsChunkLoaded(fixedPositon)) {
-        return chunks_[GetChunkIdentificator(fixedPositon)];
+    String id = GetChunkIdentificator(fixedPositon);
+    if (chunks_.Contains(id) && chunks_[id]) {
+        return chunks_[id];
     }
 
     return nullptr;
@@ -326,13 +327,7 @@ void VoxelWorld::UpdateChunks()
 
     float activeBlockDistance = SIZE_X * ( activeDistance + 2);
     float visibleBlockDistance = SIZE_X * ( visibleDistance + 2);
-    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
-        if ((*chIt).second_) {
-            (*chIt).second_->MarkForDeletion(true);
-            (*chIt).second_->MarkActive(false);
-        }
-    }
-//    int visibleChunks = 0;
+
     for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
         for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
             if (!(*chIt).second_) {
@@ -349,9 +344,13 @@ void VoxelWorld::UpdateChunks()
 
             if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
                 (*chIt).second_->MarkForDeletion(false);
+            } else {
+                (*chIt).second_->MarkForDeletion(true);
             }
             if (distance.x_ <= activeBlockDistance && distance.y_ <= activeBlockDistance && distance.z_ <= activeBlockDistance) {
                 (*chIt).second_->MarkActive(true);
+            } else {
+                (*chIt).second_->MarkActive(false);
             }
         }
     }

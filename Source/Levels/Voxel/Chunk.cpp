@@ -105,6 +105,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
     if (!chunk || chunk->shouldDelete_) {
         return;
     }
+    chunk->CalculateLight();
     chunk->vertices_.Clear();
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
@@ -511,7 +512,6 @@ Object(context)
 
 Chunk::~Chunk()
 {
-    WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     if (generateWorkItem_) {
         WorkQueue *workQueue = GetSubsystem<WorkQueue>();
         if (workQueue) {
@@ -741,7 +741,6 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
     }
     if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::AIR) {
         data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::LIGHT;
-        CalculateLight();
 //        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
         GenerateGeometry();
@@ -1025,13 +1024,9 @@ bool Chunk::IsVisible()
     return visible_;
 }
 
-WeakPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
+Chunk* Chunk::GetNeighbor(BlockSide side)
 {
-    if (neighbors_.Contains(side) && neighbors_[side]) {
-        return neighbors_[side];
-    }
-
-    WeakPtr<Chunk> neighbor = nullptr;
+    Chunk* neighbor = nullptr;
     switch(side) {
         case BlockSide::TOP:
             neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::UP * SIZE_Y);
@@ -1052,8 +1047,7 @@ WeakPtr<Chunk> Chunk::GetNeighbor(BlockSide side)
             neighbor = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position_ + Vector3::FORWARD * SIZE_Z);
             break;
     }
-    neighbors_[side] = neighbor;
-    return neighbors_[side];
+    return neighbor;
 }
 
 BlockType Chunk::GetBlockValue(int x, int y, int z)
@@ -1066,7 +1060,7 @@ void Chunk::Render(bool neighborLoaded)
     if (neighborLoaded) {
         if (loadedNeighbors_ < 6) {
             loadedNeighbors_ = 0;
-            URHO3D_LOGINFO("Chunk " + position_.ToString() + " render from neighbor required");
+//            URHO3D_LOGINFO("Chunk " + position_.ToString() + " render from neighbor required");
             for (int i = 0; i < 6; i++) {
                 if (GetNeighbor(static_cast<BlockSide>(i))) {
                     loadedNeighbors_++;
@@ -1114,11 +1108,23 @@ void Chunk::PropogateLight(IntVector3 position)
                 Color color = Color::WHITE * (1.0 - Sqrt(distance) / 4.0);
                 if (IsBlockInsideChunk(neighborBlockPosition)) {
                     data_[neighborBlockPosition.x_][neighborBlockPosition.y_][neighborBlockPosition.z_].color += color;
-                } else {
-                    auto block = GetNeighborBlockByLocalPosition(neighborBlockPosition);
-                    if (block) {
-                        block->color += color;
+                }
+                else {
+                    Vector3 blockPosition;
+                    blockPosition.x_ = neighborBlockPosition.x_ + position.x_;
+                    blockPosition.y_ = neighborBlockPosition.y_ + position.y_;
+                    blockPosition.z_ = neighborBlockPosition.z_ + position.z_;
+                    auto chunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(blockPosition);
+                    if (chunk) {
+                        chunk->CalculateLight();
                     }
+//                    auto block = GetSubsystem<VoxelWorld>()->GetBlockAt(blockPosition);
+////                    auto block = GetNeighborBlockByLocalPosition(neighborBlockPosition);
+//                    if (block) {
+//                        block->color += color;
+//                    } else {
+//                        URHO3D_LOGINFO("block not found");
+//                    }
                 }
             }
         }
@@ -1188,6 +1194,13 @@ VoxelBlock* Chunk::GetBlockAt(IntVector3 position)
 
 void Chunk::CalculateLight()
 {
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                data_[x][y][z].color = Color::BLACK;
+            }
+        }
+    }
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {

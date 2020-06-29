@@ -67,7 +67,7 @@ private:
     void CreateNode();
     void RemoveNode();
     bool BlockHaveNeighbor(BlockSide side, int x, int y, int z);
-    WeakPtr<Chunk> GetNeighbor(BlockSide side);
+    Chunk* GetNeighbor(BlockSide side);
     void CalculateLight();
 
     SharedPtr<CustomGeometry> geometry_;
@@ -86,5 +86,5 @@ private:
     bool visible_;
     int loadedNeighbors_{0};
     Vector<ChunkVertex> vertices_;
-    HashMap<int, WeakPtr<Chunk>> neighbors_;
+    Vector<IntVector3> neighborLights_;
 };

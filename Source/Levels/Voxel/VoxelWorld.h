@@ -15,10 +15,11 @@ class VoxelWorld : public Object {
 
     void AddObserver(SharedPtr<Node> observer);
     void RemoveObserver(SharedPtr<Node> observer);
-    SharedPtr<Chunk> GetChunkByPosition(const Vector3& position);
+    Chunk* GetChunkByPosition(const Vector3& position);
     void RemoveBlockAtPosition(const Vector3& position);
     static int visibleDistance;
     static int activeDistance;
+    VoxelBlock* GetBlockAt(Vector3 position);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);

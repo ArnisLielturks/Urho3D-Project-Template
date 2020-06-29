@@ -271,12 +271,12 @@ bool VoxelWorld::IsEqualPositions(Vector3 a, Vector3 b)
     return Floor(a.x_) == Floor(b.x_) && Floor(a.y_) == Floor(b.y_) && Floor(a.z_) == Floor(b.z_);
 }
 
-SharedPtr<Chunk> VoxelWorld::GetChunkByPosition(const Vector3& position)
+Chunk* VoxelWorld::GetChunkByPosition(const Vector3& position)
 {
     Vector3 fixedPositon = GetWorldToChunkPosition(position);
     String id = GetChunkIdentificator(fixedPositon);
     if (chunks_.Contains(id) && chunks_[id]) {
-        return chunks_[id];
+        return chunks_[id].Get();
     }
 
     return nullptr;
@@ -402,36 +402,13 @@ String VoxelWorld::GetChunkIdentificator(const Vector3& position)
     return String(position.x_ / SIZE_X) + "_" +  String(position.y_ / SIZE_Y) + "_" + String(position.z_ / SIZE_Z);
 }
 
-//
-//void VoxelWorld::RaycastFromObservers() {
-//    scene_->GetComponent<Octree>()->
-//    return;
-//    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
-//        bool visible = false;
-//        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
-//            Vector3 hitPosition;
-//            Vector3 hitNormal;
-//            Drawable *hitDrawable = nullptr;
-//
-//            Ray ray;
-//            ray.origin_ = (*obIt)->GetWorldPosition();
-//            Vector3 direction = ((*chIt).second_->GetPosition() - ray.origin_);
-//            ray.direction_ = direction.Normalized();
-//
-//            PODVector<RayQueryResult>
-//            results;
-//            RayOctreeQuery query(results, ray, RAY_TRIANGLE, 1000, DRAWABLE_GEOMETRY, VIEW_MASK_CHUNK);
-//            scene_->GetComponent<Octree>()->RaycastSingle(query);
-//            if (results.Size()) {
-//                RayQueryResult &result = results[0];
-//                hitPosition = result.position_;
-//                hitNormal = result.normal_;
-//                hitDrawable = result.drawable_;
-//                if (hitDrawable->GetNode()->GetID() == (*chIt).second_->GetNode()->GetID()) {
-//                    visible = true;
-//                }
-//            }
-//        }
-//        (*chIt).second_->SetVisibility(visible);
-//    }
-//}
+VoxelBlock* VoxelWorld::GetBlockAt(Vector3 position)
+{
+    Vector3 chunkPosition = GetWorldToChunkPosition(position);
+    String id = GetChunkIdentificator(chunkPosition);
+    if (chunks_.Contains(id) && chunks_[id]) {
+        Vector3 blockPosition = position - chunkPosition;
+        return chunks_[id]->GetBlockAt(IntVector3(blockPosition.x_, blockPosition.y_, blockPosition.z_));
+    }
+    return nullptr;
+}

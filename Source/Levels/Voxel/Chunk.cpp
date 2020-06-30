@@ -52,8 +52,8 @@ void SaveToFile(const WorkItem* item, unsigned threadIndex)
 
 void GenerateMesh(const WorkItem* item, unsigned threadIndex)
 {
-
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
+    MutexLock lock(chunk->mutex_);
     Vector3 position = chunk->position_;
 
     JSONFile file(chunk->context_);
@@ -67,6 +67,10 @@ void GenerateMesh(const WorkItem* item, unsigned threadIndex)
                     String key = String(x) + "_" + String(y) + "_" + String(z);
                     if (root.Contains(key)) {
                         chunk->data_[x][y][z].type = static_cast<BlockType>(root[key].GetInt());
+                        if (chunk->data_[x][y][z].type == BlockType::BT_TORCH) {
+                            chunk->SetTorchlight(x, y, z, 15);
+                            chunk->AddLightNode(x, y, z);
+                        }
                     }
                 }
             }
@@ -105,19 +109,21 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
     if (!chunk || chunk->shouldDelete_) {
         return;
     }
-    chunk->CalculateLight();
+    MutexLock lock(chunk->mutex_);
+    chunk->SetSunlight(4);
+    chunk->ProcessQueues();
     chunk->vertices_.Clear();
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                if (chunk->data_[x][y][z].type != BlockType::AIR && !chunk->shouldDelete_) {
+                if (chunk->data_[x][y][z].type != BlockType::BT_AIR && !chunk->shouldDelete_) {
                     int blockId = chunk->data_[x][y][z].type;
                     Vector3 position(x, y, z);
                     if (!chunk->BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -127,7 +133,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 1.0);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -137,7 +143,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 0.0f);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -148,7 +154,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 1.0);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -158,7 +164,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 1.0);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -168,7 +174,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::TOP, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 0.0f);
                             vertex.normal = Vector3::UP;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -180,7 +186,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -190,7 +196,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -200,7 +206,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -211,7 +217,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 1.0);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -221,7 +227,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -231,7 +237,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
                             vertex.normal = Vector3::DOWN;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -243,7 +249,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -253,7 +259,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 1.0);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -263,7 +269,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -274,7 +280,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 //                        // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 1.0);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -284,7 +290,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -294,7 +300,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::LEFT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
                             vertex.normal = Vector3::LEFT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -306,7 +312,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -316,7 +322,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 0.0f);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -326,7 +332,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 1.0);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -337,7 +343,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 0.0f);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -347,7 +353,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 1.0);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -357,7 +363,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 1.0);
                             vertex.normal = Vector3::RIGHT;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -369,7 +375,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -379,7 +385,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -389,7 +395,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -400,7 +406,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -410,7 +416,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -420,7 +426,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::FRONT, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 0.0f);
                             vertex.normal = Vector3::FORWARD;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -432,7 +438,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri1
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(1.0, 0.0f, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 1.0));
@@ -442,7 +448,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -452,7 +458,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -463,7 +469,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
                         // tri2
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(1.0, 1.0, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0));
@@ -473,7 +479,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(0.0f, 1.0, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 0.0));
@@ -483,7 +489,7 @@ void GenerateVertices(const WorkItem* item, unsigned threadIndex)
 
                         {
                             ChunkVertex vertex;
-                            vertex.color = chunk->data_[x][y][z].color;
+                            vertex.light = chunk->NeighborLightValue(BlockSide::BACK, x, y, z);
                             vertex.position = position + Vector3(0.0f, 0.0f, 1.0);
                             vertex.normal = Vector3::BACK;
                             vertex.uvCoords = chunk->GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0));
@@ -503,11 +509,11 @@ Object(context)
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                data_[x][y][z].type = BlockType::AIR;
-                data_[x][y][z].color = Color::BLACK;
+                data_[x][y][z].type = BlockType::BT_AIR;
             }
         }
     }
+    memset(lightMap_, 0, sizeof(lightMap_));
 }
 
 Chunk::~Chunk()
@@ -561,7 +567,7 @@ void Chunk::Init(Scene* scene, const Vector3& position)
 //    Vector3 offset = Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) * triggerNode_->GetScale();
     triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
 
-    SubscribeToEvent(E_POSTRENDERUPDATE, URHO3D_HANDLER(Chunk, HandlePostRenderUpdate));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
     SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
 
     SubscribeToEvent("#chunk_visible_distance", [&](StringHash eventType, VariantMap& eventData) {
@@ -588,7 +594,8 @@ void Chunk::Generate()
 
 void Chunk::UpdateGeometry()
 {
-    geometry_->SetDynamic(false);
+    MutexLock lock(mutex_);
+    geometry_->SetDynamic(true);
     geometry_->SetNumGeometries(1);
     geometry_->BeginGeometry(0, TRIANGLE_LIST);
     for (auto it = vertices_.Begin(); it != vertices_.End(); ++it) {
@@ -596,7 +603,12 @@ void Chunk::UpdateGeometry()
         geometry_->DefineTexCoord((*it).uvCoords);
 //        geometry_->DefineNormal((*it).normal);
 //        geometry_->DefineTangent((*it).tangent);
-        geometry_->DefineColor((*it).color);
+        Color color;
+        // Torchlight
+        color.r_ = static_cast<int>((*it).light & 0xF) / 15.0f;
+        // Sunlight
+        color.g_ = static_cast<int>(((*it).light >> 4) & 0xF) / 15.0f;
+        geometry_->DefineColor(color);
     }
     geometry_->Commit();
     geometry_->SetViewMask(VIEW_MASK_CHUNK);
@@ -618,9 +630,12 @@ void Chunk::UpdateGeometry()
 
 void Chunk::GenerateGeometry()
 {
+//    if (generateGeometryWorkItem_ && !generateGeometryWorkItem_->completed_) {
+//        return;
+//    }
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     generateGeometryWorkItem_ = workQueue->GetFreeItem();
-    generateGeometryWorkItem_->priority_ = M_MAX_UNSIGNED;
+    generateGeometryWorkItem_->priority_ = 1;
     generateGeometryWorkItem_->workFunction_ = GenerateVertices;
     generateGeometryWorkItem_->aux_ = this;
     generateGeometryWorkItem_->sendEvent_ = true;
@@ -630,7 +645,7 @@ void Chunk::GenerateGeometry()
     workQueue->AddWorkItem(generateGeometryWorkItem_);
 }
 
-void Chunk::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
+void Chunk::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     if (!node_) {
         return;
@@ -638,6 +653,10 @@ void Chunk::HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData)
 //    scene_->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
 //    scene_->GetComponent<PhysicsWorld>()->SetDebugRenderer(scene_->GetComponent<DebugRenderer>());
 //    node_->GetComponent<StaticModel>()->DrawDebugGeometry(node_->GetScene()->GetComponent<DebugRenderer>(), true);
+
+    if (!lightBfsQueue_.empty() || !lightRemovalBfsQueue_.empty()) {
+        GenerateGeometry();
+    }
 }
 
 IntVector3 Chunk::GetChunkBlock(Vector3 position)
@@ -677,8 +696,13 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
     }
     if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type) {
 //        int blockId = data[blockPosition.x_][blockPosition.y_][blockPosition.z_];
-        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::AIR;
-        URHO3D_LOGINFO("Removing block " + blockPosition.ToString());
+        if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::BT_TORCH) {
+            int lightValue = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
+            SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
+            AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightValue);
+        }
+        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::BT_AIR;
+//        URHO3D_LOGINFO("Removing block " + blockPosition.ToString());
         GenerateGeometry();
         if (blockPosition.x_ == 0) {
             auto neighbor = GetNeighbor(BlockSide::LEFT);
@@ -739,10 +763,25 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         }
         return;
     }
-    if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::AIR) {
-        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::LIGHT;
+    if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::BT_AIR) {
+        if (eventData["Action"].GetInt() == CTRL_DETECT) {
+            URHO3D_LOGINFO("Chunk selected: " + position_.ToString() + "; block: " + blockPosition.ToString()
+            + " Torch light: " + String(GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)) +
+            "; Sun light: " + String(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)));
+
+            Color color;
+            // Torchlight
+            color.r_ = static_cast<int>(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) & 0xF) / 15.0f;
+            // Sunlight
+            color.g_ = static_cast<int>((GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) >> 4) & 0xF) / 15.0f;
+            URHO3D_LOGINFO("Color : " + color.ToString());
+            return;
+        }
+        data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type = BlockType::BT_TORCH;
 //        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
+        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 15);
+        lightBfsQueue_.emplace(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
         GenerateGeometry();
     }
 
@@ -762,13 +801,13 @@ void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
         return;
     }
     if (workItem->workFunction_ == GenerateMesh) {
-//        URHO3D_LOGINFO("Chunk background preparing finished " + position_.ToString());
         CreateNode();
         generateWorkItem_.Reset();
     } else if (workItem->workFunction_ == GenerateVertices) {
         UpdateGeometry();
+        generateGeometryWorkItem_.Reset();
     } else if (workItem->workFunction_ == SaveToFile) {
-        URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
+//        URHO3D_LOGINFO("Background chunk saving done " + position_.ToString());
         saveWorkItem_.Reset();
     }
 }
@@ -808,7 +847,7 @@ void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
 
 Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position)
 {
-    int textureCount = static_cast<int>(BlockType::NONE) - 1;
+    int textureCount = static_cast<int>(BlockType::BT_NONE) - 1;
     Vector2 quadSize(1.0f / 6, 1.0f / textureCount);
     float typeOffset = (static_cast<int>(blockType) - 1) * quadSize.y_;
     switch (side) {
@@ -836,7 +875,6 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
 
 void Chunk::Save()
 {
-    return;
     WorkQueue *workQueue = GetSubsystem<WorkQueue>();
     saveWorkItem_ = workQueue->GetFreeItem();
     saveWorkItem_->priority_ = M_MAX_UNSIGNED;
@@ -856,7 +894,6 @@ void Chunk::CreateNode()
     geometry_ = new CustomGeometry(context_);
     node_->AddComponent(geometry_, scene_->GetFreeComponentID(LOCAL), LOCAL);
 
-
     auto *body = node_->CreateComponent<RigidBody>(LOCAL);
     body->SetMass(0);
     body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
@@ -868,16 +905,16 @@ void Chunk::CreateNode()
     SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
 
     auto cache = GetSubsystem<ResourceCache>();
-//    label_ = node_->CreateChild("Label", LOCAL);
-//    auto text3D = label_->CreateComponent<Text3D>();
-//    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-//    text3D->SetColor(Color::GRAY);
-//    text3D->SetViewMask(VIEW_MASK_GUI);
-//    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-//    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-//    text3D->SetText(position_.ToString());
-//    text3D->SetFontSize(32);
-//    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
+    label_ = node_->CreateChild("Label", LOCAL);
+    auto text3D = label_->CreateComponent<Text3D>();
+    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+    text3D->SetColor(Color::GRAY);
+    text3D->SetViewMask(VIEW_MASK_GUI);
+    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+    text3D->SetText(position_.ToString());
+    text3D->SetFontSize(32);
+    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
     scene_->AddChild(node_);
 
     MarkActive(false);
@@ -907,17 +944,78 @@ void Chunk::RemoveNode()
     SendEvent(E_CHUNK_REMOVED);
 }
 
+unsigned char Chunk::NeighborLightValue(BlockSide side, int x, int y, int z)
+{
+    switch(side) {
+        case BlockSide::TOP:
+            if (y == SIZE_Y - 1) {
+                auto neighbor = GetNeighbor(BlockSide::TOP);
+                if (neighbor) {
+                    return neighbor->GetLightValue(x, 0, z);
+                }
+            } else if (y + 1 < SIZE_Y) {
+                return GetLightValue(x, y + 1, z);
+            }
+        case BlockSide::BOTTOM:
+            if (y == 0) {
+                auto neighbor = GetNeighbor(BlockSide::BOTTOM);
+                if (neighbor) {
+                    return neighbor->GetLightValue(x, SIZE_Y - 1, z);
+                }
+            } else if (y > 0) {
+                return GetLightValue(x, y - 1, z);
+            }
+        case BlockSide::LEFT:
+            if (x == 0) {
+                auto neighbor = GetNeighbor(BlockSide::LEFT);
+                if (neighbor) {
+                    return neighbor->GetLightValue(SIZE_X - 1, y, z);
+                }
+            } else if (x > 0) {
+                return GetLightValue(x - 1, y, z);
+            }
+        case BlockSide::RIGHT:
+            if (x == SIZE_X - 1) {
+                auto neighbor = GetNeighbor(BlockSide::RIGHT);
+                if (neighbor) {
+                    return neighbor->GetLightValue(0, y, z);
+                }
+            } else if (x + 1 < SIZE_X) {
+                return GetLightValue(x + 1, y, z);
+            }
+        case BlockSide::FRONT:
+            if (z == 0) {
+                auto neighbor = GetNeighbor(BlockSide::FRONT);
+                if (neighbor) {
+                    return neighbor->GetLightValue(x, y, SIZE_Z - 1);
+                }
+            } else if (z > 0) {
+                return GetLightValue(x, y, z - 1);
+            }
+        case BlockSide::BACK:
+            if (z == SIZE_Z - 1) {
+                auto neighbor = GetNeighbor(BlockSide::BACK);
+                if (neighbor) {
+                    return neighbor->GetLightValue(x, y, 0);
+                }
+            } else if (z + 1 < SIZE_Z) {
+                return GetLightValue(x, y, z + 1);
+            }
+    }
+    return 0x0;
+}
+
 bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
 {
     switch(side) {
         case BlockSide::TOP:
             if (y == SIZE_Y - 1) {
                 auto neighbor = GetNeighbor(BlockSide::TOP);
-                if (neighbor && neighbor->GetBlockValue(x, 0, z) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(x, 0, z) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (y + 1 < SIZE_Y) {
-                if (data_[x][y + 1][z].type == BlockType::AIR) {
+                if (data_[x][y + 1][z].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -925,11 +1023,11 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
         case BlockSide::BOTTOM:
             if (y == 0) {
                 auto neighbor = GetNeighbor(BlockSide::BOTTOM);
-                if (neighbor && neighbor->GetBlockValue(x, SIZE_Y - 1, z) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(x, SIZE_Y - 1, z) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (y > 0) {
-                if (data_[x][y - 1][z].type == BlockType::AIR) {
+                if (data_[x][y - 1][z].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -937,11 +1035,11 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
         case BlockSide::LEFT:
             if (x == 0) {
                 auto neighbor = GetNeighbor(BlockSide::LEFT);
-                if (neighbor && neighbor->GetBlockValue(SIZE_X - 1, y, z) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(SIZE_X - 1, y, z) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (x > 0) {
-                if (data_[x - 1][y][z].type == BlockType::AIR) {
+                if (data_[x - 1][y][z].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -949,11 +1047,11 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
         case BlockSide::RIGHT:
             if (x == SIZE_X - 1) {
                 auto neighbor = GetNeighbor(BlockSide::RIGHT);
-                if (neighbor && neighbor->GetBlockValue(0, y, z) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(0, y, z) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (x + 1 < SIZE_X) {
-                if (data_[x + 1][y][z].type == BlockType::AIR) {
+                if (data_[x + 1][y][z].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -961,11 +1059,11 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
         case BlockSide::FRONT:
             if (z == 0) {
                 auto neighbor = GetNeighbor(BlockSide::FRONT);
-                if (neighbor && neighbor->GetBlockValue(x, y, SIZE_Z - 1) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(x, y, SIZE_Z - 1) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (z > 0) {
-                if (data_[x][y][z - 1].type == BlockType::AIR) {
+                if (data_[x][y][z - 1].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -973,11 +1071,11 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
         case BlockSide::BACK:
             if (z == SIZE_Z - 1) {
                 auto neighbor = GetNeighbor(BlockSide::BACK);
-                if (neighbor && neighbor->GetBlockValue(x, y, 0) == BlockType::AIR) {
+                if (neighbor && neighbor->GetBlockValue(x, y, 0) == BlockType::BT_AIR) {
                     return false;
                 }
             } else if (z + 1 < SIZE_Z) {
-                if (data_[x][y][z + 1].type == BlockType::AIR) {
+                if (data_[x][y][z + 1].type == BlockType::BT_AIR) {
                     return false;
                 }
             }
@@ -1095,42 +1193,6 @@ void Chunk::RenderNeighbors()
     }
 }
 
-void Chunk::PropogateLight(IntVector3 position)
-{
-    for (int x = -4; x <= 4; x++) {
-        for (int y = -4; y <= 4; y++) {
-            for (int z = -4; z <= 4; z++) {
-                IntVector3 neighborBlockPosition = position;
-                neighborBlockPosition.x_ += x;
-                neighborBlockPosition.y_ += y;
-                neighborBlockPosition.z_ += z;
-                int distance = x * x + y * y + z * z;
-                Color color = Color::WHITE * (1.0 - Sqrt(distance) / 4.0);
-                if (IsBlockInsideChunk(neighborBlockPosition)) {
-                    data_[neighborBlockPosition.x_][neighborBlockPosition.y_][neighborBlockPosition.z_].color += color;
-                }
-                else {
-                    Vector3 blockPosition;
-                    blockPosition.x_ = neighborBlockPosition.x_ + position.x_;
-                    blockPosition.y_ = neighborBlockPosition.y_ + position.y_;
-                    blockPosition.z_ = neighborBlockPosition.z_ + position.z_;
-                    auto chunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(blockPosition);
-                    if (chunk) {
-                        chunk->CalculateLight();
-                    }
-//                    auto block = GetSubsystem<VoxelWorld>()->GetBlockAt(blockPosition);
-////                    auto block = GetNeighborBlockByLocalPosition(neighborBlockPosition);
-//                    if (block) {
-//                        block->color += color;
-//                    } else {
-//                        URHO3D_LOGINFO("block not found");
-//                    }
-                }
-            }
-        }
-    }
-}
-
 VoxelBlock* Chunk::GetNeighborBlockByLocalPosition(IntVector3 position)
 {
     if (position.x_ < 0) {
@@ -1192,21 +1254,230 @@ VoxelBlock* Chunk::GetBlockAt(IntVector3 position)
     return nullptr;
 }
 
-void Chunk::CalculateLight()
+int Chunk::GetSunlight(int x, int y, int z)
+{
+    return (lightMap_[x][y][z] >> 4) & 0xF;
+}
+
+void Chunk::SetSunlight(int x, int y, int z, int value)
+{
+    lightMap_[x][y][z] = (lightMap_[x][y][z] & 0xF) | (value << 4);
+}
+
+int Chunk::GetTorchlight(int x, int y, int z)
+{
+    return lightMap_[x][y][z] & 0xF;
+}
+
+void Chunk::SetTorchlight(int x, int y, int z, int value)
+{
+    lightMap_[x][y][z] = (lightMap_[x][y][z] & 0xF0) | value;
+}
+
+void Chunk::ProcessQueues()
+{
+    while(!lightRemovalBfsQueue_.empty()) {
+        // Get a reference to the front node
+        LightRemovalNode &node = lightRemovalBfsQueue_.front();
+        int lightLevel = (int)node.value_;
+        Chunk* chunk = node.chunk_;
+        // Pop the front node off the queue.
+        lightRemovalBfsQueue_.pop();
+        // Extract x, y, and z from our chunk. Same as before.
+        // NOTE: Don't forget chunk bounds checking! I didn't show it here.
+        // Check negative X neighbor
+
+        for (int i = 0; i < 6; i++) {
+            int dX = node.x_;
+            int dY = node.y_;
+            int dZ = node.z_;
+            bool insideChunk = true;
+            switch (i) {
+                case BlockSide::LEFT:
+                    if (dX - 1 < 0) {
+                        insideChunk = false;
+                        dX = SIZE_X - 1;
+                    } else {
+                        dX -= 1;
+                    }
+                    break;
+                case BlockSide::RIGHT:
+                    if (dX + 1 >= SIZE_X) {
+                        insideChunk = false;
+                        dX = 0;
+                    } else {
+                        dX += 1;
+                    }
+                    break;
+                case BlockSide::BOTTOM:
+                    if (dY - 1 < 0) {
+                        insideChunk = false;
+                        dY = SIZE_Y - 1;
+                    } else {
+                        dY -= 1;
+                    }
+                    break;
+                case BlockSide::TOP:
+                    if (dY + 1 >= SIZE_Y) {
+                        insideChunk = false;
+                        dY = 0;
+                    } else {
+                        dY += 1;
+                    }
+                    break;
+                case BlockSide::FRONT:
+                    if (dZ - 1 < 0) {
+                        insideChunk = false;
+                        dZ = SIZE_Z - 1;
+                    } else {
+                        dZ -= 1;
+                    }
+                    break;
+                case BlockSide::BACK:
+                    if (dZ + 1 >= SIZE_Z) {
+                        insideChunk = false;
+                        dZ = 0;
+                    } else {
+                        dZ += 1;
+                    }
+                    break;
+            }
+
+            if (insideChunk) {
+                auto neighborLightLevel = GetTorchlight(dX, dY, dZ);
+                if (neighborLightLevel != 0 && neighborLightLevel < lightLevel) {
+                    SetTorchlight(dX, dY, dZ, 0);
+                    AddLightRemovalNode(dX, dY, dZ, neighborLightLevel);
+                } else if (neighborLightLevel >= lightLevel) {
+                    AddLightNode(dX, dY, dZ);
+                }
+            } else {
+                auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+                if (neighbor) {
+                    auto neighborLightLevel = neighbor->GetTorchlight(dX, dY, dZ);
+                    if (neighborLightLevel != 0 && neighborLightLevel < lightLevel) {
+                        neighbor->SetTorchlight(dX, dY, dZ, 0);
+                        neighbor->AddLightRemovalNode(dX, dY, dZ, neighborLightLevel);
+                    } else if (neighborLightLevel >= lightLevel) {
+                         neighbor->AddLightNode(SIZE_X - 1, node.y_, node.z_);
+                    }
+                }
+            }
+        }
+    }
+    while(!lightBfsQueue_.empty()) {
+        // Get a reference to the front node.
+        LightNode &node = lightBfsQueue_.front();
+        Chunk* chunk = node.chunk_;
+        // Pop the front node off the queue. We no longer need the node reference
+        lightBfsQueue_.pop();
+        // Grab the light level of the current node
+        int lightLevel = chunk->GetTorchlight(node.x_, node.y_, node.z_);
+        // NOTE: You will need to do bounds checking!
+        // If you are on the edge of a chunk, then x - 1 will be -1. Instead
+        // you need to look at your left neighboring chunk and check the
+        // adjacent block there. When you do that, be sure to use the
+        // neighbor chunk when emplacing the new node to lightBfsQueue;
+        // Check negative X neighbor
+        // Make sure you don't propagate light into opaque blocks like stone!
+
+        for (int i = 0; i < 6; i++) {
+            int dX = node.x_;
+            int dY = node.y_;
+            int dZ = node.z_;
+            bool insideChunk = true;
+            switch (i) {
+                case BlockSide::LEFT:
+                    if (dX - 1 < 0) {
+                        insideChunk = false;
+                        dX = SIZE_X - 1;
+                    } else {
+                        dX -= 1;
+                    }
+                    break;
+                case BlockSide::RIGHT:
+                    if (dX + 1 >= SIZE_X) {
+                        insideChunk = false;
+                        dX = 0;
+                    } else {
+                        dX += 1;
+                    }
+                    break;
+                case BlockSide::BOTTOM:
+                    if (dY - 1 < 0) {
+                        insideChunk = false;
+                        dY = SIZE_Y - 1;
+                    } else {
+                        dY -= 1;
+                    }
+                    break;
+                case BlockSide::TOP:
+                    if (dY + 1 >= SIZE_Y) {
+                        insideChunk = false;
+                        dY = 0;
+                    } else {
+                        dY += 1;
+                    }
+                    break;
+                case BlockSide::FRONT:
+                    if (dZ - 1 < 0) {
+                        insideChunk = false;
+                        dZ = SIZE_Z - 1;
+                    } else {
+                        dZ -= 1;
+                    }
+                    break;
+                case BlockSide::BACK:
+                    if (dZ + 1 >= SIZE_Z) {
+                        insideChunk = false;
+                        dZ = 0;
+                    } else {
+                        dZ += 1;
+                    }
+                    break;
+            }
+
+            if (insideChunk) {
+                if (chunk->GetBlockAt(IntVector3(dX, dY, dZ))->type == BlockType::BT_AIR &&
+                    chunk->GetTorchlight(dX, dY, dZ) + 2 <= lightLevel) {
+                    chunk->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                    lightBfsQueue_.emplace(dX, dY, dZ, chunk);
+                }
+            } else {
+                auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+                if (neighbor) {
+                    if (neighbor->GetBlockAt(IntVector3(dX, dY, dZ))->type == BlockType::BT_AIR &&
+                        neighbor->GetTorchlight(dX, dY, dZ) + 2 <= lightLevel) {
+                        neighbor->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                        neighbor->AddLightNode(dX, dY, dZ);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Chunk::AddLightNode(int x, int y, int z)
+{
+    lightBfsQueue_.emplace(x, y, z, this);
+}
+
+void Chunk::AddLightRemovalNode(int x, int y, int z, int level)
+{
+    lightRemovalBfsQueue_.emplace(x, y, z, level, this);
+}
+
+unsigned char Chunk::GetLightValue(int x, int y, int z)
+{
+    return lightMap_[x][y][z];
+}
+
+void Chunk::SetSunlight(int value)
 {
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                data_[x][y][z].color = Color::BLACK;
-            }
-        }
-    }
-    for (int x = 0; x < SIZE_X; x++) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                if (data_[x][y][z].type == BlockType::LIGHT) {
-                    PropogateLight(IntVector3(x, y, z));
-                }
+                SetSunlight(x, y, z, value);
             }
         }
     }

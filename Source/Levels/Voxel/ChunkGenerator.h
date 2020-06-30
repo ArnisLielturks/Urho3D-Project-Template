@@ -16,6 +16,7 @@ public:
     int GetTerrainHeight(const Vector3& blockPosition);
     BlockType GetBlockType(const Vector3& blockPosition, int surfaceHeight);
     BlockType GetCaveBlockType(const Vector3& blockPosition, BlockType currentBlock);
+    Biome GetBiomeType(const Vector3& blockPosition);
     void SetSeed(int seed);
 private:
     PerlinNoise perlin_;

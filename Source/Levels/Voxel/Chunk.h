@@ -8,6 +8,7 @@
 #include <Urho3D/Graphics/IndexBuffer.h>
 #include <Urho3D/Graphics/Model.h>
 #include "VoxelDefs.h"
+#include <queue>
 
 const int SIZE_X = 16;
 const int SIZE_Y = 16;
@@ -15,12 +16,31 @@ const int SIZE_Z = 16;
 
 using namespace Urho3D;
 
+class Chunk;
+
 struct ChunkVertex {
     Vector3 position;
     Vector3 normal;
     Vector2 uvCoords;
     Vector4 tangent;
-    Color color;
+    unsigned char light;
+};
+
+struct LightRemovalNode {
+    LightRemovalNode(short x, short y, short z, short val, Chunk* ch) : x_(x), y_(y), z_(z), value_(val), chunk_(ch) {}
+    short x_;
+    short y_;
+    short z_;
+    short value_;
+    Chunk* chunk_; //pointer to the chunk that owns it!
+};
+
+struct LightNode {
+    LightNode(short x, short y, short z, Chunk* ch) : x_(x), y_(y), z_(z), chunk_(ch) {}
+    short x_;
+    short y_;
+    short z_;
+    Chunk* chunk_; //pointer to the chunk that owns it!
 };
 
 class Chunk : public Object {
@@ -49,10 +69,17 @@ public:
     BlockType GetBlockValue(int x, int y, int z);
     void Render(bool neighborLoaded = false);
     void RenderNeighbors();
-    void PropogateLight(IntVector3 position);
     VoxelBlock* GetBlockAt(IntVector3 position);
+    int GetSunlight(int x, int y, int z);
+    void SetSunlight(int x, int y, int z, int value);
+    int GetTorchlight(int x, int y, int z);
+    void SetTorchlight(int x, int y, int z, int value);
+    void AddLightNode(int x, int y, int z);
+    void AddLightRemovalNode(int x, int y, int z, int level);
+    unsigned char GetLightValue(int x, int y, int z);
+    void SetSunlight(int value);
 private:
-    void HandlePostRenderUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
     void HandleHit(StringHash eventType, VariantMap& eventData);
     void HandleAdd(StringHash eventType, VariantMap& eventData);
@@ -67,8 +94,9 @@ private:
     void CreateNode();
     void RemoveNode();
     bool BlockHaveNeighbor(BlockSide side, int x, int y, int z);
+    unsigned char NeighborLightValue(BlockSide side, int x, int y, int z);
     Chunk* GetNeighbor(BlockSide side);
-    void CalculateLight();
+    void ProcessQueues();
 
     SharedPtr<CustomGeometry> geometry_;
     SharedPtr<Node> node_;
@@ -81,10 +109,15 @@ private:
     SharedPtr<WorkItem> saveWorkItem_;
     int visitors_{0};
     VoxelBlock data_[SIZE_X][SIZE_Y][SIZE_Z];
+    unsigned char lightMap_[SIZE_X][SIZE_Y][SIZE_Z];
     bool shouldDelete_;
     bool isActive_;
     bool visible_;
     int loadedNeighbors_{0};
     Vector<ChunkVertex> vertices_;
+    Vector<short> indices_;
     Vector<IntVector3> neighborLights_;
+    std::queue<LightNode> lightBfsQueue_;
+    std::queue<LightRemovalNode> lightRemovalBfsQueue_;
+    Mutex mutex_;
 };

@@ -185,6 +185,16 @@ void Generator::GenerateTextures()
     light.colors[0] = Color(0.9, 0.8, 0.1);
     textures.Push(light);
 
+    TextureColors wood;
+    wood.singleColor = true;
+    wood.colors[0] = Color(0.76,0.60,0.42);
+    textures.Push(wood);
+
+    TextureColors water;
+    water.singleColor = true;
+    water.colors[0] = Color(0.64,0.96,0.98);
+    textures.Push(water);
+
     combined->SetSize(32 * 6, 32 * textures.Size(), 4);
     int border = 1;
     for (int t = 0; t < textures.Size(); t++) {

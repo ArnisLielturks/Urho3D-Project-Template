@@ -23,7 +23,7 @@ void PS()
     // Get material diffuse albedo
     #ifdef DIFFMAP
         vec4 diffColor = cMatDiffColor * texture2D(sDiffMap, vTexCoord);
-        diffColor = diffColor * 0.1 + (diffColor * 0.9 * vColor);
+        diffColor = diffColor * vColor.r + diffColor * vColor.g;
         #ifdef ALPHAMASK
             if (diffColor.a < 0.5)
                 discard;

@@ -610,28 +610,29 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             Vector3 hitPosition;
             Vector3 hitNormal;
             Drawable* hitDrawable;
-            bool hit = RaycastFromCamera(camera, 30.0f, hitPosition, hitNormal, hitDrawable);
+            bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
-                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
+//                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
                 VariantMap& data = GetEventDataMap();
                 data["Position"] = hitPosition - hitNormal * 0.5f;
                 data["ControllerId"] = eventData[P_CONTROLLER];
                 hitDrawable->GetNode()->SendEvent("ChunkHit", data);
             }
         }
-    } else if (action == CTRL_SECONDARY) {
+    } else if (action == CTRL_SECONDARY || action == CTRL_DETECT) {
         int controllerId = eventData[P_CONTROLLER].GetInt();
         if (cameras_.Contains(controllerId)) {
             Camera* camera = cameras_[controllerId]->GetComponent<Camera>();
             Vector3 hitPosition;
             Vector3 hitNormal;
             Drawable* hitDrawable;
-            bool hit = RaycastFromCamera(camera, 30.0f, hitPosition, hitNormal, hitDrawable);
+            bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
 //                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString());
                 VariantMap& data = GetEventDataMap();
                 data["Position"] = hitPosition + hitNormal * 0.5f;
                 data["ControllerId"] = eventData[P_CONTROLLER];
+                data["Action"]  = action;
                 hitDrawable->GetNode()->SendEvent("ChunkAdd", data);
             }
         }

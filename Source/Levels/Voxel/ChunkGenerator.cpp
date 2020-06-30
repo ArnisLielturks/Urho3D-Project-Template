@@ -40,7 +40,8 @@ int ChunkGenerator::GetTerrainHeight(const Vector3& blockPosition)
     double dz3 = blockPosition.z_ / smoothness3;
 //    double result1 = perlin_.octaveNoise(dx1, dz1, 1) * 0.5 + 0.5;
     int octaves = (perlin_.octaveNoise(dx2, dz2, 1) * 0.5 + 0.5 + 1) * 16;
-    int height = (perlin_.octaveNoise(dx3, dz3, 1) * 0.5 + 0.5) * 100;
+    int heightLimit = 100;
+    int height = (perlin_.octaveNoise(dx3, dz3, 1) * 0.5 + 0.5) * heightLimit;
 //
 //
     float smoothness4 = 123.33f;
@@ -49,14 +50,39 @@ int ChunkGenerator::GetTerrainHeight(const Vector3& blockPosition)
     double result2 = perlin_.octaveNoise(dx4, dz4, octaves);
 //    float result2 = simplexNoise_.noise(dx1, dz1);
 //    float height = simplexNoise_.noise(dx2, dz2) * 100;
-    return result2 * height;
+    float surfaceHeight = result2 * height;
+    if (surfaceHeight < -10) {
+        surfaceHeight = -10;
+    }
+    return surfaceHeight;
+}
+
+Biome ChunkGenerator::GetBiomeType(const Vector3& blockPosition)
+{
+    float smoothness = 135.12f;
+    double dx = blockPosition.x_ / smoothness;
+    double dz = blockPosition.z_ / smoothness;
+
+    float result = perlin_.octaveNoise0_1(dx, dz, 4);
+//    float threshold = 1.0f / B_NONE;
+//    for (int i = 0; i < B_NONE; i++) {
+//        if (result <= threshold * (i + 1)) {
+//            return static_cast<Biome>(i);
+//        }
+//    }
+
+    return B_GRASS;
 }
 
 BlockType ChunkGenerator::GetBlockType(const Vector3& blockPosition, int surfaceHeight)
 {
+    Biome biome = GetBiomeType(blockPosition);
+    if (surfaceHeight <= -10) {
+        biome = B_SEA;
+    }
     int heightToSurface = surfaceHeight - blockPosition.y_;
     if (heightToSurface < 0) {
-        return BlockType::AIR;
+        return BlockType::BT_AIR;
     }
     float smoothness1 = 111.13f;
     float smoothness2 = 222.13f;
@@ -67,26 +93,39 @@ BlockType ChunkGenerator::GetBlockType(const Vector3& blockPosition, int surface
     float result = result1 * result2 * result3;
     if (heightToSurface <= 10) {
         if (result > 0.2) {
-            return BlockType::COAL;
+            return BlockType::BT_COAL;
         }
         if (result > 0.18) {
-            return BlockType::STONE;
+            return BlockType::BT_STONE;
         }
         if (result > 0.16) {
-            return BlockType::SAND;
+            return BlockType::BT_SAND;
         }
-        return BlockType::DIRT;
+        switch (biome) {
+            case B_GRASS:
+                return BlockType::BT_DIRT;
+            case B_SEA:
+                return BlockType::BT_WATER;
+            case B_FOREST:
+                return BlockType::BT_WOOD;
+            case B_MOUNTAINS:
+                return BlockType::BT_STONE;
+            case B_DESERT:
+                return BlockType::BT_SAND;
+            default:
+                return BlockType::BT_DIRT;
+        }
     }
 
     if (result > 0.8) {
-        return BlockType::COAL;
+        return BlockType::BT_COAL;
     }
-    return BlockType::STONE;
+    return BlockType::BT_STONE;
 }
 
 BlockType ChunkGenerator::GetCaveBlockType(const Vector3& blockPosition, BlockType currentBlock)
 {
-    if (currentBlock == BlockType::AIR) {
+    if (currentBlock == BlockType::BT_AIR) {
         return currentBlock;
     }
 
@@ -101,7 +140,7 @@ BlockType ChunkGenerator::GetCaveBlockType(const Vector3& blockPosition, BlockTy
 //    float result2 = simplexNoise_.noise(blockPosition.z_ / smoothness1, blockPosition.x_ / smoothness1, blockPosition.y_ / smoothness1);
 
     if (result > 0.2f) {
-        return BlockType::AIR;
+        return BlockType::BT_AIR;
     }
 
     return currentBlock;

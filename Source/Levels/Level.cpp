@@ -36,6 +36,7 @@
 #include "../NetworkEvents.h"
 #include "../SceneManager.h"
 #include "Voxel/VoxelWorld.h"
+#include "Voxel/LightManager.h"
 #include "Voxel/VoxelEvents.h"
 #include "Voxel/ChunkGenerator.h"
 
@@ -63,6 +64,7 @@ Level::~Level()
     if (GetSubsystem<VoxelWorld>()) {
         context_->RemoveSubsystem<VoxelWorld>();
         context_->RemoveSubsystem<ChunkGenerator>();
+        context_->RemoveSubsystem<LightManager>();
     }
 }
 
@@ -74,6 +76,7 @@ void Level::RegisterObject(Context* context)
     VoxelWorld::RegisterObject(context);
     Chunk::RegisterObject(context);
     ChunkGenerator::RegisterObject(context);
+    LightManager::RegisterObject(context);
 }
 
 void Level::Init()
@@ -169,6 +172,10 @@ void Level::CreateVoxelWorld()
         context_->RegisterSubsystem(new ChunkGenerator(context_));
         GetSubsystem<ChunkGenerator>()->SetSeed(1);
     }
+    if (!GetSubsystem<LightManager>()) {
+        context_->RegisterSubsystem(new LightManager(context_));
+    }
+    GetSubsystem<VoxelWorld>()->Init();
 }
 
 SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const String& name, int nodeID)
@@ -616,7 +623,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                 VariantMap& data = GetEventDataMap();
                 data["Position"] = hitPosition - hitNormal * 0.5f;
                 data["ControllerId"] = eventData[P_CONTROLLER];
-                hitDrawable->GetNode()->SendEvent("ChunkHit", data);
+                hitDrawable->GetNode()->GetParent()->SendEvent("ChunkHit", data);
             }
         }
     } else if (action == CTRL_SECONDARY || action == CTRL_DETECT) {
@@ -633,7 +640,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                 data["Position"] = hitPosition + hitNormal * 0.5f;
                 data["ControllerId"] = eventData[P_CONTROLLER];
                 data["Action"]  = action;
-                hitDrawable->GetNode()->SendEvent("ChunkAdd", data);
+                hitDrawable->GetNode()->GetParent()->SendEvent("ChunkAdd", data);
             }
         }
     }

@@ -11,6 +11,7 @@
 #include "../../Console/ConsoleHandlerEvents.h"
 #include "ChunkGenerator.h"
 #include "../../Global.h"
+#include "LightManager.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
@@ -18,8 +19,77 @@ using namespace ConsoleHandlerEvents;
 int VoxelWorld::visibleDistance = 1;
 int VoxelWorld::activeDistance = 1;
 
+
+void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
+{
+    VoxelWorld* world = reinterpret_cast<VoxelWorld*>(item->aux_);
+    MutexLock lock(world->mutex_);
+    if (world->GetSubsystem<LightManager>()) {
+        world->GetSubsystem<LightManager>()->Process();
+    }
+    if (world->GetSubsystem<DebugHud>()) {
+        world->GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", world->chunks_.Size());
+    }
+
+    int counter = 0;
+    for (auto chIt = world->chunks_.Begin(); chIt != world->chunks_.End(); ++chIt) {
+        if ((*chIt).second_ && (*chIt).second_->IsActive()) {
+            counter++;
+        }
+    }
+    if (world->GetSubsystem<DebugHud>()) {
+        world->GetSubsystem<DebugHud>()->SetAppStats("Active chunks", counter);
+    }
+
+    float activeBlockDistance = SIZE_X * ( world->activeDistance + 2);
+    float visibleBlockDistance = SIZE_X * ( world->visibleDistance + 2);
+
+    for (auto chIt = world->chunks_.Begin(); chIt != world->chunks_.End(); ++chIt) {
+        for (auto obIt = world->observers_.Begin(); obIt != world->observers_.End(); ++obIt) {
+            if (!(*chIt).second_) {
+                continue;
+            }
+            const Vector3& chunkPosition = (*chIt).second_->GetPosition();
+            auto distance = (*obIt)->GetWorldPosition() - chunkPosition;
+            distance.x_ = Abs(distance.x_);
+            distance.y_ = Abs(distance.y_);
+            distance.z_ = Abs(distance.z_);
+
+            if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
+                (*chIt).second_->MarkForDeletion(false);
+            } else {
+                (*chIt).second_->MarkForDeletion(true);
+            }
+            if (distance.x_ <= activeBlockDistance && distance.y_ <= activeBlockDistance && distance.z_ <= activeBlockDistance) {
+                (*chIt).second_->MarkActive(true);
+            } else {
+                (*chIt).second_->MarkActive(false);
+            }
+        }
+    }
+
+    for (auto it = world->chunks_.Begin(); it != world->chunks_.End(); ++it) {
+        if (!(*it).second_) {
+            continue;
+        }
+        // Initialize new chunks
+        if (!(*it).second_->IsLoaded()) {
+            (*it).second_->Load();
+        }
+
+        if (!(*it).second_->IsGeometryCalculated()) {
+            (*it).second_->CalculateGeometry();
+//            URHO3D_LOGINFO("CalculateGeometry " + (*it).second_->GetPosition().ToString());
+        }
+    }
+}
+
 VoxelWorld::VoxelWorld(Context* context):
     Object(context)
+{
+}
+
+void VoxelWorld::Init()
 {
     scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
 
@@ -27,6 +97,7 @@ VoxelWorld::VoxelWorld(Context* context):
     SubscribeToEvent(E_CHUNK_ENTERED, URHO3D_HANDLER(VoxelWorld, HandleChunkEntered));
     SubscribeToEvent(E_CHUNK_EXITED, URHO3D_HANDLER(VoxelWorld, HandleChunkExited));
     SubscribeToEvent(E_CHUNK_GENERATED, URHO3D_HANDLER(VoxelWorld, HandleChunkGenerated));
+    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(VoxelWorld, HandleWorkItemFinished));
 
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
@@ -81,24 +152,6 @@ VoxelWorld::VoxelWorld(Context* context):
         loadChunksPerFrame_ = value;
         URHO3D_LOGINFOF("Chunks loaded per frame change to %d", value);
     });
-
-//    SendEvent(
-//            E_CONSOLE_COMMAND_ADD,
-//            ConsoleCommandAdd::P_NAME, "chunk_visibility_update",
-//            ConsoleCommandAdd::P_EVENT, "#chunk_visibility_update",
-//            ConsoleCommandAdd::P_DESCRIPTION, "Hide chunks when they are not visible",
-//            ConsoleCommandAdd::P_OVERWRITE, true
-//    );
-//    SubscribeToEvent("#chunk_visibility_update", [&](StringHash eventType, VariantMap& eventData) {
-//        StringVector params = eventData["Parameters"].GetStringVector();
-//        if (params.Size() != 2) {
-//            URHO3D_LOGERROR("visiblity parameter is required!");
-//            return;
-//        }
-//        int value = ToBool(params[1]);
-//        Chunk::visibilityUpdate_ = value;
-//        URHO3D_LOGINFOF("Chunk visiblitity updated to %d", value);
-//    });
 }
 
 void VoxelWorld::RegisterObject(Context* context)
@@ -125,17 +178,16 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     int loadedChunkCounter = 0;
-    while (!pendingChunks_.Empty()) {
-        loadedChunkCounter++;
-        String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
-        chunks_[id] = pendingChunks_.Front();
-        chunks_[id]->Generate();
-        chunks_[id]->RenderNeighbors();
-        pendingChunks_.PopFront();
-        if (loadedChunkCounter > loadChunksPerFrame_) {
-            break;
-        }
-    }
+//    while (!pendingChunks_.Empty()) {
+//        loadedChunkCounter++;
+//        String id = GetChunkIdentificator(pendingChunks_.Front()->GetPosition());
+//        chunks_[id] = pendingChunks_.Front();
+//        chunks_[id]->Generate();
+//        pendingChunks_.PopFront();
+//        if (loadedChunkCounter > loadChunksPerFrame_) {
+//            break;
+//        }
+//    }
 
     if (!removeBlocks_.Empty()) {
         auto chunk = GetChunkByPosition(removeBlocks_.Front());
@@ -150,17 +202,17 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
         }
     }
 
-    if (updateTimer_.GetMSec(false) > 10) {
-        updateTimer_.Reset();
-        UpdateChunks();
-    }
+//    if (updateTimer_.GetMSec(false) > 10) {
+//        updateTimer_.Reset();
+    UpdateChunks();
+//    }
 }
 
 void VoxelWorld::CreateChunk(const Vector3& position)
 {
     String id = GetChunkIdentificator(position);
-    pendingChunks_.Push(new Chunk(context_));
-    pendingChunks_.Back()->Init(scene_, position);
+    chunks_[id] = new Chunk(context_);
+    chunks_[id]->Init(scene_, position);
 }
 
 Vector3 VoxelWorld::GetNodeToChunkPosition(Node* node)
@@ -196,7 +248,7 @@ void VoxelWorld::HandleChunkGenerated(StringHash eventType, VariantMap& eventDat
 void VoxelWorld::LoadChunk(const Vector3& position)
 {
     Vector3 fixedChunkPosition = GetWorldToChunkPosition(position);
-    if (!IsChunkLoaded(fixedChunkPosition) && !IsChunkPending(fixedChunkPosition)) {
+    if (!IsChunkLoaded(fixedChunkPosition)) {
         CreateChunk(fixedChunkPosition);
     }
     Vector<Vector3> positions;
@@ -249,21 +301,10 @@ void VoxelWorld::LoadChunk(const Vector3& position)
     positions.Push(Vector3(fixedChunkPosition + Vector3::DOWN * SIZE_Y + Vector3::FORWARD * SIZE_Z + Vector3::RIGHT * SIZE_X));
 
     for (auto it = positions.Begin(); it != positions.End(); ++it) {
-        if(!IsChunkLoaded((*it)) && !IsChunkPending((*it))) {
+        if(!IsChunkLoaded((*it))) {
             CreateChunk((*it));
         }
     }
-}
-
-bool VoxelWorld::IsChunkPending(const Vector3& position)
-{
-    for (auto it = pendingChunks_.Begin(); it != pendingChunks_.End(); ++it) {
-        if (IsEqualPositions((*it)->GetPosition(), position)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 bool VoxelWorld::IsEqualPositions(Vector3 a, Vector3 b)
@@ -296,7 +337,6 @@ void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
     removeBlocks_.Push(position);
 }
 
-
 void VoxelWorld::UpdateChunks()
 {
     if (chunks_.Empty()) {
@@ -308,97 +348,53 @@ void VoxelWorld::UpdateChunks()
         }
     }
 
-    if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", chunks_.Size());
-    }
-    if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("PendingChuml", chunks_.Size());
-    }
-
-    int counter = 0;
-    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
-        if ((*chIt).second_ && (*chIt).second_->IsActive()) {
-            counter++;
-        }
-    }
-    if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Active chunks", counter);
-    }
-
-    float activeBlockDistance = SIZE_X * ( activeDistance + 2);
-    float visibleBlockDistance = SIZE_X * ( visibleDistance + 2);
-
-    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
-        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
-            if (!(*chIt).second_) {
-                continue;
-            }
-//            if ((*chIt).second_->IsVisible()) {
-//                visibleChunks++;
-//            }
-            const Vector3& chunkPosition = (*chIt).second_->GetPosition();
-            auto distance = (*obIt)->GetWorldPosition() - chunkPosition;
-            distance.x_ = Abs(distance.x_);
-            distance.y_ = Abs(distance.y_);
-            distance.z_ = Abs(distance.z_);
-
-            if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
-                (*chIt).second_->MarkForDeletion(false);
-            } else {
-                (*chIt).second_->MarkForDeletion(true);
-            }
-            if (distance.x_ <= activeBlockDistance && distance.y_ <= activeBlockDistance && distance.z_ <= activeBlockDistance) {
-                (*chIt).second_->MarkActive(true);
-            } else {
-                (*chIt).second_->MarkActive(false);
+    int deleteCount = 0;
+    for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
+        if ((*it).second_) {
+            if ((*it).second_->IsMarkedForDeletion()) {
+                deleteCount++;
             }
         }
     }
 
-//    if (GetSubsystem<DebugHud>()) {
-//        GetSubsystem<DebugHud>()->SetAppStats("Visible chunks", visibleChunks);
-//    }
-
-    for (auto it = pendingChunks_.Begin(); it != pendingChunks_.End(); ++it) {
-        bool visible = false;
-        for (auto obIt = observers_.Begin(); obIt != observers_.End(); ++obIt) {
-            const Vector3& chunkPosition = (*it)->GetPosition();
-            auto distance = (*obIt)->GetWorldPosition() - chunkPosition;
-            distance.x_ = Abs(distance.x_);
-            distance.y_ = Abs(distance.y_);
-            distance.z_ = Abs(distance.z_);
-
-            if (distance.x_ <= visibleBlockDistance && distance.y_ <= visibleBlockDistance && distance.z_ <= visibleBlockDistance) {
-                visible = true;
-                break;
-            }
-        }
-        if (!visible) {
-            delete (*it);
-            it = pendingChunks_.Erase(it);
-            if (it == pendingChunks_.End()) {
-                break;
+    if (deleteCount > 0) {
+        MutexLock lock(mutex_);
+        for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
+            if ((*it).second_) {
+                if ((*it).second_->IsMarkedForDeletion()) {
+                    it = chunks_.Erase(it);
+                }
+                if (chunks_.End() == it) {
+                    break;
+                }
+                (*it).second_->SetActive();
             }
         }
     }
 
-    for (auto chIt = chunks_.Begin(); chIt != chunks_.End(); ++chIt) {
-        if ((*chIt).second_) {
-            if ((*chIt).second_->IsMarkedForDeletion()) {
-                chIt = chunks_.Erase(chIt);
-            }
-            if (chunks_.End() == chIt) {
-                break;
-            }
-            (*chIt).second_->SetActive();
-//            (*chIt).second_->UpdateVisibility();
+    if (!updateWorkItem_) {
+        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
+        updateWorkItem_ = workQueue->GetFreeItem();
+        updateWorkItem_->priority_ = M_MAX_INT;
+        updateWorkItem_->workFunction_ = UpdateChunkState;
+        updateWorkItem_->aux_ = this;
+        updateWorkItem_->sendEvent_ = true;
+        updateWorkItem_->start_ = nullptr;
+        updateWorkItem_->end_ = nullptr;
+        workQueue->AddWorkItem(updateWorkItem_);
+    }
+
+    for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
+        if ((*it).second_->ShouldRender()) {
+            (*it).second_->Render();
+//            URHO3D_LOGINFO("Rendering chunk " + (*it).second_->GetPosition().ToString());
+            break;
         }
     }
 }
 
 String VoxelWorld::GetChunkIdentificator(const Vector3& position)
 {
-
     return String(position.x_ / SIZE_X) + "_" +  String(position.y_ / SIZE_Y) + "_" + String(position.z_ / SIZE_Z);
 }
 
@@ -411,4 +407,35 @@ VoxelBlock* VoxelWorld::GetBlockAt(Vector3 position)
         return chunks_[id]->GetBlockAt(IntVector3(blockPosition.x_, blockPosition.y_, blockPosition.z_));
     }
     return nullptr;
+}
+
+bool VoxelWorld::IsChunkValid(Chunk* chunk)
+{
+    for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
+        if ((*it).second_.Get() == chunk) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void VoxelWorld::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData) {
+    using namespace WorkItemCompleted;
+    WorkItem *workItem = reinterpret_cast<WorkItem *>(eventData[P_ITEM].GetPtr());
+    if (workItem->aux_ != this) {
+        return;
+    }
+//    if (workItem->workFunction_ == GenerateVoxelData) {
+//        CreateNode();
+//        generateWorkItem_.Reset();
+//        MarkDirty();
+//    } else if (workItem->workFunction_ == GenerateVertices) {
+////        GetSubsystem<VoxelWorld>()->AddChunkToRenderQueue(this);
+//        Render();
+//        generateGeometryWorkItem_.Reset();
+//    } else
+    if (workItem->workFunction_ == UpdateChunkState) {
+        updateWorkItem_.Reset();
+    }
 }

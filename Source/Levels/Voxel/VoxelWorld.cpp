@@ -75,6 +75,12 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         // Initialize new chunks
         if (!(*it).second_->IsLoaded()) {
             (*it).second_->Load();
+            for (int i = 0; i < 6; i++) {
+                auto neighbor = (*it).second_->GetNeighbor(static_cast<BlockSide>(i));
+                if (neighbor) {
+                    neighbor->MarkForGeometryCalculation();
+                }
+            }
         }
 
         if (!(*it).second_->IsGeometryCalculated()) {

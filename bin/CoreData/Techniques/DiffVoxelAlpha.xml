@@ -1,0 +1,3 @@
+<technique vs="UnlitVoxel" ps="UnlitVoxel" psdefines="DIFFMAP TRANSPARENT">
+    <pass name="alpha" depthwrite="false" blend="alpha" />
+</technique>

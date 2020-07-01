@@ -49,7 +49,7 @@ void SaveToFile(const WorkItem* item, unsigned threadIndex)
     }
     Vector3 position = chunk->position_;
     file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_));
-    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
+//    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
 }
 
 Chunk::Chunk(Context* context):
@@ -166,7 +166,11 @@ void Chunk::Render()
     geometry->Commit();
     geometry->SetOccluder(true);
     geometry->SetOccludee(true);
-    geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+    if (renderIndex_ == PART_COUNT) {
+        geometry->SetMaterial(cache->GetResource<Material>("Materials/VoxelWater.xml"));
+    } else {
+        geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+    }
 
     auto *shape = part->GetComponent<CollisionShape>();
     if (geometry->GetNumVertices(0) > 0) {
@@ -175,7 +179,7 @@ void Chunk::Render()
         shape->SetEnabled(false);
     }
     renderIndex_++;
-    if (renderIndex_ >= PART_COUNT) {
+    if (renderIndex_ > PART_COUNT) {
         shouldRender_ = false;
     }
 }
@@ -184,7 +188,7 @@ void Chunk::CalculateGeometry()
 {
     MutexLock lock(mutex_);
     HashMap<int, Vector<ChunkVertex>> allVertices;
-    for (int i = 0; i < PART_COUNT; i++) {
+    for (int i = 0; i <= PART_COUNT; i++) {
         Node *node = parts_.At(i);
         auto geometry = node->GetComponent<CustomGeometry>();
         geometry->SetDynamic(false);
@@ -924,7 +928,7 @@ void Chunk::CreateNode()
     });
 
 
-    for (int i = 0; i < PART_COUNT; i++) {
+    for (int i = 0; i <= PART_COUNT; i++) {
         SharedPtr<Node> part(node_->CreateChild("Part"));
         part->CreateComponent<CustomGeometry>();
 
@@ -1044,6 +1048,7 @@ unsigned char Chunk::NeighborLightValue(BlockSide side, int x, int y, int z)
 
 bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
 {
+    BlockType type = data_[x][y][z].type;
     bool insideChunk = true;
     int dX = x;
     int dY = y;
@@ -1100,12 +1105,20 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
     }
 
     if (insideChunk) {
-        if (data_[dX][dY][dZ].type == BlockType::BT_AIR) {
+        if (type == BT_WATER) {
+            if (data_[dX][dY][dZ].type != type) {
+                return false;
+            }
+        } else if (data_[dX][dY][dZ].type == BlockType::BT_AIR || data_[dX][dY][dZ].type == BlockType::BT_WATER) {
             return false;
         }
     } else {
         auto neighbor = GetNeighbor(side);
-        if (neighbor && neighbor->GetBlockValue(dX, dY, dZ) == BlockType::BT_AIR) {
+        if (type == BT_WATER) {
+            if (neighbor && neighbor->GetBlockValue(dX, dY, dZ) != type) {
+                return false;
+            }
+        } else if (neighbor && (neighbor->GetBlockValue(dX, dY, dZ) == BlockType::BT_AIR || neighbor->GetBlockValue(dX, dY, dZ) == BlockType::BT_WATER)) {
             return false;
         } else if (!neighbor) {
             // Avoid holes in the terrain when neighbor is not yet loaded
@@ -1259,5 +1272,8 @@ void Chunk::MarkForGeometryCalculation()
 
 int Chunk::GetPartIndex(int x, int y, int z)
 {
+    if (data_[x][y][z].type == BT_WATER) {
+        return PART_COUNT;
+    }
     return Floor(x / (SIZE_X / PART_COUNT));
 }

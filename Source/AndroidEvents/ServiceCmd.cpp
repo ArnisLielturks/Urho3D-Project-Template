@@ -10,12 +10,12 @@
 #include "ServiceCmd.h"
 #include "ServiceEvents.h"
 
-#include "firebase/admob.h"
-#include "firebase/admob/interstitial_ad.h"
-#include "firebase/admob/rewarded_video.h"
-#include "firebase/admob/types.h"
-#include "firebase/app.h"
-#include "firebase/future.h"
+//#include "firebase/admob.h"
+//#include "firebase/admob/interstitial_ad.h"
+//#include "firebase/admob/rewarded_video.h"
+//#include "firebase/admob/types.h"
+//#include "firebase/app.h"
+//#include "firebase/future.h"
 //#include <SDL/SDL.h>
 //#include <SDL/SDL_events.h>
 //#include <SDL/SDL_syswm.h>

@@ -13,6 +13,7 @@ App template with the following features:
 * Console command management
 * INI configuration file loading/saving
 * Settings window to configure all aspect of the engine
+* UI Joystick controls
 
 ## How to build
 Make sure that the URHO3D_HOME environment variable is set and points to the right directory. Build this the same way how you would build Urho3D engine itself

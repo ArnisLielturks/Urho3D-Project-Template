@@ -153,11 +153,13 @@ void Generator::GenerateTextures()
     struct TextureColors {
         bool singleColor;
         Color colors[6];
+        Color frame;
     };
     Vector<TextureColors> textures;
     TextureColors stone;
     stone.singleColor = true;
     stone.colors[0] = Color(0.41,0.41,0.41);
+    stone.frame = Color(0.21,0.21,0.21);
     textures.Push(stone);
 
     TextureColors dirt;
@@ -168,31 +170,43 @@ void Generator::GenerateTextures()
     dirt.colors[3] = Color(0.60,0.30,0.00);
     dirt.colors[4] = Color(0.60,0.30,0.00);
     dirt.colors[5] = Color(0.60,0.30,0.00);
+    dirt.frame = Color(0.00,0.10,0.05);
     textures.Push(dirt);
 
     TextureColors sand;
     sand.singleColor = true;
     sand.colors[0] = Color(0.93,0.79,0.69);
+    sand.frame = Color(0.73,0.59,0.49);
     textures.Push(sand);
 
     TextureColors coal;
     coal.singleColor = true;
     coal.colors[0] = Color(0.21,0.27,0.31);
+    coal.frame = Color(0.53,0.39,0.29);
     textures.Push(coal);
 
     TextureColors light;
     light.singleColor = true;
     light.colors[0] = Color(0.9, 0.8, 0.1);
+    light.frame = Color(0.8,0.7,0.1);
     textures.Push(light);
 
     TextureColors wood;
     wood.singleColor = true;
     wood.colors[0] = Color(0.76,0.60,0.42);
+    wood.frame = Color(0.56,0.40,0.22);
     textures.Push(wood);
+
+    TextureColors leaves;
+    leaves.singleColor = true;
+    leaves.colors[0] = Color(0.24,0.57,0.25);
+    leaves.frame = Color(0.14,0.37,0.15);
+    textures.Push(leaves);
 
     TextureColors water;
     water.singleColor = true;
-    water.colors[0] = Color(0.64,0.96,0.98);
+    water.colors[0] = Color(0.64,0.96,0.98, 0.7);
+    water.frame = Color(0.54,0.86,0.88, 0.7);
     textures.Push(water);
 
     combined->SetSize(32 * 6, 32 * textures.Size(), 4);
@@ -202,7 +216,7 @@ void Generator::GenerateTextures()
             for (int x = 0; x < 32; x++) {
                 for (int y = 0; y < 32; y++) {
                     if (x < border || x >= 32 - border || y < border || y >= 32 - border) {
-                        combined->SetPixel(i * 32 + x, t * 32 + y, Color::BLACK);
+                        combined->SetPixel(i * 32 + x, t * 32 + y, textures.At(t).frame);
                     } else {
                         if (textures.At(t).singleColor) {
                             combined->SetPixel(i * 32 + x, t * 32 + y, textures.At(t).colors[0]);

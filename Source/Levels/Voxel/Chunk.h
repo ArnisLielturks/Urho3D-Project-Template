@@ -13,7 +13,7 @@
 const int SIZE_X = 16;
 const int SIZE_Y = 16;
 const int SIZE_Z = 16;
-const int PART_COUNT = 2;
+const int PART_COUNT = 3;
 
 using namespace Urho3D;
 
@@ -44,7 +44,7 @@ public:
     bool IsActive();
     void SetActive();
     BlockType GetBlockValue(int x, int y, int z);
-    void Render();
+    bool Render();
     VoxelBlock* GetBlockAt(IntVector3 position);
     int GetSunlight(int x, int y, int z);
     void SetSunlight(int x, int y, int z, int value);
@@ -59,6 +59,9 @@ public:
     void CalculateGeometry();
     void MarkForGeometryCalculation();
     Chunk* GetNeighbor(BlockSide side);
+    void SetVoxel(int x, int y, int z, BlockType block);
+
+    static int sunlightLevel;
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
@@ -73,8 +76,8 @@ private:
     void CreateNode();
     void RemoveNode();
     bool BlockHaveNeighbor(BlockSide side, int x, int y, int z);
+    BlockType GetBlockNeighbor(BlockSide side, int x, int y, int z);
     unsigned char NeighborLightValue(BlockSide side, int x, int y, int z);
-    void SetVoxel(int x, int y, int z, BlockType block);
     int GetPartIndex(int x, int y, int z);
 
     Vector<SharedPtr<Node>> parts_;
@@ -97,4 +100,5 @@ private:
     bool notified_{false};
     int renderIndex_{0};
     Timer saveTimer_;
+    int renderCounter_{0};
 };

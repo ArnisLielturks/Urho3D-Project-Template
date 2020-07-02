@@ -19,16 +19,19 @@
 #include "PlayerState.h"
 #include "../../Console/ConsoleHandlerEvents.h"
 #include "../Voxel/VoxelWorld.h"
+#include "../../Input/ControllerEvents.h"
 
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
 
 using namespace ConsoleHandlerEvents;
+using namespace ControllerEvents;
 
 Player::Player(Context* context):
     Object(context)
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
+    SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Player, HandleMappedControlPressed));
     RegisterConsoleCommands();
 }
 
@@ -419,4 +422,28 @@ void Player::HandlePredictPlayerPosition(StringHash eventType, VariantMap& event
 void Player::SetSpawnPoint(Vector3 position)
 {
     spawnPoint_ = position;
+}
+
+void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventData)
+{
+    using namespace MappedControlPressed;
+    int id = eventData[P_CONTROLLER].GetInt();
+    if (id == controllerId_) {
+        int action = eventData[P_ACTION].GetInt();
+        if (action == CTRL_CHANGE_ITEM) {
+            if (GetSubsystem<VoxelWorld>()) {
+                selectedItem_++;
+                if (selectedItem_ >= BlockType::BT_NONE) {
+                    selectedItem_ = 0;
+                }
+                URHO3D_LOGINFOF("Player changed selected item to %s", GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)).CString());
+            }
+        }
+    }
+
+}
+
+int Player::GetSelectedItem()
+{
+    return selectedItem_;
 }

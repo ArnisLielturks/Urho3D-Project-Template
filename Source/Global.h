@@ -12,6 +12,7 @@ static const unsigned CTRL_SPRINT = 1 << 8; //128
 static const unsigned CTRL_UP = 1 << 9; //256
 static const unsigned CTRL_SCREENSHOT = 1 << 10; //512
 static const unsigned CTRL_DETECT = 1 << 11; //1024
+static const unsigned CTRL_CHANGE_ITEM = 1 << 12; //2048
 
 static const unsigned COLLISION_MASK_PLAYER = 1 << 0; //1
 static const unsigned COLLISION_MASK_CHECKPOINT = 1 << 1; //2

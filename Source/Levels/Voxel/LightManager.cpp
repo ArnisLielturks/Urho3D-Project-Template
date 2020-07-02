@@ -10,7 +10,9 @@ LightManager::LightManager(Context* context):
         Object(context)
 {
 //    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(LightManager, HandleUpdate));
-    SubscribeToEvent(E_CHUNK_GENERATED, URHO3D_HANDLER(LightManager, HandleChunkGenerated));
+    SubscribeToEvent(E_CHUNK_GENERATED, URHO3D_HANDLER(LightManager, HandleEvents));
+    SubscribeToEvent(E_BLOCK_ADDED, URHO3D_HANDLER(LightManager, HandleEvents));
+    SubscribeToEvent(E_BLOCK_REMOVED, URHO3D_HANDLER(LightManager, HandleEvents));
 }
 
 LightManager::~LightManager()
@@ -217,17 +219,29 @@ void LightManager::Process()
             }
 
             if (insideChunk) {
-                if (chunk->GetBlockAt(IntVector3(dX, dY, dZ))->type == BlockType::BT_AIR &&
-                    chunk->GetTorchlight(dX, dY, dZ) + 2 <= lightLevel) {
-                    chunk->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                BlockType type = chunk->GetBlockAt(IntVector3(dX, dY, dZ))->type;
+                int blockLightLevel = chunk->GetTorchlight(dX, dY, dZ);
+                if ((type == BlockType::BT_AIR || type == BlockType::BT_WATER) && blockLightLevel + 2 <= lightLevel) {
+                    if (type == BlockType::BT_WATER) {
+                        // Light in water will fade out a bit quicker
+                        chunk->SetTorchlight(dX, dY, dZ, lightLevel - 2);
+                    } else {
+                        chunk->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                    }
                     lightBfsQueue_.emplace(dX, dY, dZ, chunk);
                 }
             } else {
                 auto neighbor = chunk->GetNeighbor(static_cast<BlockSide>(i));
                 if (neighbor) {
-                    if (neighbor->GetBlockAt(IntVector3(dX, dY, dZ))->type == BlockType::BT_AIR &&
-                        neighbor->GetTorchlight(dX, dY, dZ) + 2 <= lightLevel) {
-                        neighbor->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                    BlockType type = neighbor->GetBlockAt(IntVector3(dX, dY, dZ))->type;
+                    int blockLightLevel = neighbor->GetTorchlight(dX, dY, dZ);
+                    if ((type == BlockType::BT_AIR || type == BlockType::BT_WATER) && blockLightLevel + 2 <= lightLevel) {
+                        if (type == BlockType::BT_WATER) {
+                            // Light in water will fade out a bit quicker
+                            neighbor->SetTorchlight(dX, dY, dZ, lightLevel - 2);
+                        } else {
+                            neighbor->SetTorchlight(dX, dY, dZ, lightLevel - 1);
+                        }
                         AddLightNode(dX, dY, dZ, neighbor);
                     }
                 } else {
@@ -245,7 +259,7 @@ void LightManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 }
 
-void LightManager::HandleChunkGenerated(StringHash eventType, VariantMap& eventData)
+void LightManager::HandleEvents(StringHash eventType, VariantMap& eventData)
 {
     MutexLock lock(mutex_);
     while(!failedLightBfsQueue_.empty()) {

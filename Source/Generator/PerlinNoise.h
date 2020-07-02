@@ -5,11 +5,12 @@
 
 using namespace Urho3D;
 
+const int POOL_SIZE = 256;
 class PerlinNoise
 {
 private:
 
-    std::uint8_t randomNumbers[512];
+    std::uint8_t randomNumbers[POOL_SIZE];
 
     static double Fade(double t) noexcept
     {
@@ -43,7 +44,7 @@ public:
     void reseed(int seed)
     {
         SetRandomSeed(seed);
-        for (size_t i = 0; i < 512; ++i)
+        for (size_t i = 0; i < POOL_SIZE; ++i)
         {
             randomNumbers[i] = static_cast<std::uint8_t>(i);
             randomNumbers[i] = Random();
@@ -64,9 +65,9 @@ public:
 
     double noise(double x, double y, double z) const
     {
-        const int X = static_cast<int>(Floor(x)) & 511;
-        const int Y = static_cast<int>(Floor(y)) & 511;
-        const int Z = static_cast<int>(Floor(z)) & 511;
+        const int X = static_cast<int>(Floor(x)) & (POOL_SIZE - 1);
+        const int Y = static_cast<int>(Floor(y)) & (POOL_SIZE - 1);
+        const int Z = static_cast<int>(Floor(z)) & (POOL_SIZE - 1);
 
         x -= Floor(x);
         y -= Floor(y);

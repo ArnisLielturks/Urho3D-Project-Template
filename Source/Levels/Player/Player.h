@@ -57,10 +57,13 @@ public:
     const Vector3& GetSpawnPoint() { return spawnPoint_; };
 
     void ResetPosition();
+
+    int GetSelectedItem();
 private:
 
     bool IsCameraTargetSet();
     void HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData);
+    void HandleMappedControlPressed(StringHash eventType, VariantMap& eventData);
     void RegisterConsoleCommands();
 
     /**
@@ -100,4 +103,6 @@ private:
     Vector3 spawnPoint_;
 
     SharedPtr<Node> noclipNode_;
+
+    int selectedItem_{0};
 };

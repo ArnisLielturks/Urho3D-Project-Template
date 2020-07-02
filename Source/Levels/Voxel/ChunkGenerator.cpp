@@ -51,10 +51,24 @@ int ChunkGenerator::GetTerrainHeight(const Vector3& blockPosition)
 //    float result2 = simplexNoise_.noise(dx1, dz1);
 //    float height = simplexNoise_.noise(dx2, dz2) * 100;
     float surfaceHeight = result2 * height;
-    if (surfaceHeight < -10) {
-        surfaceHeight = -10;
-    }
+//    if (surfaceHeight < -10) {
+//        surfaceHeight = -10;
+//    }
     return surfaceHeight;
+}
+
+bool ChunkGenerator::HaveTree(const Vector3& blockPosition)
+{
+    float smoothness = 3.13f;
+    double dx = blockPosition.x_ / smoothness;
+    double dz = blockPosition.z_ / smoothness;
+    float result = simplexNoise_.fractal(4, dx, dz) * 0.5 + 0.5;
+
+    if (result > 0.8f) {
+        return true;
+    }
+
+    return false;
 }
 
 Biome ChunkGenerator::GetBiomeType(const Vector3& blockPosition)
@@ -77,9 +91,9 @@ Biome ChunkGenerator::GetBiomeType(const Vector3& blockPosition)
 BlockType ChunkGenerator::GetBlockType(const Vector3& blockPosition, int surfaceHeight)
 {
     Biome biome = GetBiomeType(blockPosition);
-    if (surfaceHeight <= -10) {
-        biome = B_SEA;
-    }
+//    if (surfaceHeight <= -10) {
+//        biome = B_SEA;
+//    }
     int heightToSurface = surfaceHeight - blockPosition.y_;
     if (heightToSurface < 0) {
         return BlockType::BT_AIR;

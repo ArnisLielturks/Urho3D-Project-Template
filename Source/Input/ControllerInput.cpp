@@ -41,6 +41,7 @@ ControllerInput::ControllerInput(Context* context) :
     controlMapNames_[CTRL_UP]       = "Move up";
     controlMapNames_[CTRL_SCREENSHOT] = "Take screenshot";
     controlMapNames_[CTRL_DETECT] = "Detect";
+    controlMapNames_[CTRL_CHANGE_ITEM] = "Change item";
 
     Init();
 }

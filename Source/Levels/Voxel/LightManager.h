@@ -40,7 +40,7 @@ public:
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    void HandleChunkGenerated(StringHash eventType, VariantMap& eventData);
+    void HandleEvents(StringHash eventType, VariantMap& eventData);
 
     std::queue<LightNode> lightBfsQueue_;
     std::queue<LightRemovalNode> lightRemovalBfsQueue_;

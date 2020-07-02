@@ -23,27 +23,21 @@ void PS()
     // Get material diffuse albedo
     #ifdef DIFFMAP
         vec4 diffColor = cMatDiffColor * texture2D(sDiffMap, vTexCoord);
-        diffColor = diffColor * vColor.r + diffColor * vColor.g;
+        diffColor.rgb = diffColor.rgb * vColor.r + diffColor.rgb * vColor.g;
 //        diffColor = vColor;
         #ifdef ALPHAMASK
-            if (diffColor.a < 0.5)
-                discard;
         #endif
     #else
         vec4 diffColor = cMatDiffColor;
     #endif
 
-    #ifdef TRANSPARENT
-        diffColor.a = 0.7;
-    #endif
-
-    // Get fog factor
+//     Get fog factor
     #ifdef HEIGHTFOG
         float fogFactor = GetHeightFogFactor(vWorldPos.w, vWorldPos.y);
     #else
         float fogFactor = GetFogFactor(vWorldPos.w);
     #endif
-
+//
     #if defined(PREPASS)
         // Fill light pre-pass G-Buffer
         gl_FragData[0] = vec4(0.5, 0.5, 0.5, 1.0);

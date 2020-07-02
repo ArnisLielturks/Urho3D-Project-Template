@@ -39,6 +39,7 @@
 #include "Voxel/LightManager.h"
 #include "Voxel/VoxelEvents.h"
 #include "Voxel/ChunkGenerator.h"
+#include "Voxel/TreeGenerator.h"
 
 using namespace Levels;
 using namespace ConsoleHandlerEvents;
@@ -65,6 +66,7 @@ Level::~Level()
         context_->RemoveSubsystem<VoxelWorld>();
         context_->RemoveSubsystem<ChunkGenerator>();
         context_->RemoveSubsystem<LightManager>();
+        context_->RemoveSubsystem<TreeGenerator>();
     }
 }
 
@@ -77,6 +79,7 @@ void Level::RegisterObject(Context* context)
     Chunk::RegisterObject(context);
     ChunkGenerator::RegisterObject(context);
     LightManager::RegisterObject(context);
+    TreeGenerator::RegisterObject(context);
 }
 
 void Level::Init()
@@ -174,6 +177,9 @@ void Level::CreateVoxelWorld()
     }
     if (!GetSubsystem<LightManager>()) {
         context_->RegisterSubsystem(new LightManager(context_));
+    }
+    if (!GetSubsystem<TreeGenerator>()) {
+        context_->RegisterSubsystem(new TreeGenerator(context_));
     }
     GetSubsystem<VoxelWorld>()->Init();
 }
@@ -620,10 +626,12 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
 //                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
+                using namespace ChunkAdd;
                 VariantMap& data = GetEventDataMap();
-                data["Position"] = hitPosition - hitNormal * 0.5f;
-                data["ControllerId"] = eventData[P_CONTROLLER];
-                hitDrawable->GetNode()->GetParent()->SendEvent("ChunkHit", data);
+                data[P_POSITION] = hitPosition - hitNormal * 0.5f;
+                data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
+                data[P_ACTION_ID] = action;
+                hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_HIT, data);
             }
         }
     } else if (action == CTRL_SECONDARY || action == CTRL_DETECT) {
@@ -636,11 +644,13 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
 //                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString());
+                using namespace ChunkAdd;
                 VariantMap& data = GetEventDataMap();
-                data["Position"] = hitPosition + hitNormal * 0.5f;
-                data["ControllerId"] = eventData[P_CONTROLLER];
-                data["Action"]  = action;
-                hitDrawable->GetNode()->GetParent()->SendEvent("ChunkAdd", data);
+                data[P_POSITION] = hitPosition + hitNormal * 0.5f;
+                data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
+                data[P_ACTION_ID]  = action;
+                data[P_ITEM_ID] = players_[controllerId]->GetSelectedItem();
+                hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_ADD, data);
             }
         }
     }

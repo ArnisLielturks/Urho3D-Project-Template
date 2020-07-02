@@ -5,7 +5,8 @@ namespace AudioDefs {
         HIT,
         THROW,
         BUTTON_CLICK,
-        ACHIEVEMENT
+        ACHIEVEMENT,
+        PLACE_BLOCK
     };
 
     enum MUSIC {

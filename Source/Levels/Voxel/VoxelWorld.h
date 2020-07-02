@@ -24,6 +24,7 @@ class VoxelWorld : public Object {
     VoxelBlock* GetBlockAt(Vector3 position);
     void Init();
     bool IsChunkValid(Chunk* chunk);
+    const String GetBlockName(BlockType type);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
@@ -50,4 +51,6 @@ private:
     int loadChunksPerFrame_{1};
     Mutex mutex_;
     SharedPtr<WorkItem> updateWorkItem_;
+    bool reloadAllChunks_{false};
+    Timer sunlightTimer_;
 };

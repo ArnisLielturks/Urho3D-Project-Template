@@ -20,6 +20,7 @@ enum BlockType {
     BT_COAL,
     BT_TORCH,
     BT_WOOD,
+    BT_TREE_LEAVES,
     BT_WATER,
     BT_NONE
 };

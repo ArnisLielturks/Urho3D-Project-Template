@@ -22,16 +22,22 @@
 #include <Urho3D/IO/FileSystem.h>
 #include <Urho3D/Container/Vector.h>
 #include <Urho3D/Core/Profiler.h>
+#include <Urho3D/Engine/DebugHud.h>
+#include <Urho3D/Audio/AudioDefs.h>
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
 #include "ChunkGenerator.h"
 #include "../../Console/ConsoleHandlerEvents.h"
 #include "LightManager.h"
+#include "TreeGenerator.h"
+#include "../../Audio/AudioManagerDefs.h"
+#include "../../Audio/AudioEvents.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
+int Chunk::sunlightLevel = 6;
 void SaveToFile(const WorkItem* item, unsigned threadIndex)
 {
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
@@ -48,7 +54,7 @@ void SaveToFile(const WorkItem* item, unsigned threadIndex)
         chunk->GetSubsystem<FileSystem>()->CreateDir("World");
     }
     Vector3 position = chunk->position_;
-    file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_));
+    file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_) + ".json");
 //    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
 }
 
@@ -101,18 +107,26 @@ void Chunk::Init(Scene* scene, const Vector3& position)
             URHO3D_LOGERROR("Thi command doesn't have any arguments!");
             return;
         }
-        geometryCalculated_ = false;
+        MarkForGeometryCalculation();
     });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "world_reset",
+            ConsoleCommandAdd::P_EVENT, "#world_reset",
+            ConsoleCommandAdd::P_DESCRIPTION, "Delete saved chunks",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
 }
 
 void Chunk::Load()
 {
+    Timer loadTime;
     MutexLock lock(mutex_);
-    Vector3 position = position_;
 
     JSONFile file(context_);
     JSONValue& root = file.GetRoot();
-    String filename = "World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_);
+    String filename = "World/chunk_" + String(position_.x_) + "_" + String(position_.y_) + "_" + String(position_.z_) + ".json";
     if(GetSubsystem<FileSystem>()->FileExists(filename)) {
         file.LoadFile(filename);
         for (int x = 0; x < SIZE_X; ++x) {
@@ -131,12 +145,27 @@ void Chunk::Load()
         // Terrain
         for (int x = 0; x < SIZE_X; ++x) {
             for (int z = 0; z < SIZE_Z; z++) {
-                Vector3 blockPosition = position + Vector3(x, 0, z);
+                Vector3 blockPosition = position_ + Vector3(x, 0, z);
                 int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
                 for (int y = 0; y < SIZE_Y; y++) {
-                    blockPosition.y_ = position.y_ + y;
+                    blockPosition.y_ = position_.y_ + y;
                     BlockType block = chunkGenerator->GetBlockType(blockPosition, surfaceHeight);
                     SetVoxel(x, y, z, block);
+                }
+            }
+        }
+
+        // Water
+        const int SEA_LEVEL = 0;
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                Vector3 blockPosition = position_ + Vector3(x, 0, z);
+                int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
+                for (int y = 0; y < SIZE_Y; y++) {
+                    int height = blockPosition.y_ + y;
+                    if (height <= SEA_LEVEL && height > surfaceHeight) {
+                        SetVoxel(x, y, z, BT_WATER);
+                    }
                 }
             }
         }
@@ -145,36 +174,61 @@ void Chunk::Load()
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    Vector3 blockPosition = position + Vector3(x, y, z);
+                    Vector3 blockPosition = position_ + Vector3(x, y, z);
                     BlockType block = chunkGenerator->GetCaveBlockType(blockPosition, data_[x][y][z].type);
                     SetVoxel(x, y, z, block);
                 }
             }
         }
-    }
 
-    SetSunlight(2);
+        // Trees
+        for (int x = 0; x < SIZE_X; ++x) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                Vector3 blockPosition = position_ + Vector3(x, 0, z);
+                int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
+
+                for (int y = SIZE_Y - 1; y >= 0; y--) {
+                    blockPosition.y_ = position_.y_ + y;
+                    BlockType type = data_[x][y][z].type;
+                    if (surfaceHeight >= blockPosition.y_ && type == BT_DIRT) {
+                        if (GetSubsystem<ChunkGenerator>()->HaveTree(blockPosition)) {
+                            GetSubsystem<TreeGenerator>()->AddTreeNode(x, y, z, 0, 0, this);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
     CalculateLight();
+    URHO3D_LOGINFO("Chunk " + String(position_) + " loaded in " + String(loadTime.GetMSec(false)) + "ms");
+//    Save();
     loaded_ = true;
 }
 
-void Chunk::Render()
+bool Chunk::Render()
 {
+    if (!shouldRender_) {
+        return false;
+    }
+    MutexLock lock(mutex_);
     auto cache = GetSubsystem<ResourceCache>();
     Node* part = parts_.At(renderIndex_);
     auto geometry = part->GetComponent<CustomGeometry>();
     geometry->Commit();
-    geometry->SetOccluder(true);
     geometry->SetOccludee(true);
     if (renderIndex_ == PART_COUNT) {
         geometry->SetMaterial(cache->GetResource<Material>("Materials/VoxelWater.xml"));
+        geometry->SetOccluder(false);
     } else {
         geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+        geometry->SetOccluder(true);
     }
 
     auto *shape = part->GetComponent<CollisionShape>();
     if (geometry->GetNumVertices(0) > 0) {
         shape->SetCustomTriangleMesh(geometry);
+        shape->SetEnabled(true);
     } else {
         shape->SetEnabled(false);
     }
@@ -182,11 +236,25 @@ void Chunk::Render()
     if (renderIndex_ > PART_COUNT) {
         shouldRender_ = false;
     }
+
+//    return geometry->GetNumVertices(0) > 0;
+    return true;
 }
 
 void Chunk::CalculateGeometry()
 {
+    if (geometryCalculated_) {
+        return;
+    }
+    renderCounter_++;
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("Chunk_" + position_.ToString(), renderCounter_);
+    }
+    Timer loadTime;
     MutexLock lock(mutex_);
+
+    SetSunlight(sunlightLevel);
+
     HashMap<int, Vector<ChunkVertex>> allVertices;
     for (int i = 0; i <= PART_COUNT; i++) {
         Node *node = parts_.At(i);
@@ -198,7 +266,11 @@ void Chunk::CalculateGeometry()
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                if (data_[x][y][z].type != BlockType::BT_AIR && !shouldDelete_) {
+                BlockType type = data_[x][y][z].type;
+                if (type == BlockType::BT_AIR) {
+                    continue;
+                }
+                if (!shouldDelete_) {
                     int blockId = data_[x][y][z].type;
                     Vector3 position(x, y, z);
                     int index = GetPartIndex(x, y, z);
@@ -695,8 +767,20 @@ void Chunk::CalculateGeometry()
         }
     }
     geometryCalculated_ = true;
-    shouldRender_ = true;
+
+    int neighbourCounter = 0;
+    for (int i = 0; i < 6; i++) {
+        if (GetNeighbor(static_cast<BlockSide>(i))) {
+            neighbourCounter++;
+        }
+    }
+
+//    if (neighbourCounter == 6) {
+        shouldRender_ = true;
+//    }
+
     renderIndex_ = 0;
+    URHO3D_LOGINFO("Chunk " + String(position_) + " geometry calculated in " + String(loadTime.GetMSec(false)) + "ms");
 }
 
 void Chunk::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -743,29 +827,43 @@ bool Chunk::IsBlockInsideChunk(IntVector3 position)
 
 void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
 {
-    Vector3 position = eventData["Position"].GetVector3();
+    using namespace ChunkHit;
+    Vector3 position = eventData[P_POSITION].GetVector3();
     auto blockPosition = GetChunkBlock(position);
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
         if (neighborChunk && neighborChunk->GetNode()) {
-            neighborChunk->GetNode()->SendEvent("ChunkHit", eventData);
+            neighborChunk->GetNode()->SendEvent(E_CHUNK_HIT, eventData);
         }
         return;
     }
-    if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type) {
+    BlockType type = data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type;
+    if (type != BT_AIR) {
         int lightValue = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
         SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
         GetSubsystem<LightManager>()->AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightValue, this);
         SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, BlockType::BT_AIR);
-        URHO3D_LOGINFO("Removing block " + blockPosition.ToString());
+        URHO3D_LOGINFO("Removing block " + blockPosition.ToString() + " Type: " + String(static_cast<int>(type)));
+        BlockType neighborType = GetBlockNeighbor(BlockSide::BOTTOM, blockPosition.x_, blockPosition.y_, blockPosition.z_);
+        URHO3D_LOGINFO("Removed block bottom have neighbor Type: " + String(static_cast<int>(neighborType)));
         GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
         MarkForGeometryCalculation();
+
+        VariantMap& data = GetEventDataMap();
+        data[BlockRemoved::P_POSITION] = blockPosition;
+        SendEvent(E_BLOCK_REMOVED, data);
+
+        using namespace AudioEvents::PlaySound;
+        data[P_INDEX] = AudioDefs::PLACE_BLOCK;
+        data[P_TYPE] = SOUND_EFFECT;
+        SendEvent(AudioEvents::E_PLAY_SOUND, data);
     }
 }
 
 void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
 {
-    Vector3 position = eventData["Position"].GetVector3();
+    using namespace ChunkAdd;
+    Vector3 position = eventData[P_POSITION].GetVector3();
     auto blockPosition = GetChunkBlock(position);
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
@@ -777,7 +875,7 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         return;
     }
     if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::BT_AIR) {
-        if (eventData["Action"].GetInt() == CTRL_DETECT) {
+        if (eventData[P_ACTION_ID].GetInt() == CTRL_DETECT) {
             URHO3D_LOGINFO("Chunk selected: " + position_.ToString() + "; block: " + blockPosition.ToString()
             + " Torch light: " + String(GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)) +
             "; Sun light: " + String(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)));
@@ -790,13 +888,27 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
             URHO3D_LOGINFO("Color : " + color.ToString());
             return;
         }
-        SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, BlockType::BT_TORCH);
+        BlockType type = static_cast<BlockType>(eventData[P_ITEM_ID].GetInt());
+        SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, type);
         URHO3D_LOGINFO("Adding block " + blockPosition.ToString());
 //        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
-        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
+        int lightValue = 0;
+        if (type == BT_TORCH) {
+            lightValue = 15;
+        }
+        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightValue);
         GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
         MarkForGeometryCalculation();
+
+        VariantMap& data = GetEventDataMap();
+        data[BlockAdded::P_POSITION] = blockPosition;
+        SendEvent(E_BLOCK_ADDED, data);
+
+        using namespace AudioEvents::PlaySound;
+        data[P_INDEX] = AudioDefs::PLACE_BLOCK;
+        data[P_TYPE] = SOUND_EFFECT;
+        SendEvent(AudioEvents::E_PLAY_SOUND, data);
     }
 }
 
@@ -841,6 +953,14 @@ void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
     auto* otherNode = static_cast<Node*>(eventData[P_OTHERNODE].GetPtr());
 //    URHO3D_LOGINFO("Name: " + otherNode->GetName() + " ID : " + String(otherNode->GetID()));
     visitors_++;
+    MarkForGeometryCalculation();
+    for (int i = 0; i < 6; i++) {
+        BlockSide side = static_cast<BlockSide>(i);
+        auto neighbor = GetNeighbor(side);
+        if (neighbor) {
+            neighbor->MarkForGeometryCalculation();
+        }
+    }
 }
 
 void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
@@ -940,20 +1060,20 @@ void Chunk::CreateNode()
         parts_.Push(part);
     }
 
-    SubscribeToEvent(node_, "ChunkHit", URHO3D_HANDLER(Chunk, HandleHit));
-    SubscribeToEvent(node_, "ChunkAdd", URHO3D_HANDLER(Chunk, HandleAdd));
+    SubscribeToEvent(node_, E_CHUNK_HIT, URHO3D_HANDLER(Chunk, HandleHit));
+    SubscribeToEvent(node_, E_CHUNK_ADD, URHO3D_HANDLER(Chunk, HandleAdd));
 
-//    label_ = node_->CreateChild("Label", LOCAL);
-//    auto text3D = label_->CreateComponent<Text3D>();
-//    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-//    text3D->SetColor(Color::GRAY);
-//    text3D->SetViewMask(VIEW_MASK_GUI);
-//    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-//    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-//    text3D->SetText(position_.ToString());
-//    text3D->SetFontSize(32);
-//    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
-//    scene_->AddChild(node_);
+    label_ = node_->CreateChild("Label", LOCAL);
+    auto text3D = label_->CreateComponent<Text3D>();
+    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+    text3D->SetColor(Color::GRAY);
+    text3D->SetViewMask(VIEW_MASK_GUI);
+    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+    text3D->SetText(position_.ToString());
+    text3D->SetFontSize(32);
+    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
+    scene_->AddChild(node_);
 
     MarkActive(false);
     SetActive();
@@ -1046,6 +1166,78 @@ unsigned char Chunk::NeighborLightValue(BlockSide side, int x, int y, int z)
     }
 }
 
+BlockType Chunk::GetBlockNeighbor(BlockSide side, int x, int y, int z)
+{
+    BlockType type = data_[x][y][z].type;
+    bool insideChunk = true;
+    int dX = x;
+    int dY = y;
+    int dZ = z;
+    switch (side) {
+        case BlockSide::LEFT:
+            if (dX - 1 < 0) {
+                insideChunk = false;
+                dX = SIZE_X - 1;
+            } else {
+                dX -= 1;
+            }
+            break;
+        case BlockSide::RIGHT:
+            if (dX + 1 >= SIZE_X) {
+                insideChunk = false;
+                dX = 0;
+            } else {
+                dX += 1;
+            }
+            break;
+        case BlockSide::BOTTOM:
+            if (dY - 1 < 0) {
+                insideChunk = false;
+                dY = SIZE_Y - 1;
+            } else {
+                dY -= 1;
+            }
+            break;
+        case BlockSide::TOP:
+            if (dY + 1 >= SIZE_Y) {
+                insideChunk = false;
+                dY = 0;
+            } else {
+                dY += 1;
+            }
+            break;
+        case BlockSide::FRONT:
+            if (dZ - 1 < 0) {
+                insideChunk = false;
+                dZ = SIZE_Z - 1;
+            } else {
+                dZ -= 1;
+            }
+            break;
+        case BlockSide::BACK:
+            if (dZ + 1 >= SIZE_Z) {
+                insideChunk = false;
+                dZ = 0;
+            } else {
+                dZ += 1;
+            }
+            break;
+    }
+
+    if (insideChunk) {
+        BlockType neighborType = data_[dX][dY][dZ].type;
+        return neighborType;
+    } else {
+        auto neighbor = GetNeighbor(side);
+        if (neighbor) {
+            BlockType neighborType = neighbor->GetBlockValue(dX, dY, dZ);
+            return neighborType;
+        }
+    }
+
+    return BT_AIR;
+}
+
 bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
 {
     BlockType type = data_[x][y][z].type;
@@ -1105,24 +1297,17 @@ bool Chunk::BlockHaveNeighbor(BlockSide side, int x, int y, int z)
     }
 
     if (insideChunk) {
-        if (type == BT_WATER) {
-            if (data_[dX][dY][dZ].type != type) {
-                return false;
-            }
-        } else if (data_[dX][dY][dZ].type == BlockType::BT_AIR || data_[dX][dY][dZ].type == BlockType::BT_WATER) {
+        BlockType neighborType = data_[dX][dY][dZ].type;
+        if (neighborType != type && (neighborType == BT_AIR || neighborType == BT_WATER)) {
             return false;
         }
     } else {
         auto neighbor = GetNeighbor(side);
-        if (type == BT_WATER) {
-            if (neighbor && neighbor->GetBlockValue(dX, dY, dZ) != type) {
+        if (neighbor) {
+            BlockType neighborType = neighbor->GetBlockValue(dX, dY, dZ);
+            if (neighborType != type && (neighborType == BT_AIR || neighborType == BT_WATER)) {
                 return false;
             }
-        } else if (neighbor && (neighbor->GetBlockValue(dX, dY, dZ) == BlockType::BT_AIR || neighbor->GetBlockValue(dX, dY, dZ) == BlockType::BT_WATER)) {
-            return false;
-        } else if (!neighbor) {
-            // Avoid holes in the terrain when neighbor is not yet loaded
-            return false;
         }
     }
 
@@ -1236,9 +1421,17 @@ unsigned char Chunk::GetLightValue(int x, int y, int z)
 void Chunk::SetSunlight(int value)
 {
     for (int x = 0; x < SIZE_X; x++) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                SetSunlight(x, y, z, value);
+        for (int z = 0; z < SIZE_Z; z++) {
+            bool added = false;
+            for (int y = SIZE_Y - 1; y >= 0; y--) {
+                BlockType type = data_[x][y][z].type;
+//                if (added) {
+//                    SetSunlight(x, y, z, 0);
+//                }
+//                if (type != BT_AIR && !added) {
+                    SetSunlight(x, y, z, value);
+                    added = true;
+//                }
             }
         }
     }

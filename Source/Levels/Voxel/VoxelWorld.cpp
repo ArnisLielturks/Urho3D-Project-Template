@@ -5,6 +5,7 @@
 #include <Urho3D/Math/Ray.h>
 #include <Urho3D/Container/Vector.h>
 #include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/IO/FileSystem.h>
 #include "VoxelWorld.h"
 #include "../../SceneManager.h"
 #include "VoxelEvents.h"
@@ -12,6 +13,7 @@
 #include "ChunkGenerator.h"
 #include "../../Global.h"
 #include "LightManager.h"
+#include "TreeGenerator.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
@@ -22,10 +24,14 @@ int VoxelWorld::activeDistance = 1;
 
 void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
 {
+    Timer loadTime;
     VoxelWorld* world = reinterpret_cast<VoxelWorld*>(item->aux_);
     MutexLock lock(world->mutex_);
     if (world->GetSubsystem<LightManager>()) {
         world->GetSubsystem<LightManager>()->Process();
+    }
+    if (world->GetSubsystem<TreeGenerator>()) {
+        world->GetSubsystem<TreeGenerator>()->Process();
     }
     if (world->GetSubsystem<DebugHud>()) {
         world->GetSubsystem<DebugHud>()->SetAppStats("Chunks Loaded", world->chunks_.Size());
@@ -72,6 +78,10 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         if (!(*it).second_) {
             continue;
         }
+
+        if (world->reloadAllChunks_) {
+            (*it).second_->MarkForGeometryCalculation();
+        }
         // Initialize new chunks
         if (!(*it).second_->IsLoaded()) {
             (*it).second_->Load();
@@ -88,6 +98,9 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
 //            URHO3D_LOGINFO("CalculateGeometry " + (*it).second_->GetPosition().ToString());
         }
     }
+
+    world->reloadAllChunks_ = false;
+//    URHO3D_LOGINFO("Chunks updated in " + String(loadTime.GetMSec(false)) + "ms");
 }
 
 VoxelWorld::VoxelWorld(Context* context):
@@ -158,6 +171,47 @@ void VoxelWorld::Init()
         loadChunksPerFrame_ = value;
         URHO3D_LOGINFOF("Chunks loaded per frame change to %d", value);
     });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "world_reset",
+            ConsoleCommandAdd::P_EVENT, "#world_reset",
+            ConsoleCommandAdd::P_DESCRIPTION, "Remove saved chunks",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#world_reset", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 1) {
+            URHO3D_LOGERROR("Thi command doesn't have any arguments!");
+            return;
+        }
+        if(GetSubsystem<FileSystem>()->DirExists("World")) {
+            Vector<String> files;
+            GetSubsystem<FileSystem>()->ScanDir(files, "World", "", SCAN_FILES, false);
+            for (auto it = files.Begin(); it != files.End(); ++it) {
+                URHO3D_LOGINFO("Deleting file " + (*it));
+                GetSubsystem<FileSystem>()->Delete("World/" + (*it));
+            }
+        }
+    });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "sunlight",
+            ConsoleCommandAdd::P_EVENT, "#sunlight",
+            ConsoleCommandAdd::P_DESCRIPTION, "Set sunlight level [0-15]",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#sunlight", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Thi command requires exactly 1 argument!");
+            return;
+        }
+        int level = ToInt(params[1]);
+        Chunk::sunlightLevel = level;
+        reloadAllChunks_ = true;
+    });
 }
 
 void VoxelWorld::RegisterObject(Context* context)
@@ -169,7 +223,6 @@ void VoxelWorld::AddObserver(SharedPtr<Node> observer)
 {
     observers_.Push(observer);
     URHO3D_LOGINFO("Adding observer to voxel world!");
-    LoadChunk(observer->GetWorldPosition());
 }
 
 void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
@@ -183,6 +236,14 @@ void VoxelWorld::RemoveObserver(SharedPtr<Node> observer)
 
 void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
+//    if (sunlightTimer_.GetMSec(false) > 2000) {
+//        Chunk::sunlightLevel++;
+//        if (Chunk::sunlightLevel > 15) {
+//            Chunk::sunlightLevel = 0;
+//        }
+//        reloadAllChunks_ = true;
+//        sunlightTimer_.Reset();
+//    }
     int loadedChunkCounter = 0;
 //    while (!pendingChunks_.Empty()) {
 //        loadedChunkCounter++;
@@ -195,6 +256,10 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
 //        }
 //    }
 
+    for (auto it = observers_.Begin(); it != observers_.End(); ++it) {
+        Vector3 fixedPosition = GetWorldToChunkPosition((*it)->GetPosition());
+        LoadChunk(fixedPosition);
+    }
     if (!removeBlocks_.Empty()) {
         auto chunk = GetChunkByPosition(removeBlocks_.Front());
         if (chunk) {
@@ -240,7 +305,7 @@ void VoxelWorld::HandleChunkEntered(StringHash eventType, VariantMap& eventData)
 {
     using namespace ChunkEntered;
     Vector3 position = eventData[P_POSITION].GetVector3();
-    LoadChunk(position);
+//    LoadChunk(position);
 }
 
 void VoxelWorld::HandleChunkExited(StringHash eventType, VariantMap& eventData)
@@ -322,7 +387,7 @@ Chunk* VoxelWorld::GetChunkByPosition(const Vector3& position)
 {
     Vector3 fixedPositon = GetWorldToChunkPosition(position);
     String id = GetChunkIdentificator(fixedPositon);
-    if (chunks_.Contains(id) && chunks_[id]) {
+    if (chunks_.Find(id) != chunks_.End() && chunks_[id]) {
         return chunks_[id].Get();
     }
 
@@ -390,11 +455,18 @@ void VoxelWorld::UpdateChunks()
         workQueue->AddWorkItem(updateWorkItem_);
     }
 
+    int renderedChunkCount = 0;
+    int renderedChunkLimit = 4;
     for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
         if ((*it).second_->ShouldRender()) {
-            (*it).second_->Render();
+            bool rendered = (*it).second_->Render();
 //            URHO3D_LOGINFO("Rendering chunk " + (*it).second_->GetPosition().ToString());
-            break;
+            if (rendered) {
+                renderedChunkCount++;
+            }
+            if (renderedChunkCount > renderedChunkLimit) {
+                break;
+            }
         }
     }
 }
@@ -443,5 +515,31 @@ void VoxelWorld::HandleWorkItemFinished(StringHash eventType, VariantMap& eventD
 //    } else
     if (workItem->workFunction_ == UpdateChunkState) {
         updateWorkItem_.Reset();
+    }
+}
+
+const String VoxelWorld::GetBlockName(BlockType type)
+{
+    switch (type) {
+        case BT_AIR:
+            return "BT_AIR";
+        case BT_STONE:
+            return "BT_STONE";
+        case BT_DIRT:
+            return "BT_DIRT";
+        case BT_SAND:
+            return "BT_SAND";
+        case BT_COAL:
+            return "BT_COAL";
+        case BT_TORCH:
+            return "BT_TORCH";
+        case BT_WOOD:
+            return "BT_WOOD";
+        case BT_TREE_LEAVES:
+            return "BT_TREE_LEAVES";
+        case BT_WATER:
+            return "BT_WATER";
+        default:
+            return "BT_NONE";
     }
 }

@@ -36,7 +36,6 @@ public:
     void Load();
     const Vector3& GetPosition();
     Node* GetNode() { return node_; }
-    friend void SaveToFile(const WorkItem* item, unsigned threadIndex);
     void Save();
     void MarkForDeletion(bool value);
     bool IsMarkedForDeletion();
@@ -66,7 +65,6 @@ public:
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
     void HandleHit(StringHash eventType, VariantMap& eventData);
     void HandleAdd(StringHash eventType, VariantMap& eventData);
     Vector2 GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position);
@@ -84,7 +82,6 @@ private:
     SharedPtr<Node> label_;
     Scene* scene_;
     Vector3 position_;
-    SharedPtr<WorkItem> saveWorkItem_;
     VoxelBlock data_[SIZE_X][SIZE_Y][SIZE_Z];
     unsigned char lightMap_[SIZE_X][SIZE_Y][SIZE_Z];
     bool shouldDelete_{false};

@@ -39,26 +39,6 @@ using namespace ConsoleHandlerEvents;
 
 int Chunk::sunlightLevel = 1;
 
-void SaveToFile(const WorkItem* item, unsigned threadIndex)
-{
-    Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
-    JSONFile file(chunk->context_);
-    JSONValue& root = file.GetRoot();
-    for (int x = 0; x < SIZE_X; ++x) {
-        for (int y = 0; y < SIZE_Y; y++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                root.Set(String(x) + "_" + String(y) + "_" + String(z), chunk->data_[x][y][z].type);
-            }
-        }
-    }
-    if(!chunk->GetSubsystem<FileSystem>()->DirExists("World")) {
-        chunk->GetSubsystem<FileSystem>()->CreateDir("World");
-    }
-    Vector3 position = chunk->position_;
-    file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_) + ".json");
-//    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
-}
-
 Chunk::Chunk(Context* context):
 Object(context)
 {
@@ -74,12 +54,6 @@ Object(context)
 
 Chunk::~Chunk()
 {
-    if (saveWorkItem_) {
-        WorkQueue *workQueue = GetSubsystem<WorkQueue>();
-        if (workQueue) {
-            workQueue->RemoveWorkItem(saveWorkItem_);
-        }
-    }
     RemoveNode();
 }
 
@@ -833,14 +807,16 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         BlockType neighborType = GetBlockNeighbor(BlockSide::BOTTOM, blockPosition.x_, blockPosition.y_, blockPosition.z_);
         GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
         if (IsBlockInsideChunk(neighborPosition)) {
-            GetSubsystem<LightManager>()->AddLightNode(neighborPosition.x_, neighborPosition.y_, neighborPosition.z_, this);
+//            GetSubsystem<LightManager>()->AddLightNode(neighborPosition.x_, neighborPosition.y_, neighborPosition.z_, this);
+            CalculateLight();
         } else {
             BlockSide side = GetNeighborDirection(neighborPosition);
             auto neighbor = GetNeighbor(side);
             if (neighbor) {
                 IntVector3 normalizedPosition = GetNeighborBlockPosition(neighborPosition);
                 URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; normalized neighbor position: " + normalizedPosition.ToString());
-                GetSubsystem<LightManager>()->AddLightNode(normalizedPosition.x_, normalizedPosition.y_, normalizedPosition.z_, neighbor);
+//                GetSubsystem<LightManager>()->AddLightNode(normalizedPosition.x_, normalizedPosition.y_, normalizedPosition.z_, neighbor);
+                neighbor->CalculateLight();
             }
         }
 
@@ -914,28 +890,6 @@ const Vector3& Chunk::GetPosition()
     return position_;
 }
 
-void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
-{
-    using namespace WorkItemCompleted;
-    WorkItem* workItem = reinterpret_cast<WorkItem*>(eventData[P_ITEM].GetPtr());
-    if (workItem->aux_ != this) {
-        return;
-    }
-//    if (workItem->workFunction_ == GenerateVoxelData) {
-//        CreateNode();
-//        generateWorkItem_.Reset();
-//        MarkDirty();
-//    } else if (workItem->workFunction_ == GenerateVertices) {
-////        GetSubsystem<VoxelWorld>()->AddChunkToRenderQueue(this);
-//        Render();
-//        generateGeometryWorkItem_.Reset();
-//    } else
-    if (workItem->workFunction_ == SaveToFile) {
-//        URHO3D_LOGINFO("Chunk saved " + position_.ToString());
-        saveWorkItem_.Reset();
-    }
-}
-
 Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position)
 {
     int textureCount = static_cast<int>(BlockType::BT_NONE) - 1;
@@ -966,20 +920,21 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
 
 void Chunk::Save()
 {
-    if (saveWorkItem_) {
-        return;
+    JSONFile file(context_);
+    JSONValue& root = file.GetRoot();
+    for (int x = 0; x < SIZE_X; ++x) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                root.Set(String(x) + "_" + String(y) + "_" + String(z), data_[x][y][z].type);
+            }
+        }
     }
-    WorkQueue *workQueue = GetSubsystem<WorkQueue>();
-    saveWorkItem_ = workQueue->GetFreeItem();
-    saveWorkItem_->priority_ = M_MAX_INT;
-    saveWorkItem_->workFunction_ = SaveToFile;
-    saveWorkItem_->aux_ = this;
-    // send E_WORKITEMCOMPLETED event after finishing WorkItem
-    saveWorkItem_->sendEvent_ = true;
-
-    saveWorkItem_->start_ = nullptr;
-    saveWorkItem_->end_ = nullptr;
-    workQueue->AddWorkItem(saveWorkItem_);
+    if(!GetSubsystem<FileSystem>()->DirExists("World")) {
+        GetSubsystem<FileSystem>()->CreateDir("World");
+    }
+    Vector3 position = position_;
+    file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_) + ".json");
+//    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
 }
 
 void Chunk::CreateNode()
@@ -990,7 +945,6 @@ void Chunk::CreateNode()
     node_->SetWorldPosition(position_);
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
-    SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
 
     for (int i = 0; i <= PART_COUNT; i++) {
         SharedPtr<Node> part(node_->CreateChild("Part"));
@@ -1385,13 +1339,13 @@ void Chunk::CalculateLight()
             }
         }
     }
-    geometryCalculated_ = false;
+    MarkForGeometryCalculation();
 }
 
 void Chunk::SetVoxel(int x, int y, int z, BlockType block)
 {
     Chunk::data_[x][y][z].type = block;
-    geometryCalculated_ = false;
+    MarkForGeometryCalculation();
 }
 
 void Chunk::MarkForGeometryCalculation()

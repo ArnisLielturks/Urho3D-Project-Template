@@ -68,8 +68,6 @@ private:
     void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
     void HandleHit(StringHash eventType, VariantMap& eventData);
     void HandleAdd(StringHash eventType, VariantMap& eventData);
-    void HandlePlayerEntered(StringHash eventType, VariantMap& eventData);
-    void HandlePlayerExited(StringHash eventType, VariantMap& eventData);
     Vector2 GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position);
     IntVector3 GetChunkBlock(Vector3 position);
     bool IsBlockInsideChunk(IntVector3 position);
@@ -82,12 +80,10 @@ private:
 
     Vector<SharedPtr<Node>> parts_;
     SharedPtr<Node> node_;
-    SharedPtr<Node> triggerNode_;
     SharedPtr<Node> label_;
     Scene* scene_;
     Vector3 position_;
     SharedPtr<WorkItem> saveWorkItem_;
-    int visitors_{0};
     VoxelBlock data_[SIZE_X][SIZE_Y][SIZE_Z];
     unsigned char lightMap_[SIZE_X][SIZE_Y][SIZE_Z];
     bool shouldDelete_{false};

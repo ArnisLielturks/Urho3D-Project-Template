@@ -8,6 +8,11 @@
 
 #include "Chunk.h"
 
+struct ChunkNode {
+    ChunkNode(Vector3 position, int distance): position_(position), distance_(distance) {}
+    Vector3 position_;
+    int distance_;
+};
 class VoxelWorld : public Object {
     URHO3D_OBJECT(VoxelWorld, Object);
     VoxelWorld(Context* context);
@@ -27,9 +32,6 @@ class VoxelWorld : public Object {
     const String GetBlockName(BlockType type);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
-    void HandleChunkEntered(StringHash eventType, VariantMap& eventData);
-    void HandleChunkExited(StringHash eventType, VariantMap& eventData);
-    void HandleChunkGenerated(StringHash eventType, VariantMap& eventData);
     void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
     void LoadChunk(const Vector3& position);
     void UpdateChunks();
@@ -39,18 +41,21 @@ private:
     Vector3 GetWorldToChunkPosition(const Vector3& position);
     void CreateChunk(const Vector3& position);
     String GetChunkIdentificator(const Vector3& position);
+    void ProcessQueue();
+    void AddChunkToQueue(Vector3 position, int distance = 0);
 
 //    void RaycastFromObservers();
 
 //    List<SharedPtr<Chunk>> chunks_;
     List<WeakPtr<Node>> observers_;
-    Timer updateTimer_;
     Scene* scene_;
     List<Vector3> removeBlocks_;
     HashMap<String, SharedPtr<Chunk>> chunks_;
-    int loadChunksPerFrame_{1};
     Mutex mutex_;
     SharedPtr<WorkItem> updateWorkItem_;
     bool reloadAllChunks_{false};
     Timer sunlightTimer_;
+    std::queue<ChunkNode> chunkBfsQueue_;
+    Vector<Vector3> chunksToLoad_;
+    Timer updateTimer_;
 };

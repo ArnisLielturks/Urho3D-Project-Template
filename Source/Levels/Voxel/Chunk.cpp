@@ -857,6 +857,8 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
+
+        CalculateGeometry();
     }
 }
 
@@ -909,6 +911,8 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
+
+        CalculateGeometry();
     }
 }
 
@@ -937,39 +941,6 @@ void Chunk::HandleWorkItemFinished(StringHash eventType, VariantMap& eventData)
 //        URHO3D_LOGINFO("Chunk saved " + position_.ToString());
         saveWorkItem_.Reset();
     }
-}
-
-void Chunk::HandlePlayerEntered(StringHash eventType, VariantMap& eventData)
-{
-    using namespace ChunkEntered;
-    VariantMap& data = GetEventDataMap();
-    data[P_POSITION] = position_;
-    SendEvent(E_CHUNK_ENTERED, data);
-//    URHO3D_LOGINFO("Player entered chunk " + position_.ToString());
-
-    using namespace NodeCollisionStart;
-
-    // Get the other colliding body, make sure it is moving (has nonzero mass)
-    auto* otherNode = static_cast<Node*>(eventData[P_OTHERNODE].GetPtr());
-//    URHO3D_LOGINFO("Name: " + otherNode->GetName() + " ID : " + String(otherNode->GetID()));
-    visitors_++;
-    MarkForGeometryCalculation();
-    for (int i = 0; i < 6; i++) {
-        BlockSide side = static_cast<BlockSide>(i);
-        auto neighbor = GetNeighbor(side);
-        if (neighbor) {
-            neighbor->MarkForGeometryCalculation();
-        }
-    }
-}
-
-void Chunk::HandlePlayerExited(StringHash eventType, VariantMap& eventData)
-{
-    using namespace ChunkExited;
-    VariantMap& data = GetEventDataMap();
-    data[P_POSITION] = position_;
-    SendEvent(E_CHUNK_EXITED, data);
-    visitors_--;
 }
 
 Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position)
@@ -1025,27 +996,8 @@ void Chunk::CreateNode()
     node_->SetScale(1.0f);
     node_->SetWorldPosition(position_);
 
-    triggerNode_ = node_->CreateChild("ChunkTrigger");
-    auto triggerBody = triggerNode_->CreateComponent<RigidBody>();
-    triggerBody->SetTrigger(true);
-    triggerBody->SetCollisionLayerAndMask(COLLISION_MASK_CHUNK , COLLISION_MASK_CHUNK_LOADER);
-    auto *triggerShape = triggerNode_->CreateComponent<CollisionShape>();
-    triggerNode_->SetWorldScale(VoxelWorld::visibleDistance);
-
-    SubscribeToEvent(triggerNode_, E_NODECOLLISIONSTART, URHO3D_HANDLER(Chunk, HandlePlayerEntered));
-    SubscribeToEvent(triggerNode_, E_NODECOLLISIONEND, URHO3D_HANDLER(Chunk, HandlePlayerExited));
-
-//    Vector3 offset = Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2) * triggerNode_->GetScale();
-    triggerShape->SetBox(Vector3(SIZE_X, SIZE_Y, SIZE_Z), Vector3(SIZE_X / 2, SIZE_Y / 2, SIZE_Z / 2));
-
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
     SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
-
-    SubscribeToEvent("#chunk_visible_distance", [&](StringHash eventType, VariantMap& eventData) {
-        if (triggerNode_) {
-            triggerNode_->SetWorldScale(VoxelWorld::visibleDistance);
-        }
-    });
 
 
     for (int i = 0; i <= PART_COUNT; i++) {
@@ -1087,14 +1039,6 @@ void Chunk::RemoveNode()
     if (label_) {
         label_->Remove();
     }
-    if (triggerNode_) {
-        triggerNode_->Remove();
-    }
-
-//    using namespace ChunkRemoved;
-//    VariantMap data = GetEventDataMap();
-//    data[P_POSITION] = position_;
-//    SendEvent(E_CHUNK_REMOVED);
 }
 
 unsigned char Chunk::NeighborLightValue(BlockSide side, int x, int y, int z)

@@ -11,7 +11,9 @@
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Scene/SceneEvents.h>
+#include <Urho3D/UI/Font.h>
 #include <Urho3D/Graphics/Light.h>
+#include <Urho3D/UI/UI.h>
 #include "Player.h"
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
@@ -33,6 +35,17 @@ Player::Player(Context* context):
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Player, HandleMappedControlPressed));
     RegisterConsoleCommands();
+
+    if (GetSubsystem<VoxelWorld>()) {
+        auto cache = GetSubsystem<ResourceCache>();
+        auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+        selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
+        selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
+        selectedItemUI_->SetPosition(0, -20);
+        selectedItemUI_->SetStyleAuto();
+        selectedItemUI_->SetFont(font, 20);
+        selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
+    }
 }
 
 Player::~Player()
@@ -436,7 +449,7 @@ void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventD
                 if (selectedItem_ >= BlockType::BT_NONE) {
                     selectedItem_ = 0;
                 }
-                URHO3D_LOGINFOF("Player changed selected item to %s", GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)).CString());
+                selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
             }
         }
     }

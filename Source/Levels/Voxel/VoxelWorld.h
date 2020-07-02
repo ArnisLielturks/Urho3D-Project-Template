@@ -24,8 +24,6 @@ class VoxelWorld : public Object {
     void RemoveObserver(SharedPtr<Node> observer);
     Chunk* GetChunkByPosition(const Vector3& position);
     void RemoveBlockAtPosition(const Vector3& position);
-    static int visibleDistance;
-    static int activeDistance;
     VoxelBlock* GetBlockAt(Vector3 position);
     void Init();
     bool IsChunkValid(Chunk* chunk);
@@ -58,4 +56,5 @@ private:
     std::queue<ChunkNode> chunkBfsQueue_;
     Vector<Vector3> chunksToLoad_;
     Timer updateTimer_;
+    int visibleDistance_{5};
 };

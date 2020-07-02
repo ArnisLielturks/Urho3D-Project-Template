@@ -6,6 +6,7 @@
 #include <Urho3D/Input/Controls.h>
 #include <Urho3D/Graphics/Terrain.h>
 #include <Urho3D/Network/Connection.h>
+#include <Urho3D/UI/Text.h>
 
 using namespace Urho3D;
 
@@ -105,4 +106,5 @@ private:
     SharedPtr<Node> noclipNode_;
 
     int selectedItem_{0};
+    SharedPtr<Text> selectedItemUI_;
 };

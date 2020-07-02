@@ -109,14 +109,6 @@ void Chunk::Init(Scene* scene, const Vector3& position)
         }
         MarkForGeometryCalculation();
     });
-
-    SendEvent(
-            E_CONSOLE_COMMAND_ADD,
-            ConsoleCommandAdd::P_NAME, "world_reset",
-            ConsoleCommandAdd::P_EVENT, "#world_reset",
-            ConsoleCommandAdd::P_DESCRIPTION, "Delete saved chunks",
-            ConsoleCommandAdd::P_OVERWRITE, true
-    );
 }
 
 void Chunk::Load()
@@ -127,7 +119,7 @@ void Chunk::Load()
     JSONFile file(context_);
     JSONValue& root = file.GetRoot();
     String filename = "World/chunk_" + String(position_.x_) + "_" + String(position_.y_) + "_" + String(position_.z_) + ".json";
-    if(GetSubsystem<FileSystem>()->FileExists(filename)) {
+    if(GetSubsystem<FileSystem>() && GetSubsystem<FileSystem>()->FileExists(filename)) {
         file.LoadFile(filename);
         for (int x = 0; x < SIZE_X; ++x) {
             for (int y = 0; y < SIZE_Y; y++) {
@@ -192,7 +184,8 @@ void Chunk::Load()
                     BlockType type = data_[x][y][z].type;
                     if (surfaceHeight >= blockPosition.y_ && type == BT_DIRT) {
                         if (GetSubsystem<ChunkGenerator>()->HaveTree(blockPosition)) {
-                            GetSubsystem<TreeGenerator>()->AddTreeNode(x, y, z, 0, 0, this);
+//                            GetSubsystem<TreeGenerator>()->AddTreeNode(x, y, z, 0, 0, this);
+                            SetVoxel(x, y, z, BT_WOOD);
                             break;
                         }
                     }
@@ -201,7 +194,7 @@ void Chunk::Load()
         }
     }
     CalculateLight();
-    URHO3D_LOGINFO("Chunk " + String(position_) + " loaded in " + String(loadTime.GetMSec(false)) + "ms");
+//    URHO3D_LOGINFO("Chunk " + String(position_) + " loaded in " + String(loadTime.GetMSec(false)) + "ms");
 //    Save();
     loaded_ = true;
 }
@@ -274,6 +267,9 @@ void Chunk::CalculateGeometry()
                     int blockId = data_[x][y][z].type;
                     Vector3 position(x, y, z);
                     int index = GetPartIndex(x, y, z);
+                    if (blockId == BT_WATER) {
+                        index = PART_COUNT;
+                    }
                     Node* part = parts_.At(index);
                     auto geometry = part->GetComponent<CustomGeometry>();
                     if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
@@ -780,7 +776,7 @@ void Chunk::CalculateGeometry()
 //    }
 
     renderIndex_ = 0;
-    URHO3D_LOGINFO("Chunk " + String(position_) + " geometry calculated in " + String(loadTime.GetMSec(false)) + "ms");
+//    URHO3D_LOGINFO("Chunk " + String(position_) + " geometry calculated in " + String(loadTime.GetMSec(false)) + "ms");
 }
 
 void Chunk::HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -857,8 +853,6 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
-
-        CalculateGeometry();
     }
 }
 
@@ -911,8 +905,6 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
-
-        CalculateGeometry();
     }
 }
 
@@ -998,7 +990,6 @@ void Chunk::CreateNode()
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
     SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(Chunk, HandleWorkItemFinished));
-
 
     for (int i = 0; i <= PART_COUNT; i++) {
         SharedPtr<Node> part(node_->CreateChild("Part"));
@@ -1409,8 +1400,5 @@ void Chunk::MarkForGeometryCalculation()
 
 int Chunk::GetPartIndex(int x, int y, int z)
 {
-    if (data_[x][y][z].type == BT_WATER) {
-        return PART_COUNT;
-    }
-    return Floor(x / (SIZE_X / PART_COUNT));
+    return Floor(x / (SIZE_X / (PART_COUNT - 1)));
 }

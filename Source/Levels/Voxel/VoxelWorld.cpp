@@ -17,10 +17,6 @@
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
-int VoxelWorld::visibleDistance = 5;
-int VoxelWorld::activeDistance = 1;
-
-
 void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
 {
     Timer loadTime;
@@ -101,26 +97,8 @@ void VoxelWorld::Init()
             return;
         }
         int value = ToInt(params[1]);
-        VoxelWorld::visibleDistance = value;
+        visibleDistance_ = value;
         URHO3D_LOGINFOF("Changing chunk visibility radius to %d", value);
-    });
-
-    SendEvent(
-            E_CONSOLE_COMMAND_ADD,
-            ConsoleCommandAdd::P_NAME, "chunk_active_distance",
-            ConsoleCommandAdd::P_EVENT, "#chunk_active_distance",
-            ConsoleCommandAdd::P_DESCRIPTION, "How far aways the chunks are active",
-            ConsoleCommandAdd::P_OVERWRITE, true
-    );
-    SubscribeToEvent("#chunk_active_distance", [&](StringHash eventType, VariantMap& eventData) {
-        StringVector params = eventData["Parameters"].GetStringVector();
-        if (params.Size() != 2) {
-            URHO3D_LOGERROR("radius parameter is required!");
-            return;
-        }
-        int value = ToInt(params[1]);
-        VoxelWorld::activeDistance = value;
-        URHO3D_LOGINFOF("Changing chunk active radius to %d", value);
     });
 
     SendEvent(
@@ -466,7 +444,7 @@ void VoxelWorld::ProcessQueue()
         ChunkNode& node = chunkBfsQueue_.front();
         int distance = node.distance_ + 1;
         chunkBfsQueue_.pop();
-        if (distance < visibleDistance) {
+        if (distance < visibleDistance_) {
             AddChunkToQueue(node.position_ + Vector3::LEFT * SIZE_X, distance);
             AddChunkToQueue(node.position_ + Vector3::RIGHT * SIZE_X, distance);
             AddChunkToQueue(node.position_ + Vector3::FORWARD * SIZE_Z, distance);

@@ -193,8 +193,8 @@ void Generator::GenerateTextures()
 
     TextureColors wood;
     wood.singleColor = true;
-    wood.colors[0] = Color(0.76,0.60,0.42);
-    wood.frame = Color(0.56,0.40,0.22);
+    wood.colors[0] = Color(0.48,0.25,0.00);
+    wood.frame = Color(0.28,0.15,0.00);
     textures.Push(wood);
 
     TextureColors leaves;

@@ -626,9 +626,10 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
 //                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
-                using namespace ChunkAdd;
+                using namespace ChunkHit;
                 VariantMap& data = GetEventDataMap();
                 data[P_POSITION] = hitPosition - hitNormal * 0.5f;
+                data[P_DIRECTION] = hitNormal;
                 data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
                 data[P_ACTION_ID] = action;
                 hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_HIT, data);

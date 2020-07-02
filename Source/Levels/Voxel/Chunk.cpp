@@ -37,7 +37,8 @@
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
-int Chunk::sunlightLevel = 6;
+int Chunk::sunlightLevel = 1;
+
 void SaveToFile(const WorkItem* item, unsigned threadIndex)
 {
     Chunk* chunk = reinterpret_cast<Chunk*>(item->aux_);
@@ -240,9 +241,6 @@ void Chunk::CalculateGeometry()
         return;
     }
     renderCounter_++;
-    if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("Chunk_" + position_.ToString(), renderCounter_);
-    }
     Timer loadTime;
     MutexLock lock(mutex_);
 
@@ -763,18 +761,7 @@ void Chunk::CalculateGeometry()
         }
     }
     geometryCalculated_ = true;
-
-    int neighbourCounter = 0;
-    for (int i = 0; i < 6; i++) {
-        if (GetNeighbor(static_cast<BlockSide>(i))) {
-            neighbourCounter++;
-        }
-    }
-
-//    if (neighbourCounter == 6) {
-        shouldRender_ = true;
-//    }
-
+    shouldRender_ = true;
     renderIndex_ = 0;
 //    URHO3D_LOGINFO("Chunk " + String(position_) + " geometry calculated in " + String(loadTime.GetMSec(false)) + "ms");
 }
@@ -825,7 +812,10 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
 {
     using namespace ChunkHit;
     Vector3 position = eventData[P_POSITION].GetVector3();
+    Vector3 direction = eventData[P_DIRECTION].GetVector3();
     auto blockPosition = GetChunkBlock(position);
+    auto neighborPosition = GetChunkBlock(position + direction * 0.5);
+    URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; neighbor position: " + neighborPosition.ToString());
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
         if (neighborChunk && neighborChunk->GetNode()) {
@@ -841,8 +831,19 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, BlockType::BT_AIR);
         URHO3D_LOGINFO("Removing block " + blockPosition.ToString() + " Type: " + String(static_cast<int>(type)));
         BlockType neighborType = GetBlockNeighbor(BlockSide::BOTTOM, blockPosition.x_, blockPosition.y_, blockPosition.z_);
-        URHO3D_LOGINFO("Removed block bottom have neighbor Type: " + String(static_cast<int>(neighborType)));
         GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
+        if (IsBlockInsideChunk(neighborPosition)) {
+            GetSubsystem<LightManager>()->AddLightNode(neighborPosition.x_, neighborPosition.y_, neighborPosition.z_, this);
+        } else {
+            BlockSide side = GetNeighborDirection(neighborPosition);
+            auto neighbor = GetNeighbor(side);
+            if (neighbor) {
+                IntVector3 normalizedPosition = GetNeighborBlockPosition(neighborPosition);
+                URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; normalized neighbor position: " + normalizedPosition.ToString());
+                GetSubsystem<LightManager>()->AddLightNode(normalizedPosition.x_, normalizedPosition.y_, normalizedPosition.z_, neighbor);
+            }
+        }
+
         MarkForGeometryCalculation();
 
         VariantMap& data = GetEventDataMap();
@@ -1401,4 +1402,50 @@ void Chunk::MarkForGeometryCalculation()
 int Chunk::GetPartIndex(int x, int y, int z)
 {
     return Floor(x / (SIZE_X / (PART_COUNT - 1)));
+}
+
+BlockSide Chunk::GetNeighborDirection(const IntVector3& position)
+{
+    if (position_.x_ < 0) {
+        return BlockSide::LEFT;
+    }
+    else if (position_.x_ >= SIZE_X) {
+        return BlockSide::RIGHT;
+    }
+    else if (position_.y_ < 0) {
+        return BlockSide::BOTTOM;
+    }
+    else if (position_.y_ >= SIZE_Y) {
+        return BlockSide::TOP;
+    }
+    else if (position_.z_ < 0) {
+        return BlockSide::FRONT;
+    }
+    else {
+        return BlockSide::BACK;
+    }
+}
+
+IntVector3 Chunk::GetNeighborBlockPosition(const IntVector3& position)
+{
+    IntVector3 normalizedPosition = position;
+    if (normalizedPosition.x_ < 0) {
+        normalizedPosition.x_ += SIZE_X;
+    }
+    if (normalizedPosition.x_ >= SIZE_X) {
+        normalizedPosition.x_ -= SIZE_X;
+    }
+    if (normalizedPosition.y_ < 0) {
+        normalizedPosition.y_ += SIZE_Y;
+    }
+    if (normalizedPosition.y_ >= SIZE_Y) {
+        normalizedPosition.y_ -= SIZE_Y;
+    }
+    if (normalizedPosition.z_ < 0) {
+        normalizedPosition.z_ += SIZE_Z;
+    }
+    if (normalizedPosition.z_ >= SIZE_Z) {
+        normalizedPosition.z_ -= SIZE_Z;
+    }
+    return normalizedPosition;
 }

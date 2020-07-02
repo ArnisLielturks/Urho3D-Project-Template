@@ -3,6 +3,7 @@
 #include <Urho3D/IO/Log.h>
 #include "LightManager.h"
 #include "VoxelWorld.h"
+#include <Urho3D/Engine/DebugHud.h>
 
 using namespace VoxelEvents;
 
@@ -48,6 +49,12 @@ void LightManager::AddLightRemovalNode(int x, int y, int z, int level, Chunk* ch
 
 void LightManager::Process()
 {
+    if (GetSubsystem<DebugHud>()) {
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightRemovalBfsQueue_", (int)lightRemovalBfsQueue_.size());
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightBfsQueue_", (int)lightBfsQueue_.size());
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightRemovalBfsQueue_", (int)failedLightRemovalBfsQueue_.size());
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightBfsQueue_", (int)failedLightBfsQueue_.size());
+    }
     MutexLock lock(mutex_);
     while(!lightRemovalBfsQueue_.empty()) {
         // Get a reference to the front node

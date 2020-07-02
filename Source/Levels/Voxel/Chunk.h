@@ -60,8 +60,9 @@ public:
     void MarkForGeometryCalculation();
     Chunk* GetNeighbor(BlockSide side);
     void SetVoxel(int x, int y, int z, BlockType block);
-
     static int sunlightLevel;
+    BlockSide GetNeighborDirection(const IntVector3& position);
+    IntVector3 GetNeighborBlockPosition(const IntVector3& position);
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);

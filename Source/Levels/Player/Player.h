@@ -105,6 +105,6 @@ private:
 
     SharedPtr<Node> noclipNode_;
 
-    int selectedItem_{0};
+    int selectedItem_{1};
     SharedPtr<Text> selectedItemUI_;
 };

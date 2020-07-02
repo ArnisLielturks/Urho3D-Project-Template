@@ -20,6 +20,7 @@ namespace VoxelEvents {
 
     URHO3D_EVENT(E_CHUNK_HIT, ChunkHit) {
         URHO3D_PARAM(P_POSITION, Position); // Vector3 - block position
+        URHO3D_PARAM(P_DIRECTION, Direction); // Vector3 - block position
         URHO3D_PARAM(P_CONTROLLER_ID, ControllerID); // int
         URHO3D_PARAM(P_ACTION_ID, ActionID); // int
     }

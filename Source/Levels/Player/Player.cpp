@@ -447,7 +447,7 @@ void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventD
             if (GetSubsystem<VoxelWorld>()) {
                 selectedItem_++;
                 if (selectedItem_ >= BlockType::BT_NONE) {
-                    selectedItem_ = 0;
+                    selectedItem_ = 1;
                 }
                 selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
             }

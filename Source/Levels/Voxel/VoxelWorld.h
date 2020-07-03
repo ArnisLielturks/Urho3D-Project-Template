@@ -5,6 +5,7 @@
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Core/Timer.h>
 #include <queue>
+#include <map>
 
 #include "Chunk.h"
 
@@ -13,6 +14,7 @@ struct ChunkNode {
     Vector3 position_;
     int distance_;
 };
+
 class VoxelWorld : public Object {
     URHO3D_OBJECT(VoxelWorld, Object);
     VoxelWorld(Context* context);
@@ -28,6 +30,8 @@ class VoxelWorld : public Object {
     void Init();
     bool IsChunkValid(Chunk* chunk);
     const String GetBlockName(BlockType type);
+    Vector3 GetWorldToChunkPosition(const Vector3& position);
+    IntVector3 GetWorldToChunkBlockPosition(const Vector3& position);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
@@ -36,8 +40,7 @@ private:
     Vector3 GetNodeToChunkPosition(Node* node);
     bool IsChunkLoaded(const Vector3& position);
     bool IsEqualPositions(Vector3 a, Vector3 b);
-    Vector3 GetWorldToChunkPosition(const Vector3& position);
-    void CreateChunk(const Vector3& position);
+    Chunk* CreateChunk(const Vector3& position);
     String GetChunkIdentificator(const Vector3& position);
     void ProcessQueue();
     void AddChunkToQueue(Vector3 position, int distance = 0);
@@ -54,7 +57,7 @@ private:
     bool reloadAllChunks_{false};
     Timer sunlightTimer_;
     std::queue<ChunkNode> chunkBfsQueue_;
-    Vector<Vector3> chunksToLoad_;
+    HashMap<Vector3, int> chunksToLoad_;
     Timer updateTimer_;
     int visibleDistance_{5};
 };

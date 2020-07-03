@@ -31,6 +31,15 @@ void LightManager::AddLightNode(int x, int y, int z, Chunk* chunk)
     chunk->MarkForGeometryCalculation();
 }
 
+void LightManager::AddLightNode(Vector3 position)
+{
+    auto chunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
+    if (chunk) {
+        IntVector3 blockPosition = chunk->GetChunkBlock(position);
+        AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, chunk);
+    }
+}
+
 void LightManager::AddLightRemovalNode(int x, int y, int z, int level, Chunk* chunk)
 {
     lightRemovalBfsQueue_.emplace(x, y, z, level, chunk);
@@ -50,16 +59,20 @@ void LightManager::AddLightRemovalNode(int x, int y, int z, int level, Chunk* ch
 void LightManager::Process()
 {
     if (GetSubsystem<DebugHud>()) {
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightRemovalBfsQueue_", (int)lightRemovalBfsQueue_.size());
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightBfsQueue_", (int)lightBfsQueue_.size());
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightRemovalBfsQueue_", (int)failedLightRemovalBfsQueue_.size());
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightBfsQueue_", (int)failedLightBfsQueue_.size());
+        int size1 = lightRemovalBfsQueue_.size();
+        int size2 = lightBfsQueue_.size();
+        int size3 = failedLightRemovalBfsQueue_.size();
+        int size4 = failedLightBfsQueue_.size();
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightRemovalBfsQueue_", size1);
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightBfsQueue_", size2);
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightRemovalBfsQueue_", size3);
+        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightBfsQueue_", size4);
     }
     MutexLock lock(mutex_);
     while(!lightRemovalBfsQueue_.empty()) {
         // Get a reference to the front node
         LightRemovalNode &node = lightRemovalBfsQueue_.front();
-        int lightLevel = (int)node.value_;
+        int lightLevel = static_cast<int>(node.value_);
         Chunk* chunk = node.chunk_;
         // Pop the front node off the queue.
         lightRemovalBfsQueue_.pop();
@@ -264,18 +277,33 @@ void LightManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     if (GetSubsystem<VoxelWorld>()) {
         Process();
     }
+
+    if (retryTimer_.GetMSec(false) > 1000) {
+        retryTimer_.Reset();
+        MutexLock lock(mutex_);
+        while(!failedLightBfsQueue_.empty()) {
+            lightBfsQueue_.emplace(failedLightBfsQueue_.front());
+            failedLightBfsQueue_.pop();
+        }
+
+        while(!failedLightRemovalBfsQueue_.empty()) {
+            lightRemovalBfsQueue_.emplace(failedLightRemovalBfsQueue_.front());
+            failedLightRemovalBfsQueue_.pop();
+        }
+        URHO3D_LOGINFO("Reseting queue");
+    }
 }
 
 void LightManager::HandleEvents(StringHash eventType, VariantMap& eventData)
 {
-    MutexLock lock(mutex_);
-    while(!failedLightBfsQueue_.empty()) {
-        lightBfsQueue_.emplace(failedLightBfsQueue_.front());
-        failedLightBfsQueue_.pop();
-    }
-
-    while(!failedLightRemovalBfsQueue_.empty()) {
-        lightRemovalBfsQueue_.emplace(failedLightRemovalBfsQueue_.front());
-        failedLightRemovalBfsQueue_.pop();
-    }
+//    MutexLock lock(mutex_);
+//    while(!failedLightBfsQueue_.empty()) {
+//        lightBfsQueue_.emplace(failedLightBfsQueue_.front());
+//        failedLightBfsQueue_.pop();
+//    }
+//
+//    while(!failedLightRemovalBfsQueue_.empty()) {
+//        lightRemovalBfsQueue_.emplace(failedLightRemovalBfsQueue_.front());
+//        failedLightRemovalBfsQueue_.pop();
+//    }
 }

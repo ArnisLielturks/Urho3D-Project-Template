@@ -36,8 +36,10 @@ If everything worked, build/bin directory should contain `ProjectTemplate` execu
 ![Settings](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Settings.png)
 ![Achievements](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Achievements.png)
 ![Credits](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Credits.png)
+![NewGame](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/NewGame.png)
 ![Loading](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Loading.png)
 ![Level](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Level.png)
+![VoxelMap](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/VoxelMap.png)
 
 
 # How to extend the functionality?

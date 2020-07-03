@@ -33,6 +33,7 @@ public:
     static void RegisterObject(Context* context);
     void AddLightNode(int x, int y, int z, Chunk* chunk);
     void AddLightRemovalNode(int x, int y, int z, int level, Chunk* chunk);
+    void AddLightNode(Vector3 position);
 
 //    void AddFailedLightNode(int x, int y, int z, Vector3 position);
 //    void AddFailedLightRemovalNode(int x, int y, int z, int level, Vector3 position);
@@ -49,4 +50,5 @@ private:
     std::queue<LightRemovalNode> failedLightRemovalBfsQueue_;
 
     Mutex mutex_;
+    Timer retryTimer_;
 };

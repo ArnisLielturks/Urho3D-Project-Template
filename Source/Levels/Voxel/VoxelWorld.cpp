@@ -182,11 +182,12 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
     UpdateChunks();
 }
 
-void VoxelWorld::CreateChunk(const Vector3& position)
+Chunk* VoxelWorld::CreateChunk(const Vector3& position)
 {
     String id = GetChunkIdentificator(position);
     chunks_[id] = new Chunk(context_);
     chunks_[id]->Init(scene_, position);
+    return chunks_[id].Get();
 }
 
 Vector3 VoxelWorld::GetNodeToChunkPosition(Node* node)
@@ -291,6 +292,16 @@ Vector3 VoxelWorld::GetWorldToChunkPosition(const Vector3& position)
     );
 }
 
+IntVector3 VoxelWorld::GetWorldToChunkBlockPosition(const Vector3& position)
+{
+    Vector3 chunkPosition = GetWorldToChunkPosition(position);
+    IntVector3 blockPosition;
+    blockPosition.x_ = Floor(position.x_ - chunkPosition.x_);
+    blockPosition.y_ = Floor(position.y_ - chunkPosition.y_);
+    blockPosition.z_ = Floor(position.z_ - chunkPosition.z_);
+    return blockPosition;
+}
+
 void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
 {
     removeBlocks_.Push(position);
@@ -304,27 +315,33 @@ void VoxelWorld::UpdateChunks()
             for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
                 if ((*it).second_) {
                     (*it).second_->MarkForDeletion(true);
+                    (*it).second_->SetDistance(-1);
                 }
             }
 
             ProcessQueue();
 
             for (auto it = chunksToLoad_.Begin(); it != chunksToLoad_.End(); ++it) {
-                Vector3 position = (*it);
+                Vector3 position = (*it).first_;
                 String id = GetChunkIdentificator(position);
                 auto chunkIterator = chunks_.Find(id);
                 if (chunkIterator != chunks_.End()) {
                     (*chunkIterator).second_->MarkForDeletion(false);
+                    (*chunkIterator).second_->SetDistance((*it).second_);
                 } else {
-                    CreateChunk(position);
+                    auto chunk = CreateChunk(position);
+                    chunk->SetDistance((*it).second_);
                 }
             }
+
             chunksToLoad_.Clear();
 
             MutexLock lock(mutex_);
             for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
                 if ((*it).second_) {
                     if ((*it).second_->IsMarkedForDeletion()) {
+                        int distance = (*it).second_->GetDistance();
+//                        URHO3D_LOGINFOF("Deleting chunk distance=%d ", distance);
                         it = chunks_.Erase(it);
                     }
                     if (chunks_.End() == it) {
@@ -333,6 +350,7 @@ void VoxelWorld::UpdateChunks()
                 }
             }
         }
+
 
         WorkQueue *workQueue = GetSubsystem<WorkQueue>();
         updateWorkItem_ = workQueue->GetFreeItem();
@@ -363,7 +381,7 @@ void VoxelWorld::UpdateChunks()
 
 String VoxelWorld::GetChunkIdentificator(const Vector3& position)
 {
-    return String(position.x_ / SIZE_X) + "_" +  String(position.y_ / SIZE_Y) + "_" + String(position.z_ / SIZE_Z);
+    return String((int)position.x_) + "_" +  String((int)position.y_) + "_" + String((int)position.z_);
 }
 
 VoxelBlock* VoxelWorld::GetBlockAt(Vector3 position)
@@ -458,8 +476,10 @@ void VoxelWorld::ProcessQueue()
 void VoxelWorld::AddChunkToQueue(Vector3 position, int distance)
 {
     Vector3 fixedPosition = GetWorldToChunkPosition(position);
+    String id = GetChunkIdentificator(fixedPosition);
+    ChunkNode node(position, distance);
     if (!chunksToLoad_.Contains(fixedPosition)) {
-        chunksToLoad_.Push(fixedPosition);
-        chunkBfsQueue_.emplace(fixedPosition, distance);
+        chunksToLoad_[fixedPosition] = distance;
+        chunkBfsQueue_.emplace(node);
     }
 }

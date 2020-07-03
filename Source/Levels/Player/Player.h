@@ -107,4 +107,5 @@ private:
 
     int selectedItem_{1};
     SharedPtr<Text> selectedItemUI_;
+    SharedPtr<Text> positionUI_;
 };

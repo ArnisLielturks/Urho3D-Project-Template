@@ -17,7 +17,6 @@
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Graphics/Graphics.h>
-
 #include "../Generator/Generator.h"
 #include "Level.h"
 #include "../CustomEvents.h"
@@ -446,6 +445,8 @@ void Level::HandlePostUpdate(StringHash eventType, VariantMap& eventData)
                                                 (*it).second_->GetCameraDistance());
             }
         }
+
+
     }
 }
 
@@ -629,7 +630,8 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                 using namespace ChunkHit;
                 VariantMap& data = GetEventDataMap();
                 data[P_POSITION] = hitPosition - hitNormal * 0.5f;
-                data[P_DIRECTION] = hitNormal;
+                data[P_DIRECTION] = hitNormal * 0.5f;
+                data[P_ORIGIN] = hitPosition + hitNormal * 0.5f;;
                 data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
                 data[P_ACTION_ID] = action;
                 hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_HIT, data);
@@ -645,13 +647,24 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
 //                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString());
-                using namespace ChunkAdd;
-                VariantMap& data = GetEventDataMap();
-                data[P_POSITION] = hitPosition + hitNormal * 0.5f;
-                data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
-                data[P_ACTION_ID]  = action;
-                data[P_ITEM_ID] = players_[controllerId]->GetSelectedItem();
-                hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_ADD, data);
+                Vector3 playerPosition = players_[controllerId]->GetNode()->GetWorldPosition();
+                Vector3 blockPosition = hitPosition + hitNormal * 0.5f;
+//                URHO3D_LOGINFO("Player position " + playerPosition.ToString() + " block position " + blockPosition.ToString());
+                if (
+                        Floor(blockPosition.x_) != Floor(playerPosition.x_) ||
+                        Floor(blockPosition.y_) != Floor(playerPosition.y_) ||
+                        Floor(blockPosition.z_) != Floor(playerPosition.z_)
+                ) {
+                    using namespace ChunkAdd;
+                    VariantMap& data = GetEventDataMap();
+                    data[P_POSITION] = blockPosition;
+                    data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
+                    data[P_ACTION_ID]  = action;
+                    data[P_ITEM_ID] = players_[controllerId]->GetSelectedItem();
+                    hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_ADD, data);
+                } else {
+                    URHO3D_LOGINFO("You cannot place a block where you stand");
+                }
             }
         }
     }

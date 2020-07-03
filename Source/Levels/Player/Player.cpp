@@ -14,6 +14,7 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/UI/UI.h>
+#include <Urho3D/Engine/DebugHud.h>
 #include "Player.h"
 #include "../../Global.h"
 #include "../../Input/ControllerInput.h"
@@ -35,17 +36,6 @@ Player::Player(Context* context):
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Player, HandleMappedControlPressed));
     RegisterConsoleCommands();
-
-    if (GetSubsystem<VoxelWorld>()) {
-        auto cache = GetSubsystem<ResourceCache>();
-        auto* font = cache->GetResource<Font>(APPLICATION_FONT);
-        selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
-        selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
-        selectedItemUI_->SetPosition(0, -20);
-        selectedItemUI_->SetStyleAuto();
-        selectedItemUI_->SetFont(font, 20);
-        selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
-    }
 }
 
 Player::~Player()
@@ -179,6 +169,22 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     terrain_ = terrain;
 
     ResetPosition();
+
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    if (GetSubsystem<VoxelWorld>()) {
+        selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
+        selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
+        selectedItemUI_->SetPosition(0, -20);
+        selectedItemUI_->SetStyleAuto();
+        selectedItemUI_->SetFont(font, 20);
+        selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
+    }
+
+    positionUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
+    positionUI_->SetAlignment(HA_LEFT, VA_BOTTOM);
+    positionUI_->SetPosition(20, -20);
+    positionUI_->SetStyleAuto();
+    positionUI_->SetFont(font, 20);
 }
 
 void Player::FindNode(Scene* scene, int id)
@@ -246,6 +252,10 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     } else {
         controls = GetNode()->GetComponent<BehaviourTree>()->GetControls();
     }
+
+    Vector3 position = node_->GetWorldPosition();
+    String content = "X:" + String(static_cast<int>(position.x_)) + " Y:" + String(static_cast<int>(position.y_)) + " Z:" + String(static_cast<int>(position.z_));
+    positionUI_->SetText(content);
 
     if (noclipNode_) {
 //        noclipNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));

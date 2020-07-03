@@ -33,6 +33,7 @@
 #include "TreeGenerator.h"
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Audio/AudioEvents.h"
+#include "ChunkNetworkState.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
@@ -60,6 +61,7 @@ Chunk::~Chunk()
 void Chunk::RegisterObject(Context* context)
 {
     context->RegisterFactory<Chunk>();
+    context->RegisterFactory<ChunkNetworkState>();
 }
 
 void Chunk::Init(Scene* scene, const Vector3& position)
@@ -182,15 +184,19 @@ bool Chunk::Render()
     MutexLock lock(mutex_);
     auto cache = GetSubsystem<ResourceCache>();
     Node* part = parts_.At(renderIndex_);
+    auto networkState = part->GetComponent<ChunkNetworkState>();
+    networkState->MarkChanged();
     auto geometry = part->GetComponent<CustomGeometry>();
     geometry->Commit();
-    geometry->SetOccludee(true);
     if (renderIndex_ == PART_COUNT) {
         geometry->SetMaterial(cache->GetResource<Material>("Materials/VoxelWater.xml"));
         geometry->SetOccluder(false);
+        geometry->SetOccludee(false);
+
     } else {
         geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
         geometry->SetOccluder(true);
+        geometry->SetOccludee(true);
     }
 
     auto *shape = part->GetComponent<CollisionShape>();
@@ -220,7 +226,6 @@ void Chunk::CalculateGeometry()
 
     SetSunlight(sunlightLevel);
 
-    HashMap<int, Vector<ChunkVertex>> allVertices;
     for (int i = 0; i <= PART_COUNT; i++) {
         Node *node = parts_.At(i);
         auto geometry = node->GetComponent<CustomGeometry>();
@@ -247,7 +252,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -260,7 +264,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -273,7 +276,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -287,7 +289,6 @@ void Chunk::CalculateGeometry()
 
                         // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -300,7 +301,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -313,7 +313,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -328,7 +327,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -341,7 +339,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -354,7 +351,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -368,7 +364,6 @@ void Chunk::CalculateGeometry()
 
                         // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -381,7 +376,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -394,7 +388,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -409,7 +402,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -422,7 +414,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -435,7 +426,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -449,7 +439,6 @@ void Chunk::CalculateGeometry()
 
 //                        // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -462,7 +451,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -475,7 +463,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -490,7 +477,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -503,7 +489,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -516,7 +501,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -530,7 +514,6 @@ void Chunk::CalculateGeometry()
 
                         // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -543,7 +526,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -556,7 +538,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -571,7 +552,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -584,7 +564,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -597,7 +576,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -611,7 +589,6 @@ void Chunk::CalculateGeometry()
 
                         // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -624,7 +601,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -637,7 +613,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -652,7 +627,6 @@ void Chunk::CalculateGeometry()
                     if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
                         // tri1
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -665,7 +639,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -678,7 +651,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -692,7 +664,6 @@ void Chunk::CalculateGeometry()
 
                         // tri2
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -705,7 +676,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -718,7 +688,6 @@ void Chunk::CalculateGeometry()
                         }
 
                         {
-                            ChunkVertex vertex;
                             unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
                             Color color;
                             color.r_ = static_cast<int>(light & 0xF) / 15.0f;
@@ -787,9 +756,11 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
     using namespace ChunkHit;
     Vector3 position = eventData[P_POSITION].GetVector3();
     Vector3 direction = eventData[P_DIRECTION].GetVector3();
+    Vector3 origin = eventData[P_ORIGIN].GetVector3();
     auto blockPosition = GetChunkBlock(position);
-    auto neighborPosition = GetChunkBlock(position + direction * 0.5);
-    URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; neighbor position: " + neighborPosition.ToString());
+//    auto neighborChunkPosition = GetSubsystem<VoxelWorld>()->GetWorldToChunkPosition(origin);
+//    auto neighborPosition = GetChunkBlock(origin);
+//    URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; neighbor position: " + neighborPosition.ToString());
     if (!IsBlockInsideChunk(blockPosition)) {
         auto neighborChunk = GetSubsystem<VoxelWorld>()->GetChunkByPosition(position);
         if (neighborChunk && neighborChunk->GetNode()) {
@@ -799,28 +770,14 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
     }
     BlockType type = data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type;
     if (type != BT_AIR) {
-        int lightValue = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
-        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
-        GetSubsystem<LightManager>()->AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightValue, this);
         SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, BlockType::BT_AIR);
-        URHO3D_LOGINFO("Removing block " + blockPosition.ToString() + " Type: " + String(static_cast<int>(type)));
-        BlockType neighborType = GetBlockNeighbor(BlockSide::BOTTOM, blockPosition.x_, blockPosition.y_, blockPosition.z_);
-        GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
-        if (IsBlockInsideChunk(neighborPosition)) {
-//            GetSubsystem<LightManager>()->AddLightNode(neighborPosition.x_, neighborPosition.y_, neighborPosition.z_, this);
-            CalculateLight();
-        } else {
-            BlockSide side = GetNeighborDirection(neighborPosition);
-            auto neighbor = GetNeighbor(side);
-            if (neighbor) {
-                IntVector3 normalizedPosition = GetNeighborBlockPosition(neighborPosition);
-                URHO3D_LOGINFO("HandleHit blockposition: " + blockPosition.ToString() + "; normalized neighbor position: " + normalizedPosition.ToString());
-//                GetSubsystem<LightManager>()->AddLightNode(normalizedPosition.x_, normalizedPosition.y_, normalizedPosition.z_, neighbor);
-                neighbor->CalculateLight();
-            }
+        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
+        for (int i = 0; i < 6; i++) {
+            auto neighborPosition = NeighborBlockWorldPosition(static_cast<BlockSide>(i), blockPosition);
+//            URHO3D_LOGINFO("Neighbor world position=" + neighborPosition.ToString());
+            GetSubsystem<LightManager>()->AddLightNode(neighborPosition);
         }
-
-        MarkForGeometryCalculation();
+        URHO3D_LOGINFO("Removing block " + blockPosition.ToString() + " Type: " + String(static_cast<int>(type)) + "; Chunk position: " + position_.ToString());
 
         VariantMap& data = GetEventDataMap();
         data[BlockRemoved::P_POSITION] = blockPosition;
@@ -831,6 +788,29 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
     }
+}
+
+Vector3 Chunk::NeighborBlockWorldPosition(BlockSide side, IntVector3 blockPosition)
+{
+    Vector3 position = position_;
+    position.x_ += blockPosition.x_;
+    position.y_ += blockPosition.y_;
+    position.z_ += blockPosition.z_;
+    switch (side) {
+        case TOP:
+            return position + Vector3::UP;
+        case BOTTOM:
+            return position + Vector3::DOWN;
+        case LEFT:
+            return position + Vector3::LEFT;
+        case RIGHT:
+            return position + Vector3::RIGHT;
+        case FRONT:
+            return position + Vector3::BACK;
+        case BACK:
+            return position + Vector3::FORWARD;
+    }
+    return position;
 }
 
 void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
@@ -866,12 +846,14 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         URHO3D_LOGINFO("Adding block " + blockPosition.ToString());
 //        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
 //        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
-        int lightValue = 0;
         if (type == BT_TORCH) {
-            lightValue = 15;
+            SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 15);
+            GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
+        } else {
+            int lightLevel = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
+            SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
+            GetSubsystem<LightManager>()->AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightLevel, this);
         }
-        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightValue);
-        GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
         MarkForGeometryCalculation();
 
         VariantMap& data = GetEventDataMap();
@@ -940,7 +922,7 @@ void Chunk::Save()
 void Chunk::CreateNode()
 {
     auto cache = GetSubsystem<ResourceCache>();
-    node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
+    node_ = scene_->CreateChild("Chunk " + position_.ToString(), REPLICATED);
     node_->SetScale(1.0f);
     node_->SetWorldPosition(position_);
 
@@ -950,28 +932,28 @@ void Chunk::CreateNode()
         SharedPtr<Node> part(node_->CreateChild("Part"));
         part->CreateComponent<CustomGeometry>();
 
-        auto *body = part->CreateComponent<RigidBody>(LOCAL);
+        auto *body = part->CreateComponent<RigidBody>(REPLICATED);
         body->SetMass(0);
         body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-        part->CreateComponent<CollisionShape>(LOCAL);
-
+        part->CreateComponent<CollisionShape>(REPLICATED);
+        part->CreateComponent<ChunkNetworkState>();
         parts_.Push(part);
     }
 
     SubscribeToEvent(node_, E_CHUNK_HIT, URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, E_CHUNK_ADD, URHO3D_HANDLER(Chunk, HandleAdd));
 
-    label_ = node_->CreateChild("Label", LOCAL);
-    auto text3D = label_->CreateComponent<Text3D>();
-    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
-    text3D->SetColor(Color::GRAY);
-    text3D->SetViewMask(VIEW_MASK_GUI);
-    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
-    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
-    text3D->SetText(position_.ToString());
-    text3D->SetFontSize(32);
-    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
-    scene_->AddChild(node_);
+//    label_ = node_->CreateChild("Label", LOCAL);
+//    auto text3D = label_->CreateComponent<Text3D>();
+//    text3D->SetFont(cache->GetResource<Font>(APPLICATION_FONT), 30);
+//    text3D->SetColor(Color::GRAY);
+//    text3D->SetViewMask(VIEW_MASK_GUI);
+//    text3D->SetAlignment(HA_CENTER, VA_BOTTOM);
+//    text3D->SetFaceCameraMode(FaceCameraMode::FC_LOOKAT_Y);
+//    text3D->SetText(position_.ToString());
+//    text3D->SetFontSize(32);
+//    label_->SetPosition(Vector3(SIZE_X / 2, SIZE_Y, SIZE_Z / 2));
+//    scene_->AddChild(node_);
 
     MarkActive(false);
     SetActive();
@@ -1288,8 +1270,10 @@ int Chunk::GetSunlight(int x, int y, int z)
 
 void Chunk::SetSunlight(int x, int y, int z, int value)
 {
+    if (GetSunlight(x, y, z) != value) {
+        MarkForGeometryCalculation();
+    }
     lightMap_[x][y][z] = (lightMap_[x][y][z] & 0xF) | (value << 4);
-    MarkForGeometryCalculation();
 }
 
 int Chunk::GetTorchlight(int x, int y, int z)
@@ -1299,8 +1283,10 @@ int Chunk::GetTorchlight(int x, int y, int z)
 
 void Chunk::SetTorchlight(int x, int y, int z, int value)
 {
+    if (GetTorchlight(x, y, z) != value) {
+        MarkForGeometryCalculation();
+    }
     lightMap_[x][y][z] = (lightMap_[x][y][z] & 0xF0) | value;
-    MarkForGeometryCalculation();
 }
 
 unsigned char Chunk::GetLightValue(int x, int y, int z)
@@ -1367,10 +1353,10 @@ BlockSide Chunk::GetNeighborDirection(const IntVector3& position)
         return BlockSide::RIGHT;
     }
     else if (position_.y_ < 0) {
-        return BlockSide::BOTTOM;
+        return BlockSide::TOP;
     }
     else if (position_.y_ >= SIZE_Y) {
-        return BlockSide::TOP;
+        return BlockSide::BOTTOM;
     }
     else if (position_.z_ < 0) {
         return BlockSide::FRONT;
@@ -1402,4 +1388,14 @@ IntVector3 Chunk::GetNeighborBlockPosition(const IntVector3& position)
         normalizedPosition.z_ -= SIZE_Z;
     }
     return normalizedPosition;
+}
+
+void Chunk::SetDistance(int distance)
+{
+    distance_ = distance;
+}
+
+int Chunk::GetDistance()
+{
+    return distance_;
 }

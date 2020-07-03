@@ -31,6 +31,10 @@ void PS()
         vec4 diffColor = cMatDiffColor;
     #endif
 
+    if (diffColor.a < 0.5) {
+        discard;
+    }
+
 //     Get fog factor
     #ifdef HEIGHTFOG
         float fogFactor = GetHeightFogFactor(vWorldPos.w, vWorldPos.y);

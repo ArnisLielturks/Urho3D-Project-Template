@@ -1,3 +1,4 @@
 <technique vs="UnlitVoxel" ps="UnlitVoxel" psdefines="DIFFMAP ALPHAMASK">
-    <pass name="alpha" depthwrite="true" blend="alpha" />
+    <pass name="alpha" depthwrite="false" blend="addalpha" />
+    <lineantialias enable="false" />
 </technique>

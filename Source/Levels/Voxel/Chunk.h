@@ -17,14 +17,6 @@ const int PART_COUNT = 3;
 
 using namespace Urho3D;
 
-struct ChunkVertex {
-    Vector3 position;
-    Vector3 normal;
-    Vector2 uvCoords;
-    Vector4 tangent;
-    unsigned char light;
-};
-
 class Chunk : public Object {
     URHO3D_OBJECT(Chunk, Object);
     Chunk(Context* context);
@@ -62,13 +54,16 @@ public:
     static int sunlightLevel;
     BlockSide GetNeighborDirection(const IntVector3& position);
     IntVector3 GetNeighborBlockPosition(const IntVector3& position);
+    Vector3 NeighborBlockWorldPosition(BlockSide side, IntVector3 blockPosition);
+    IntVector3 GetChunkBlock(Vector3 position);
+    void SetDistance(int distance);
+    int GetDistance();
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
     void HandleHit(StringHash eventType, VariantMap& eventData);
     void HandleAdd(StringHash eventType, VariantMap& eventData);
     Vector2 GetTextureCoord(BlockSide side, BlockType blockType, Vector2 position);
-    IntVector3 GetChunkBlock(Vector3 position);
     bool IsBlockInsideChunk(IntVector3 position);
     void CreateNode();
     void RemoveNode();
@@ -95,4 +90,5 @@ private:
     int renderIndex_{0};
     Timer saveTimer_;
     int renderCounter_{0};
+    int distance_{0};
 };

@@ -36,6 +36,23 @@ Player::Player(Context* context):
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Player, HandleMappedControlPressed));
     RegisterConsoleCommands();
+
+    auto* cache = GetSubsystem<ResourceCache>();
+    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+    if (GetSubsystem<VoxelWorld>()) {
+        selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
+        selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
+        selectedItemUI_->SetPosition(0, -20);
+        selectedItemUI_->SetStyleAuto();
+        selectedItemUI_->SetFont(font, 20);
+        selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
+    }
+
+    positionUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
+    positionUI_->SetAlignment(HA_LEFT, VA_BOTTOM);
+    positionUI_->SetPosition(20, -20);
+    positionUI_->SetStyleAuto();
+    positionUI_->SetFont(font, 20);
 }
 
 Player::~Player()
@@ -169,22 +186,6 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     terrain_ = terrain;
 
     ResetPosition();
-
-    auto* font = cache->GetResource<Font>(APPLICATION_FONT);
-    if (GetSubsystem<VoxelWorld>()) {
-        selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
-        selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
-        selectedItemUI_->SetPosition(0, -20);
-        selectedItemUI_->SetStyleAuto();
-        selectedItemUI_->SetFont(font, 20);
-        selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
-    }
-
-    positionUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
-    positionUI_->SetAlignment(HA_LEFT, VA_BOTTOM);
-    positionUI_->SetPosition(20, -20);
-    positionUI_->SetStyleAuto();
-    positionUI_->SetFont(font, 20);
 }
 
 void Player::FindNode(Scene* scene, int id)

@@ -400,7 +400,7 @@ void SceneManager::LoadDefaultMaps()
         StringVector commands;
         commands.Push("ambient_light 0.8 0.8 0.8");
         commands.Push("fog 0 500'");
-    commands.Push("noclip");
+//        commands.Push("noclip");
 //        commands.Push("chunk_visible_distance 1");
 //    commands.Push("debugger");
 //    commands.Push("debug_geometry");

@@ -32,4 +32,9 @@ namespace VoxelEvents {
         URHO3D_PARAM(P_ACTION_ID, ActionID); // int
         URHO3D_PARAM(P_ITEM_ID, ItemID); // int
     }
+
+    URHO3D_EVENT(E_CHUNK_RECEIVED, ChunkReceived) {
+        URHO3D_PARAM(P_POSITION, Position);
+        URHO3D_PARAM(P_PART_INDEX, PartIndex);
+    }
 }

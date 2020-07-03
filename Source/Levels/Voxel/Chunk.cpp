@@ -935,8 +935,11 @@ void Chunk::CreateNode()
         auto *body = part->CreateComponent<RigidBody>(REPLICATED);
         body->SetMass(0);
         body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-        part->CreateComponent<CollisionShape>(REPLICATED);
-        part->CreateComponent<ChunkNetworkState>();
+        part->CreateComponent<CollisionShape>(LOCAL);
+        auto state = part->CreateComponent<ChunkNetworkState>();
+        state->SetChunkPartIndex(i);
+        state->SetChunkPosition(position_);
+        part->SetVar("Chunk", this);
         parts_.Push(part);
     }
 

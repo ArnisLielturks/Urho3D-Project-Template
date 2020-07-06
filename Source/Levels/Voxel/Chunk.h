@@ -1,5 +1,7 @@
 #pragma once
+#include <queue>
 #include <Urho3D/Graphics/CustomGeometry.h>
+#include <Urho3D/Graphics/Geometry.h>
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Scene/Node.h>
@@ -9,7 +11,7 @@
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/IO/MemoryBuffer.h>
 #include "VoxelDefs.h"
-#include <queue>
+#include "ChunkMesh.h"
 
 const int SIZE_X = 16;
 const int SIZE_Y = 16;
@@ -49,7 +51,6 @@ public:
     bool IsGeometryCalculated();
     void CalculateLight();
     void CalculateGeometry();
-    void CalculateGeometry2();
     void MarkForGeometryCalculation();
     Chunk* GetNeighbor(BlockSide side);
     void SetVoxel(int x, int y, int z, BlockType block);
@@ -81,6 +82,8 @@ private:
 
     Vector<SharedPtr<Node>> parts_;
     SharedPtr<Node> node_;
+    SharedPtr<Node> waterNode_;
+    SharedPtr<Node> groundNode_;
     SharedPtr<Node> label_;
     Scene* scene_;
     Vector3 position_;
@@ -93,12 +96,14 @@ private:
     bool loaded_{false};
     bool requestedFromServer_{false};
     Timer remoteLoadTimer_;
-    bool geometryCalculated_{true};
     bool shouldRender_{false};
     bool notified_{false};
     int renderIndex_{0};
     Timer saveTimer_;
     int renderCounter_{0};
     int distance_{0};
-
+    ChunkMesh chunkMesh_;
+    ChunkMesh chunkWaterMesh_;
+    int calculateIndex_{0};
+    int lastCalculatateIndex_{0};
 };

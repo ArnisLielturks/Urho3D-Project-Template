@@ -44,7 +44,7 @@ int ChunkGenerator::GetTerrainHeight(const Vector3& blockPosition)
     int height = (perlin_.octaveNoise(dx3, dz3, 1) * 0.5 + 0.5) * heightLimit;
 //
 //
-    float smoothness4 = 123.33f;
+    float smoothness4 = 333.33f;
     double dx4 = blockPosition.x_ / smoothness4;
     double dz4 = blockPosition.z_ / smoothness4;
     double result2 = perlin_.octaveNoise(dx4, dz4, octaves);

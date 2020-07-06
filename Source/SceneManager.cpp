@@ -23,7 +23,7 @@ using namespace LevelManagerEvents;
  */
 const int LOADING_STEP_ACK_MAX_TIME       = 2000; // Max wait time in MS for ACK message for loading step
 const int LOADING_STEP_MAX_EXECUTION_TIME = 10 * 1000; // Max loading step execution time in MS, 0 - infinite
-const float PROGRESS_SPEED                = 0.3f; // how fast should the progress bar increase each second, e.g. 1 would load 0 to 100% in 1 second
+const float PROGRESS_SPEED                = 1.0f; // how fast should the progress bar increase each second, e.g. 1 would load 0 to 100% in 1 second
 
 SceneManager::SceneManager(Context* context) :
         Object(context)

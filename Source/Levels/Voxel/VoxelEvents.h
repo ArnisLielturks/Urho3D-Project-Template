@@ -35,6 +35,6 @@ namespace VoxelEvents {
 
     URHO3D_EVENT(E_CHUNK_RECEIVED, ChunkReceived) {
         URHO3D_PARAM(P_POSITION, Position);
-        URHO3D_PARAM(P_PART_INDEX, PartIndex);
+        URHO3D_PARAM(P_DATA, Data);
     }
 }

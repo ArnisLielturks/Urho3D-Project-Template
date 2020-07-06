@@ -6,6 +6,10 @@
 #include <Urho3D/Container/Vector.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/IO/FileSystem.h>
+#include <Urho3D/Network/Network.h>
+#include <Urho3D/Network/NetworkEvents.h>
+#include <Urho3D/Resource/ResourceCache.h>
+#include <Urho3D/Graphics/Material.h>
 #include "VoxelWorld.h"
 #include "../../SceneManager.h"
 #include "VoxelEvents.h"
@@ -42,6 +46,8 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         world->GetSubsystem<DebugHud>()->SetAppStats("Active chunks", counter);
     }
 
+    int requestedFromServerCount = 0;
+
     for (auto it = world->chunks_.Begin(); it != world->chunks_.End(); ++it) {
         if (!(*it).second_) {
             continue;
@@ -52,12 +58,17 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         }
         // Initialize new chunks
         if (!(*it).second_->IsLoaded()) {
-            (*it).second_->Load();
-            for (int i = 0; i < 6; i++) {
-                auto neighbor = (*it).second_->GetNeighbor(static_cast<BlockSide>(i));
-                if (neighbor) {
-                    neighbor->MarkForGeometryCalculation();
+            if (!world->GetSubsystem<Network>()->GetServerConnection()) {
+                (*it).second_->Load();
+                for (int i = 0; i < 6; i++) {
+                    auto neighbor = (*it).second_->GetNeighbor(static_cast<BlockSide>(i));
+                    if (neighbor) {
+                        neighbor->MarkForGeometryCalculation();
+                    }
                 }
+            } else if (!(*it).second_->IsRequestedFromServer()) {
+                (*it).second_->LoadFromServer();
+                requestedFromServerCount++;
             }
         }
 
@@ -81,7 +92,9 @@ void VoxelWorld::Init()
     scene_ = GetSubsystem<SceneManager>()->GetActiveScene();
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(VoxelWorld, HandleUpdate));
+    SubscribeToEvent(E_CHUNK_RECEIVED, URHO3D_HANDLER(VoxelWorld, HandleChunkReceived));
     SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(VoxelWorld, HandleWorkItemFinished));
+    SubscribeToEvent(E_NETWORKMESSAGE, URHO3D_HANDLER(VoxelWorld, HandleNetworkMessage));
 
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
@@ -137,9 +150,7 @@ void VoxelWorld::Init()
             URHO3D_LOGERROR("Thi command requires exactly 1 argument!");
             return;
         }
-        int level = ToInt(params[1]);
-        Chunk::sunlightLevel = level;
-        reloadAllChunks_ = true;
+       SetSunlight(ToFloat(params[1]));
     });
 }
 
@@ -180,6 +191,8 @@ void VoxelWorld::HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 
     UpdateChunks();
+
+    SetSunlight(Sin(GetSubsystem<Time>()->GetElapsedTime() * 10.0f) * 0.5f + 0.5f);
 }
 
 Chunk* VoxelWorld::CreateChunk(const Vector3& position)
@@ -482,4 +495,147 @@ void VoxelWorld::AddChunkToQueue(Vector3 position, int distance)
         chunksToLoad_[fixedPosition] = distance;
         chunkBfsQueue_.emplace(node);
     }
+}
+
+void VoxelWorld::HandleChunkReceived(StringHash eventType, VariantMap& eventData)
+{
+    using namespace ChunkReceived;
+    Vector3 position = eventData[P_POSITION].GetVector3();
+    URHO3D_LOGINFO("Chunk received: " + position.ToString());
+    PODVector<unsigned char>* data = reinterpret_cast<PODVector<unsigned char>*>(eventData[P_DATA].GetPtr());
+    String id = GetChunkIdentificator(position);
+    auto chunkIterator = chunks_.Find(id);
+    if (chunkIterator != chunks_.End()) {
+        int index = 0;
+        for (int x = 0; x < SIZE_X; x++) {
+            for (int y = 0; y < SIZE_Y; y++) {
+                for (int z = 0; z < SIZE_Z; z++) {
+                    int value = data->At(index);
+                    BlockType type = static_cast<BlockType>(value);
+                    (*chunkIterator).second_->SetVoxel(x, y, z, type);
+                }
+            }
+        }
+        (*chunkIterator).second_->CalculateLight();
+        (*chunkIterator).second_->MarkForGeometryCalculation();
+    }
+}
+
+void VoxelWorld::HandleNetworkMessage(StringHash eventType, VariantMap& eventData)
+{
+    auto* network = GetSubsystem<Network>();
+
+    using namespace NetworkMessage;
+
+    int msgID = eventData[P_MESSAGEID].GetInt();
+    if (msgID == NETWORK_REQUEST_CHUNK)
+    {
+        const PODVector<unsigned char>& data = eventData[P_DATA].GetBuffer();
+        // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+        MemoryBuffer msg(data);
+        Vector3 chunkPosition = msg.ReadVector3();
+
+        Chunk* chunk = GetChunkByPosition(chunkPosition);
+        // If we are the server, prepend the sender's IP address and port and echo to everyone
+        // If we are a client, just display the message
+        if (network->IsServerRunning())
+        {
+            if (chunk) {
+                if (chunk->IsLoaded()) {
+                    auto *sender = static_cast<Connection *>(eventData[P_CONNECTION].GetPtr());
+//                URHO3D_LOGINFO("Client " + sender->ToString() + " requested chunk : " + chunkPosition.ToString());
+
+                    VectorBuffer sendMsg;
+                    sendMsg.WriteVector3(chunk->GetPosition());
+                    for (int x = 0; x < SIZE_X; x++) {
+                        for (int y = 0; y < SIZE_Y; y++) {
+                            for (int z = 0; z < SIZE_Z; z++) {
+                                sendMsg.WriteInt(static_cast<int>(chunk->GetBlockAt(IntVector3(x, y, z))->type));
+                            }
+                        }
+                    }
+                    // Broadcast as in-order and reliable
+                    sender->SendMessage(NETWORK_SEND_CHUNK, true, true, sendMsg);
+                } else {
+//                    URHO3D_LOGINFO("Chunk not yet loaded, cannot send it to client " + chunkPosition.ToString());
+                }
+            } else {
+//                URHO3D_LOGINFO("Requested chunk doesn't exist " + chunkPosition.ToString());
+            }
+        }
+    } else if (msgID == NETWORK_SEND_CHUNK) {
+        if (!network->IsServerRunning()) {
+            const PODVector<unsigned char>& data = eventData[P_DATA].GetBuffer();
+            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+            MemoryBuffer msg(data);
+            Vector3 chunkPosition = msg.ReadVector3();
+            auto chunk = GetChunkByPosition(chunkPosition);
+            if (chunk) {
+                chunk->ProcessServerResponse(msg);
+            } else {
+                URHO3D_LOGINFO("Requested chunk doesn't exist anymore " + chunkPosition.ToString());
+            }
+        }
+    } else if (msgID == NETWORK_REQUEST_CHUNK_HIT) {
+        if (network->IsServerRunning()) {
+            const PODVector<unsigned char> &data = eventData[P_DATA].GetBuffer();
+            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+            MemoryBuffer msg(data);
+            Vector3 chunkPosition = msg.ReadVector3();
+            IntVector3 blockPosition = msg.ReadIntVector3();
+            auto chunk = GetChunkByPosition(chunkPosition);
+            if (chunk) {
+                chunk->SetBlockData(blockPosition, BT_AIR);
+                chunk->MarkForGeometryCalculation();
+            }
+
+            VectorBuffer buffer;
+            buffer.WriteVector3(chunkPosition);
+            buffer.WriteIntVector3(blockPosition);
+            buffer.WriteInt(static_cast<int>(BT_AIR));
+            network->BroadcastMessage(NETWORK_SEND_CHUNK_UPDATE, true, true, buffer);
+        }
+    } else if (msgID == NETWORK_REQUEST_CHUNK_ADD) {
+        if (network->IsServerRunning()) {
+            const PODVector<unsigned char> &data = eventData[P_DATA].GetBuffer();
+            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+            MemoryBuffer msg(data);
+            Vector3 chunkPosition = msg.ReadVector3();
+            IntVector3 blockPosition = msg.ReadIntVector3();
+            BlockType type = static_cast<BlockType>(msg.ReadInt());
+            auto chunk = GetChunkByPosition(chunkPosition);
+            if (chunk) {
+                chunk->SetBlockData(blockPosition, type);
+                chunk->MarkForGeometryCalculation();
+            }
+            VectorBuffer buffer;
+            buffer.WriteVector3(chunkPosition);
+            buffer.WriteIntVector3(blockPosition);
+            buffer.WriteInt(static_cast<int>(type));
+            network->BroadcastMessage(NETWORK_SEND_CHUNK_UPDATE, true, true, buffer);
+        }
+    } else if (msgID == NETWORK_SEND_CHUNK_UPDATE) {
+        if (!network->IsServerRunning()) {
+            const PODVector<unsigned char> &data = eventData[P_DATA].GetBuffer();
+            // Use a MemoryBuffer to read the message data so that there is no unnecessary copying
+            MemoryBuffer msg(data);
+            Vector3 chunkPosition = msg.ReadVector3();
+            IntVector3 blockPosition = msg.ReadIntVector3();
+            BlockType type = static_cast<BlockType>(msg.ReadInt());
+            auto chunk = GetChunkByPosition(chunkPosition);
+            if (chunk) {
+                chunk->SetBlockData(blockPosition, type);
+                chunk->MarkForGeometryCalculation();
+            }
+        }
+    }
+}
+
+void VoxelWorld::SetSunlight(float value)
+{
+    auto cache = GetSubsystem<ResourceCache>();
+    auto waterMaterial = cache->GetResource<Material>("Materials/VoxelWater.xml");
+    auto landMaterial = cache->GetResource<Material>("Materials/Voxel.xml");
+    waterMaterial->SetShaderParameter("SunlightIntensity", value);
+    landMaterial->SetShaderParameter("SunlightIntensity", value);
 }

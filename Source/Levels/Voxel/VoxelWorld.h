@@ -34,7 +34,9 @@ class VoxelWorld : public Object {
     IntVector3 GetWorldToChunkBlockPosition(const Vector3& position);
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
+    void HandleChunkReceived(StringHash eventType, VariantMap& eventData);
     void HandleWorkItemFinished(StringHash eventType, VariantMap& eventData);
+    void HandleNetworkMessage(StringHash eventType, VariantMap& eventData);
     void LoadChunk(const Vector3& position);
     void UpdateChunks();
     Vector3 GetNodeToChunkPosition(Node* node);
@@ -44,6 +46,7 @@ private:
     String GetChunkIdentificator(const Vector3& position);
     void ProcessQueue();
     void AddChunkToQueue(Vector3 position, int distance = 0);
+    void SetSunlight(float value);
 
 //    void RaycastFromObservers();
 

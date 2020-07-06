@@ -7,6 +7,7 @@
 varying vec2 vTexCoord;
 varying vec4 vWorldPos;
 varying vec4 vColor;
+uniform float cSunlightIntensity;
 
 void VS()
 {
@@ -23,7 +24,7 @@ void PS()
     // Get material diffuse albedo
     #ifdef DIFFMAP
         vec4 diffColor = cMatDiffColor * texture2D(sDiffMap, vTexCoord);
-        diffColor.rgb = diffColor.rgb * max(vColor.r, 0.05) + diffColor.rgb * vColor.g;
+        diffColor.rgb = diffColor.rgb * vColor.r + diffColor.rgb * vColor.g * cSunlightIntensity;
 //        diffColor = vColor;
         #ifdef ALPHAMASK
         #endif

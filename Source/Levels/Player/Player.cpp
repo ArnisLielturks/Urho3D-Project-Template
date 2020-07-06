@@ -118,16 +118,14 @@ void Player::RegisterConsoleCommands()
             URHO3D_LOGERROR("This command doesn't have any arguments!");
             return;
         }
-        if (noclipNode_) {
-//            SetCameraDistance(1.5f);
-//            SetCameraTarget(nullptr);
-//            GetSubsystem<VoxelWorld>()->RemoveObserver(noclipNode_);
-            noclipNode_->Remove();
-            noclipNode_.Reset();
+        if (!rigidBody_) {
+            rigidBody_ = node_->GetComponent<RigidBody>();
+        }
+        if (noclip_) {
+            noclip_ = false;
             rigidBody_->SetLinearFactor(Vector3::ONE);
         } else {
-            noclipNode_ = node_->GetScene()->CreateChild("Noclip", LOCAL);
-            noclipNode_->SetWorldPosition(node_->GetWorldPosition());
+            noclip_ = true;
             rigidBody_->SetLinearFactor(Vector3::ZERO);
 //            SetCameraTarget(noclipNode_);
 //            SetCameraDistance(0.0f);
@@ -166,7 +164,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     ballObject->SetViewMask(VIEW_MASK_PLAYER);
 
     // Create the physics components
-    rigidBody_ = node_->CreateComponent<RigidBody>(LOCAL);
+    rigidBody_ = node_->CreateComponent<RigidBody>(REPLICATED);
     rigidBody_->SetMass(5.0f);
     rigidBody_->SetFriction(2.0f);
     // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
@@ -194,6 +192,7 @@ void Player::FindNode(Scene* scene, int id)
     if (node_) {
         node_->SetInterceptNetworkUpdate("Network Position", true);
         node_->GetComponent<PlayerState>()->HideLabel();
+        rigidBody_ = node_->GetComponent<RigidBody>();
         SubscribeToEvent(E_INTERCEPTNETWORKUPDATE, URHO3D_HANDLER(Player, HandlePredictPlayerPosition));
     }
 }
@@ -206,8 +205,10 @@ void Player::ResetPosition()
     }
     GetNode()->SetWorldPosition(position);
 
-    GetNode()->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
-    GetNode()->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
+    if (GetNode() && GetNode()->HasComponent<RigidBody>()) {
+        GetNode()->GetComponent<RigidBody>()->SetLinearVelocity(Vector3::ZERO);
+        GetNode()->GetComponent<RigidBody>()->SetAngularVelocity(Vector3::ZERO);
+    }
 }
 
 void Player::SetControllerId(unsigned int id)
@@ -254,23 +255,15 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         controls = GetNode()->GetComponent<BehaviourTree>()->GetControls();
     }
 
-    Vector3 position = node_->GetWorldPosition();
-    String content = "X:" + String(static_cast<int>(position.x_)) + " Y:" + String(static_cast<int>(position.y_)) + " Z:" + String(static_cast<int>(position.z_));
-    positionUI_->SetText(content);
+    if (positionUI_) {
+        Vector3 position = node_->GetWorldPosition();
+        String content =
+                "X:" + String(static_cast<int>(position.x_)) + " Y:" + String(static_cast<int>(position.y_)) + " Z:" +
+                String(static_cast<int>(position.z_));
+        positionUI_->SetText(content);
+    }
 
-    if (noclipNode_) {
-//        noclipNode_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
-//        // Movement speed as world units per second
-//        const float MOVE_SPEED = 10.0f;
-//        // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
-//        if (controls.IsDown(CTRL_FORWARD))
-//            noclipNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-//        if (controls.IsDown(CTRL_BACK))
-//            noclipNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-//        if (controls.IsDown(CTRL_LEFT))
-//            noclipNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-//        if (controls.IsDown(CTRL_RIGHT))
-//            noclipNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+    if (noclip_) {
         node_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
         // Movement speed as world units per second
         float MOVE_SPEED = 10.0f;
@@ -393,6 +386,10 @@ void Player::HandleNodeCollision(StringHash eventType, VariantMap& eventData)
 void Player::SetClientConnection(Connection* connection)
 {
     connection_ = connection;
+    selectedItemUI_->Remove();
+    selectedItemUI_.Reset();
+    positionUI_->Remove();
+    positionUI_.Reset();
 }
 
 void Player::SetCameraTarget(Node* target)
@@ -411,7 +408,7 @@ Node* Player::GetCameraTarget()
 
 bool Player::IsCameraTargetSet()
 {
-    return cameraTarget_ && cameraTarget_ != node_ && !noclipNode_;
+    return cameraTarget_ && cameraTarget_ != node_ && !noclip_;
 }
 
 void Player::SetCameraDistance(float distance)

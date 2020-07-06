@@ -7,6 +7,7 @@
 #include <Urho3D/Graphics/VertexBuffer.h>
 #include <Urho3D/Graphics/IndexBuffer.h>
 #include <Urho3D/Graphics/Model.h>
+#include <Urho3D/IO/MemoryBuffer.h>
 #include "VoxelDefs.h"
 #include <queue>
 
@@ -43,21 +44,25 @@ public:
     void SetTorchlight(int x, int y, int z, int value = 15);
     unsigned char GetLightValue(int x, int y, int z);
     void SetSunlight(int value);
-    bool ShouldRender() { return shouldRender_; }
-    bool IsLoaded() { return loaded_; }
-    bool IsGeometryCalculated() { return geometryCalculated_; }
+    bool ShouldRender();
+    bool IsLoaded();
+    bool IsGeometryCalculated();
     void CalculateLight();
     void CalculateGeometry();
+    void CalculateGeometry2();
     void MarkForGeometryCalculation();
     Chunk* GetNeighbor(BlockSide side);
     void SetVoxel(int x, int y, int z, BlockType block);
-    static int sunlightLevel;
     BlockSide GetNeighborDirection(const IntVector3& position);
     IntVector3 GetNeighborBlockPosition(const IntVector3& position);
     Vector3 NeighborBlockWorldPosition(BlockSide side, IntVector3 blockPosition);
     IntVector3 GetChunkBlock(Vector3 position);
     void SetDistance(int distance);
     int GetDistance();
+    bool IsRequestedFromServer();
+    void LoadFromServer();
+    void ProcessServerResponse(MemoryBuffer& buffer);
+    void SetBlockData(const IntVector3& blockPosition, BlockType type);
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
@@ -71,6 +76,8 @@ private:
     BlockType GetBlockNeighbor(BlockSide side, int x, int y, int z);
     unsigned char NeighborLightValue(BlockSide side, int x, int y, int z);
     int GetPartIndex(int x, int y, int z);
+    void SendHitToServer(const IntVector3& position);
+    void SendAddToServer(const IntVector3& position, BlockType type);
 
     Vector<SharedPtr<Node>> parts_;
     SharedPtr<Node> node_;
@@ -84,11 +91,14 @@ private:
     Mutex mutex_;
 
     bool loaded_{false};
-    bool geometryCalculated_{false};
+    bool requestedFromServer_{false};
+    Timer remoteLoadTimer_;
+    bool geometryCalculated_{true};
     bool shouldRender_{false};
     bool notified_{false};
     int renderIndex_{0};
     Timer saveTimer_;
     int renderCounter_{0};
     int distance_{0};
+
 };

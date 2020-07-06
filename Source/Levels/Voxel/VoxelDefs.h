@@ -37,3 +37,9 @@ enum Biome {
 struct VoxelBlock {
     BlockType type;
 };
+
+const int NETWORK_REQUEST_CHUNK = 153;
+const int NETWORK_SEND_CHUNK = 154;
+const int NETWORK_REQUEST_CHUNK_HIT = 155;
+const int NETWORK_REQUEST_CHUNK_ADD = 156;
+const int NETWORK_SEND_CHUNK_UPDATE = 157;

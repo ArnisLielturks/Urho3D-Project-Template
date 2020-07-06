@@ -24,6 +24,8 @@
 #include <Urho3D/Core/Profiler.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Audio/AudioDefs.h>
+#include <Urho3D/Network/Network.h>
+#include <Urho3D/Network/NetworkEvents.h>
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
@@ -33,12 +35,9 @@
 #include "TreeGenerator.h"
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Audio/AudioEvents.h"
-#include "ChunkNetworkState.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
-
-int Chunk::sunlightLevel = 1;
 
 Chunk::Chunk(Context* context):
 Object(context)
@@ -61,7 +60,6 @@ Chunk::~Chunk()
 void Chunk::RegisterObject(Context* context)
 {
     context->RegisterFactory<Chunk>();
-    context->RegisterFactory<ChunkNetworkState>();
 }
 
 void Chunk::Init(Scene* scene, const Vector3& position)
@@ -132,7 +130,7 @@ void Chunk::Load()
                 int surfaceHeight = chunkGenerator->GetTerrainHeight(blockPosition);
                 for (int y = 0; y < SIZE_Y; y++) {
                     int height = blockPosition.y_ + y;
-                    if (height <= SEA_LEVEL && height > surfaceHeight) {
+                    if (height < SEA_LEVEL && height > surfaceHeight) {
                         SetVoxel(x, y, z, BT_WATER);
                     }
                 }
@@ -184,33 +182,33 @@ bool Chunk::Render()
     MutexLock lock(mutex_);
     auto cache = GetSubsystem<ResourceCache>();
     Node* part = parts_.At(renderIndex_);
-    auto networkState = part->GetComponent<ChunkNetworkState>();
-    networkState->MarkChanged();
     auto geometry = part->GetComponent<CustomGeometry>();
-    geometry->Commit();
-    if (renderIndex_ == PART_COUNT) {
-        geometry->SetMaterial(cache->GetResource<Material>("Materials/VoxelWater.xml"));
-        geometry->SetOccluder(false);
-        geometry->SetOccludee(false);
+    if (geometry) {
+        geometry->Commit();
+        if (renderIndex_ == PART_COUNT) {
+            geometry->SetMaterial(cache->GetResource<Material>("Materials/VoxelWater.xml"));
+            geometry->SetOccluder(false);
+            geometry->SetOccludee(false);
 
-    } else {
-        geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
-        geometry->SetOccluder(true);
-        geometry->SetOccludee(true);
-    }
+        } else {
+            geometry->SetMaterial(cache->GetResource<Material>("Materials/Voxel.xml"));
+            geometry->SetOccluder(true);
+            geometry->SetOccludee(true);
+        }
 
-    auto *shape = part->GetComponent<CollisionShape>();
-    if (geometry->GetNumVertices(0) > 0) {
-        shape->SetCustomTriangleMesh(geometry);
-        shape->SetEnabled(true);
-    } else {
-        shape->SetEnabled(false);
-    }
-    renderIndex_++;
-    if (renderIndex_ > PART_COUNT) {
-        shouldRender_ = false;
-    }
+        auto *shape = part->GetComponent<CollisionShape>();
+        if (geometry->GetNumVertices(0) > 0) {
+            shape->SetCustomTriangleMesh(geometry);
+            shape->SetEnabled(true);
+        } else {
+            shape->SetEnabled(false);
+        }
+        renderIndex_++;
+        if (renderIndex_ > PART_COUNT) {
+            shouldRender_ = false;
+        }
 
+    }
 //    return geometry->GetNumVertices(0) > 0;
     return true;
 }
@@ -223,15 +221,16 @@ void Chunk::CalculateGeometry()
     renderCounter_++;
     Timer loadTime;
     MutexLock lock(mutex_);
-
-    SetSunlight(sunlightLevel);
+    SetSunlight(15);
 
     for (int i = 0; i <= PART_COUNT; i++) {
         Node *node = parts_.At(i);
         auto geometry = node->GetComponent<CustomGeometry>();
-        geometry->SetDynamic(false);
-        geometry->SetNumGeometries(1);
-        geometry->BeginGeometry(0, TRIANGLE_LIST);
+        if (geometry) {
+            geometry->SetDynamic(false);
+            geometry->SetNumGeometries(1);
+            geometry->BeginGeometry(0, TRIANGLE_LIST);
+        }
     }
     for (int x = 0; x < SIZE_X; x++) {
         for (int y = 0; y < SIZE_Y; y++) {
@@ -249,6 +248,507 @@ void Chunk::CalculateGeometry()
                     }
                     Node* part = parts_.At(index);
                     auto geometry = part->GetComponent<CustomGeometry>();
+                    if (!geometry) {
+                        continue;
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::TOP, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::UP);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::TOP, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::BOTTOM, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+
+                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BOTTOM, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::DOWN);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BOTTOM, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                        }
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::LEFT, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+//                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::LEFT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::LEFT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::LEFT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::RIGHT, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::RIGHT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::RIGHT);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::RIGHT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(0.0f, 0.0f, -1.0f, -1.0f));
+                        }
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::FRONT, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::FRONT, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 0.0f));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::FORWARD);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::FRONT, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+                    }
+                    if (!BlockHaveNeighbor(BlockSide::BACK, x, y, z)) {
+                        // tri1
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        // tri2
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(1.0, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(0.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 1.0, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 0.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+
+                        {
+                            unsigned char light = NeighborLightValue(BlockSide::BACK, x, y, z);
+                            Color color;
+                            color.r_ = static_cast<int>(light & 0xF) / 15.0f;
+                            color.g_ = static_cast<int>((light >> 4) & 0xF) / 15.0f;
+                            geometry->DefineVertex(position + Vector3(0.0f, 0.0f, 1.0));
+                            geometry->DefineColor(color);
+                            geometry->DefineNormal(Vector3::BACK);
+                            geometry->DefineTexCoord(GetTextureCoord(BlockSide::BACK, static_cast<BlockType>(blockId), Vector2(1.0, 1.0)));
+                            geometry->DefineTangent(Vector4(1.0f, 0.0f,  0.0f,  1.0f));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    geometryCalculated_ = true;
+    shouldRender_ = true;
+    renderIndex_ = 0;
+//    URHO3D_LOGINFO("Chunk " + String(position_) + " geometry calculated in " + String(loadTime.GetMSec(false)) + "ms");
+}
+
+void Chunk::CalculateGeometry2()
+{
+    if (geometryCalculated_) {
+        return;
+    }
+    renderCounter_++;
+    Timer loadTime;
+    MutexLock lock(mutex_);
+    SetSunlight(15);
+
+    for (int i = 0; i <= PART_COUNT; i++) {
+        Node *node = parts_.At(i);
+        auto geometry = node->GetComponent<CustomGeometry>();
+        if (geometry) {
+            geometry->SetDynamic(false);
+            geometry->SetNumGeometries(1);
+            geometry->BeginGeometry(0, TRIANGLE_LIST);
+        }
+    }
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                BlockType type = data_[x][y][z].type;
+                if (type == BlockType::BT_AIR) {
+                    continue;
+                }
+                if (!shouldDelete_) {
+                    int blockId = data_[x][y][z].type;
+                    Vector3 position(x, y, z);
+                    int index = GetPartIndex(x, y, z);
+                    if (blockId == BT_WATER) {
+                        index = PART_COUNT;
+                    }
+                    Node* part = parts_.At(index);
+                    auto geometry = part->GetComponent<CustomGeometry>();
+                    if (!geometry) {
+                        continue;
+                    }
                     if (!BlockHaveNeighbor(BlockSide::TOP, x, y, z)) {
                         // tri1
                         {
@@ -725,6 +1225,11 @@ void Chunk::HandleUpdate(StringHash eventType, VariantMap& eventData)
         saveTimer_.Reset();
         Save();
     }
+
+    if (requestedFromServer_ && !loaded_ && remoteLoadTimer_.GetMSec(false) > 5000) {
+        // Server didn't send us the chunk in time, request it again
+        LoadFromServer();
+    }
 }
 
 IntVector3 Chunk::GetChunkBlock(Vector3 position)
@@ -770,13 +1275,7 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
     }
     BlockType type = data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type;
     if (type != BT_AIR) {
-        SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, BlockType::BT_AIR);
-        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
-        for (int i = 0; i < 6; i++) {
-            auto neighborPosition = NeighborBlockWorldPosition(static_cast<BlockSide>(i), blockPosition);
-//            URHO3D_LOGINFO("Neighbor world position=" + neighborPosition.ToString());
-            GetSubsystem<LightManager>()->AddLightNode(neighborPosition);
-        }
+        SetBlockData(blockPosition, BT_AIR);
         URHO3D_LOGINFO("Removing block " + blockPosition.ToString() + " Type: " + String(static_cast<int>(type)) + "; Chunk position: " + position_.ToString());
 
         VariantMap& data = GetEventDataMap();
@@ -787,6 +1286,29 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
+
+        SendHitToServer(blockPosition);
+    }
+}
+
+void Chunk::SetBlockData(const IntVector3& blockPosition, BlockType type)
+{
+    int lightLevel = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
+    BlockType currentType = GetBlockAt(blockPosition)->type;
+    SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, type);
+    SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
+
+    if (type == BT_TORCH) {
+        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 15);
+        GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
+    } else if (currentType == BT_TORCH && type == BT_AIR) {
+        SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
+        GetSubsystem<LightManager>()->AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightLevel, this);
+    }
+    MarkForGeometryCalculation();
+    for (int i = 0; i < 6; i++) {
+        auto neighborPosition = NeighborBlockWorldPosition(static_cast<BlockSide>(i), blockPosition);
+        GetSubsystem<LightManager>()->AddLightNode(neighborPosition);
     }
 }
 
@@ -842,19 +1364,7 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
             return;
         }
         BlockType type = static_cast<BlockType>(eventData[P_ITEM_ID].GetInt());
-        SetVoxel(blockPosition.x_, blockPosition.y_, blockPosition.z_, type);
-        URHO3D_LOGINFO("Adding block " + blockPosition.ToString());
-//        URHO3D_LOGINFOF("Controller %d added block", eventData["ControllerId"].GetInt());
-//        URHO3D_LOGINFOF("Chunk add world pos: %s; chunk pos: %d %d %d", pos.ToString().CString(), x, y, z);
-        if (type == BT_TORCH) {
-            SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 15);
-            GetSubsystem<LightManager>()->AddLightNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, this);
-        } else {
-            int lightLevel = GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_);
-            SetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_, 0);
-            GetSubsystem<LightManager>()->AddLightRemovalNode(blockPosition.x_, blockPosition.y_, blockPosition.z_, lightLevel, this);
-        }
-        MarkForGeometryCalculation();
+        SetBlockData(blockPosition, type);
 
         VariantMap& data = GetEventDataMap();
         data[BlockAdded::P_POSITION] = blockPosition;
@@ -864,6 +1374,8 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         data[P_INDEX] = AudioDefs::PLACE_BLOCK;
         data[P_TYPE] = SOUND_EFFECT;
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
+
+        SendAddToServer(blockPosition, type);
     }
 }
 
@@ -902,12 +1414,13 @@ Vector2 Chunk::GetTextureCoord(BlockSide side, BlockType blockType, Vector2 posi
 
 void Chunk::Save()
 {
+    return;
     JSONFile file(context_);
     JSONValue& root = file.GetRoot();
     for (int x = 0; x < SIZE_X; ++x) {
         for (int y = 0; y < SIZE_Y; y++) {
             for (int z = 0; z < SIZE_Z; z++) {
-                root.Set(String(x) + "_" + String(y) + "_" + String(z), data_[x][y][z].type);
+                root.Set(String(x) + "_" + String(y) + "_" + String(z), static_cast<int>(data_[x][y][z].type));
             }
         }
     }
@@ -922,24 +1435,20 @@ void Chunk::Save()
 void Chunk::CreateNode()
 {
     auto cache = GetSubsystem<ResourceCache>();
-    node_ = scene_->CreateChild("Chunk " + position_.ToString(), REPLICATED);
+    node_ = scene_->CreateChild("Chunk " + position_.ToString(), LOCAL);
     node_->SetScale(1.0f);
     node_->SetWorldPosition(position_);
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
 
     for (int i = 0; i <= PART_COUNT; i++) {
-        SharedPtr<Node> part(node_->CreateChild("Part"));
+        SharedPtr<Node> part(node_->CreateChild("Part", LOCAL));
         part->CreateComponent<CustomGeometry>();
 
-        auto *body = part->CreateComponent<RigidBody>(REPLICATED);
+        auto *body = part->CreateComponent<RigidBody>(LOCAL);
         body->SetMass(0);
         body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
         part->CreateComponent<CollisionShape>(LOCAL);
-        auto state = part->CreateComponent<ChunkNetworkState>();
-        state->SetChunkPartIndex(i);
-        state->SetChunkPosition(position_);
-        part->SetVar("Chunk", this);
         parts_.Push(part);
     }
 
@@ -1401,4 +1910,79 @@ void Chunk::SetDistance(int distance)
 int Chunk::GetDistance()
 {
     return distance_;
+}
+
+void Chunk::LoadFromServer()
+{
+    remoteLoadTimer_.Reset();
+    requestedFromServer_ = true;
+    auto* network = GetSubsystem<Network>();
+    Connection* serverConnection = network->GetServerConnection();
+    if (!network->IsServerRunning() && serverConnection) {
+        VectorBuffer sendMsg;
+        sendMsg.WriteVector3(position_);
+        serverConnection->SendMessage(NETWORK_REQUEST_CHUNK, true, true, sendMsg);
+    }
+}
+
+void Chunk::ProcessServerResponse(MemoryBuffer& buffer)
+{
+    for (int x = 0; x < SIZE_X; x++) {
+        for (int y = 0; y < SIZE_Y; y++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                SetVoxel(x, y, z, static_cast<BlockType>(buffer.ReadInt()));
+            }
+        }
+    }
+    CalculateLight();
+    loaded_ = true;
+
+    for (int i = 0; i < 6; i++) {
+        auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+        if (neighbor) {
+            neighbor->MarkForGeometryCalculation();
+        }
+    }
+}
+
+bool Chunk::IsRequestedFromServer()
+{
+    return requestedFromServer_;
+}
+
+void Chunk::SendHitToServer(const IntVector3& position)
+{
+    auto* network = GetSubsystem<Network>();
+    Connection* serverConnection = network->GetServerConnection();
+    if (!network->IsServerRunning() && serverConnection) {
+        VectorBuffer sendMsg;
+        sendMsg.WriteVector3(position_);
+        sendMsg.WriteIntVector3(position);
+        serverConnection->SendMessage(NETWORK_REQUEST_CHUNK_HIT, true, true, sendMsg);
+    }
+}
+
+void Chunk::SendAddToServer(const IntVector3& position, BlockType type)
+{
+    auto* network = GetSubsystem<Network>();
+    Connection* serverConnection = network->GetServerConnection();
+    if (!network->IsServerRunning() && serverConnection) {
+        VectorBuffer sendMsg;
+        sendMsg.WriteVector3(position_);
+        sendMsg.WriteIntVector3(position);
+        sendMsg.WriteInt(static_cast<int>(type));
+        serverConnection->SendMessage(NETWORK_REQUEST_CHUNK_ADD, true, true, sendMsg);
+    }
+}
+
+bool Chunk::ShouldRender() {
+    return shouldRender_;
+}
+
+bool Chunk::IsLoaded() {
+    return loaded_;
+}
+
+bool Chunk::IsGeometryCalculated() {
+    return geometryCalculated_;
 }

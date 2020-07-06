@@ -112,7 +112,7 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
-    if (!GetSubsystem<Network>()->GetServerConnection() && data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Voxel.xml") {
+    if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Voxel.xml") {
         CreateVoxelWorld();
     }
 
@@ -216,7 +216,7 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
     if (GetSubsystem<ChunkGenerator>()) {
         Vector3 spawnPoint = newPlayer->GetSpawnPoint();
         spawnPoint.y_ = GetSubsystem<ChunkGenerator>()->GetTerrainHeight(spawnPoint);
-        spawnPoint.y_ += 2;
+        spawnPoint.y_ += 5;
         newPlayer->SetSpawnPoint(spawnPoint);
         newPlayer->ResetPosition();
     }

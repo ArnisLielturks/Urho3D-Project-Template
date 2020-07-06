@@ -103,7 +103,7 @@ private:
 
     Vector3 spawnPoint_;
 
-    SharedPtr<Node> noclipNode_;
+    bool noclip_{false};
 
     int selectedItem_{1};
     SharedPtr<Text> selectedItemUI_;

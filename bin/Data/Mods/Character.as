@@ -223,7 +223,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         timer.Reset();
     }
 
-    if (followCameraTimer.GetMSec(false) > 5000) {
+    if (followCameraTimer.GetMSec(false) > 2000) {
         // Reset player camera to follow player controlled node instead
         VariantMap data;
         data["ID"] = 0;

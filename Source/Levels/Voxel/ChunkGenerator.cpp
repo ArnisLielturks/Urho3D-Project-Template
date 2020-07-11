@@ -54,7 +54,7 @@ int ChunkGenerator::GetTerrainHeight(const Vector3& blockPosition)
 //    if (surfaceHeight < -10) {
 //        surfaceHeight = -10;
 //    }
-    return surfaceHeight;
+    return Ceil(surfaceHeight);
 }
 
 bool ChunkGenerator::HaveTree(const Vector3& blockPosition)

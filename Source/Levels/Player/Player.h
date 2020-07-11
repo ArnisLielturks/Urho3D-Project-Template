@@ -23,7 +23,7 @@ public:
     /**
      * Create player controlled node
      */
-    void CreateNode(Scene* scene, int controllerId, Terrain* terrain);
+    void CreateNode(Scene* scene, int controllerId, Terrain* terrain, int type = 0);
 
     void FindNode(Scene* scene, int id);
 
@@ -108,4 +108,6 @@ private:
     int selectedItem_{1};
     SharedPtr<Text> selectedItemUI_;
     SharedPtr<Text> positionUI_;
+
+    int type_{0};
 };

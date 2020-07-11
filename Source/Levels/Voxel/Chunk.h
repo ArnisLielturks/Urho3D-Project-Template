@@ -64,6 +64,7 @@ public:
     void LoadFromServer();
     void ProcessServerResponse(MemoryBuffer& buffer);
     void SetBlockData(const IntVector3& blockPosition, BlockType type);
+    bool ShouldSave();
 
 private:
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
@@ -106,4 +107,5 @@ private:
     ChunkMesh chunkWaterMesh_;
     int calculateIndex_{0};
     int lastCalculatateIndex_{0};
+    bool shouldSave_{false};
 };

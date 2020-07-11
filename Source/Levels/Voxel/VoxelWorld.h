@@ -44,7 +44,7 @@ private:
     bool IsEqualPositions(Vector3 a, Vector3 b);
     Chunk* CreateChunk(const Vector3& position);
     String GetChunkIdentificator(const Vector3& position);
-    void ProcessQueue();
+    bool ProcessQueue();
     void AddChunkToQueue(Vector3 position, int distance = 0);
     void SetSunlight(float value);
 

@@ -47,6 +47,7 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
     }
 
     int requestedFromServerCount = 0;
+    int savePerFrame = 0;
 
     for (auto it = world->chunks_.Begin(); it != world->chunks_.End(); ++it) {
         if (!(*it).second_) {
@@ -75,6 +76,11 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         if (!(*it).second_->IsGeometryCalculated()) {
             (*it).second_->CalculateGeometry();
 //            URHO3D_LOGINFO("CalculateGeometry " + (*it).second_->GetPosition().ToString());
+        }
+
+        if ((*it).second_->ShouldSave() && savePerFrame < 1) {
+            (*it).second_->Save();
+            savePerFrame++;
         }
     }
 
@@ -323,7 +329,9 @@ void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
 void VoxelWorld::UpdateChunks()
 {
     if (!updateWorkItem_) {
-        if (updateTimer_.GetMSec(false) > 1000 || chunks_.Empty()) {
+
+        bool haveChanges = ProcessQueue();
+        if (haveChanges) {
             updateTimer_.Reset();
             for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
                 if ((*it).second_) {
@@ -332,7 +340,6 @@ void VoxelWorld::UpdateChunks()
                 }
             }
 
-            ProcessQueue();
 
             for (auto it = chunksToLoad_.Begin(); it != chunksToLoad_.End(); ++it) {
                 Vector3 position = (*it).first_;
@@ -377,7 +384,7 @@ void VoxelWorld::UpdateChunks()
     }
 
     int renderedChunkCount = 0;
-    int renderedChunkLimit = 4;
+    int renderedChunkLimit = 1;
     for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
         if ((*it).second_->ShouldRender()) {
             bool rendered = (*it).second_->Render();
@@ -385,7 +392,7 @@ void VoxelWorld::UpdateChunks()
             if (rendered) {
                 renderedChunkCount++;
             }
-            if (renderedChunkCount > renderedChunkLimit) {
+            if (renderedChunkCount >= renderedChunkLimit) {
                 break;
             }
         }
@@ -465,10 +472,38 @@ const String VoxelWorld::GetBlockName(BlockType type)
     }
 }
 
-void VoxelWorld::ProcessQueue()
+bool VoxelWorld::ProcessQueue()
 {
+    if (updateTimer_.GetMSec(false) < 100) {
+        return false;
+    }
+    updateTimer_.Reset();
+
+    bool haveChanges = false;
+
     for (auto it = observers_.Begin(); it != observers_.End(); ++it) {
-        AddChunkToQueue(((*it)->GetPosition()));
+        Vector3 currentChunkPosition = GetWorldToChunkPosition((*it)->GetWorldPosition());
+        if (!(*it)->GetVar("ChunkPosition").IsEmpty()) {
+            Vector3 lastChunkPosition = (*it)->GetVar("ChunkPosition").GetVector3();
+            if (lastChunkPosition.x_ != currentChunkPosition.x_ || lastChunkPosition.y_ != currentChunkPosition.y_ ||
+                lastChunkPosition.z_ != currentChunkPosition.z_) {
+                haveChanges = true;
+            }
+        } else {
+            haveChanges = true;
+        }
+        if (haveChanges) {
+            (*it)->SetVar("ChunkPosition", currentChunkPosition);
+            URHO3D_LOGINFOF("Player %s moved to chunk %dx%dx%d", (*it)->GetName().CString(), (int)currentChunkPosition.x_, (int)currentChunkPosition.y_, (int)currentChunkPosition.z_);
+        }
+    }
+
+    if (!haveChanges) {
+        return false;
+    }
+
+    for (auto it = observers_.Begin(); it != observers_.End(); ++it) {
+        AddChunkToQueue(((*it)->GetWorldPosition()));
     }
 
     while (!chunkBfsQueue_.empty()) {
@@ -484,6 +519,8 @@ void VoxelWorld::ProcessQueue()
             AddChunkToQueue(node.position_ + Vector3::DOWN * SIZE_Y, distance);
         }
     }
+
+    return true;
 }
 
 void VoxelWorld::AddChunkToQueue(Vector3 position, int distance)

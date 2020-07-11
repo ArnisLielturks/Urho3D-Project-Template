@@ -205,7 +205,7 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
     if (nodeID > 0) {
         newPlayer->FindNode(scene_, nodeID);
     } else {
-        newPlayer->CreateNode(scene_, controllerId, terrain_);
+        newPlayer->CreateNode(scene_, controllerId, terrain_, 0);
     }
     newPlayer->SetControllable(controllable);
     newPlayer->SetControllerId(controllerId);

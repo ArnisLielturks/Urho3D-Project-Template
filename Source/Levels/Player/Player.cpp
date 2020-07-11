@@ -141,14 +141,15 @@ void Player::RegisterConsoleCommands()
     });
 }
 
-void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
+void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain, int type)
 {
+    type_ = type;
     SetControllerId(controllerId);
 
     auto* cache = GetSubsystem<ResourceCache>();
 
     // Create the scene node & visual representation. This will be a replicated object
-    node_ = scene->CreateChild("Player");
+    node_ = scene->CreateChild("Player" + String(controllerId));
     auto playerState = node_->CreateComponent<PlayerState>(REPLICATED);
     playerState->SetPlayerID(controllerId_);
     URHO3D_LOGINFOF("Creating player node=%d, playerstate=%d", node_->GetID(), playerState->GetID());
@@ -163,21 +164,44 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain)
     ballObject->SetCastShadows(true);
     ballObject->SetViewMask(VIEW_MASK_PLAYER);
 
-    // Create the physics components
-    rigidBody_ = node_->CreateComponent<RigidBody>(REPLICATED);
-    rigidBody_->SetMass(5.0f);
-    rigidBody_->SetFriction(2.0f);
-    // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
-    rigidBody_->SetLinearDamping(0.8f);
-    rigidBody_->SetAngularDamping(0.8f);
-    rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER | COLLISION_MASK_CHUNK_LOADER, COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT | COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
+    if (type == 0) {
+        // Create the physics components
+        rigidBody_ = node_->CreateComponent<RigidBody>(REPLICATED);
+        rigidBody_->SetMass(5.0f);
+        rigidBody_->SetFriction(2.0f);
+        // In addition to friction, use motion damping so that the ball can not accelerate limitlessly
+        rigidBody_->SetLinearDamping(0.8f);
+        rigidBody_->SetAngularDamping(0.8f);
+        rigidBody_->SetCollisionEventMode(COLLISION_ALWAYS);
+        rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER | COLLISION_MASK_CHUNK_LOADER,
+                                             COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT |
+                                             COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
 
-    auto light = node_->CreateComponent<Light>();
-    light->SetRadius(10.0f);
-    light->SetLightType(LIGHT_POINT);
+        auto light = node_->CreateComponent<Light>();
+        light->SetRadius(10.0f);
+        light->SetLightType(LIGHT_POINT);
 
-    auto* shape = node_->CreateComponent<CollisionShape>();
-    shape->SetSphere(1.0f);
+        auto *shape = node_->CreateComponent<CollisionShape>();
+        shape->SetSphere(1.0f);
+    } else {
+        // Create rigidbody, and set non-zero mass so that the body becomes dynamic
+        rigidBody_ = node_->CreateComponent<RigidBody>();
+        rigidBody_->SetCollisionLayerAndMask(COLLISION_MASK_PLAYER | COLLISION_MASK_CHUNK_LOADER,
+                                             COLLISION_MASK_PLAYER | COLLISION_MASK_CHECKPOINT |
+                                             COLLISION_MASK_OBSTACLES | COLLISION_MASK_GROUND | COLLISION_MASK_CHUNK);
+        rigidBody_->SetMass(1.0f);
+
+        // Set zero angular factor so that physics doesn't turn the character on its own.
+        // Instead we will control the character yaw manually
+        rigidBody_->SetAngularFactor(Vector3::ZERO);
+
+        // Set the rigidbody to signal collision also when in rest, so that we get ground collisions properly
+        rigidBody_->SetCollisionEventMode(COLLISION_ALWAYS);
+
+        // Set a capsule shape for collision
+        auto* shape = node_->CreateComponent<CollisionShape>();
+        shape->SetCapsule(0.7f, 1.8f, Vector3(0.0f, 0.9f, 0.0f));
+    }
 
     SubscribeToEvent(node_, E_NODECOLLISION, URHO3D_HANDLER(Player, HandleNodeCollision));
 

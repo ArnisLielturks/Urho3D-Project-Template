@@ -95,7 +95,8 @@ void Chunk::Load()
 
     JSONFile file(context_);
     JSONValue& root = file.GetRoot();
-    String filename = "World/chunk_" + String(position_.x_) + "_" + String(position_.y_) + "_" + String(position_.z_) + ".json";
+    Vector3 position = Vector3(position_.x_ / SIZE_X, position_.y_ / SIZE_Y, position_.z_ / SIZE_Z);
+    String filename = "World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_) + ".json";
     if(GetSubsystem<FileSystem>() && GetSubsystem<FileSystem>()->FileExists(filename)) {
         file.LoadFile(filename);
         for (int x = 0; x < SIZE_X; ++x) {
@@ -174,6 +175,7 @@ void Chunk::Load()
 //    URHO3D_LOGINFO("Chunk " + String(position_) + " loaded in " + String(loadTime.GetMSec(false)) + "ms");
 //    Save();
     loaded_ = true;
+    shouldSave_ = true;
 }
 
 bool Chunk::Render()
@@ -218,7 +220,7 @@ bool Chunk::Render()
         StaticModel *chunkObject = waterNode_->CreateComponent<StaticModel>(LOCAL);
         chunkObject->SetModel(chunkModel);
         chunkObject->SetViewMask(VIEW_MASK_CHUNK);
-        chunkObject->SetOccluder(true);
+        chunkObject->SetOccluder(false);
         chunkObject->SetOccludee(true);
         Material *material = SharedPtr<Material>(
                 GetSubsystem<ResourceCache>()->GetResource<Material>("Materials/VoxelWater.xml"));
@@ -1007,10 +1009,10 @@ void Chunk::HandleUpdate(StringHash eventType, VariantMap& eventData)
 //    scene_->GetComponent<PhysicsWorld>()->DrawDebugGeometry(true);
 //    scene_->GetComponent<PhysicsWorld>()->SetDebugRenderer(scene_->GetComponent<DebugRenderer>());
 //    node_->GetComponent<StaticModel>()->DrawDebugGeometry(node_->GetScene()->GetComponent<DebugRenderer>(), true);
-    if (saveTimer_.GetMSec(false) > 30000) {
-        saveTimer_.Reset();
-        Save();
-    }
+//    if (saveTimer_.GetMSec(false) > 30000) {
+//        saveTimer_.Reset();
+//        Save();
+//    }
 
     if (requestedFromServer_ && !loaded_ && remoteLoadTimer_.GetMSec(false) > 5000) {
         // Server didn't send us the chunk in time, request it again
@@ -1096,6 +1098,7 @@ void Chunk::SetBlockData(const IntVector3& blockPosition, BlockType type)
         GetSubsystem<LightManager>()->AddLightNode(neighborPosition);
     }
     MarkForGeometryCalculation();
+    shouldSave_ = true;
 }
 
 Vector3 Chunk::NeighborBlockWorldPosition(BlockSide side, IntVector3 blockPosition)
@@ -1212,9 +1215,10 @@ void Chunk::Save()
     if(!GetSubsystem<FileSystem>()->DirExists("World")) {
         GetSubsystem<FileSystem>()->CreateDir("World");
     }
-    Vector3 position = position_;
+    Vector3 position = Vector3(position_.x_ / SIZE_X, position_.y_ / SIZE_Y, position_.z_ / SIZE_Z);
     file.SaveFile("World/chunk_" + String(position.x_) + "_" + String(position.y_) + "_" + String(position.z_) + ".json");
 //    URHO3D_LOGINFO("Chunk saved " + chunk->position_.ToString());
+    shouldSave_ = false;
 }
 
 void Chunk::CreateNode()
@@ -1242,16 +1246,16 @@ void Chunk::CreateNode()
 
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Chunk, HandleUpdate));
 
-    for (int i = 0; i <= PART_COUNT; i++) {
-        SharedPtr<Node> part(node_->CreateChild("Part", LOCAL));
-        part->CreateComponent<CustomGeometry>();
-
-        auto *body = part->CreateComponent<RigidBody>(LOCAL);
-        body->SetMass(0);
-        body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
-        part->CreateComponent<CollisionShape>(LOCAL);
-        parts_.Push(part);
-    }
+//    for (int i = 0; i <= PART_COUNT; i++) {
+//        SharedPtr<Node> part(node_->CreateChild("Part", LOCAL));
+//        part->CreateComponent<CustomGeometry>();
+//
+//        auto *body = part->CreateComponent<RigidBody>(LOCAL);
+//        body->SetMass(0);
+//        body->SetCollisionLayerAndMask(COLLISION_MASK_GROUND, COLLISION_MASK_PLAYER | COLLISION_MASK_OBSTACLES);
+//        part->CreateComponent<CollisionShape>(LOCAL);
+//        parts_.Push(part);
+//    }
 
     SubscribeToEvent(node_, E_CHUNK_HIT, URHO3D_HANDLER(Chunk, HandleHit));
     SubscribeToEvent(node_, E_CHUNK_ADD, URHO3D_HANDLER(Chunk, HandleAdd));
@@ -1786,4 +1790,9 @@ bool Chunk::IsLoaded() {
 
 bool Chunk::IsGeometryCalculated() {
     return calculateIndex_ == lastCalculatateIndex_;
+}
+
+bool Chunk::ShouldSave()
+{
+    return shouldSave_;
 }

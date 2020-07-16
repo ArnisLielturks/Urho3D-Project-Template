@@ -88,7 +88,8 @@ BaseApplication::BaseApplication(Context* context) :
 #endif
 #endif
 
-    ConfigManager* configManager = new ConfigManager(context_, configurationFile_);
+    ConfigManager* configManager = new ConfigManager(context_);
+    configManager->SetFilePath(configurationFile_);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new State(context_));
     context_->RegisterSubsystem(new SceneManager(context_));

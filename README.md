@@ -20,8 +20,8 @@ Make sure that the URHO3D_HOME environment variable is set and points to the rig
 
 ### Ubuntu:
 ```
-git clone https://github.com/ArnisLielturks/Urho3D-Empty-Project.git
-cd Urho3D-Empty-Project
+git clone https://github.com/ArnisLielturks/Urho3D-Project-Template.git
+cd Urho3D-Project-Template
 ./script/cmake_generic.sh build
 cd  build
 make
@@ -32,16 +32,16 @@ If everything worked, build/bin directory should contain `ProjectTemplate` execu
 
 
 ### Few screenshots
-![MainMenu](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/MainMenu.png)
-![Settings](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Settings.png)
-![Achievements](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Achievements.png)
-![Credits](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Credits.png)
-![NewGame](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/NewGame.png)
-![Loading](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Loading.png)
-![Level](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/Level.png)
-![VoxelMap](https://github.com/ArnisLielturks/Urho3D-Empty-Project/blob/master/Screenshots/VoxelMap.png)
+![MainMenu](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/MainMenu.png)
+![Settings](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/Settings.png)
+![Achievements](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/Achievements.png)
+![Credits](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/Credits.png)
+![NewGame](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/NewGame.png)
+![Loading](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/Loading.png)
+![Level](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/Level.png)
+![VoxelMap](https://github.com/ArnisLielturks/Urho3D-Project-Template/blob/master/Screenshots/VoxelMap.png)
 
 
 # How to extend the functionality?
-Read the wiki: https://github.com/ArnisLielturks/Urho3D-Empty-Project/wiki
+Read the wiki: https://github.com/ArnisLielturks/Urho3D-Project-Template/wiki
 

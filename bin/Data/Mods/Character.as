@@ -124,10 +124,16 @@ void ChangeAnimation(int index)
     activeAnimation = index;
     moveSpeed = animationMovementSpeed[activeAnimation] * scale;
 
-    animCtrl.PlayExclusive(animationList[activeAnimation], 0, true, 0.2f);
+    animCtrl.Play(animationList[activeAnimation], 0, true, 0.2f);
     // animCtrl.PlayExclusive(animationList[2], 0, true, 0.1f);
     // animCtrl.SetWeight(animationList[1], 0.0f);
-    // animCtrl.SetWeight(animationList[2], 1.0f);
+    // if (activeAnimation > 0) {
+    //     animCtrl.SetWeight(animationList[activeAnimation], 0.5f);
+    //     animCtrl.SetWeight(animationList[activeAnimation-1], 0.5f);
+    //     animCtrl.Play(animationList[activeAnimation-1], 0, true, 0.2f);
+    // } else {
+        animCtrl.SetWeight(animationList[activeAnimation], 1.0f);
+    // }
     animCtrl.SetSpeed(animationList[activeAnimation], animationSpeed);
     characterNode.MarkNetworkUpdate();
     AnimatedModel@ modelObject = characterNode.GetComponent("AnimatedModel");
@@ -223,7 +229,7 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
         timer.Reset();
     }
 
-    if (followCameraTimer.GetMSec(false) > 2000) {
+    if (followCameraTimer.GetMSec(false) > 200000) {
         // Reset player camera to follow player controlled node instead
         VariantMap data;
         data["ID"] = 0;

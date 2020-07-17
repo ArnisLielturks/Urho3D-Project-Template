@@ -26,6 +26,10 @@
 #include "LevelManagerEvents.h"
 #include "Input/ControllerEvents.h"
 
+#ifdef NAKAMA_SUPPORT
+#include "Nakama/NakamaManager.h"
+#endif
+
 #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
 #include "Mods/ModLoader.h"
 #endif
@@ -60,6 +64,9 @@ BaseApplication::BaseApplication(Context* context) :
     SingleAchievement::RegisterObject(context_);
     State::RegisterObject(context_);
     LevelManager::RegisterObject(context_);
+#ifdef NAKAMA_SUPPORT
+    NakamaManager::RegisterObject(context_);
+#endif
 
     #if defined(URHO3D_LUA) || defined(URHO3D_ANGELSCRIPT)
     context_->RegisterFactory<ModLoader>();
@@ -94,6 +101,9 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
+#ifdef NAKAMA_SUPPORT
+    context_->RegisterSubsystem(new NakamaManager(context_));
+#endif
 
 #ifdef __ANDROID__
     String directory = GetSubsystem<FileSystem>()->GetUserDocumentsDir() + DOCUMENTS_DIR;
@@ -169,6 +179,9 @@ void BaseApplication::Setup()
 
 void BaseApplication::Start()
 {
+#ifdef NAKAMA_SUPPORT
+    GetSubsystem<NakamaManager>()->Init();
+#endif
     GetSubsystem<ServiceCmd>()->Init();
     UI* ui = GetSubsystem<UI>();
     auto cache = GetSubsystem<ResourceCache>();

@@ -30,6 +30,10 @@ void HandleLevelLoaded(StringHash eventType, VariantMap& eventData)
 void HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
     if (timer.GetMSec(false) > 1000) {
+        timer.Reset();
+        if (packetsIn is null || packetsIn is null) {
+            return;
+        }
         Connection@ serverConnection = network.serverConnection;
         if (serverConnection !is null) {
             packetsIn.visible = true;

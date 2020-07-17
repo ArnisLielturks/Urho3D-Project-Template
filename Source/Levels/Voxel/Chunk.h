@@ -59,7 +59,7 @@ public:
     Vector3 NeighborBlockWorldPosition(BlockSide side, IntVector3 blockPosition);
     IntVector3 GetChunkBlock(Vector3 position);
     void SetDistance(int distance);
-    int GetDistance();
+    const int GetDistance() const;
     bool IsRequestedFromServer();
     void LoadFromServer();
     void ProcessServerResponse(MemoryBuffer& buffer);
@@ -108,4 +108,5 @@ private:
     int calculateIndex_{0};
     int lastCalculatateIndex_{0};
     bool shouldSave_{false};
+    int renderCount_{0};
 };

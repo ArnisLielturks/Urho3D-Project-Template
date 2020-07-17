@@ -21,12 +21,18 @@
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;
 
+bool CompareChunks(const Chunk* lhs, const Chunk* rhs)
+{
+   return lhs->GetDistance() < rhs->GetDistance();
+}
+
 void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
 {
     Timer loadTime;
     VoxelWorld* world = reinterpret_cast<VoxelWorld*>(item->aux_);
     MutexLock lock(world->mutex_);
     if (world->GetSubsystem<LightManager>()) {
+        world->GetSubsystem<LightManager>()->ResetFailedCalculations();
         world->GetSubsystem<LightManager>()->Process();
     }
     if (world->GetSubsystem<TreeGenerator>()) {
@@ -49,40 +55,47 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
     int requestedFromServerCount = 0;
     int savePerFrame = 0;
 
+    Vector<Chunk*> chunks;
     for (auto it = world->chunks_.Begin(); it != world->chunks_.End(); ++it) {
-        if (!(*it).second_) {
-            continue;
+        if ((*it).second_) {
+            chunks.Push((*it).second_.Get());
         }
+    }
+
+    Sort(chunks.Begin(), chunks.End(), CompareChunks);
+    for (auto it = chunks.Begin(); it != chunks.End(); ++it) {
 
         if (world->reloadAllChunks_) {
-            (*it).second_->MarkForGeometryCalculation();
+            (*it)->MarkForGeometryCalculation();
         }
         // Initialize new chunks
-        if (!(*it).second_->IsLoaded()) {
+        if (!(*it)->IsLoaded()) {
             if (!world->GetSubsystem<Network>()->GetServerConnection()) {
-                (*it).second_->Load();
-                for (int i = 0; i < 6; i++) {
-                    auto neighbor = (*it).second_->GetNeighbor(static_cast<BlockSide>(i));
-                    if (neighbor) {
-                        neighbor->MarkForGeometryCalculation();
-                    }
-                }
-            } else if (!(*it).second_->IsRequestedFromServer()) {
-                (*it).second_->LoadFromServer();
+                (*it)->Load();
+//                for (int i = 0; i < 6; i++) {
+//                    auto neighbor = (*it).second_->GetNeighbor(static_cast<BlockSide>(i));
+//                    if (neighbor) {
+////                        neighbor->CalculateLight();
+//                    }
+//                }
+            } else if (!(*it)->IsRequestedFromServer()) {
+                (*it)->LoadFromServer();
                 requestedFromServerCount++;
             }
         }
 
-        if (!(*it).second_->IsGeometryCalculated()) {
-            (*it).second_->CalculateGeometry();
+        if (!(*it)->IsGeometryCalculated()) {
+            (*it)->CalculateGeometry();
 //            URHO3D_LOGINFO("CalculateGeometry " + (*it).second_->GetPosition().ToString());
         }
 
-        if ((*it).second_->ShouldSave() && savePerFrame < 1) {
-            (*it).second_->Save();
+        if ((*it)->ShouldSave() && savePerFrame < 1) {
+            (*it)->Save();
             savePerFrame++;
         }
     }
+
+    world->ProcessQueue();
 
     world->reloadAllChunks_ = false;
 //    URHO3D_LOGINFO("Chunks updated in " + String(loadTime.GetMSec(false)) + "ms");
@@ -130,7 +143,7 @@ void VoxelWorld::Init()
     SubscribeToEvent("#world_reset", [&](StringHash eventType, VariantMap& eventData) {
         StringVector params = eventData["Parameters"].GetStringVector();
         if (params.Size() != 1) {
-            URHO3D_LOGERROR("Thi command doesn't have any arguments!");
+            URHO3D_LOGERROR("This command doesn't have any arguments!");
             return;
         }
         if(GetSubsystem<FileSystem>()->DirExists("World")) {
@@ -329,44 +342,40 @@ void VoxelWorld::RemoveBlockAtPosition(const Vector3& position)
 void VoxelWorld::UpdateChunks()
 {
     if (!updateWorkItem_) {
-
-        bool haveChanges = ProcessQueue();
-        if (haveChanges) {
-            updateTimer_.Reset();
+        if (!chunksToLoad_.Empty()) {
             for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
                 if ((*it).second_) {
                     (*it).second_->MarkForDeletion(true);
                     (*it).second_->SetDistance(-1);
                 }
             }
+        }
 
-
-            for (auto it = chunksToLoad_.Begin(); it != chunksToLoad_.End(); ++it) {
-                Vector3 position = (*it).first_;
-                String id = GetChunkIdentificator(position);
-                auto chunkIterator = chunks_.Find(id);
-                if (chunkIterator != chunks_.End()) {
-                    (*chunkIterator).second_->MarkForDeletion(false);
-                    (*chunkIterator).second_->SetDistance((*it).second_);
-                } else {
-                    auto chunk = CreateChunk(position);
-                    chunk->SetDistance((*it).second_);
-                }
+        for (auto it = chunksToLoad_.Begin(); it != chunksToLoad_.End(); ++it) {
+            Vector3 position = (*it).first_;
+            String id = GetChunkIdentificator(position);
+            auto chunkIterator = chunks_.Find(id);
+            if (chunkIterator != chunks_.End()) {
+                (*chunkIterator).second_->MarkForDeletion(false);
+                (*chunkIterator).second_->SetDistance((*it).second_);
+            } else {
+                auto chunk = CreateChunk(position);
+                chunk->SetDistance((*it).second_);
             }
+        }
 
-            chunksToLoad_.Clear();
+        chunksToLoad_.Clear();
 
-            MutexLock lock(mutex_);
-            for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
-                if ((*it).second_) {
-                    if ((*it).second_->IsMarkedForDeletion()) {
-                        int distance = (*it).second_->GetDistance();
+        MutexLock lock(mutex_);
+        for (auto it = chunks_.Begin(); it != chunks_.End(); ++it) {
+            if ((*it).second_) {
+                if ((*it).second_->IsMarkedForDeletion()) {
+                    int distance = (*it).second_->GetDistance();
 //                        URHO3D_LOGINFOF("Deleting chunk distance=%d ", distance);
-                        it = chunks_.Erase(it);
-                    }
-                    if (chunks_.End() == it) {
-                        break;
-                    }
+                    it = chunks_.Erase(it);
+                }
+                if (chunks_.End() == it) {
+                    break;
                 }
             }
         }
@@ -510,7 +519,7 @@ bool VoxelWorld::ProcessQueue()
         ChunkNode& node = chunkBfsQueue_.front();
         int distance = node.distance_ + 1;
         chunkBfsQueue_.pop();
-        if (distance < visibleDistance_) {
+        if (distance <= visibleDistance_) {
             AddChunkToQueue(node.position_ + Vector3::LEFT * SIZE_X, distance);
             AddChunkToQueue(node.position_ + Vector3::RIGHT * SIZE_X, distance);
             AddChunkToQueue(node.position_ + Vector3::FORWARD * SIZE_Z, distance);
@@ -643,7 +652,7 @@ void VoxelWorld::HandleNetworkMessage(StringHash eventType, VariantMap& eventDat
             auto chunk = GetChunkByPosition(chunkPosition);
             if (chunk) {
                 chunk->SetBlockData(blockPosition, type);
-                chunk->MarkForGeometryCalculation();
+//                chunk->MarkForGeometryCalculation();
             }
             VectorBuffer buffer;
             buffer.WriteVector3(chunkPosition);
@@ -662,7 +671,7 @@ void VoxelWorld::HandleNetworkMessage(StringHash eventType, VariantMap& eventDat
             auto chunk = GetChunkByPosition(chunkPosition);
             if (chunk) {
                 chunk->SetBlockData(blockPosition, type);
-                chunk->MarkForGeometryCalculation();
+//                chunk->MarkForGeometryCalculation();
             }
         }
     }

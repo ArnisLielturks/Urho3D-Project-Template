@@ -172,6 +172,15 @@ void Chunk::Load()
         }
     }
     CalculateLight();
+    MarkForGeometryCalculation();
+    for (int i = 0; i < 6; i++) {
+        BlockSide side = static_cast<BlockSide>(i);
+        auto neighbor = GetNeighbor(side);
+        if (neighbor) {
+            neighbor->CalculateLight();
+            neighbor->MarkForGeometryCalculation();
+        }
+    }
 //    URHO3D_LOGINFO("Chunk " + String(position_) + " loaded in " + String(loadTime.GetMSec(false)) + "ms");
 //    Save();
     loaded_ = true;
@@ -183,6 +192,7 @@ bool Chunk::Render()
     if (!shouldRender_) {
         return false;
     }
+    renderCount_++;
     MutexLock lock(mutex_);
     {
         groundNode_->RemoveComponent<StaticModel>();
@@ -1076,6 +1086,11 @@ void Chunk::HandleHit(StringHash eventType, VariantMap& eventData)
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
 
         SendHitToServer(blockPosition);
+
+        // Calculate and render immediatelly
+        GetSubsystem<LightManager>()->Process();
+        CalculateGeometry();
+        Render();
     }
 }
 
@@ -1097,7 +1112,7 @@ void Chunk::SetBlockData(const IntVector3& blockPosition, BlockType type)
         auto neighborPosition = NeighborBlockWorldPosition(static_cast<BlockSide>(i), blockPosition);
         GetSubsystem<LightManager>()->AddLightNode(neighborPosition);
     }
-    MarkForGeometryCalculation();
+//    MarkForGeometryCalculation();
     shouldSave_ = true;
 }
 
@@ -1140,16 +1155,17 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
     }
     if (data_[blockPosition.x_][blockPosition.y_][blockPosition.z_].type == BlockType::BT_AIR) {
         if (eventData[P_ACTION_ID].GetInt() == CTRL_DETECT) {
-            URHO3D_LOGINFO("Chunk selected: " + position_.ToString() + "; block: " + blockPosition.ToString()
-            + " Torch light: " + String(GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)) +
-            "; Sun light: " + String(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)));
+            URHO3D_LOGINFOF("Render count=%d, geometry calculated=%d, should render=%d", renderCount_, IsGeometryCalculated(), ShouldRender());
+//            URHO3D_LOGINFO("Chunk selected: " + position_.ToString() + "; block: " + blockPosition.ToString()
+//            + " Torch light: " + String(GetTorchlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)) +
+//            "; Sun light: " + String(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_)));
 
-            Color color;
-            // Torchlight
-            color.r_ = static_cast<int>(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) & 0xF) / 15.0f;
-            // Sunlight
-            color.g_ = static_cast<int>((GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) >> 4) & 0xF) / 15.0f;
-            URHO3D_LOGINFO("Color : " + color.ToString());
+//            Color color;
+//            // Torchlight
+//            color.r_ = static_cast<int>(GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) & 0xF) / 15.0f;
+//            // Sunlight
+//            color.g_ = static_cast<int>((GetSunlight(blockPosition.x_, blockPosition.y_, blockPosition.z_) >> 4) & 0xF) / 15.0f;
+//            URHO3D_LOGINFO("Color : " + color.ToString());
             return;
         }
         BlockType type = static_cast<BlockType>(eventData[P_ITEM_ID].GetInt());
@@ -1165,6 +1181,11 @@ void Chunk::HandleAdd(StringHash eventType, VariantMap& eventData)
         SendEvent(AudioEvents::E_PLAY_SOUND, data);
 
         SendAddToServer(blockPosition, type);
+
+        // Calculate and render immediatelly
+        GetSubsystem<LightManager>()->Process();
+        CalculateGeometry();
+        Render();
     }
 }
 
@@ -1642,13 +1663,14 @@ void Chunk::CalculateLight()
             }
         }
     }
-    MarkForGeometryCalculation();
 }
 
 void Chunk::SetVoxel(int x, int y, int z, BlockType block)
 {
-    Chunk::data_[x][y][z].type = block;
-    MarkForGeometryCalculation();
+    if (data_[x][y][z].type != block) {
+        MarkForGeometryCalculation();
+    }
+    data_[x][y][z].type = block;
 }
 
 void Chunk::MarkForGeometryCalculation()
@@ -1712,7 +1734,7 @@ void Chunk::SetDistance(int distance)
     distance_ = distance;
 }
 
-int Chunk::GetDistance()
+const int Chunk::GetDistance() const
 {
     return distance_;
 }
@@ -1742,12 +1764,12 @@ void Chunk::ProcessServerResponse(MemoryBuffer& buffer)
     CalculateLight();
     loaded_ = true;
 
-    for (int i = 0; i < 6; i++) {
-        auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
-        if (neighbor) {
-            neighbor->MarkForGeometryCalculation();
-        }
-    }
+//    for (int i = 0; i < 6; i++) {
+//        auto neighbor = GetNeighbor(static_cast<BlockSide>(i));
+//        if (neighbor) {
+//            neighbor->MarkForGeometryCalculation();
+//        }
+//    }
 }
 
 bool Chunk::IsRequestedFromServer()

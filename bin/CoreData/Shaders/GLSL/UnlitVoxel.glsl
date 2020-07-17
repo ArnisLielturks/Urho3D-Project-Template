@@ -43,16 +43,16 @@ void PS()
         float fogFactor = GetFogFactor(vWorldPos.w);
     #endif
 //
-    #if defined(PREPASS)
-        // Fill light pre-pass G-Buffer
-        gl_FragData[0] = vec4(0.5, 0.5, 0.5, 1.0);
-        gl_FragData[1] = vec4(EncodeDepth(vWorldPos.w), 0.0);
-    #elif defined(DEFERRED)
-        gl_FragData[0] = vec4(GetFog(diffColor.rgb, fogFactor), diffColor.a);
-        gl_FragData[1] = vec4(0.0, 0.0, 0.0, 0.0);
-        gl_FragData[2] = vec4(0.5, 0.5, 0.5, 1.0);
-        gl_FragData[3] = vec4(EncodeDepth(vWorldPos.w), 0.0);
-    #else
+//    #if defined(PREPASS)
+//        // Fill light pre-pass G-Buffer
+//        gl_FragData[0] = vec4(0.5, 0.5, 0.5, 1.0);
+//        gl_FragData[1] = vec4(EncodeDepth(vWorldPos.w), 0.0);
+//    #elif defined(DEFERRED)
+//        gl_FragData[0] = vec4(GetFog(diffColor.rgb, fogFactor), diffColor.a);
+//        gl_FragData[1] = vec4(0.0, 0.0, 0.0, 0.0);
+//        gl_FragData[2] = vec4(0.5, 0.5, 0.5, 1.0);
+//        gl_FragData[3] = vec4(EncodeDepth(vWorldPos.w), 0.0);
+//    #else
         gl_FragColor = vec4(GetFog(diffColor.rgb, fogFactor), diffColor.a);
-    #endif
+//    #endif
 }

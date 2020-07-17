@@ -56,17 +56,36 @@ void LightManager::AddLightRemovalNode(int x, int y, int z, int level, Chunk* ch
 //    failedLightRemovalBfsQueue_.emplace(x, y, z, level, position);
 //}
 
+void LightManager::ResetFailedCalculations()
+{
+    return;
+//    if (retryTimer_.GetMSec(false) > 1000) {
+//        retryTimer_.Reset();
+//        MutexLock lock(mutex_);
+//        while(!failedLightBfsQueue_.empty()) {
+//            lightBfsQueue_.emplace(failedLightBfsQueue_.front());
+//            failedLightBfsQueue_.pop();
+//        }
+//
+//        while(!failedLightRemovalBfsQueue_.empty()) {
+//            lightRemovalBfsQueue_.emplace(failedLightRemovalBfsQueue_.front());
+//            failedLightRemovalBfsQueue_.pop();
+//        }
+////        URHO3D_LOGINFO("Reseting queue");
+//    }
+}
+
 void LightManager::Process()
 {
     if (GetSubsystem<DebugHud>()) {
         int size1 = lightRemovalBfsQueue_.size();
         int size2 = lightBfsQueue_.size();
-        int size3 = failedLightRemovalBfsQueue_.size();
-        int size4 = failedLightBfsQueue_.size();
+//        int size3 = failedLightRemovalBfsQueue_.size();
+//        int size4 = failedLightBfsQueue_.size();
         GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightRemovalBfsQueue_", size1);
         GetSubsystem<DebugHud>()->SetAppStats("LightManager::lightBfsQueue_", size2);
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightRemovalBfsQueue_", size3);
-        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightBfsQueue_", size4);
+//        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightRemovalBfsQueue_", size3);
+//        GetSubsystem<DebugHud>()->SetAppStats("LightManager::failedLightBfsQueue_", size4);
     }
     MutexLock lock(mutex_);
     while(!lightRemovalBfsQueue_.empty()) {
@@ -158,7 +177,7 @@ void LightManager::Process()
                         AddLightNode(SIZE_X - 1, node.y_, node.z_, neighbor);
                     }
                 } else {
-                    failedLightRemovalBfsQueue_.emplace(node);
+//                    failedLightRemovalBfsQueue_.emplace(node);
                 }
             }
         }
@@ -265,7 +284,7 @@ void LightManager::Process()
                         AddLightNode(dX, dY, dZ, neighbor);
                     }
                 } else {
-                    failedLightBfsQueue_.emplace(node);
+//                    failedLightBfsQueue_.emplace(node);
                 }
             }
         }
@@ -278,20 +297,20 @@ void LightManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
         Process();
     }
 
-    if (retryTimer_.GetMSec(false) > 1000) {
-        retryTimer_.Reset();
-        MutexLock lock(mutex_);
-        while(!failedLightBfsQueue_.empty()) {
-            lightBfsQueue_.emplace(failedLightBfsQueue_.front());
-            failedLightBfsQueue_.pop();
-        }
-
-        while(!failedLightRemovalBfsQueue_.empty()) {
-            lightRemovalBfsQueue_.emplace(failedLightRemovalBfsQueue_.front());
-            failedLightRemovalBfsQueue_.pop();
-        }
-        URHO3D_LOGINFO("Reseting queue");
-    }
+//    if (retryTimer_.GetMSec(false) > 1000) {
+//        retryTimer_.Reset();
+//        MutexLock lock(mutex_);
+//        while(!failedLightBfsQueue_.empty()) {
+//            lightBfsQueue_.emplace(failedLightBfsQueue_.front());
+//            failedLightBfsQueue_.pop();
+//        }
+//
+//        while(!failedLightRemovalBfsQueue_.empty()) {
+//            lightRemovalBfsQueue_.emplace(failedLightRem  ovalBfsQueue_.front());
+//            failedLightRemovalBfsQueue_.pop();
+//        }
+//        URHO3D_LOGINFO("Reseting queue");
+//    }
 }
 
 void LightManager::HandleEvents(StringHash eventType, VariantMap& eventData)

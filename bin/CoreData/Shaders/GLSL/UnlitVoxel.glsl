@@ -4,6 +4,10 @@
 #include "ScreenPos.glsl"
 #include "Fog.glsl"
 
+#ifdef WEBGL
+precision mediump float;
+#endif
+
 varying vec2 vTexCoord;
 varying vec4 vWorldPos;
 varying vec4 vColor;

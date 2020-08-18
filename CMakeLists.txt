@@ -67,10 +67,16 @@ if (URHO3D_LUA)
  add_definitions(-DURHO3D_LUA=1)
 endif()
 
+if (NOT ANDROID AND NOT IOS)
+    # Dirty hack to get the WS to work since it relies on 3rd party static libs
+    add_subdirectory (HumbleNet)
+    set (LIBS ${LIBS} humblenet)
+endif ()
+
 # Define target name
 set (TARGET_NAME ProjectTemplate)
 
-define_source_files (GLOB_CPP_PATTERNS Source/*.c* GLOB_H_PATTERNS Source/*.h* RECURSE GROUP)
+define_source_files (GLOB_CPP_PATTERNS Source/*.c* Source/*.m* GLOB_H_PATTERNS Source/*.h* RECURSE GROUP)
 
 # Setup target with resource copying
 setup_main_executable ()
@@ -79,6 +85,19 @@ if (MSVC)
     target_link_libraries(ProjectTemplate Setupapi.lib)
 endif()
 
-ADD_DEFINITIONS(
-    -std=c++11
-)
+# Enable voxel sample to be built
+set (VOXEL_SUPPORT true)
+if (VOXEL_SUPPORT)
+    add_definitions(-DVOXEL_SUPPORT=1)
+endif ()
+
+# Enable nakama networking library
+set (NAKAMA_SUPPORT false)
+if (NAKAMA_SUPPORT)
+    add_definitions(-DNAKAMA_SUPPORT=1)
+    include_directories(nakama-cpp-sdk/include)
+    set(NAKAMA_SHARED_LIBRARY TRUE)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/nakama-cpp-sdk)
+    target_link_libraries(${TARGET_NAME} ext_nakama-cpp)
+    CopyNakamaSharedLib(${TARGET_NAME})
+endif ()

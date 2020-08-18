@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Graphics/DebugRenderer.h>
@@ -146,3 +147,4 @@ SharedPtr<Geometry> ChunkMesh::GetGeometry()
 
     return geometry_;
 }
+#endif

@@ -70,6 +70,7 @@ void ModLoader::LoadASMods()
 
     // Scan Data/Mods directory for all *.as files
     GetSubsystem<FileSystem>()->ScanDir(result, GetSubsystem<FileSystem>()->GetProgramDir() + String("Data/Mods"), String("*.as"), SCAN_FILES, false);
+
     URHO3D_LOGINFO("Total AS mods found: " + String(result.Size()));
 
     auto packageFiles = GetSubsystem<ResourceCache>()->GetPackageFiles();
@@ -173,6 +174,8 @@ void ModLoader::Reload()
     #endif
 }
 
+#include <string>
+#include <Urho3D/IO/MemoryBuffer.h>
 void ModLoader::SubscribeConsoleCommands()
 {
     using namespace ConsoleCommandAdd;
@@ -182,6 +185,76 @@ void ModLoader::SubscribeConsoleCommands()
     data[P_EVENT] = "HandleReloadMods";
     data[P_DESCRIPTION] = "Reload all scripts";
     SendEvent(E_CONSOLE_COMMAND_ADD, data);
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "mod_test",
+            ConsoleCommandAdd::P_EVENT, "#mod_test",
+            ConsoleCommandAdd::P_DESCRIPTION, "mod_test",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#mod_test", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+
+        if (params.Size() >= 2) {
+            auto cache = GetSubsystem<ResourceCache>();
+            auto file = cache->GetFile(params[1]);
+            if (file) {
+                String content;
+                while(!file->IsEof()) {
+                    content += file->ReadLine() + "\n";
+                }
+                URHO3D_LOGINFOF("Reading file %s", content.CString());
+            }
+//            String filename = params[1];
+//            SharedPtr<ScriptFile> file = SharedPtr<ScriptFile>(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>(filename));
+//            if (!file) {
+//                file = SharedPtr<ScriptFile>(new ScriptFile(context_));
+//                file->SetName(filename);
+//                GetSubsystem<ResourceCache>()->AddManualResource(file);
+//                URHO3D_LOGINFOF("Creating new manual resource %s", filename.CString());
+//            }
+//            String data;
+//            for (int i = 2; i < params.Size(); i++) {
+//                data += " " + params[i];
+//            }
+//            std::string content = data.CString();
+//            MemoryBuffer buffer((const void*)content.c_str(), content.length());
+//            file->Load(buffer);
+
+//            auto luaScript = GetSubsystem<LuaScript>();
+//            luaScript->LoadRawFile()
+
+//            Resource* res = GetSubsystem<ResourceCache>()->GetResource<Resource>(filename);
+        }
+//        std::string filename = "aa.as";
+//        std::string content = "a= 0;";
+//        URHO3D_LOGINFOF("Adding new resource filename=%s ; content=%s", filename.c_str(), content.c_str());
+
+//        using namespace Urho3D;
+//        Context* context = context_;
+//
+//        SharedPtr<ScriptFile> file = SharedPtr<ScriptFile>(GetSubsystem<ResourceCache>()->GetResource<ScriptFile>(filename.c_str()));
+//        URHO3D_LOGINFO(">>1");
+//        if (!file) {
+//            file = SharedPtr<ScriptFile>(new ScriptFile(context));
+//            file->SetName(filename.c_str());
+//            GetSubsystem<ResourceCache>()->AddManualResource(file);
+//            URHO3D_LOGINFOF("Creating new manual resource %s", filename.c_str());
+//        }
+//
+//        URHO3D_LOGINFO(">>2");
+//        MemoryBuffer buffer((const void*)content.c_str(), (unsigned)content.length());
+//        URHO3D_LOGINFO(">>2.1");
+//        if (file) {
+//            file->Load(buffer);
+//            URHO3D_LOGINFO("File exists");
+//        } else {
+//            URHO3D_LOGINFO("File doesnt exists");
+//        }
+//
+//        URHO3D_LOGINFO(">>3");
+    });
 }
 
 void ModLoader::HandleReload(StringHash eventType, VariantMap& eventData)

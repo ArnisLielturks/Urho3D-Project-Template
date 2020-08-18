@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Core/Object.h>
 #include "../../Generator/PerlinNoise.h"
@@ -23,3 +24,4 @@ private:
     PerlinNoise perlin_;
     SimplexNoise simplexNoise_;
 };
+#endif

@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Core/Object.h>
 #include <queue>
@@ -53,3 +54,4 @@ private:
     Mutex mutex_;
     Timer retryTimer_;
 };
+#endif

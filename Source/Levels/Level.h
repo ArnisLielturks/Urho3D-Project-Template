@@ -36,7 +36,9 @@ namespace Levels {
         void StartAudio();
         void StopAllAudio();
 
+#ifdef VOXEL_SUPPORT
         void CreateVoxelWorld();
+#endif
 
         void HandleKeyDown(StringHash eventType, VariantMap& eventData);
         void HandleKeyUp(StringHash eventType, VariantMap& eventData);

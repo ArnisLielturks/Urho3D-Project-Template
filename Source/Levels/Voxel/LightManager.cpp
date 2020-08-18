@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/IO/Log.h>
@@ -326,3 +327,4 @@ void LightManager::HandleEvents(StringHash eventType, VariantMap& eventData)
 //        failedLightRemovalBfsQueue_.pop();
 //    }
 }
+#endif

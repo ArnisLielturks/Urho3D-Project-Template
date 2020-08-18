@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Math/Color.h>
 
@@ -43,3 +44,4 @@ const int NETWORK_SEND_CHUNK = 154;
 const int NETWORK_REQUEST_CHUNK_HIT = 155;
 const int NETWORK_REQUEST_CHUNK_ADD = 156;
 const int NETWORK_SEND_CHUNK_UPDATE = 157;
+#endif

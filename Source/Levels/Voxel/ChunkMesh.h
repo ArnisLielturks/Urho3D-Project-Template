@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <queue>
 #include <vector>
@@ -54,3 +55,4 @@ private:
 
     SharedPtr<Geometry> geometry_;
 };
+#endif

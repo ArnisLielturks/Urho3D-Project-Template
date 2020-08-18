@@ -389,6 +389,7 @@ void SceneManager::LoadDefaultMaps()
         SendEvent(E_ADD_MAP, data);
     }
 
+#ifdef VOXEL_SUPPORT
     {
         // Voxel
         data[P_MAP] = "Scenes/Voxel.xml";
@@ -407,6 +408,7 @@ void SceneManager::LoadDefaultMaps()
         data[P_COMMANDS] = commands;
         SendEvent(E_ADD_MAP, data);
     }
+#endif
 }
 
 const MapInfo* SceneManager::GetCurrentMapInfo() const

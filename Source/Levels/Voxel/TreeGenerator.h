@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Core/Object.h>
 #include <queue>
@@ -35,3 +36,4 @@ private:
     std::queue<TreeNode> failedTreeBfsQueue_;
     Mutex mutex_;
 };
+#endif

@@ -21,7 +21,11 @@
 #include "../../BehaviourTree/BehaviourTree.h"
 #include "PlayerState.h"
 #include "../../Console/ConsoleHandlerEvents.h"
+
+#ifdef VOXEL_SUPPORT
 #include "../Voxel/VoxelWorld.h"
+#endif
+
 #include "../../Input/ControllerEvents.h"
 
 static float MOVE_TORQUE = 20.0f;
@@ -39,6 +43,8 @@ Player::Player(Context* context):
 
     auto* cache = GetSubsystem<ResourceCache>();
     auto* font = cache->GetResource<Font>(APPLICATION_FONT);
+
+#ifdef VOXEL_SUPPORT
     if (GetSubsystem<VoxelWorld>()) {
         selectedItemUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
         selectedItemUI_->SetAlignment(HA_CENTER, VA_BOTTOM);
@@ -47,6 +53,7 @@ Player::Player(Context* context):
         selectedItemUI_->SetFont(font, 20);
         selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
     }
+#endif
 
     positionUI_ = GetSubsystem<UI>()->GetRoot()->CreateChild<Text>();
     positionUI_->SetAlignment(HA_LEFT, VA_BOTTOM);
@@ -58,9 +65,11 @@ Player::Player(Context* context):
 Player::~Player()
 {
     if (node_) {
+#ifdef VOXEL_SUPPORT
         if (GetSubsystem<VoxelWorld>()) {
             GetSubsystem<VoxelWorld>()->RemoveObserver(node_);
         }
+#endif
         node_->Remove();
     }
 }
@@ -476,6 +485,7 @@ void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventD
     if (id == controllerId_) {
         int action = eventData[P_ACTION].GetInt();
         if (action == CTRL_CHANGE_ITEM) {
+#ifdef VOXEL_SUPPORT
             if (GetSubsystem<VoxelWorld>()) {
                 selectedItem_++;
                 if (selectedItem_ >= BlockType::BT_NONE) {
@@ -483,6 +493,7 @@ void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventD
                 }
                 selectedItemUI_->SetText(GetSubsystem<VoxelWorld>()->GetBlockName(static_cast<BlockType>(selectedItem_)));
             }
+#endif
         }
     }
 

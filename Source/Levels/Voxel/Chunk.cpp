@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #include "Chunk.h"
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Material.h>
@@ -1818,3 +1819,4 @@ bool Chunk::ShouldSave()
 {
     return shouldSave_;
 }
+#endif

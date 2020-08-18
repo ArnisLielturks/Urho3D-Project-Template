@@ -10,10 +10,12 @@ void Start()
 
 void Stop()
 {
-    Array<Node@> nodes = scene.GetChildrenWithTag("MenuObject", true);
-    for(uint i=0; i<nodes.length; i++)
-    {
-        nodes[i].Remove();
+    if (scene !is null) {
+        Array<Node@> nodes = scene.GetChildrenWithTag("MenuObject", true);
+        for(uint i=0; i<nodes.length; i++)
+        {
+            nodes[i].mRemove();
+        }
     }
 }
 

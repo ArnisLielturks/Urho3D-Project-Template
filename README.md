@@ -7,12 +7,12 @@ App template with the following features:
 * UI Window management
 * LUA/AS mods with hot-reload
 * Sound management
-* Controller handling with input mapping
+* Input mapping
 * Splitscreen support
 * Achievement logic
 * Console command management
 * INI configuration file loading/saving
-* Settings window to configure all aspect of the engine
+* Settings window to configure all aspects of the engine
 * UI Joystick controls
 
 ## How to build

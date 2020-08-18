@@ -7,7 +7,10 @@
 #include "PerlinNoise.h"
 #include "../SceneManagerEvents.h"
 #include "../Console/ConsoleHandlerEvents.h"
+
+#ifdef VOXEL_SUPPORT
 #include "../Levels/Voxel/Chunk.h"
+#endif
 
 using namespace ConsoleHandlerEvents;
 

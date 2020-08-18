@@ -19,7 +19,7 @@ mkdir Urho3D-web/Source/ProjectTemplate
 
 # Copy our sample to the Urho3D subdirectory to build it the same ways as the samples are built
 cp -rf Source/* Urho3D-web/Source/ProjectTemplate/
-#cp -rf BuildConfig/web/application.html Urho3D-web/Source/ProjectTemplate/application.html
+cp -rf BuildConfig/web/application.html Urho3D-web/Source/ProjectTemplate/application.html
 cp -rf BuildConfig/CMakeLists.txt Urho3D-web/Source/ProjectTemplate/CMakeLists.txt
 
 # Use our custom dockerized script which is supported by Github actions

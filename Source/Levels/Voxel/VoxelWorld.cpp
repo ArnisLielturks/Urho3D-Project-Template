@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Core/CoreEvents.h>
@@ -685,3 +686,4 @@ void VoxelWorld::SetSunlight(float value)
     waterMaterial->SetShaderParameter("SunlightIntensity", value);
     landMaterial->SetShaderParameter("SunlightIntensity", value);
 }
+#endif

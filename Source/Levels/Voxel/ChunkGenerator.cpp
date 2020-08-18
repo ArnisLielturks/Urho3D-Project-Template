@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #include <Urho3D/Core/Context.h>
 #include "ChunkGenerator.h"
 #include "Chunk.h"
@@ -159,3 +160,4 @@ BlockType ChunkGenerator::GetCaveBlockType(const Vector3& blockPosition, BlockTy
 
     return currentBlock;
 }
+#endif

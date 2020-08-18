@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Core/Object.h>
 
@@ -38,3 +39,4 @@ namespace VoxelEvents {
         URHO3D_PARAM(P_DATA, Data);
     }
 }
+#endif

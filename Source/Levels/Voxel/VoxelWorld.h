@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Container/List.h>
@@ -64,3 +65,4 @@ private:
     Timer updateTimer_;
     int visibleDistance_{5};
 };
+#endif

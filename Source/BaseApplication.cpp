@@ -21,6 +21,7 @@
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
 #include "State/State.h"
+#include "PackageManager/PackageManager.h"
 #include "Console/ConsoleHandlerEvents.h"
 #include "Console/ConsoleHandlerEvents.h"
 #include "LevelManagerEvents.h"
@@ -63,6 +64,7 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
     State::RegisterObject(context_);
+    PackageManager::RegisterObject(context_);
     LevelManager::RegisterObject(context_);
 #ifdef NAKAMA_SUPPORT
     NakamaManager::RegisterObject(context_);
@@ -98,6 +100,7 @@ BaseApplication::BaseApplication(Context* context) :
     ConfigManager* configManager = new ConfigManager(context_, configurationFile_);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new State(context_));
+    context_->RegisterSubsystem(new PackageManager(context_));
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
@@ -117,82 +120,18 @@ void BaseApplication::Setup()
 {
     context_->RegisterSubsystem(new ConsoleHandler(context_));
     LoadINIConfig(configurationFile_);
-
-//    #if defined(__EMSCRIPTEN__)
-//    SubscribeToEvent(E_SCREENMODE, [&](StringHash eventType, VariantMap& eventData) {
-//        using namespace ScreenMode;
-//        int width = eventData[P_WIDTH].GetInt();
-//        int height = eventData[P_HEIGHT].GetInt();
-//
-//        URHO3D_LOGINFOF("Screen size changed %dx%d", width, height);
-//
-//        EM_ASM({
-//            Module.SetRendererSize($0, $1);
-//        }, width, height);
-//    });
-//
-//    SubscribeToEvent(E_MOUSEVISIBLECHANGED, [&](StringHash eventType, VariantMap &eventData) {
-//        using namespace MouseVisibleChanged;
-//        mouseVisible = eventData[P_VISIBLE].GetBool();
-//        URHO3D_LOGINFOF("mouseVisible = %d", mouseVisible);
-//
-//        EM_ASM({
-//            Module.SetMouseVisible($0);
-//        }, mouseVisible);
-//    });
-//    SubscribeToEvent(E_MOUSEMODECHANGED, [&](StringHash eventType, VariantMap &eventData) {
-//        using namespace MouseModeChanged;
-//        mouseMode = eventData[P_MODE].GetUInt();
-//        URHO3D_LOGINFOF("mouseMode = %u", mouseMode);
-//    });
-//    #endif
 }
-
-//#if defined(__EMSCRIPTEN__)
-//void BaseApplication::JSCanvasSize(int width, int height, bool fullscreen, float scale)
-//{
-//    URHO3D_LOGINFOF("JSCanvasSize: %dx%d", width, height);
-//    appContext->GetSubsystem<Graphics>()->SetMode(width, height);
-//    UI* ui = appContext->GetSubsystem<UI>();
-//    ui->SetScale(scale);
-////    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
-//}
-//
-//void BaseApplication::JSMouseFocus()
-//{
-//    auto input = appContext->GetSubsystem<Input>();
-//    input->SetMouseVisible(mouseVisible);
-//    input->SetMouseMode(static_cast<MouseMode>(mouseMode));
-////    appContext->GetSubsystem<UI>()->GetCursor()->SetPosition(appContext->GetSubsystem<Input>()->GetMousePosition());
-//    EM_ASM({
-//        Module.SetMouseVisible($0);
-//    }, mouseVisible);
-//    URHO3D_LOGINFOF("Mouse mode changed visibility = %d, mouseMode = %u", mouseVisible, mouseMode);
-//}
-//
-//using namespace emscripten;
-//EMSCRIPTEN_BINDINGS(Module) {
-//    function("JSCanvasSize", &BaseApplication::JSCanvasSize);
-//    function("JSMouseFocus", &BaseApplication::JSMouseFocus);
-//}
-//#endif
 
 void BaseApplication::Start()
 {
 #ifdef NAKAMA_SUPPORT
     GetSubsystem<NakamaManager>()->Init();
+    GetSubsystem<PackageManager>()->Init();
 #endif
     GetSubsystem<ServiceCmd>()->Init();
     UI* ui = GetSubsystem<UI>();
     auto cache = GetSubsystem<ResourceCache>();
-//    XMLFile* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-//    if(!GetSubsystem<UI>()->GetCursor())
-//        GetSubsystem<UI>()->SetCursor(new Cursor(context_));
-//    GetSubsystem<UI>()->GetCursor()->SetStyleAuto(style);
-//    GetSubsystem<UI>()->GetCursor()->SetShape(CursorShape::CS_NORMAL);
-//    GetSubsystem<UI>()->GetCursor()->SetVisible(true);
-//    GetSubsystem<UI>()->GetCursor()->SetPosition(GetSubsystem<Input>()->GetMousePosition());
-//#if defined(__EMSCRIPTEN__)
+
 #ifdef __ANDROID__
     ui->SetScale(1.8);
 #else
@@ -204,11 +143,6 @@ void BaseApplication::Start()
     GetSubsystem<ConfigManager>()->Set("engine", "HighDPI", true);
 #endif
 
-    // TODO detect highDPI first
-    // For high DPI we must increase the UI scale 2 times
-//    if (GetSubsystem<ConfigManager>()->GetBool("engine", "HighDPI", false)) {
-//        ui->SetScale(ui->GetScale() * 2.0);
-//    }
     if (!GetSubsystem<Engine>()->IsHeadless()) {
         GetSubsystem<ConsoleHandler>()->Create();
         DebugHud* debugHud = GetSubsystem<Engine>()->CreateDebugHud();

@@ -1,3 +1,4 @@
+#ifdef VOXEL_SUPPORT
 #pragma once
 #include <queue>
 #include <Urho3D/Graphics/CustomGeometry.h>
@@ -110,3 +111,4 @@ private:
     bool shouldSave_{false};
     int renderCount_{0};
 };
+#endif

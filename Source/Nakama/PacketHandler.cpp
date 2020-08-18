@@ -15,6 +15,9 @@ void PacketHandler::Handle(const NMatchData& data)
             URHO3D_LOGINFO("Received MSG_POSITION " + position.ToString());
             break;
         }
+        default: {
+            URHO3D_LOGWARNINGF("Unknown message received from server: %d", data.opCode);
+        }
     }
     URHO3D_LOGINFOF("Received match data %d", data.opCode);
 }

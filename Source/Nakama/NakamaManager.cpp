@@ -58,6 +58,30 @@ void NakamaManager::Init()
 
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "nakama_command",
+            ConsoleCommandAdd::P_EVENT, "#nakama_command",
+            ConsoleCommandAdd::P_DESCRIPTION, "nakama_command",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#nakama_command", [&](StringHash eventType, VariantMap& eventData) {
+        URHO3D_LOGINFO("Requesting nakama command");
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("You must provide RPC command");
+            return;
+        }
+        String command = "get_pokemon";
+        String payload = "{\"PokemonName\":\"" + params[1] + "\"}";
+        URHO3D_LOGINFOF("Sending RPC command '%s %s'", command.CString(), payload.CString());
+        client_->rpc(session_, command.CString(), payload.CString(), [&](const NRpc& nRpc) {
+            URHO3D_LOGINFOF("RPC command sent!%s %s", nRpc.id.c_str(), nRpc.payload.c_str());
+        }, [&](const NError& error) {
+            URHO3D_LOGERRORF("RPC command error: %s", error.message.c_str());
+        });
+    });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
             ConsoleCommandAdd::P_NAME, "nakama_login1",
             ConsoleCommandAdd::P_EVENT, "#nakama_login1",
             ConsoleCommandAdd::P_DESCRIPTION, "Log with the nakama server",
@@ -261,6 +285,22 @@ void NakamaManager::Init()
         }
     });
 
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "nakama_leave_match",
+            ConsoleCommandAdd::P_EVENT, "#nakama_leave_match",
+            ConsoleCommandAdd::P_DESCRIPTION, "Leave match",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#nakama_leave_match", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 1) {
+            URHO3D_LOGERROR("This command doesn't take any arguments!");
+            return;
+        }
+        LeaveMatch();
+    });
+
 }
 
 void NakamaManager::SetupRTCClient()
@@ -325,7 +365,7 @@ void NakamaManager::LogIn(const String& email, const String& password)
         data[P_USER_ID] = String(session->getUserId().c_str());
         data[P_USERNAME] = String(session->getUsername().c_str());
         data[P_NEW_USER] = session->isCreated();
-        URHO3D_LOGINFOF("Nakama login succes, user id = %s", session->getUserId().c_str());
+        URHO3D_LOGINFOF("Nakama login succes, user name %s", session->getUsername().c_str());
         session->getAuthToken();
         session_ = session;
         rtClient_->connect(session_, true);
@@ -378,13 +418,16 @@ void NakamaManager::CreateMatch()
 
 void NakamaManager::JoinMatch(const String& matchID)
 {
+    if (!matchId_.Empty()) {
+        URHO3D_LOGERROR("Already in a match!");
+    }
     if (!rtClient_) {
         URHO3D_LOGERROR("You must login into nakama first!");
     }
     rtClient_->joinMatch(matchID.CString(), {}, [&](const NMatch& match)
     {
         URHO3D_LOGINFOF("Joined match! Listing users:");
-        matchId_ = matchID;
+        matchId_ = match.matchId.c_str();
         for (auto& presence : match.presences)
         {
             if (presence.userId != match.self.userId)
@@ -402,9 +445,9 @@ void NakamaManager::MatchDataReceived(const NMatchData& data)
 
 void NakamaManager::MatchmakerMatched(NMatchmakerMatchedPtr matched)
 {
-    URHO3D_LOGINFOF("Matchmaker matched, match id=%s", matched->token.c_str());
-    rtClient_->joinMatchByToken(matched->token, [&](const NMatch& match) {
-        URHO3D_LOGINFOF("Joined match! Listing users:");
+    if (!matched->token.empty()) {
+        rtClient_->joinMatchByToken(matched->token, [&](const NMatch& match) {
+        URHO3D_LOGINFOF("Joined match with token! Listing users:");
         matchId_ = match.matchId.c_str();
         for (auto& presence : match.presences)
         {
@@ -414,10 +457,15 @@ void NakamaManager::MatchmakerMatched(NMatchmakerMatchedPtr matched)
             }
         }
     });
+    } else if (!matched->matchId.empty()) {
+        URHO3D_LOGINFOF("Joined match with match ID %s! Listing users:", matched->matchId.c_str());
+        JoinMatch(String(matched->matchId.c_str()));
+    }
 }
 
 void NakamaManager::MatchPresence(const NMatchPresenceEvent& event)
 {
+    URHO3D_LOGINFO("MatchPresence");
     for (auto it = event.joins.begin(); it != event.joins.end(); ++it) {
         URHO3D_LOGINFOF("User has entered match %s", (*it).username.c_str());
     }

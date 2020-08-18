@@ -34,11 +34,15 @@
 #include "../Audio/AudioEvents.h"
 #include "../NetworkEvents.h"
 #include "../SceneManager.h"
+
+#ifdef VOXEL_SUPPORT
 #include "Voxel/VoxelWorld.h"
 #include "Voxel/LightManager.h"
 #include "Voxel/VoxelEvents.h"
 #include "Voxel/ChunkGenerator.h"
 #include "Voxel/TreeGenerator.h"
+using namespace VoxelEvents;
+#endif
 
 using namespace Levels;
 using namespace ConsoleHandlerEvents;
@@ -48,7 +52,6 @@ using namespace WindowEvents;
 using namespace AudioEvents;
 using namespace CustomEvents;
 using namespace NetworkEvents;
-using namespace VoxelEvents;
 
 static int REMOTE_PLAYER_ID = 1000;
 
@@ -61,12 +64,14 @@ Level::Level(Context* context) :
 Level::~Level()
 {
     StopAllAudio();
+#ifdef VOXEL_SUPPORT
     if (GetSubsystem<VoxelWorld>()) {
         context_->RemoveSubsystem<VoxelWorld>();
         context_->RemoveSubsystem<ChunkGenerator>();
         context_->RemoveSubsystem<LightManager>();
         context_->RemoveSubsystem<TreeGenerator>();
     }
+#endif
 }
 
 void Level::RegisterObject(Context* context)
@@ -74,11 +79,13 @@ void Level::RegisterObject(Context* context)
     context->RegisterFactory<Level>();
     Player::RegisterObject(context);
 
+#ifdef VOXEL_SUPPORT
     VoxelWorld::RegisterObject(context);
     Chunk::RegisterObject(context);
     ChunkGenerator::RegisterObject(context);
     LightManager::RegisterObject(context);
     TreeGenerator::RegisterObject(context);
+#endif
 }
 
 void Level::Init()
@@ -112,9 +119,11 @@ void Level::Init()
     // Create the UI content
     CreateUI();
 
+#ifdef VOXEL_SUPPORT
     if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Voxel.xml") {
         CreateVoxelWorld();
     }
+#endif
 
     if (data_.Contains("Map") && data_["Map"].GetString() == "Scenes/Terrain.xml") {
         auto cache = GetSubsystem<ResourceCache>();
@@ -162,9 +171,12 @@ void Level::Init()
         }
     }
 
-//    GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
+#ifdef __ANDROID__
+    GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
+#endif
 }
 
+#ifdef VOXEL_SUPPORT
 void Level::CreateVoxelWorld()
 {
     if (!GetSubsystem<VoxelWorld>()) {
@@ -182,6 +194,7 @@ void Level::CreateVoxelWorld()
     }
     GetSubsystem<VoxelWorld>()->Init();
 }
+#endif
 
 SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const String& name, int nodeID)
 {
@@ -213,6 +226,7 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
         newPlayer->SetName(name);
     }
 
+#ifdef VOXEL_SUPPORT
     if (GetSubsystem<ChunkGenerator>()) {
         Vector3 spawnPoint = newPlayer->GetSpawnPoint();
         spawnPoint.y_ = GetSubsystem<ChunkGenerator>()->GetTerrainHeight(spawnPoint);
@@ -224,6 +238,8 @@ SharedPtr<Player> Level::CreatePlayer(int controllerId, bool controllable, const
     if (GetSubsystem<VoxelWorld>()) {
         GetSubsystem<VoxelWorld>()->AddObserver(newPlayer->GetNode());
     }
+#endif
+
     return newPlayer;
 }
 
@@ -314,6 +330,7 @@ void Level::RegisterConsoleCommands()
         drawDebug_ = !drawDebug_;
     });
 
+#ifdef VOXEL_SUPPORT
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
             ConsoleCommandAdd::P_NAME, "seed",
@@ -332,6 +349,7 @@ void Level::RegisterConsoleCommands()
             GetSubsystem<ChunkGenerator>()->SetSeed(seed);
         }
     });
+#endif
 }
 
 
@@ -626,7 +644,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
             Drawable* hitDrawable;
             bool hit = RaycastFromCamera(camera, 100.0f, hitPosition, hitNormal, hitDrawable);
             if (hit) {
-//                URHO3D_LOGINFO("Hit target " + hitDrawable->GetNode()->GetName() + " Normal: " + hitNormal.ToString() + " Position " + hitPosition.ToString());
+#ifdef VOXEL_SUPPORT
                 using namespace ChunkHit;
                 VariantMap& data = GetEventDataMap();
                 data[P_POSITION] = hitPosition - hitNormal * 0.5f;
@@ -635,6 +653,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                 data[P_CONTROLLER_ID] = eventData[P_CONTROLLER];
                 data[P_ACTION_ID] = action;
                 hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_HIT, data);
+#endif
             }
         }
     } else if (action == CTRL_SECONDARY || action == CTRL_DETECT) {
@@ -655,6 +674,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                         Floor(blockPosition.y_) != Floor(playerPosition.y_) ||
                         Floor(blockPosition.z_) != Floor(playerPosition.z_)
                 ) {
+#ifdef VOXEL_SUPPORT
                     using namespace ChunkAdd;
                     VariantMap& data = GetEventDataMap();
                     data[P_POSITION] = blockPosition;
@@ -662,6 +682,7 @@ void Level::HandleMappedControlPressed(StringHash eventType, VariantMap& eventDa
                     data[P_ACTION_ID]  = action;
                     data[P_ITEM_ID] = players_[controllerId]->GetSelectedItem();
                     hitDrawable->GetNode()->GetParent()->SendEvent(E_CHUNK_ADD, data);
+#endif
                 } else {
                     URHO3D_LOGINFO("You cannot place a block where you stand");
                 }

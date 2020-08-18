@@ -69,8 +69,8 @@ endif()
 
 if (NOT ANDROID AND NOT IOS)
     # Dirty hack to get the WS to work since it relies on 3rd party static libs
-    add_subdirectory (HumbleNet)
-    set (LIBS ${LIBS} humblenet)
+#    add_subdirectory (HumbleNet)
+#    set (LIBS ${LIBS} humblenet)
 endif ()
 
 # Define target name

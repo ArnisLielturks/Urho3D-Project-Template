@@ -57,9 +57,9 @@ d () {
 
 if [[ $TRAVIS ]]; then
   # Workaround Travis-CI intermittent network I/O error
-  while (! d pull "urho3d/dockerized$BuildEnvironment:$DBE_TAG"); do sleep 10; done;
+  while (! d pull "arnislielturks/dockerized$BuildEnvironment:$DBE_TAG"); do sleep 10; done;
 elif [[ $DBE_REFRESH == 1 ]]; then
-  d pull "urho3d/dockerized$BuildEnvironment:$DBE_TAG"
+  d pull "arnislielturks/dockerized$BuildEnvironment:$DBE_TAG"
 fi
 
 if [[ $use_podman ]] || ( [[ $(d version -f '{{.Client.Version}}') =~ ^([0-9]+)\.0*([0-9]+)\. ]] && (( BASH_REMATCH[1] * 100 + BASH_REMATCH[2] >= 1809 )) ); then
@@ -69,7 +69,7 @@ if [[ $use_podman ]] || ( [[ $(d version -f '{{.Client.Version}}') =~ ^([0-9]+)\
         --env-file "$PROJECT_DIR/script/.env-file" \
         --mount type=bind,source="$PROJECT_DIR",target="$PROJECT_DIR" \
         --mount type=volume,source="$(id -u).urho3d_home_dir",target=/home/urho3d$mount_option \
-        "urho3d/dockerized$BuildEnvironment:$DBE_TAG" "$@"
+        "arnislielturks/dockerized$BuildEnvironment:$DBE_TAG" "$@"
 else
     # Fallback workaround on older Docker CLI version
     d run -i --rm -h fishtank \
@@ -77,7 +77,7 @@ else
         --env-file <(perl -ne 'chomp; print "$_\n" if defined $ENV{$_}' "$PROJECT_DIR/script/.env-file") \
         --mount type=bind,source="$PROJECT_DIR",target="$PROJECT_DIR" \
         --mount type=volume,source="$(id -u).urho3d_home_dir",target=/home/urho3d \
-        "urho3d/dockerized$BuildEnvironment:$DBE_TAG" "$@"
+        "arnislielturks/dockerized$BuildEnvironment:$DBE_TAG" "$@"
 fi
 
 # vi: set ts=4 sw=4 expandtab:

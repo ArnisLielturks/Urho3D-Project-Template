@@ -88,8 +88,6 @@ if (URHO3D_NETWORK)
     if (NOT WEB)
         add_subdirectory (ThirdParty/Civetweb)
         add_subdirectory (ThirdParty/SLikeNet)
-    else()
-        add_subdirectory (ThirdParty/HumbleNet)
     endif ()
 endif ()
 

@@ -24,7 +24,11 @@
 #include <Urho3D/Core/Profiler.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Audio/AudioDefs.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
+#endif
+
 #include "ChunkMesh.h"
 #include "../../Global.h"
 

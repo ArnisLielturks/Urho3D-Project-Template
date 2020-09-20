@@ -3,7 +3,10 @@
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Resource/JSONFile.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/HttpRequest.h>
+#endif
 
 using namespace Urho3D;
 
@@ -21,6 +24,8 @@ public:
 private:
     void SubscribeToEvents();
     void HandleUpdate(StringHash eventType, VariantMap& eventData);
+#if !defined(__EMSCRIPTEN__)
     SharedPtr<HttpRequest> httpRequest_;
+#endif
     String data_;
 };

@@ -7,7 +7,11 @@
 #include <Urho3D/Scene/ValueAnimation.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include <Urho3D/Input/Input.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
+#endif
+
 #include <Urho3D/Network/NetworkEvents.h>
 #include <Urho3D/Resource/Localization.h>
 #include <Urho3D/IO/Log.h>
@@ -56,6 +60,7 @@ void Loading::Init()
     SubscribeToEvents();
 
     SetGlobalVar("PACKET_LIMIT", 10000);
+#if !defined(__EMSCRIPTEN__)
     GetSubsystem<Network>()->RegisterRemoteEvent(E_REMOTE_CLIENT_ID);
     if (data_.Contains("StartServer") && data_["StartServer"].GetBool()) {
         SendEvent(E_REGISTER_LOADING_STEP,
@@ -71,6 +76,7 @@ void Loading::Init()
                       RegisterLoadingStep::P_EVENT, "StartServer");
         });
     }
+#endif
 
     if (data_.Contains("ConnectServer") && !data_["ConnectServer"].GetString().Empty()) {
         StringVector dependsOn;
@@ -94,7 +100,7 @@ void Loading::Init()
                       RegisterLoadingStep::P_EVENT, "ConnectServer");
 #if defined(__EMSCRIPTEN__)
 //            GetSubsystem<Network>()->WSConnect("ws://127.0.0.1:9090/ws", GetSubsystem<SceneManager>()->GetActiveScene());
-            GetSubsystem<Network>()->WSConnect("wss://playground-server.arnis.dev/ws", GetSubsystem<SceneManager>()->GetActiveScene());
+//            GetSubsystem<Network>()->WSConnect("wss://playground-server.arnis.dev/ws", GetSubsystem<SceneManager>()->GetActiveScene());
 #else
             GetSubsystem<Network>()->Connect(data_["ConnectServer"].GetString(), SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
 //            GetSubsystem<Network>()->Connect("192.168.8.107", SERVER_PORT, GetSubsystem<SceneManager>()->GetActiveScene());
@@ -316,6 +322,7 @@ void Loading::HandleServerDisconnected(StringHash eventType, VariantMap& eventDa
 
 void Loading::HandleSceneLoadFailed(StringHash eventType, VariantMap& eventData)
 {
+#if !defined(__EMSCRIPTEN__)
     UnsubscribeFromEvent(E_SERVERDISCONNECTED);
     if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
         GetSubsystem<Network>()->Disconnect(200);
@@ -325,6 +332,7 @@ void Loading::HandleSceneLoadFailed(StringHash eventType, VariantMap& eventData)
         data["Message"] = localization->Get("SCENE_LOAD_FAILED");
         SendEvent(E_SET_LEVEL, data);
     }
+#endif
 }
 
 void Loading::HandleConnectFailed(StringHash eventType, VariantMap& eventData)
@@ -360,6 +368,7 @@ void Loading::HandleLoadingStepFailed(StringHash eventType, VariantMap& eventDat
     using namespace LoadingStepCriticalFail;
     auto localization = GetSubsystem<Localization>();
     if (eventData[P_EVENT].GetString() == "RetrievePlayerData") {
+#if !defined(__EMSCRIPTEN__)
         UnsubscribeFromEvent(E_SERVERDISCONNECTED);
         if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
             GetSubsystem<Network>()->Disconnect(200);
@@ -368,5 +377,6 @@ void Loading::HandleLoadingStepFailed(StringHash eventType, VariantMap& eventDat
         data[P_EVENT] = "RetrievePlayerData";
         data[P_DESCRIPTION] = localization->Get("FAILED_TO_RETRIEVE_PLAYER_DATA");
         SendEvent(E_LOADING_STEP_CRITICAL_FAIL, data);
+#endif
     }
 }

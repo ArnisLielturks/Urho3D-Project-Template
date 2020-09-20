@@ -7,8 +7,12 @@
 #include <Urho3D/Container/Vector.h>
 #include <Urho3D/Graphics/Octree.h>
 #include <Urho3D/IO/FileSystem.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Network/NetworkEvents.h>
+#endif
+
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
 #include "VoxelWorld.h"
@@ -71,6 +75,7 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
         }
         // Initialize new chunks
         if (!(*it)->IsLoaded()) {
+#if !defined(__EMSCRIPTEN__)
             if (!world->GetSubsystem<Network>()->GetServerConnection()) {
                 (*it)->Load();
 //                for (int i = 0; i < 6; i++) {
@@ -83,6 +88,9 @@ void UpdateChunkState(const WorkItem* item, unsigned threadIndex)
                 (*it)->LoadFromServer();
                 requestedFromServerCount++;
             }
+#else
+            (*it)->Load();
+#endif
         }
 
         if (!(*it)->IsGeometryCalculated()) {
@@ -114,7 +122,10 @@ void VoxelWorld::Init()
     SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(VoxelWorld, HandleUpdate));
     SubscribeToEvent(E_CHUNK_RECEIVED, URHO3D_HANDLER(VoxelWorld, HandleChunkReceived));
     SubscribeToEvent(E_WORKITEMCOMPLETED, URHO3D_HANDLER(VoxelWorld, HandleWorkItemFinished));
+
+#if !defined(__EMSCRIPTEN__)
     SubscribeToEvent(E_NETWORKMESSAGE, URHO3D_HANDLER(VoxelWorld, HandleNetworkMessage));
+#endif
 
     SendEvent(
             E_CONSOLE_COMMAND_ADD,
@@ -568,6 +579,7 @@ void VoxelWorld::HandleChunkReceived(StringHash eventType, VariantMap& eventData
     }
 }
 
+#if !defined(__EMSCRIPTEN__)
 void VoxelWorld::HandleNetworkMessage(StringHash eventType, VariantMap& eventData)
 {
     auto* network = GetSubsystem<Network>();
@@ -677,6 +689,7 @@ void VoxelWorld::HandleNetworkMessage(StringHash eventType, VariantMap& eventDat
         }
     }
 }
+#endif
 
 void VoxelWorld::SetSunlight(float value)
 {

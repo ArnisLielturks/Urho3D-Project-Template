@@ -11,7 +11,11 @@
 #include <Urho3D/Network/NetworkEvents.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Material.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
+#endif
+
 #include <Urho3D/Engine/Engine.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Octree.h>
@@ -164,12 +168,14 @@ void Level::Init()
         }
     }
 
+#if !defined(__EMSCRIPTEN__)
     if (!GetSubsystem<Network>()->GetServerConnection()) {
         for (int i = 0; i < 0; i++) {
             players_[100 + i] = CreatePlayer(100 + i, false, "Bot " + String(100 + i));
             URHO3D_LOGINFO("Bot created");
         }
     }
+#endif
 
 #ifdef __ANDROID__
     GetSubsystem<ControllerInput>()->ShowOnScreenJoystick();
@@ -356,6 +362,7 @@ void Level::RegisterConsoleCommands()
 void Level::HandleBeforeLevelDestroy(StringHash eventType, VariantMap& eventData)
 {
     remotePlayers_.Clear();
+#if !defined(__EMSCRIPTEN__)
     UnsubscribeFromEvent(E_SERVERDISCONNECTED);
     if (GetSubsystem<Network>() && GetSubsystem<Network>()->IsServerRunning()) {
         GetSubsystem<Network>()->StopServer();
@@ -363,15 +370,18 @@ void Level::HandleBeforeLevelDestroy(StringHash eventType, VariantMap& eventData
     if (GetSubsystem<Network>() && GetSubsystem<Network>()->GetServerConnection()) {
         GetSubsystem<Network>()->Disconnect();
     }
+#endif
 }
 
 void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventData)
 {
+#if !defined(__EMSCRIPTEN__)
     // TODO: allow to play splitscreen when connected to server
     if (GetSubsystem<Network>()->GetServerConnection()) {
         URHO3D_LOGWARNING("Local splitscreen multiplayer is not yet supported in the network mode");
         return;
     }
+#endif
 
     using namespace ControllerAdded;
     int controllerIndex = eventData[P_INDEX].GetInt();
@@ -391,9 +401,11 @@ void Level::HandleControllerConnected(StringHash eventType, VariantMap& eventDat
 
 void Level::HandleControllerDisconnected(StringHash eventType, VariantMap& eventData)
 {
+#if !defined(__EMSCRIPTEN__)
     if (GetSubsystem<Network>()->GetServerConnection()) {
         return;
     }
+#endif
 
     using namespace ControllerRemoved;
     int controllerIndex = eventData[P_INDEX].GetInt();
@@ -490,11 +502,13 @@ void Level::ShowPauseMenu()
     data["Name"] = "PauseWindow";
     SendEvent(E_OPEN_WINDOW, data);
 
+#if !defined(__EMSCRIPTEN__)
     if (!GetSubsystem<Network>()->IsServerRunning() && !GetSubsystem<Network>()->GetServerConnection()) {
         UnsubscribeToEvents();
         SubscribeToEvent(E_WINDOW_CLOSED, URHO3D_HANDLER(Level, HandleWindowClosed));
         Pause();
     }
+#endif
 }
 
 void Level::PauseMenuHidden()

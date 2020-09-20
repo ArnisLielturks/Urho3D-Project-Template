@@ -25,8 +25,12 @@
 #include <Urho3D/Core/Profiler.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include <Urho3D/Audio/AudioDefs.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
 #include <Urho3D/Network/NetworkEvents.h>
+#endif
+
 #include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
@@ -1744,6 +1748,7 @@ void Chunk::LoadFromServer()
 {
     remoteLoadTimer_.Reset();
     requestedFromServer_ = true;
+#if !defined(__EMSCRIPTEN__)
     auto* network = GetSubsystem<Network>();
     Connection* serverConnection = network->GetServerConnection();
     if (!network->IsServerRunning() && serverConnection) {
@@ -1751,6 +1756,7 @@ void Chunk::LoadFromServer()
         sendMsg.WriteVector3(position_);
         serverConnection->SendMessage(NETWORK_REQUEST_CHUNK, true, true, sendMsg);
     }
+#endif
 }
 
 void Chunk::ProcessServerResponse(MemoryBuffer& buffer)
@@ -1780,6 +1786,7 @@ bool Chunk::IsRequestedFromServer()
 
 void Chunk::SendHitToServer(const IntVector3& position)
 {
+#if !defined(__EMSCRIPTEN__)
     auto* network = GetSubsystem<Network>();
     Connection* serverConnection = network->GetServerConnection();
     if (!network->IsServerRunning() && serverConnection) {
@@ -1788,10 +1795,12 @@ void Chunk::SendHitToServer(const IntVector3& position)
         sendMsg.WriteIntVector3(position);
         serverConnection->SendMessage(NETWORK_REQUEST_CHUNK_HIT, true, true, sendMsg);
     }
+#endif
 }
 
 void Chunk::SendAddToServer(const IntVector3& position, BlockType type)
 {
+#if !defined(__EMSCRIPTEN__)
     auto* network = GetSubsystem<Network>();
     Connection* serverConnection = network->GetServerConnection();
     if (!network->IsServerRunning() && serverConnection) {
@@ -1801,6 +1810,7 @@ void Chunk::SendAddToServer(const IntVector3& position, BlockType type)
         sendMsg.WriteInt(static_cast<int>(type));
         serverConnection->SendMessage(NETWORK_REQUEST_CHUNK_ADD, true, true, sendMsg);
     }
+#endif
 }
 
 bool Chunk::ShouldRender() {

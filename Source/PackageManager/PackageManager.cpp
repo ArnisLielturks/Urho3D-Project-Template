@@ -3,7 +3,11 @@
 #include <Urho3D/IO/PackageFile.h>
 #include <Urho3D/IO/FileSystem.h>
 #include <Urho3D/IO/Log.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
+#endif
+
 #include <Urho3D/Core/CoreEvents.h>
 #include "PackageManager.h"
 #include "../Config/ConfigManager.h"
@@ -53,17 +57,18 @@ void PackageManager::SubscribeToEvents()
         }
         if (httpRequest_.Null()) {
             URHO3D_LOGINFOF("Listing all available packages from %s", params[1].CString());
+#if !defined(__EMSCRIPTEN__)
             auto *network = GetSubsystem<Network>();
             data_.Clear();
             httpRequest_ = network->MakeHttpRequest(params[1]);
-        } else {
-//            URHO3D_LOGERROR()
+#endif
         }
     });
 }
 
 void PackageManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
 {
+#if !defined(__EMSCRIPTEN__)
     if (!httpRequest_.Null()) {
         // Initializing HTTP request
         if (httpRequest_->GetState() == HTTP_INITIALIZING) {
@@ -84,4 +89,5 @@ void PackageManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
             }
         }
     }
+#endif
 }

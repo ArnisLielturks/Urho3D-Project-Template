@@ -9,7 +9,11 @@
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Material.h>
+
+#if !defined(__EMSCRIPTEN__)
 #include <Urho3D/Network/Network.h>
+#endif
+
 #include <Urho3D/Scene/SceneEvents.h>
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Graphics/Light.h>
@@ -142,10 +146,12 @@ void Player::RegisterConsoleCommands()
 //            GetSubsystem<VoxelWorld>()->AddObserver(noclipNode_);
 
             // Clear server connection controls
+#if !defined(__EMSCRIPTEN__)
             auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
             if (serverConnection) {
                 serverConnection->SetControls(Controls());
             }
+#endif
         }
     });
 }
@@ -273,7 +279,9 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 {
     using namespace PhysicsPreStep;
     float timeStep = eventData[P_TIMESTEP].GetFloat();
+#if !defined(__EMSCRIPTEN__)
     auto serverConnection = GetSubsystem<Network>()->GetServerConnection();
+#endif
 
     Controls controls;
     float movementSpeed = MOVE_TORQUE;
@@ -315,6 +323,8 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
 
         return;
     }
+
+#if !defined(__EMSCRIPTEN__)
     if (serverConnection) {
         if (IsCameraTargetSet()) {
             // We are not following our player node, so we must not control it
@@ -324,6 +334,7 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
         }
         return;
     }
+#endif
 
 //    if (node_->GetPosition().y_ < -SIZE_Y * 1.5) {
 //        ResetPosition();

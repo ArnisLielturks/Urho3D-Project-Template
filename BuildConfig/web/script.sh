@@ -35,6 +35,6 @@ rm -rf Urho3D-web/build/web/bin/*.pak
 
 cd Urho3D-web
 
-./script/dockerized.sh web
+./script/dockerized.sh web rake ci build
 
 cd ..

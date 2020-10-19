@@ -171,6 +171,11 @@
         document.getElementById('canvas').style.display = 'block';
         document.getElementById('fullscreen-button').style.display = 'block';
 
+        document.getElementById('canvas').addEventListener('click', function() {
+            // Fix to capture keyboard input when application is loaded inside an iframe
+            window.focus()
+        });
+
         if (document.hidden) {
             return;
         }

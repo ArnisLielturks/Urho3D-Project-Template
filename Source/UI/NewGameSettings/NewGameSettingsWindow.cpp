@@ -26,7 +26,8 @@ NewGameSettingsWindow::NewGameSettingsWindow(Context* context) :
 
 NewGameSettingsWindow::~NewGameSettingsWindow()
 {
-    baseWindow_->Remove();
+    if (baseWindow_)
+        baseWindow_->Remove();
 }
 
 void NewGameSettingsWindow::Init()
@@ -38,6 +39,21 @@ void NewGameSettingsWindow::Init()
 
 void NewGameSettingsWindow::Create()
 {
+    auto maps = GetSubsystem<SceneManager>()->GetAvailableMaps();
+    if (maps.Size() == 1) {
+        // TODO: only one map available, automatically start it
+        auto it = maps.Begin();
+        VariantMap& data = GetEventDataMap();
+        data["Name"] = "Loading";
+        data["Map"] =  (*it).map;
+        data["Commands"] = (*it).commands;
+//#ifndef __EMSCRIPTEN__
+//        data["StartServer"] = startServer_->IsChecked();
+//#endif
+//        data["ConnectServer"] = connectServer_->IsChecked() && !startServer_->IsChecked() ? "127.0.0.1" : String::EMPTY;
+        SendEvent(E_SET_LEVEL, data);
+        return;
+    }
     auto* localization = GetSubsystem<Localization>();
 
     baseWindow_ = CreateOverlay()->CreateChild<Window>();

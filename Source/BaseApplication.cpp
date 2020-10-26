@@ -78,10 +78,11 @@ BaseApplication::BaseApplication(Context* context) :
     appContext = context;
     #endif
 
+
     context_->RegisterFactory<WindowManager>();
     context_->RegisterFactory<AudioManager>();
     context_->RegisterFactory<ConsoleHandler>();
-    context_->RegisterFactory<SceneManager>();
+    SceneManager::RegisterObject(context_);
     context_->RegisterFactory<Generator>();
 
     BehaviourTree::RegisterFactory(context_);

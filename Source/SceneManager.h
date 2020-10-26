@@ -40,6 +40,8 @@ public:
 
     ~SceneManager();
 
+    static void RegisterObject(Context* context);
+
     /**
      * Start loading scene from the file
      */

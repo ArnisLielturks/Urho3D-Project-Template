@@ -47,6 +47,11 @@ SceneManager::~SceneManager()
 {
 }
 
+void SceneManager::RegisterObject(Context* context)
+{
+    context->RegisterFactory<SceneManager>();
+}
+
 void SceneManager::LoadScene(const String& filename)
 {
     ResetProgress();

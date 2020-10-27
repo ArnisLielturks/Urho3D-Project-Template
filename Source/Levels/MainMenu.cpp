@@ -31,7 +31,7 @@ using namespace ServiceEvents;
 const static int BUTTON_FONT_SIZE = 20;
 
 MainMenu::MainMenu(Context* context) :
-    BaseLevel(context)
+        BaseLevel(context)
 {
 }
 
@@ -128,56 +128,29 @@ void MainMenu::CreateUI()
     buttonsContainer_->SetAlignment(HA_RIGHT, VA_BOTTOM);
     buttonsContainer_->SetPosition(-10, -10);
 
-    newGameButton_ = CreateButton(localization->Get("NEW_GAME"));
-    SubscribeToEvent(newGameButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "NewGameSettingsWindow";
-        SendEvent(E_OPEN_WINDOW, data);
-    });
+    AddButton("NewGameSettingsWindow", localization->Get("NEW_GAME"), "NewGameSettingsWindow", E_OPEN_WINDOW);
+    AddButton("SettingsWindow", localization->Get("SETTINGS"), "SettingsWindow", E_OPEN_WINDOW);
+    AddButton("AchievementsWindow", localization->Get("ACHIEVEMENTS"), "AchievementsWindow", E_OPEN_WINDOW);
+    AddButton("Credits", localization->Get("CREDITS"), "Credits", E_SET_LEVEL);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    AddButton("QuitConfirmationWindow", localization->Get("EXIT"), "QuitConfirmationWindow", E_OPEN_WINDOW);
+#endif
 
     // Load dynamic buttons
     VariantMap buttons = GetGlobalVar("MenuButtons").GetVariantMap();
     for (auto it = buttons.Begin(); it != buttons.End(); ++it) {
         VariantMap item = (*it).second_.GetVariantMap();
         SharedPtr<Button> button(CreateButton(item["Name"].GetString()));
-        button->SetVar("EventToCall", item["Event"].GetString());
+        button->SetVar("EventToCall", item["EventToCall"].GetStringHash());
+        button->SetVar("Data", item["Data"].GetVariantMap());
         dynamicButtons_.Push(button);
-        SubscribeToEvent(dynamicButtons_.Back(), E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
+        SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
             using namespace Released;
             Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
-            SendEvent(button->GetVar("EventToCall").GetString());
+            VariantMap data = button->GetVar("Data").GetVariantMap();
+            SendEvent(button->GetVar("EventToCall").GetStringHash(), data);
         });
     }
-
-    settingsButton_ = CreateButton(localization->Get("SETTINGS"));
-    SubscribeToEvent(settingsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "SettingsWindow";
-        SendEvent(E_OPEN_WINDOW, data);
-    });
-
-    achievementsButton_ = CreateButton(localization->Get("ACHIEVEMENTS"));
-    SubscribeToEvent(achievementsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "AchievementsWindow";
-        SendEvent(E_OPEN_WINDOW, data);
-    });
-
-    creditsButton_ = CreateButton(localization->Get("CREDITS"));
-    SubscribeToEvent(creditsButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "Credits";
-        SendEvent(E_SET_LEVEL, data);
-    });
-
-#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-    exitButton_ = CreateButton(localization->Get("EXIT"));
-    SubscribeToEvent(exitButton_, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
-        VariantMap& data = GetEventDataMap();
-        data["Name"] = "QuitConfirmationWindow";
-        SendEvent(E_OPEN_WINDOW, data);
-    });
-#endif
 
     // Test Communication between the sample and android activity
     GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_LOAD_INTERSTITIAL, 1);
@@ -189,6 +162,22 @@ void MainMenu::CreateUI()
             GetSubsystem<ServiceCmd>()->SendCmdMessage(ANDROID_AD_SHOW_INTERSTITIAL, 1);
         }
     });
+}
+
+void MainMenu::AddButton(const String& buttonName, const String& label, const String& windowToOpen, const StringHash& eventToCall)
+{
+    VariantMap buttons = GetGlobalVar("MenuButtons").GetVariantMap();
+
+    VariantMap data;
+    data["Name"] = windowToOpen;
+    VariantMap newGameButton;
+    newGameButton["Name"] = label;
+    newGameButton["EventToCall"] = eventToCall;
+    newGameButton["Data"] = data;
+
+    buttons[buttonName] = newGameButton;
+
+    SetGlobalVar("MenuButtons", buttons);
 }
 
 Button* MainMenu::CreateButton(const String& text)

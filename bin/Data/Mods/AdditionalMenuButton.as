@@ -5,7 +5,7 @@ void Start()
 {
     VariantMap buttonInfo;
     buttonInfo["Name"] = "New Game (mod)";
-    buttonInfo["Event"] = "ButtonEvent";
+    buttonInfo["EventToCall"] = "ButtonEvent";
     VariantMap buttons = GetGlobalVar("MenuButtons").GetVariantMap();
     buttons["NewButton"] = buttonInfo;
     SetGlobalVar("MenuButtons", buttons);

@@ -3,6 +3,7 @@
 #include <Urho3D/Scene/SceneEvents.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/IO/IOEvents.h>
+#include <Urho3D/Core/Context.h>
 
 #ifdef URHO3D_ANGELSCRIPT
 #include <Urho3D/AngelScript/Script.h>

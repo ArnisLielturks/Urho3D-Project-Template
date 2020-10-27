@@ -27,15 +27,12 @@ namespace Levels {
 
         void SubscribeToEvents();
 
+        void AddButton(const String& buttonName, const String& label, const String& name, const StringHash& eventToCall);
+
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 
         void InitCamera();
 
-        SharedPtr<Button> newGameButton_;
-        SharedPtr<Button> settingsButton_;
-        SharedPtr<Button> achievementsButton_;
-        SharedPtr<Button> creditsButton_;
-        SharedPtr<Button> exitButton_;
         SharedPtr<Node> cameraRotateNode_;
         SharedPtr<UIElement> buttonsContainer_;
         List<SharedPtr<Button>> dynamicButtons_;

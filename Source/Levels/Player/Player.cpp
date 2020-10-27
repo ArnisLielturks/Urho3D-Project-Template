@@ -34,6 +34,8 @@
 
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
+static float NOCLIP_CAMERA_INERTIA_TIME = 0.1f; // Camera inertia time
+static float NOCLIP_CAMERA_SPEED = 5.0f; // Camera movement speed
 
 using namespace ConsoleHandlerEvents;
 using namespace ControllerEvents;
@@ -307,19 +309,34 @@ void Player::HandlePhysicsPrestep(StringHash eventType, VariantMap& eventData)
     if (noclip_) {
         node_->SetRotation(Quaternion(controls.pitch_, controls.yaw_, 0.0f));
         // Movement speed as world units per second
-        float MOVE_SPEED = 10.0f;
+        float MOVE_SPEED = NOCLIP_CAMERA_SPEED;
         if (controls.IsDown(CTRL_SPRINT)) {
             MOVE_SPEED *= 2;
         }
         // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
-        if (controls.IsDown(CTRL_FORWARD))
-            node_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_BACK))
-            node_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_LEFT))
-            node_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-        if (controls.IsDown(CTRL_RIGHT))
-            node_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+        if (controls.IsDown(CTRL_FORWARD)) {
+            cameraInertia_ += Vector3::FORWARD * MOVE_SPEED * timeStep * 0.5f;
+//            node_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+        }
+        if (controls.IsDown(CTRL_BACK)) {
+//            node_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+            cameraInertia_ += Vector3::BACK * MOVE_SPEED * timeStep * 0.5f;
+        }
+        if (controls.IsDown(CTRL_LEFT)) {
+//            node_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+            cameraInertia_ += Vector3::LEFT * MOVE_SPEED * timeStep * 0.5f;
+        }
+        if (controls.IsDown(CTRL_RIGHT)) {
+//            node_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+            cameraInertia_ += Vector3::RIGHT * MOVE_SPEED * timeStep * 0.5f;
+        }
+
+        cameraInertia_.x_ = Clamp(cameraInertia_.x_, -MOVE_SPEED, MOVE_SPEED);
+        cameraInertia_.y_ = Clamp(cameraInertia_.y_, -MOVE_SPEED, MOVE_SPEED);
+        cameraInertia_.z_ = Clamp(cameraInertia_.z_, -MOVE_SPEED, MOVE_SPEED);
+
+        cameraInertia_ -= cameraInertia_ * timeStep * 1.0f / NOCLIP_CAMERA_INERTIA_TIME;
+        node_->Translate(cameraInertia_);
 
         return;
     }

@@ -22,7 +22,7 @@
 #include "../Config/ConfigManager.h"
 #include "../SceneManagerEvents.h"
 #include "../LevelManagerEvents.h"
-#include "../NetworkEvents.h"
+#include "../Network/NetworkEvents.h"
 
 using namespace Levels;
 using namespace SceneManagerEvents;

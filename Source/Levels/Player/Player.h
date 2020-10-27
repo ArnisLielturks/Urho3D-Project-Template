@@ -110,4 +110,6 @@ private:
     SharedPtr<Text> positionUI_;
 
     int type_{0};
+
+    Vector3 cameraInertia_{0, 0, 0};
 };

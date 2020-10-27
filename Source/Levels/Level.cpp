@@ -36,9 +36,8 @@
 #include "../Input/ControllerEvents.h"
 #include "../UI/WindowEvents.h"
 #include "../Audio/AudioEvents.h"
-#include "../NetworkEvents.h"
+#include "../Network/NetworkEvents.h"
 #include "../SceneManager.h"
-#include "Maze/Maze.h"
 
 #ifdef VOXEL_SUPPORT
 #include "Voxel/VoxelWorld.h"
@@ -83,7 +82,6 @@ void Level::RegisterObject(Context* context)
 {
     context->RegisterFactory<Level>();
     Player::RegisterObject(context);
-    Maze::RegisterObject(context);
 
 #ifdef VOXEL_SUPPORT
     VoxelWorld::RegisterObject(context);

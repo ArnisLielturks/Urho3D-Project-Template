@@ -24,12 +24,11 @@
 #include "../Generator/Generator.h"
 #include "Level.h"
 #include "../CustomEvents.h"
-#include "../Global.h"
 #include "../Audio/AudioManagerDefs.h"
 #include "../Audio/AudioManager.h"
 #include "../Input/ControllerInput.h"
 #include "../Messages/Achievements.h"
-#include "Player/PlayerEvents.h"
+#include "../Player/PlayerEvents.h"
 #include "../UI/WindowManager.h"
 #include "../Console/ConsoleHandlerEvents.h"
 #include "../LevelManagerEvents.h"
@@ -38,6 +37,9 @@
 #include "../Audio/AudioEvents.h"
 #include "../Network/NetworkEvents.h"
 #include "../SceneManager.h"
+#include "../Globals/CollisionLayers.h"
+#include "../Globals/ViewLayers.h"
+#include "../Input/ControlDefines.h"
 
 #ifdef VOXEL_SUPPORT
 #include "Voxel/VoxelWorld.h"

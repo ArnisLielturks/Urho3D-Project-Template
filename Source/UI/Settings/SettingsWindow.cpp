@@ -17,9 +17,9 @@
 #include "../../Input/ControllerEvents.h"
 #include "SettingsWindow.h"
 #include "../../CustomEvents.h"
-#include "../../Global.h"
 #include "../../Messages/Achievements.h"
 #include "../WindowEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 using namespace ControllerEvents;
 using namespace WindowEvents;

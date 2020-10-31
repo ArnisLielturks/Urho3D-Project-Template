@@ -2,8 +2,8 @@
 #include <Urho3D/Resource/JSONFile.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include "BehaviourTree.h"
-#include "../Global.h"
 #include "../Console/ConsoleHandlerEvents.h"
+#include "../Input/ControlDefines.h"
 
 using namespace Urho3D;
 using namespace ConsoleHandlerEvents;

@@ -27,7 +27,7 @@ namespace Levels {
 
         void SubscribeToEvents();
 
-        void AddButton(const String& buttonName, const String& label, const String& name, const StringHash& eventToCall);
+        void AddButton(const String& buttonName, const String& label, const String& name, const String& eventToCall);
 
         void HandleUpdate(StringHash eventType, VariantMap& eventData);
 

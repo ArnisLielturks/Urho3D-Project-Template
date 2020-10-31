@@ -6,7 +6,7 @@
 #include <Urho3D/UI/Font.h>
 #include "ExitGame.h"
 #include "../Messages/Achievements.h"
-#include "../Global.h"
+#include "../Globals/GUIDefines.h"
 
 using namespace Levels;
 

@@ -5,7 +5,7 @@
 #include <Urho3D/Core/ProcessUtils.h>
 #include "JoystickInput.h"
 #include "../ControllerInput.h"
-#include "../../Global.h"
+#include "../ControlDefines.h"
 
 JoystickInput::JoystickInput(Context* context) :
     BaseInput(context),

@@ -5,9 +5,9 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/UI/Text.h>
 #include "QuitConfirmationWindow.h"
-#include "../../Global.h"
 #include "../../LevelManagerEvents.h"
 #include "../WindowEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 using namespace LevelManagerEvents;
 using namespace WindowEvents;

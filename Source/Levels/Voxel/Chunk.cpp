@@ -31,7 +31,6 @@
 #include <Urho3D/Network/NetworkEvents.h>
 #endif
 
-#include "../../Global.h"
 #include "VoxelEvents.h"
 #include "VoxelWorld.h"
 #include "ChunkGenerator.h"
@@ -40,6 +39,9 @@
 #include "TreeGenerator.h"
 #include "../../Audio/AudioManagerDefs.h"
 #include "../../Audio/AudioEvents.h"
+#include "../../Globals/ViewLayers.h"
+#include "../../Input/ControlDefines.h"
+#include "../../Globals/CollisionLayers.h"
 
 using namespace VoxelEvents;
 using namespace ConsoleHandlerEvents;

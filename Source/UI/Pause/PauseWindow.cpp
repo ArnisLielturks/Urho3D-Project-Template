@@ -6,9 +6,9 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/CoreEvents.h>
 #include "PauseWindow.h"
-#include "../../Global.h"
 #include "../../LevelManagerEvents.h"
 #include "../WindowEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 using namespace LevelManagerEvents;
 using namespace WindowEvents;

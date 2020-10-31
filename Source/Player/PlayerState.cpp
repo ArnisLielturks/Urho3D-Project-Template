@@ -8,7 +8,8 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include "PlayerState.h"
 #include "PlayerEvents.h"
-#include "../../Global.h"
+#include "../Globals/GUIDefines.h"
+#include "../Globals/ViewLayers.h"
 
 PlayerState::PlayerState(Context* context) :
         Component(context)

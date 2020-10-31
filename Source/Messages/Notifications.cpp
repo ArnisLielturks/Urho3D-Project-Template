@@ -7,7 +7,7 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/IO/Log.h>
 #include "Notifications.h"
-#include "../Global.h"
+#include "../Globals/GUIDefines.h"
 
 static const int NOTIFICATION_OVERLAP_TIME = 1000;
 

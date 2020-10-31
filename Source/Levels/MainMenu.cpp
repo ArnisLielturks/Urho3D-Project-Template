@@ -13,7 +13,6 @@
 #include <Urho3D/AngelScript/Script.h>
 #endif
 #include "MainMenu.h"
-#include "../Global.h"
 #include "../CustomEvents.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
@@ -21,6 +20,8 @@
 #include "../LevelManagerEvents.h"
 #include "../UI/WindowEvents.h"
 #include "../AndroidEvents/ServiceEvents.h"
+#include "../AndroidEvents/AndroidDefines.h"
+#include "../Globals/GUIDefines.h"
 
 using namespace Levels;
 using namespace LevelManagerEvents;
@@ -128,12 +129,12 @@ void MainMenu::CreateUI()
     buttonsContainer_->SetAlignment(HA_RIGHT, VA_BOTTOM);
     buttonsContainer_->SetPosition(-10, -10);
 
-    AddButton("NewGameSettingsWindow", localization->Get("NEW_GAME"), "NewGameSettingsWindow", E_OPEN_WINDOW);
-    AddButton("SettingsWindow", localization->Get("SETTINGS"), "SettingsWindow", E_OPEN_WINDOW);
-    AddButton("AchievementsWindow", localization->Get("ACHIEVEMENTS"), "AchievementsWindow", E_OPEN_WINDOW);
-    AddButton("Credits", localization->Get("CREDITS"), "Credits", E_SET_LEVEL);
+    AddButton("NewGameSettingsWindow", localization->Get("NEW_GAME"), "NewGameSettingsWindow", "OpenWindow");
+    AddButton("SettingsWindow", localization->Get("SETTINGS"), "SettingsWindow", "OpenWindow");
+    AddButton("AchievementsWindow", localization->Get("ACHIEVEMENTS"), "AchievementsWindow", "OpenWindow");
+    AddButton("CreditsWindow", localization->Get("CREDITS"), "Credits", "SetLevel");
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-    AddButton("QuitConfirmationWindow", localization->Get("EXIT"), "QuitConfirmationWindow", E_OPEN_WINDOW);
+    AddButton("QuitConfirmationWindow", localization->Get("EXIT"), "QuitConfirmationWindow", "OpenWindow");
 #endif
 
     // Load dynamic buttons
@@ -141,14 +142,14 @@ void MainMenu::CreateUI()
     for (auto it = buttons.Begin(); it != buttons.End(); ++it) {
         VariantMap item = (*it).second_.GetVariantMap();
         SharedPtr<Button> button(CreateButton(item["Name"].GetString()));
-        button->SetVar("EventToCall", item["EventToCall"].GetStringHash());
+        button->SetVar("EventToCall", item["EventToCall"].GetString());
         button->SetVar("Data", item["Data"].GetVariantMap());
         dynamicButtons_.Push(button);
         SubscribeToEvent(button, E_RELEASED, [&](StringHash eventType, VariantMap& eventData) {
             using namespace Released;
             Button* button = static_cast<Button*>(eventData[P_ELEMENT].GetPtr());
             VariantMap data = button->GetVar("Data").GetVariantMap();
-            SendEvent(button->GetVar("EventToCall").GetStringHash(), data);
+            SendEvent(button->GetVar("EventToCall").GetString(), data);
         });
     }
 
@@ -164,7 +165,7 @@ void MainMenu::CreateUI()
     });
 }
 
-void MainMenu::AddButton(const String& buttonName, const String& label, const String& windowToOpen, const StringHash& eventToCall)
+void MainMenu::AddButton(const String& buttonName, const String& label, const String& windowToOpen, const String& eventToCall)
 {
     VariantMap buttons = GetGlobalVar("MenuButtons").GetVariantMap();
 

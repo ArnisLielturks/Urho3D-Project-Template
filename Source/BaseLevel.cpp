@@ -13,7 +13,6 @@
 #include "BaseLevel.h"
 #include "Input/ControllerInput.h"
 #include "SceneManager.h"
-#include "Global.h"
 #include "Console/ConsoleHandlerEvents.h"
 #include "LevelManagerEvents.h"
 #include "CustomEvents.h"
@@ -21,6 +20,8 @@
 using namespace ConsoleHandlerEvents;
 using namespace LevelManagerEvents;
 using namespace CustomEvents;
+
+static const float GAMMA_MAX_VALUE = 2.0f;
 
 BaseLevel::BaseLevel(Context* context) :
 Object(context)

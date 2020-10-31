@@ -9,8 +9,8 @@
 #include "ScreenJoystickInput.h"
 #include "../ControllerInput.h"
 #include "../ControllerEvents.h"
-#include "../../Global.h"
 #include "../../LevelManager.h"
+#include "../ControlDefines.h"
 
 ScreenJoystickInput::ScreenJoystickInput(Context* context) :
     BaseInput(context)

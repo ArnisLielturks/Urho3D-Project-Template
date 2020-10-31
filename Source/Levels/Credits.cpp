@@ -9,11 +9,12 @@
 #include <Urho3D/UI/Font.h>
 #include <Urho3D/Core/Context.h>
 #include "Credits.h"
-#include "../Global.h"
+#include "../Globals/GUIDefines.h"
 #include "../Messages/Achievements.h"
 #include "../AndroidEvents/ServiceCmd.h"
 #include "../LevelManagerEvents.h"
 #include "../AndroidEvents/ServiceEvents.h"
+#include "../AndroidEvents/AndroidDefines.h"
 
 using namespace Levels;
 using namespace Urho3D;

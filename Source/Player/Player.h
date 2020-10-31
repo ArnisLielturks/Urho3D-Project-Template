@@ -60,6 +60,9 @@ public:
     void ResetPosition();
 
     int GetSelectedItem();
+
+    void SetScale(float scale);
+    float GetScale();
 private:
 
     bool IsCameraTargetSet();
@@ -72,6 +75,8 @@ private:
      */
     void HandleNodeCollision(StringHash eventType, VariantMap& eventData);
 
+    void HandleUpdate(StringHash eventType, VariantMap& eventData);
+
     void HandlePredictPlayerPosition(StringHash eventType, VariantMap& eventData);
 
     RigidBody* rigidBody_;
@@ -79,6 +84,8 @@ private:
 
     WeakPtr<Node> cameraTarget_;
     float cameraDistance_{0.0f};
+    float cameraTargetDistance_{0.0f};
+    float scaleFactor_ = {1.0f};
     
     /**
      * Controller ID

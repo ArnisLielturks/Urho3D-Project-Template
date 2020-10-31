@@ -12,7 +12,6 @@
 
 #include "Achievements.h"
 #include "../Audio/AudioManagerDefs.h"
-#include "../Global.h"
 #include "../Audio/AudioEvents.h"
 #include "MessageEvents.h"
 

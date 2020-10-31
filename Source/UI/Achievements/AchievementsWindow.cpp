@@ -6,10 +6,10 @@
 #include <Urho3D/UI/ToolTip.h>
 #include <Urho3D/UI/Font.h>
 #include "AchievementsWindow.h"
-#include "../../Global.h"
 #include "../../Messages/Achievements.h"
 #include "../WindowEvents.h"
 #include "../../Messages/MessageEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 using namespace WindowEvents;
 using namespace MessageEvents;

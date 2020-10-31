@@ -11,7 +11,6 @@
 #include <Urho3D/Core/CoreEvents.h>
 #include "PackageManager.h"
 #include "../Config/ConfigManager.h"
-#include "../Global.h"
 #include "PackageManagerEvents.h"
 #include "../Console/ConsoleHandlerEvents.h"
 

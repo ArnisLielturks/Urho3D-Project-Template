@@ -6,7 +6,7 @@
 #include <Urho3D/Network/Connection.h>
 #include <Urho3D/Graphics/CustomGeometry.h>
 #include "../BaseLevel.h"
-#include "Player/Player.h"
+#include "../Player/Player.h"
 
 namespace Levels {
     class Level : public BaseLevel

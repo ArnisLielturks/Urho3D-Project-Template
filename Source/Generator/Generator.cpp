@@ -3,7 +3,6 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/Log.h>
 #include "Generator.h"
-#include "../Global.h"
 #include "PerlinNoise.h"
 #include "../SceneManagerEvents.h"
 #include "../Console/ConsoleHandlerEvents.h"

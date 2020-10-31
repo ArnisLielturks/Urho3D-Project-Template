@@ -5,7 +5,7 @@
 #include <Urho3D/IO/Log.h>
 #include "State.h"
 #include "../Config/ConfigManager.h"
-#include "../Global.h"
+#include "../Globals/Settings.h"
 #include "StateEvents.h"
 
 #if defined(__EMSCRIPTEN__)

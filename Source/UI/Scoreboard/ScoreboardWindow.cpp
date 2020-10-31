@@ -3,8 +3,8 @@
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/UI/Font.h>
 #include "ScoreboardWindow.h"
-#include "../../Global.h"
-#include "../../Levels/Player/PlayerEvents.h"
+#include "../../Player/PlayerEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 ScoreboardWindow::ScoreboardWindow(Context* context) :
     BaseWindow(context)

@@ -5,7 +5,7 @@
 #include <Urho3D/Graphics/Texture2D.h>
 #include <Urho3D/UI/Font.h>
 #include "Achievements.h"
-#include "../Global.h"
+#include "../Globals/GUIDefines.h"
 
 void SingleAchievement::RegisterObject(Context* context)
 {

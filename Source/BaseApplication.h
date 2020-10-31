@@ -30,6 +30,8 @@ public:
      */
     virtual void Stop() override;
 
+    void Exit();
+
 #if defined(__EMSCRIPTEN__)
     /**
      * HTML canvas size was changed, we must resize our rendered

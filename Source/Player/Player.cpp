@@ -20,22 +20,26 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/Engine/DebugHud.h>
 #include "Player.h"
-#include "../../Global.h"
-#include "../../Input/ControllerInput.h"
-#include "../../BehaviourTree/BehaviourTree.h"
+#include "../Input/ControllerInput.h"
+#include "../BehaviourTree/BehaviourTree.h"
 #include "PlayerState.h"
-#include "../../Console/ConsoleHandlerEvents.h"
+#include "../Console/ConsoleHandlerEvents.h"
+#include "../Globals/ViewLayers.h"
+#include "../Globals/GUIDefines.h"
+#include "../Globals/CollisionLayers.h"
+#include "../Input/ControlDefines.h"
 
 #ifdef VOXEL_SUPPORT
-#include "../Voxel/VoxelWorld.h"
+#include "../Levels/Voxel/VoxelWorld.h"
 #endif
 
-#include "../../Input/ControllerEvents.h"
+#include "../Input/ControllerEvents.h"
 
 static float MOVE_TORQUE = 20.0f;
 static float JUMP_FORCE = 40.0f;
 static float NOCLIP_CAMERA_INERTIA_TIME = 0.1f; // Camera inertia time
 static float NOCLIP_CAMERA_SPEED = 5.0f; // Camera movement speed
+static float CAMERA_TARGET_DISTANCE_SPEED = 0.1f; // How many seconds the camera zoom should change
 
 using namespace ConsoleHandlerEvents;
 using namespace ControllerEvents;
@@ -45,6 +49,7 @@ Player::Player(Context* context):
 {
     SubscribeToEvent(E_PHYSICSPRESTEP, URHO3D_HANDLER(Player, HandlePhysicsPrestep));
     SubscribeToEvent(E_MAPPED_CONTROL_PRESSED, URHO3D_HANDLER(Player, HandleMappedControlPressed));
+    SubscribeToEvent(E_UPDATE, URHO3D_HANDLER(Player, HandleUpdate));
     RegisterConsoleCommands();
 
     auto* cache = GetSubsystem<ResourceCache>();
@@ -102,6 +107,22 @@ void Player::RegisterConsoleCommands()
             return;
         }
         MOVE_TORQUE = ToFloat(params[1]);
+    });
+
+    SendEvent(
+            E_CONSOLE_COMMAND_ADD,
+            ConsoleCommandAdd::P_NAME, "camera_distance",
+            ConsoleCommandAdd::P_EVENT, "#camera_distance",
+            ConsoleCommandAdd::P_DESCRIPTION, "Camera distance from player (0 - 1st person view, > 0  - 3rd person view)",
+            ConsoleCommandAdd::P_OVERWRITE, true
+    );
+    SubscribeToEvent("#camera_distance", [&](StringHash eventType, VariantMap& eventData) {
+        StringVector params = eventData["Parameters"].GetStringVector();
+        if (params.Size() != 2) {
+            URHO3D_LOGERROR("Invalid number of arguments!");
+            return;
+        }
+        SetCameraDistance(ToFloat(params[1]));
     });
 
     SendEvent(
@@ -173,7 +194,7 @@ void Player::CreateNode(Scene* scene, int controllerId, Terrain* terrain, int ty
     node_->SetVar("Player", controllerId_);
 
     node_->SetPosition(Vector3(0, 2, 0));
-    node_->SetScale(0.9f);
+    SetScale(0.9f);
 
     auto* ballObject = node_->CreateComponent<StaticModel>();
     ballObject->SetModel(cache->GetResource<Model>("Models/Sphere.mdl"));
@@ -474,7 +495,7 @@ bool Player::IsCameraTargetSet()
 
 void Player::SetCameraDistance(float distance)
 {
-    cameraDistance_ = distance;
+    cameraTargetDistance_ = distance;
 }
 
 float Player::GetCameraDistance()
@@ -530,4 +551,29 @@ void Player::HandleMappedControlPressed(StringHash eventType, VariantMap& eventD
 int Player::GetSelectedItem()
 {
     return selectedItem_;
+}
+
+void Player::HandleUpdate(StringHash eventType, VariantMap& eventData)
+{
+    using namespace Update;
+    float timeStep = eventData[P_TIMESTEP].GetFloat();
+    if (cameraDistance_ != cameraTargetDistance_ * scaleFactor_) {
+        float diff = cameraTargetDistance_ * scaleFactor_ - cameraDistance_;
+        if (Abs(diff) > 0.01f) {
+            cameraDistance_ += diff * timeStep / CAMERA_TARGET_DISTANCE_SPEED;
+        } else {
+            cameraDistance_ = cameraTargetDistance_ * scaleFactor_;
+        }
+    }
+}
+
+void Player::SetScale(float scale)
+{
+    scaleFactor_ = scale;
+    node_->SetScale(scale);
+}
+
+float Player::GetScale()
+{
+    return scaleFactor_;
 }

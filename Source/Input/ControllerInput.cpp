@@ -3,12 +3,12 @@
 #include <Urho3D/Input/Input.h>
 #include <Urho3D/IO/Log.h>
 #include "ControllerInput.h"
-#include "../Global.h"
 #include "Controllers/KeyboardInput.h"
 #include "Controllers/MouseInput.h"
 #include "Controllers/JoystickInput.h"
 #include "Controllers/ScreenJoystickInput.h"
 #include "ControllerEvents.h"
+#include "ControlDefines.h"
 
 using namespace Urho3D;
 using namespace ControllerEvents;

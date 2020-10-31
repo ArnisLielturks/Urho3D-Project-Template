@@ -5,8 +5,8 @@
 #include <Urho3D/Scene/ObjectAnimation.h>
 #include <Urho3D/Scene/ValueAnimation.h>
 #include "PopupMessageWindow.h"
-#include "../../Global.h"
 #include "../WindowEvents.h"
+#include "../../Globals/GUIDefines.h"
 
 using namespace WindowEvents;
 

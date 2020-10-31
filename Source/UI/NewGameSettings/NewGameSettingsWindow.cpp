@@ -7,10 +7,10 @@
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Resource/JSONFile.h>
 #include "NewGameSettingsWindow.h"
-#include "../../Global.h"
 #include "../../LevelManagerEvents.h"
 #include "../WindowEvents.h"
 #include "../../SceneManager.h"
+#include "../../Globals/GUIDefines.h"
 
 static const int BUTTON_HEIGHT = 40;
 static const int MARGIN = 10;

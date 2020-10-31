@@ -19,7 +19,6 @@
 #include "../../SceneManager.h"
 #include "VoxelEvents.h"
 #include "../../Console/ConsoleHandlerEvents.h"
-#include "../../Global.h"
 #include "LightManager.h"
 #include "TreeGenerator.h"
 

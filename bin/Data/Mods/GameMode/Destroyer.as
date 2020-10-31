@@ -25,14 +25,14 @@ class Destroyer : ScriptObject
                 Vector3 contactNormal = contacts.ReadVector3();
                 float contactDistance = contacts.ReadFloat();
                 float contactImpulse = contacts.ReadFloat();
-                if (otherBody.node.name == "Player") {
+                if (otherBody.node.name.Contains("Player")) {
                     body.ApplyImpulse(contactNormal * contactImpulse * 10);
                 }
             }
 
             // node.scale -= Vector3(0.5, 0.5, 0.5);
 
-            if (otherBody.node.name == "Player") {
+            if (otherBody.node.name.Contains("Player")) {
                 node.vars["LastTouchedNode"] = otherBody.node;
             }
 

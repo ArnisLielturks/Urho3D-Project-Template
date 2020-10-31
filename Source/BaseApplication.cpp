@@ -16,7 +16,6 @@
 #include "Console/ConsoleHandler.h"
 #include "SceneManager.h"
 #include "CustomEvents.h"
-#include "Global.h"
 #include "Generator/Generator.h"
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
@@ -26,6 +25,7 @@
 #include "Console/ConsoleHandlerEvents.h"
 #include "LevelManagerEvents.h"
 #include "Input/ControllerEvents.h"
+#include "Input/ControlDefines.h"
 
 #ifdef NAKAMA_SUPPORT
 #include "Nakama/NakamaManager.h"
@@ -52,9 +52,24 @@ using namespace LevelManagerEvents;
 using namespace ControllerEvents;
 using namespace CustomEvents;
 
+#ifndef __EMSCRIPTEN__
+static BaseApplication* app = nullptr;
+#endif
+
 BaseApplication::BaseApplication(Context* context) :
     Application(context)
 {
+#ifndef __EMSCRIPTEN__
+    app = this;
+    signal(SIGINT, [](int signum){
+        URHO3D_LOGINFOF("Signal '%d' received, exiting app...", signum);
+        if (app) {
+            app->Exit();
+            app = nullptr;
+        }
+    });
+#endif
+
     ConfigFile::RegisterObject(context);
     ConfigManager::RegisterObject(context);
 
@@ -186,10 +201,10 @@ void BaseApplication::Start()
 
     // Initialize the first level from the config file
     VariantMap& eventData = GetEventDataMap();
-    if (GetSubsystem<ConfigManager>()->GetBool("dedicated_server", "enabled", false)) {
+    if (GetSubsystem<ConfigManager>()->GetBool("server", "Dedicated", false)) {
         eventData["Name"] = "Loading";
         eventData["StartServer"] = true;
-        eventData["Map"] = GetSubsystem<ConfigManager>()->GetString("dedicated_server", "map", "Scenes/Flat.xml");
+        eventData["Map"] = GetSubsystem<ConfigManager>()->GetString("server", "Map", "Scenes/Flat.xml");
     } else {
         eventData["Name"] = GetSubsystem<ConfigManager>()->GetString("game", "FirstLevel", "Splash");
     }
@@ -279,6 +294,11 @@ void BaseApplication::HandleExit(StringHash eventType, VariantMap& eventData)
     GetSubsystem<Engine>()->Exit();
 }
 
+void BaseApplication::Exit()
+{
+    GetSubsystem<Engine>()->Exit();
+}
+
 void BaseApplication::SubscribeToEvents()
 {
     SubscribeToEvent(E_ADD_CONFIG, URHO3D_HANDLER(BaseApplication, HandleAddConfig));
@@ -318,7 +338,7 @@ void BaseApplication::LoadINIConfig(String filename)
     SetEngineParameter(EP_BORDERLESS, windowMode == 1);
 
     // Dedicated server - headless mode
-    SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("dedicated_server", "enabled", false));
+    SetEngineParameter(EP_HEADLESS, GetSubsystem<ConfigManager>()->GetBool("server", "Dedicated", false));
 
     SetEngineParameter(EP_WINDOW_WIDTH, GetSubsystem<ConfigManager>()->GetInt("video", "Width", 1280));
     SetEngineParameter(EP_WINDOW_HEIGHT, GetSubsystem<ConfigManager>()->GetInt("video", "Height", 720));

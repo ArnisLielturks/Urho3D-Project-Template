@@ -4,7 +4,7 @@
 #include <Urho3D/Input/Input.h>
 #include "KeyboardInput.h"
 #include "../ControllerInput.h"
-#include "../../Global.h"
+#include "../ControlDefines.h"
 
 KeyboardInput::KeyboardInput(Context* context) :
     BaseInput(context)

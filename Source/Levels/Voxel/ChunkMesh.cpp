@@ -30,7 +30,6 @@
 #endif
 
 #include "ChunkMesh.h"
-#include "../../Global.h"
 
 ChunkMesh::ChunkMesh(Context* context):
         Object(context)

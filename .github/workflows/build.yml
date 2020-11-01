@@ -35,7 +35,7 @@ jobs:
       - name: Build archive
         run: |
           mkdir archive
-          cp -r Urho3D-web/build/web/bin/ProjectTemplate* archive/
+          cp -r Urho3D-web/build/ci/bin/ProjectTemplate* archive/
           mv archive/ProjectTemplate.html archive/index.html
           chmod -R 777 archive
       - uses: actions/upload-artifact@v1

@@ -20,7 +20,11 @@
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
 #include "State/State.h"
+
+#ifdef PACKAGE_MANAGER
 #include "PackageManager/PackageManager.h"
+#endif
+
 #include "Console/ConsoleHandlerEvents.h"
 #include "Console/ConsoleHandlerEvents.h"
 #include "LevelManagerEvents.h"
@@ -79,8 +83,13 @@ BaseApplication::BaseApplication(Context* context) :
     context_->RegisterFactory<Achievements>();
     SingleAchievement::RegisterObject(context_);
     State::RegisterObject(context_);
+
+#ifdef PACKAGE_MANAGER
     PackageManager::RegisterObject(context_);
+#endif
+
     LevelManager::RegisterObject(context_);
+
 #ifdef NAKAMA_SUPPORT
     NakamaManager::RegisterObject(context_);
 #endif
@@ -116,7 +125,11 @@ BaseApplication::BaseApplication(Context* context) :
     ConfigManager* configManager = new ConfigManager(context_, configurationFile_);
     context_->RegisterSubsystem(configManager);
     context_->RegisterSubsystem(new State(context_));
+
+#ifdef PACKAGE_MANAGER
     context_->RegisterSubsystem(new PackageManager(context_));
+#endif
+
     context_->RegisterSubsystem(new SceneManager(context_));
 
     context_->RegisterSubsystem(new ServiceCmd(context_));
@@ -142,8 +155,12 @@ void BaseApplication::Start()
 {
 #ifdef NAKAMA_SUPPORT
     GetSubsystem<NakamaManager>()->Init();
+#endif
+
+#ifdef PACKAGE_MANAGER
     GetSubsystem<PackageManager>()->Init();
 #endif
+
     GetSubsystem<ServiceCmd>()->Init();
     UI* ui = GetSubsystem<UI>();
     auto cache = GetSubsystem<ResourceCache>();

@@ -1,3 +1,4 @@
+#ifdef PACKAGE_MANAGER
 #include <Urho3D/Core/Context.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/IO/PackageFile.h>
@@ -90,3 +91,5 @@ void PackageManager::HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 #endif
 }
+
+#endif

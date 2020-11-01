@@ -1,3 +1,5 @@
+#ifdef PACKAGE_MANAGER
+
 #pragma once
 
 #include <Urho3D/Core/Object.h>
@@ -29,3 +31,5 @@ private:
 #endif
     String data_;
 };
+
+#endif

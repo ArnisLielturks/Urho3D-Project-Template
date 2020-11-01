@@ -18,9 +18,6 @@ mkdir Urho3D/Source/ProjectTemplate
 cp -rf Source/* Urho3D/Source/ProjectTemplate/
 cp -rf BuildConfig/CMakeLists.txt Urho3D/Source/ProjectTemplate/CMakeLists.txt
 
-# Use our custom dockerized script which is supported by Github actions
-cp -rf script/dockerized.sh Urho3D/script/dockerized.sh
-
 # Use custom CMake file to build Urho3D and this project
 cp -rf BuildConfig/Urho3DCMakeLists.txt Urho3D/Source/CMakeLists.txt
 

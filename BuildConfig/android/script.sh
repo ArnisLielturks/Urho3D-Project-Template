@@ -22,6 +22,7 @@ cp -rf Source/* Urho3D/Source/ProjectTemplate/
 
 # Add our custom CMakeLists to allow to build our subproject
 cp BuildConfig/android/CMakeLists.txt Urho3D/Source/ProjectTemplate/
+echo "add_subdirectory (ProjectTemplate)" > Urho3D/Source/CMakeLists.txt
 
 # Remove original Urho3D android application files
 rm -rf Urho3D/android/launcher-app
@@ -33,6 +34,7 @@ cp -r BuildConfig/android/SDL/android-project/* Urho3D/Source/ThirdParty/SDL/and
 cp -rf script/dockerized.sh Urho3D/script/dockerized.sh
 
 cd Urho3D
+
 
 # Run dockerized android build to genereate libProjectTemplate.so file
 # Release mode

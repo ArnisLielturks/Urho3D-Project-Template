@@ -20,6 +20,7 @@
 #include "AndroidEvents/ServiceCmd.h"
 #include "BehaviourTree/BehaviourTree.h"
 #include "State/State.h"
+#include "Globals/Settings.h"
 
 #ifdef PACKAGE_MANAGER
 #include "PackageManager/PackageManager.h"

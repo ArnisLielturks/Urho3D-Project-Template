@@ -1,25 +1,3 @@
-//
-// Copyright (c) 2008-2020 the Urho3D project.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -37,23 +15,19 @@ android {
     defaultConfig {
         minSdkVersion(18)
         targetSdkVersion(30)
-        applicationId = "com.github.arnislielturks.project_template"
+        applicationId = "com.arnislielturks.project_template"
         versionCode = 1
-        versionName = project.version.toString()
+        versionName = "1.0"
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 arguments.apply {
                     System.getenv("ANDROID_CCACHE")?.let { add("-D ANDROID_CCACHE=$it") }
-                    add("-D BUILD_STAGING_DIR=${findProject(":android:urho3d-lib")!!.projectDir}/$buildStagingDir")
-                    add("-D URHO3D_PLAYER=1")
-                    // Skip building samples for 'STATIC' lib type to reduce the spacetime requirement
-                    add("-D URHO3D_SAMPLES=${if (System.getenv("URHO3D_LIB_TYPE") == "SHARED") "1" else "0"}")
+                    add("-D JNI_DIR=${project.file(buildStagingDir)}")
                     // Pass along matching env-vars as CMake build options
-                    addAll(project.file("../../script/.build-options")
-                            .readLines()
-                            .filterNot { listOf("URHO3D_PLAYER", "URHO3D_SAMPLES").contains(it) }
-                            .mapNotNull { variable -> System.getenv(variable)?.let { "-D $variable=$it" } }
+                    addAll(project.file("../script/.build-options")
+                        .readLines()
+                        .mapNotNull { variable -> System.getenv(variable)?.let { "-D $variable=$it" } }
                     )
                 }
             }
@@ -63,9 +37,9 @@ android {
                 isEnable = project.hasProperty("ANDROID_ABI")
                 reset()
                 include(
-                        *(project.findProperty("ANDROID_ABI") as String? ?: "")
-                                .split(',')
-                                .toTypedArray()
+                    *(project.findProperty("ANDROID_ABI") as String? ?: "")
+                        .split(',')
+                        .toTypedArray()
                 )
             }
         }
@@ -82,14 +56,26 @@ android {
     externalNativeBuild {
         cmake {
             version = cmakeVersion
-            path = project.file("CMakeLists.txt")
+            path = project.file("../CMakeLists.txt")
             setBuildStagingDirectory(buildStagingDir)
+        }
+    }
+    sourceSets {
+        named("main") {
+            assets.srcDir(project.file("../bin"))
         }
     }
 }
 
+val urhoReleaseImpl by configurations.creating { isCanBeResolved = true }
+configurations.releaseImplementation.get().extendsFrom(urhoReleaseImpl)
+
+val urhoDebugImpl by configurations.creating { isCanBeResolved = true }
+configurations.debugImplementation.get().extendsFrom(urhoDebugImpl)
+
 dependencies {
-    implementation(project(":android:urho3d-lib"))
+    urhoReleaseImpl("io.urho3d:urho3d-lib-shared:Unversioned")
+    urhoDebugImpl("io.urho3d:urho3d-lib-shared-debug:Unversioned")
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("androidx.core:core-ktx:1.3.2")
@@ -98,16 +84,25 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     androidTestImplementation("androidx.test:runner:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+
+    // ADMob dependencies
     implementation("com.google.android.gms:play-services-ads:18.2.0")
     implementation("androidx.annotation:annotation:1.1.0")
 }
 
 afterEvaluate {
-    android.buildTypes.forEach {
-        val config = it.name.capitalize()
+    android.buildTypes.forEach { buildType ->
+        val config = buildType.name.capitalize()
+        val unzipTaskName = "unzipJni$config"
         tasks {
-            "externalNativeBuild$config" {
-                mustRunAfter(":android:urho3d-lib:externalNativeBuild$config")
+            "generateJsonModel$config" {
+                dependsOn(unzipTaskName)
+            }
+            register<Copy>(unzipTaskName) {
+                val aar = configurations["urho${config}Impl"].resolve().first { it.name.startsWith("urho3d-lib") }
+                from(zipTree(aar))
+                include("urho3d/**")
+                into(android.externalNativeBuild.cmake.buildStagingDirectory)
             }
         }
     }

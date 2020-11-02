@@ -127,9 +127,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return "SDL_main";
     }
 
-    static {
-        System.loadLibrary("Urho3D");
-        System.loadLibrary("ProjectTemplate");
+    // Urho3D - avoid hardcoding of the library list
+    protected void onLoadLibrary(List<String> libraryNames) {
+        for (final String name : libraryNames) {
+            SDL.loadLibrary(name);
+        }
+        mMainSharedLib = "lib" + libraryNames.get(libraryNames.size() - 1) + ".so";
     }
 
     /**

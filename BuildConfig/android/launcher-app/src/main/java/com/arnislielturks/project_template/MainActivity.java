@@ -7,8 +7,14 @@ import com.google.android.gms.ads.*;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.initialization.*;
 import com.google.android.gms.ads.rewarded.*;
+import io.urho3d.UrhoActivity;
 
 public class MainActivity extends SDLActivity {
+
+    static {
+        System.loadLibrary("Urho3D");
+        System.loadLibrary("ProjectTemplate");
+    }
 
     private InterstitialAd mInterstitialAd;
 

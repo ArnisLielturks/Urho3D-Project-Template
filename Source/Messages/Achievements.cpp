@@ -14,6 +14,7 @@
 #include "../Audio/AudioManagerDefs.h"
 #include "../Audio/AudioEvents.h"
 #include "MessageEvents.h"
+#include "../Globals/Settings.h"
 
 using namespace Urho3D;
 using namespace AudioEvents;

@@ -1,6 +1,12 @@
-# Define target name
-set (TARGET_NAME ProjectTemplate)
+cmake_minimum_required(VERSION 3.10.2)
+project(ProjectTemplate)
 
-define_source_files ()
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
-setup_main_executable (NOBUNDLE)
+# Find Urho3D library
+find_package (Urho3D REQUIRED)
+include_directories (${URHO3D_INCLUDE_DIRS})
+
+include(UrhoCommon)
+
+add_subdirectory(app)

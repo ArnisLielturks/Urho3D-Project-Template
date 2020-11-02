@@ -11,9 +11,11 @@ cp ../BuildConfig/android/gradle.properties ./
 
 export LIB_TYPE=shared
 export URHO3D_LIB_TYPE=SHARED
-export BUILD_TYPE=both
+export BUILD_TYPE=dbg
 export DBE_TAG=latest
-export ARCH=all
+# export ARCH=all
+export ARCH=armeabi-v7a
+# export ARCH=armeabi-v7a,arm64-v8a
 export PLATFORM=android
 
 function step {

@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-          uses: actions/checkout@v2
-          with: { fetch-depth: 0 }
+        uses: actions/checkout@v2
+        with: { fetch-depth: 0 }
       - name: Free up space
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android

@@ -18,7 +18,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: Build_Android.apk
-          path: ProjectTemplate.apk
+          path: Urho3D-android/ProjectTemplate/app/build/outputs/apk/debug/app-debug.apk
 
   build_web:
     runs-on: ubuntu-latest

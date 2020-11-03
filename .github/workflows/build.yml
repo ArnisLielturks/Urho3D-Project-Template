@@ -169,13 +169,13 @@ jobs:
 #          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
 #          .\MSBuild.exe $Env:GITHUB_WORKSPACE\Urho3D\build\Urho3D.sln /p:Configuration=Release
 #          cd ../..
-#      - name: Build project
-#        run: |
-#          $Env:URHO3D_HOME = "$Env:GITHUB_WORKSPACE\Urho3D\build"
-#          script/cmake_vs2019.bat build
-#          cd build
-#          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-#          .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\ProjectTemplate.sln /p:Configuration=Release
+      - name: Build project
+        run: |
+          $Env:URHO3D_HOME = "$Env:GITHUB_WORKSPACE\Urho3D\build"
+          script/cmake_vs2019.bat build
+          cd build
+          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+          .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\ProjectTemplate.sln /p:Configuration=Release
 
   upload_artifacts:
     runs-on: ubuntu-latest

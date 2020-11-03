@@ -1,0 +1,88 @@
+[
+    {
+        "Event": "GameStarted",
+        "Image": "Textures/Achievements/lunar-module.png",
+        "Message": "Discovered this amazing Urho3D sample",
+        "Threshold": 1
+    },
+    {
+        "Event": "SetLevel",
+        "Image": "Textures/Achievements/exit-door.png",
+        "Message": "Go to main menu",
+        "Threshold": 1,
+        "ParameterName": "Name",
+        "Value": "MainMenu"
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 1 time",
+        "Threshold": 1
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 2 times",
+        "Threshold": 2
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 4 times",
+        "Threshold": 4
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 6 times",
+        "Threshold": 6
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 8 times",
+        "Threshold": 8
+    },
+    {
+        "Event": "Released",
+        "Image": "Textures/Achievements/button-finger.png",
+        "Message": "Press UI button 10 times",
+        "Threshold": 10
+    },
+    {
+        "Event": "InputMappingFinished",
+        "Image": "Textures/Achievements/retro-controller.png",
+        "Message": "Change any of the controls",
+        "Threshold": 1
+    },
+    {
+        "Event": "ControllerAdded",
+        "Image": "Textures/Achievements/tabletop-players.png",
+        "Message": "Add joystick while the game is running",
+        "Threshold": 1
+    },
+    {
+        "Event": "CreditsEnd",
+        "Image": "Textures/Achievements/tied-scroll.png",
+        "Message": "Watch credits till the end",
+        "Threshold": 1
+    },
+    {
+        "Event": "AchievementUnlocked",
+        "Image": "Textures/Achievements/trophy-cup.png",
+        "Message": "Unlock 5 achievements",
+        "Threshold": 5
+    },
+    {
+        "Event": "FallOffTheMap",
+        "Image": "Textures/Achievements/falling.png",
+        "Message": "Fall of the map",
+        "Threshold": 1
+    },
+    {
+        "Event": "ScreenshotTaken",
+        "Image": "Textures/Achievements/photo-camera.png",
+        "Message": "Take a picture",
+        "Threshold": 1
+    }
+]

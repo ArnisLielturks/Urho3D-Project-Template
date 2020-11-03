@@ -1,0 +1,6 @@
+<material>
+    <technique name="Techniques/DiffVoxelAlpha.xml" quality="0" />
+    <texture unit="diffuse" name="Textures/combined.png" />
+<!--    <fill value="wireframe" />-->
+<!--    <fill value="solid" />-->
+</material>

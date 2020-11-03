@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<scene id="1">
+	<attribute name="Name" value="" />
+	<attribute name="Time Scale" value="1" />
+	<attribute name="Smoothing Constant" value="50" />
+	<attribute name="Snap Threshold" value="5" />
+	<attribute name="Elapsed Time" value="0" />
+	<attribute name="Next Replicated Node ID" value="32" />
+	<attribute name="Next Replicated Component ID" value="80" />
+	<attribute name="Next Local Node ID" value="16777230" />
+	<attribute name="Next Local Component ID" value="16777363" />
+	<attribute name="Variables" />
+	<attribute name="Variable Names" value="" />
+	<component type="Octree" id="1" />
+	<component type="DebugRenderer" id="2" />
+	<component type="PhysicsWorld" id="24" />
+	<node id="4">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="MovingNode" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0.658215 0.594299 -3.98705" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="5">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/StoneOutline.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+		<component type="CollisionShape" id="26" />
+		<component type="RigidBody" id="27">
+			<attribute name="Physics Position" value="0.658215 0.594299 -3.98705" />
+			<attribute name="Mass" value="1" />
+			<attribute name="Linear Damping" value="1" />
+			<attribute name="Angular Damping" value="1" />
+			<attribute name="Collision Layer" value="4" />
+			<attribute name="Collision Mask" value="253" />
+		</component>
+		<node id="5">
+			<attribute name="Is Enabled" value="true" />
+			<attribute name="Name" value="Light1" />
+			<attribute name="Tags" />
+			<attribute name="Position" value="-0.382946 2.48814 1.51461" />
+			<attribute name="Rotation" value="0.707107 0.707107 0 0" />
+			<attribute name="Scale" value="1 1 1" />
+			<attribute name="Variables" />
+			<component type="Light" id="6">
+				<attribute name="Color" value="0.9 0.7 0.7 1" />
+				<attribute name="Range" value="98.38" />
+				<attribute name="Spot FOV" value="62.18" />
+				<attribute name="Light Shape Texture" value="TextureCube;" />
+				<attribute name="Cast Shadows" value="true" />
+				<attribute name="Depth Constant Bias" value="0.0001" />
+			</component>
+		</node>
+	</node>
+	<node id="8">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Logo" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0.0482672 0.747751 -1.93713" />
+		<attribute name="Rotation" value="0.707107 -0.707107 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="9">
+			<attribute name="Model" value="Model;Models/Plane.mdl" />
+			<attribute name="Material" value="Material;Materials/UrhoDecalAlphaMaskTwoSided.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="10">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light2" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="13.8283 0.969277 11.6715" />
+		<attribute name="Rotation" value="0.346269 0.0588016 0.923076 -0.156752" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="11">
+			<attribute name="Color" value="0.5 0.5 1 1" />
+			<attribute name="Range" value="13.26" />
+			<attribute name="Spot FOV" value="60" />
+			<attribute name="Light Shape Texture" value="TextureCube;" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="Depth Constant Bias" value="0.0001" />
+		</component>
+	</node>
+	<node id="11">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Light2" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-13.7086 3.8011 -10.5459" />
+		<attribute name="Rotation" value="0.346269 0.0588016 0.923076 -0.156752" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="12">
+			<attribute name="Color" value="0.5 0.5 1 1" />
+			<attribute name="Range" value="20" />
+			<attribute name="Spot FOV" value="60" />
+			<attribute name="Light Shape Texture" value="TextureCube;" />
+			<attribute name="Cast Shadows" value="true" />
+			<attribute name="Depth Constant Bias" value="0.0001" />
+		</component>
+	</node>
+	<node id="12">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="9.45442 1 -13.24" />
+		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
+		<attribute name="Scale" value="0.1 2 0.1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="13">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="13">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-16.5682 1 10.9917" />
+		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
+		<attribute name="Scale" value="0.1 2 0.1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="14">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="16">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="14.288 1 14.9749" />
+		<attribute name="Rotation" value="0.92388 0 0.382683 0" />
+		<attribute name="Scale" value="0.1 2 0.1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="17">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="18">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="Box" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-14.6349 1 -14.1766" />
+		<attribute name="Rotation" value="0.966853 0 -0.255333 0" />
+		<attribute name="Scale" value="0.1 2 0.1" />
+		<attribute name="Variables" />
+		<component type="StaticModel" id="19">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/Stone.xml" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="19">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-0.128385 5.03747 3.73232" />
+		<attribute name="Rotation" value="0.84237 0.21002 -0.229738 0.439915" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="Light" id="20">
+			<attribute name="Light Type" value="Directional" />
+			<attribute name="Brightness Multiplier" value="0.5" />
+			<attribute name="Cast Shadows" value="true" />
+		</component>
+	</node>
+	<node id="20">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="PathNode" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="0 1.5 0" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="0.5 0.5 0.5" />
+		<attribute name="Variables" />
+		<component type="SplinePath" id="22">
+			<attribute name="Interpolation Mode" value="Catmull-Rom Full" />
+			<attribute name="Speed" value="2" />
+			<attribute name="Controlled" value="4" />
+			<attribute name="Control Points">
+				<variant type="Int" value="5" />
+				<variant type="Int" value="18" />
+				<variant type="Int" value="13" />
+				<variant type="Int" value="16" />
+				<variant type="Int" value="12" />
+				<variant type="Int" value="18" />
+			</attribute>
+		</component>
+	</node>
+	<node id="23">
+		<attribute name="Is Enabled" value="true" />
+		<attribute name="Name" value="" />
+		<attribute name="Tags" />
+		<attribute name="Position" value="-1.53055 1.07369 -1.21269" />
+		<attribute name="Rotation" value="1 0 0 0" />
+		<attribute name="Scale" value="1 1 1" />
+		<attribute name="Variables" />
+		<component type="CollisionShape" id="37" />
+		<component type="RigidBody" id="38">
+			<attribute name="Physics Position" value="-1.53055 1.07369 -1.21269" />
+			<attribute name="Mass" value="1" />
+		</component>
+		<component type="StaticModel" id="43">
+			<attribute name="Model" value="Model;Models/Box.mdl" />
+			<attribute name="Material" value="Material;Materials/UrhoDecalAlphaMaskTwoSided.xml" />
+		</component>
+	</node>
+</scene>

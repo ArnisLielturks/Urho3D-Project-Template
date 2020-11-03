@@ -102,7 +102,17 @@ float3 ToGamma(float3 color)
     return float3(pow(color, Gamma));
 }
 
+float3 ToGamma(float3 color, float gamma)
+{
+    return float3(pow(color, gamma));
+}
+
 float3 ToInverseGamma(float3 color)
 {
     return float3(pow(color, InverseGamma));
+}
+
+float3 ToInverseGamma(float3 color, float inverseGamma)
+{
+    return float3(pow(color, inverseGamma));
 }

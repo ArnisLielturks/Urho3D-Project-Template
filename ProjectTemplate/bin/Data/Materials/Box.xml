@@ -1,0 +1,9 @@
+<material>
+    <technique name="Techniques/Diff.xml" quality="0" loddistance="10" />
+    <technique name="Techniques/DiffNormalSpecAO.xml" quality="0" loddistance="0" />
+    <texture unit="diffuse" name="Textures/Box.png" />
+    <texture unit="normal" name="Textures/BoxNormal.png" />
+    <texture unit="specular" name="Textures/Noise.png" />
+    <texture unit="emissive" name="Textures/BoxAmbient.png" />
+    <shader psdefines="FADE" vsdefines="FADE" />
+</material>

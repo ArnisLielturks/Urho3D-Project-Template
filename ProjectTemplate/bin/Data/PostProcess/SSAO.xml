@@ -1,0 +1,25 @@
+<renderpath>
+    <rendertarget name="SSAO" tag="SSAO" sizedivisor="1 1" format="rgba" filter="true" />
+    <rendertarget name="BlurH" tag="SSAO" sizedivisor="2 2" format="rgba" filter="true" />
+    <rendertarget name="BlurV" tag="SSAO" sizedivisor="2 2" format="rgba" filter="true" />
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OCCLUDE" output="SSAO">
+        <texture unit="diffuse" name="Textures/Noise.png" />
+        <texture unit="depth" name="depth" />
+        <parameter name="SSAOStrength" value="1.0" />
+        <parameter name="SSAORadius" value="0.3" />
+        <parameter name="SSAOBase" value="0.15" />
+        <parameter name="SSAOArea" value="0.75" />
+        <parameter name="SSAOFalloff" value="0.000001" />
+        <parameter name="SSAONoiseFactor" value="16.0" />
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURH" output="BlurH">
+        <texture unit="diffuse" name="SSAO"/>
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="BLURV" output="BlurV">
+        <texture unit="diffuse" name="BlurH"/>
+    </command>
+    <command type="quad" tag="SSAO" vs="SSAO" ps="SSAO" psdefines="OUTPUT" output="viewport">
+        <texture unit="diffuse" name="viewport" />
+        <texture unit="depth" name="BlurV" />
+    </command>
+</renderpath>

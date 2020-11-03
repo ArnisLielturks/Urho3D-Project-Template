@@ -111,16 +111,16 @@
        return diffuseFactor + specularFactor;
     }
 
-	//Return the PBR BRDF value
-	// lightDir  = the vector to the light
-	// lightVec  = normalised lightDir
-	// toCamera  = vector to the camera
-	// normal    = surface normal of the pixel
-	// roughness = roughness of the pixel
-	// diffColor = the rgb color of the pixel
-	// specColor = the rgb specular color of the pixel
-	float3 GetBRDF(float3 worldPos, float3 lightDir, float3 lightVec, float3 toCamera, float3 normal, float roughness, float3 diffColor, float3 specColor)
-	{
+    //Return the PBR BRDF value
+    // lightDir  = the vector to the light
+    // lightVec  = normalised lightDir
+    // toCamera  = vector to the camera
+    // normal    = surface normal of the pixel
+    // roughness = roughness of the pixel
+    // diffColor = the rgb color of the pixel
+    // specColor = the rgb specular color of the pixel
+    float3 GetBRDF(float3 worldPos, float3 lightDir, float3 lightVec, float3 toCamera, float3 normal, float roughness, float3 diffColor, float3 specColor)
+    {
 
         const float3 Hn = normalize(toCamera + lightDir);
         const float vdh = clamp((dot(toCamera, Hn)), M_EPSILON, 1.0);
@@ -157,5 +157,5 @@
         #endif
 
         return diffuseFactor + specularFactor;
-	}
+    }
 #endif

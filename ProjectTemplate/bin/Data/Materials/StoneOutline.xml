@@ -1,0 +1,9 @@
+<material>
+    <technique name="Techniques/DiffOutline.xml" />
+    <parameter name="MatDiffColor" value="1 1 1 1" />
+    <parameter name="MatSpecColor" value="1 1 1 300" />
+    <parameter name="OutlineColor" value="1 1 0 0" />
+    <parameter name="OutlineBlurredMaskHInvSize" value="1 1" />
+    <texture unit="diffuse" name="Textures/StoneDiffuse.dds" />
+    <texture unit="normal" name="Textures/StoneNormal.dds" />
+</material>

@@ -15,7 +15,7 @@ android {
     defaultConfig {
         minSdkVersion(18)
         targetSdkVersion(30)
-        applicationId = "io.urho3d.ProjectTemplate"
+        applicationId = "com.arnislielturks.project_template"
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
@@ -74,8 +74,8 @@ val urhoDebugImpl by configurations.creating { isCanBeResolved = true }
 configurations.debugImplementation.get().extendsFrom(urhoDebugImpl)
 
 dependencies {
-    urhoReleaseImpl("io.urho3d:urho3d-lib-static:Unversioned")
-    urhoDebugImpl("io.urho3d:urho3d-lib-static-debug:Unversioned")
+    urhoReleaseImpl("io.urho3d:urho3d-lib-shared:Unversioned")
+    urhoDebugImpl("io.urho3d:urho3d-lib-shared-debug:Unversioned")
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation("androidx.core:core-ktx:1.3.2")
@@ -84,6 +84,10 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     androidTestImplementation("androidx.test:runner:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+
+    // ADMob dependencies
+    implementation("com.google.android.gms:play-services-ads:18.2.0")
+    implementation("androidx.annotation:annotation:1.1.0")
 }
 
 afterEvaluate {

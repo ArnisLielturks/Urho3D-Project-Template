@@ -1,0 +1,9 @@
+<cubemap>
+    <face name="Textures/Skybox/badomen_rt.tga" />
+    <face name="Textures/Skybox/badomen_lf.tga" />
+    <face name="Textures/Skybox/badomen_up.tga" />
+    <face name="Textures/Skybox/badomen_dn.tga" />
+    <face name="Textures/Skybox/badomen_ft.tga" />
+    <face name="Textures/Skybox/badomen_bk.tga" />
+    <quality low="0" />
+</cubemap>

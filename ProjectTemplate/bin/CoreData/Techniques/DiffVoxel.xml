@@ -1,6 +1,0 @@
-<technique vs="UnlitVoxel" ps="UnlitVoxel" psdefines="DIFFMAP VERTEXCOLOR"  vsdefines="VERTEXCOLOR">
-    <pass name="base" />
-    <pass name="prepass" psdefines="PREPASS" />
-    <pass name="material" />
-    <pass name="deferred" psdefines="DEFERRED" />
-</technique>

@@ -1,2 +1,0 @@
-Mods/Character/Materials/Beta_Joints_MAT.xml
-Mods/Character/Materials/asdf1Beta_HighLimbsGeoSG2.xml

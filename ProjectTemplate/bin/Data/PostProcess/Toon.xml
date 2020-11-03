@@ -1,5 +1,0 @@
-<renderpath>
-    <command type="quad" tag="Toon" vs="Toon" ps="Toon" output="viewport">
-        <texture unit="diffuse" name="viewport" />
-    </command>
-</renderpath>

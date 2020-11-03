@@ -144,20 +144,23 @@ jobs:
     runs-on: [windows-latest]
     steps:
       - uses: actions/checkout@v2
-      - name: CMake
-        run: rake cmake
-      - name: Build
-        run: rake build
 #      - uses: actions/cache@v1
 #      - if: "!contains(github.event.head_commit.message, '[refresh_cache]')"
 #        id: cache
 #        with:
 #          path: ${{github.workspace}}/Urho3D
 #          key: Urho3D-native-${{github.ref}}
-#      - name: Build Urho3D
-#        run: |
-#          git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D
-#          cd Urho3D
+      - name: Clone Urho3D
+        run: |
+          git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D
+      - name: CMake
+        run: |
+          cd Urho3D
+          rake cmake
+      - name: Build
+        run: |
+          cd Urho3D
+          rake build
 #          echo "Running cmake"
 #          script/cmake_vs2019.bat build -DURHO3D_LIB_TYPE=STATIC
 #          echo "Going to build dir"

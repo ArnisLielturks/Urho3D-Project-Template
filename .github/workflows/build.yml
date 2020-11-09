@@ -93,7 +93,15 @@ jobs:
         with:
           name: ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
           path: |
-            build/dockerized-${{ matrix.platform }}/bin
+            build/ci/bin
+      - name: Upload to Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          PROJECT_NAME: miegamicis/sandbox
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          ./butler push build/ci/bin ${PROJECT_NAME}:{{ matrix.platform }} --userversion ${GITHUB_RUN_NUMBER}
 
 
 #  upload_artifacts:

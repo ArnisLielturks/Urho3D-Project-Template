@@ -7,6 +7,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        branch:
+          - master
         platform:
           - linux
           - mingw
@@ -17,8 +19,8 @@ jobs:
         build-type:
           - rel
         include:
-          - { platform: web, lib-type: static, architecture: wasm, build-type: rel }
-          - { platform: android, lib-type: shared, architecture: all, build-type: rel }
+          - { platform: web, lib-type: static, architecture: wasm, build-type: rel, branch: websockets-implementation }
+          - { platform: android, lib-type: shared, architecture: all, build-type: rel, branch: master }
     env:
       HOST: ${{ github.job }}
       PLATFORM: ${{ matrix.platform }}
@@ -42,7 +44,7 @@ jobs:
         if: matrix.platform == 'android' || matrix.build-type == 'dbg'
       - name: Clone engine
         run: |
-          git clone --depth 1 https://github.com/urho3d/Urho3D.git
+          git clone --depth 1 -b {{ matrix.brach }} https://github.com/urho3d/Urho3D.git
       - name: Cache
         uses: actions/cache@v2
         with:

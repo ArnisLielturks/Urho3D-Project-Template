@@ -42,7 +42,7 @@ else ()
     set (CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING ${DOC_STRING} FORCE)
 endif ()
 
-# Define other useful variables not defined by CMake
+# Define other useful variables not defined by cmake
 if (CMAKE_GENERATOR STREQUAL Xcode)
     set (XCODE TRUE)
 elseif (CMAKE_GENERATOR STREQUAL Ninja)
@@ -51,7 +51,7 @@ elseif (CMAKE_GENERATOR MATCHES Visual)
     set (VS TRUE)
 endif ()
 
-# Rightfully we could have performed this inside a CMake/iOS toolchain file but we don't have one nor need for one for now
+# Rightfully we could have performed this inside a cmake/iOS toolchain file but we don't have one nor need for one for now
 if (IOS)
     set (CMAKE_CROSSCOMPILING TRUE)
     set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
@@ -60,8 +60,8 @@ if (IOS)
         set (CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED 0)
         set (CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
     endif ()
-    # This is a CMake hack in order to make standard CMake check modules that use try_compile() internally work on iOS platform
-    # The injected "flags" are not compiler flags, they are actually CMake variables meant for another CMake subprocess that builds the source file being passed in the try_compile() command
+    # This is a cmake hack in order to make standard cmake check modules that use try_compile() internally work on iOS platform
+    # The injected "flags" are not compiler flags, they are actually cmake variables meant for another cmake subprocess that builds the source file being passed in the try_compile() command
     # CAVEAT: these injected "flags" must always be kept at the end of the string variable, i.e. when adding more compiler flags later on then those new flags must be prepended in front of these flags instead
     set (CMAKE_REQUIRED_FLAGS ";-DSmileyHack=byYaoWT;-DCMAKE_MACOSX_BUNDLE=1;-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=0;-DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY=")
     if (NOT IOS_SYSROOT)
@@ -79,7 +79,7 @@ if (IOS)
     set (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET ${IPHONEOS_DEPLOYMENT_TARGET})
     set (DEPLOYMENT_TARGET_SAVED ${IPHONEOS_DEPLOYMENT_TARGET}: CACHE INTERNAL "Last known deployment target")    # with sentinel so it does not appear empty even when the default target is used
     set (CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES)
-    # Workaround what appears to be a bug in CMake/Xcode generator, ensure the CMAKE_OSX_DEPLOYMENT_TARGET is set to empty for iOS build
+    # Workaround what appears to be a bug in cmake/Xcode generator, ensure the CMAKE_OSX_DEPLOYMENT_TARGET is set to empty for iOS build
     set (CMAKE_OSX_DEPLOYMENT_TARGET)
     unset (CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
 elseif (TVOS)
@@ -241,7 +241,7 @@ else ()
     set (URHO3D_LIB_TYPE "" CACHE STRING "Specify Urho3D library type, possible values are STATIC (default) and SHARED (not available for Emscripten)")
     set (URHO3D_HOME "" CACHE PATH "Path to Urho3D build tree or SDK installation location (downstream project only)")
     if (URHO3D_PCH OR URHO3D_UPDATE_SOURCE_TREE OR URHO3D_SAMPLES OR URHO3D_TOOLS OR URHO3D_EXTRAS)
-        # Just reference it to suppress "unused variable" CMake warning on downstream projects using this CMake module
+        # Just reference it to suppress "unused variable" cmake warning on downstream projects using this cmake module
     endif ()
     if (CMAKE_PROJECT_NAME MATCHES ^Urho3D-ExternalProject-)
         set (URHO3D_SSE ${HAVE_SSE})
@@ -291,7 +291,7 @@ if (MINGW AND CMAKE_CROSSCOMPILING)
     set (MINGW_PREFIX "" CACHE STRING "Prefix path to MinGW cross-compiler tools (MinGW cross-compiling build only)")
     set (MINGW_SYSROOT "" CACHE PATH "Path to MinGW system root (MinGW only); should only be used when the system root could not be auto-detected")
     # When cross-compiling then we are most probably in Unix-alike host environment which should not have problem to handle long include dirs
-    # This change is required to keep ccache happy because it does not like the CMake generated include response file
+    # This change is required to keep ccache happy because it does not like the cmake generated include response file
     foreach (lang C CXX)
         foreach (cat OBJECTS INCLUDES)
             unset (CMAKE_${lang}_USE_RESPONSE_FILE_FOR_${cat})
@@ -501,7 +501,7 @@ endif ()
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
-if (EMSCRIPTEN)     # It appears CMake does not detect C++standard for EMCC correctly, so do it the old way still
+if (EMSCRIPTEN)     # It appears cmake does not detect C++standard for EMCC correctly, so do it the old way still
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 if (APPLE)
@@ -580,7 +580,7 @@ else ()
                 # We only support armhf distros, so turn on hard-float by default
                 set (ARM_CFLAGS "${ARM_CFLAGS} -mfloat-abi=hard -Wno-psabi")
             endif ()
-            # The configuration is done here instead of in CMake toolchain file because we also support native build which does not use toolchain file at all
+            # The configuration is done here instead of in cmake toolchain file because we also support native build which does not use toolchain file at all
             if (RPI)
                 # RPI-specific setup
                 add_definitions (-DRPI)
@@ -869,7 +869,7 @@ endmacro ()
 
 # *** THIS IS A DEPRECATED MACRO ***
 # Macro for defining external library dependencies
-# The purpose of this macro is emulate CMake to set the external library dependencies transitively
+# The purpose of this macro is emulate cmake to set the external library dependencies transitively
 # It works for both targets setup within Urho3D project and downstream projects that uses Urho3D as external static/shared library
 # *** THIS IS A DEPRECATED MACRO ***
 macro (define_dependency_libs TARGET)
@@ -970,7 +970,7 @@ macro (define_dependency_libs TARGET)
         endif ()
 
         # This variable value can either be 'Urho3D' target or an absolute path to an actual static/shared Urho3D library or empty (if we are building the library itself)
-        # The former would cause CMake not only to link against the Urho3D library but also to add a dependency to Urho3D target
+        # The former would cause cmake not only to link against the Urho3D library but also to add a dependency to Urho3D target
         if (URHO3D_LIBRARIES)
             if (WIN32 AND URHO3D_LIBRARIES_DBG AND URHO3D_LIBRARIES_REL AND TARGET ${TARGET_NAME})
                 # Special handling when both debug and release libraries are found
@@ -1362,7 +1362,7 @@ endmacro ()
 #  PATTERN <list> - Pattern list to be used in file pattern matching option
 #  BASE <value> - An absolute base path to be prepended to the destination path when installing to build tree, default to build tree
 #  DESTINATION <value> - A relative destination path to be installed to
-#  ACCUMULATE <value> - Accumulate the header files into the specified CMake variable, implies USE_FILE_SYMLINK when input list is a directory
+#  ACCUMULATE <value> - Accumulate the header files into the specified cmake variable, implies USE_FILE_SYMLINK when input list is a directory
 macro (install_header_files)
     # Need to check if the destination variable is defined first because this macro could be called by downstream project that does not wish to install anything
     if (DEST_INCLUDE_DIR)
@@ -1377,7 +1377,7 @@ macro (install_header_files)
             set (INSTALL_SOURCES ${ARG_DIRECTORY})
             if (ARG_FILES_MATCHING)
                 set (INSTALL_MATCHING FILES_MATCHING)
-                # Our macro supports PATTERN <list> but CMake's install command does not, so convert the list to: PATTERN <value1> PATTERN <value2> ...
+                # Our macro supports PATTERN <list> but cmake's install command does not, so convert the list to: PATTERN <value1> PATTERN <value2> ...
                 foreach (PATTERN ${ARG_PATTERN})
                     list (APPEND INSTALL_MATCHING PATTERN ${PATTERN})
                 endforeach ()
@@ -1479,8 +1479,8 @@ endmacro ()
 #  PRIVATE - setup executable target without installing it
 #  TOOL - setup a tool executable target
 #  NODEPS - setup executable target without defining Urho3D dependency libraries
-#  WIN32/MACOSX_BUNDLE/EXCLUDE_FROM_ALL - see CMake help on add_executable() command
-# CMake variables:
+#  WIN32/MACOSX_BUNDLE/EXCLUDE_FROM_ALL - see cmake help on add_executable() command
+# cmake variables:
 #  SOURCE_FILES - list of source files
 #  INCLUDE_DIRS - list of directories for include search path
 #  LIBS - list of dependent libraries that are built internally in the project
@@ -1565,8 +1565,8 @@ endmacro ()
 # Macro for setting up a library target
 # Macro arguments:
 #  NODEPS - setup library target without defining Urho3D dependency libraries (applicable for downstream projects)
-#  STATIC/SHARED/MODULE/EXCLUDE_FROM_ALL - see CMake help on add_library() command
-# CMake variables:
+#  STATIC/SHARED/MODULE/EXCLUDE_FROM_ALL - see cmake help on add_library() command
+# cmake variables:
 #  SOURCE_FILES - list of source files
 #  INCLUDE_DIRS - list of directories for include search path
 #  LIBS - list of dependent libraries that are built internally in the project
@@ -1607,8 +1607,8 @@ endmacro ()
 # Macro arguments:
 #  NODEPS - setup executable target without defining Urho3D dependency libraries
 #  NOBUNDLE - do not use MACOSX_BUNDLE even when URHO3D_MACOSX_BUNDLE build option is enabled
-#  WIN32/MACOSX_BUNDLE/EXCLUDE_FROM_ALL - see CMake help on add_executable() command
-# CMake variables:
+#  WIN32/MACOSX_BUNDLE/EXCLUDE_FROM_ALL - see cmake help on add_executable() command
+# cmake variables:
 #  RESOURCE_DIRS - list of resource directories (will be packaged into *.pak when URHO3D_PACKAGING build option is set)
 #  RESOURCE_FILES - list of additional resource files (will not be packaged into *.pak in any case)
 #  SOURCE_FILES - list of source files
@@ -1729,7 +1729,7 @@ macro (setup_main_executable)
                 install (DIRECTORY ${DIR} DESTINATION ${DEST_SHARE_DIR}/resources)
                 list (APPEND INSTALLED_RESOURCE_DIRS ${DIR})
             endif ()
-            # This cache variable is used to keep track of whether a resource directory has been instructed to be installed by CMake or not
+            # This cache variable is used to keep track of whether a resource directory has been instructed to be installed by cmake or not
             set (INSTALLED_RESOURCE_DIRS ${INSTALLED_RESOURCE_DIRS} CACHE INTERNAL "Installed resource dirs")
         endforeach ()
     endif ()
@@ -1740,7 +1740,7 @@ macro (setup_main_executable)
     endif ()
 endmacro ()
 
-# This cache variable is used to keep track of whether a resource directory has been instructed to be installed by CMake or not
+# This cache variable is used to keep track of whether a resource directory has been instructed to be installed by cmake or not
 unset (INSTALLED_RESOURCE_DIRS CACHE)
 
 # Macro for setting up dependency lib for compilation and linking of a target (to be used internally)
@@ -1814,7 +1814,7 @@ macro (_setup_target)
             endif ()
         endforeach ()
     endif ()
-    # Set additional linker dependencies (only work for Makefile-based generator according to CMake documentation)
+    # Set additional linker dependencies (only work for Makefile-based generator according to cmake documentation)
     if (LINK_DEPENDS)
         string (REPLACE ";" "\;" LINK_DEPENDS "${LINK_DEPENDS}")        # Stringify for string replacement
         list (APPEND TARGET_PROPERTIES LINK_DEPENDS "${LINK_DEPENDS}")  # Stringify with semicolons already escaped
@@ -1888,17 +1888,17 @@ if (NOT CMAKE_HOST_WIN32 AND "$ENV{USE_CCACHE}")
     endif ()
 endif ()
 
-# Post-CMake fixes
+# Post-cmake fixes
 if (IOS)
-    # TODO: can be removed when CMake minimum required has reached 3.4
+    # TODO: can be removed when cmake minimum required has reached 3.4
     if (CMAKE_VERSION VERSION_LESS 3.4)
-        # Due to a bug in the CMake/Xcode generator (fixed in 3.4) that prevents iOS targets (library and bundle) to be installed correctly
+        # Due to a bug in the cmake/Xcode generator (fixed in 3.4) that prevents iOS targets (library and bundle) to be installed correctly
         # (see http://public.kitware.com/Bug/bug_relationship_graph.php?bug_id=12506&graph=dependency),
         # below temporary fix is required to work around the bug
         list (APPEND POST_CMAKE_FIXES COMMAND sed -i '' 's/\$$\(EFFECTIVE_PLATFORM_NAME\)//g' ${CMAKE_BINARY_DIR}/CMakeScripts/install_postBuildPhase.make* || exit 0)
     endif ()
 elseif (TVOS)
-    # Almost the same bug as iOS one above but not quite, most probably because CMake does not support AppleTV platform yet
+    # Almost the same bug as iOS one above but not quite, most probably because cmake does not support AppleTV platform yet
     list (APPEND POST_CMAKE_FIXES COMMAND sed -i '' 's/\)\$$\(EFFECTIVE_PLATFORM_NAME\)/\) -DEFFECTIVE_PLATFORM_NAME=$$\(EFFECTIVE_PLATFORM_NAME\)/g' ${CMAKE_BINARY_DIR}/CMakeScripts/install_postBuildPhase.make* || exit 0)
     add_custom_target (APPLETV_POST_CMAKE_FIX COMMAND sed -i '' -E 's,\(Debug|RelWithDebInfo|Release\)/,$$\(CONFIGURATION\)$$\(EFFECTIVE_PLATFORM_NAME\)/,g' ${CMAKE_BINARY_DIR}/Source/Urho3D/CMakeScripts/Urho3D_cmakeRulesBuildPhase.make* || exit 0)
 endif ()

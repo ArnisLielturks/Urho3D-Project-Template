@@ -54,7 +54,7 @@ jobs:
         run: |
           cd Urho3D
           rake update_dot_files && script/dockerized.sh ${PLATFORM/-*} env
-      - name: CMake
+      - name: cmake
         run: |
           cd Urho3D
           script/dockerized.sh ${PLATFORM/-*} rake cmake
@@ -83,12 +83,12 @@ jobs:
             rm -rf build/cache/{stage,projects}
           fi
         if: matrix.platform != 'linux-clang-tidy' && matrix.platform != 'linux-clang-format'
-#      - name: Upload
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
-#          path: |
-#            build/dockerized-${{ matrix.platform }}/
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
+          path: |
+            build/dockerized-${{ matrix.platform }}/bin
 
 
 #  upload_artifacts:

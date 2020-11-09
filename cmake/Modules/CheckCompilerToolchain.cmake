@@ -171,7 +171,7 @@ endmacro ()
 
 if (MSVC)
     # TODO: revisit this later because VS may use Clang as compiler in the future
-    # On MSVC compiler, use the chosen CMake/VS generator to determine the ABI
+    # On MSVC compiler, use the chosen cmake/VS generator to determine the ABI
     set (NATIVE_64BIT ${CMAKE_CL_64})
     # We only support one target arch when using MSVC for now and make certain assumptions as per documentation instead of querying the compiler
     foreach (VAR X86 HAVE_MMX HAVE_SSE HAVE_SSE2 RTTI EXCEPTIONS IS_TRIVIALLY_DEFAULT_CONSTRUCTIBLE IS_TRIVIALLY_DESTRUCTIBLE IS_TRIVIALLY_COPY_ASSIGNABLE IS_TRIVIALLY_COPY_CONSTRUCTIBLE)
@@ -184,7 +184,7 @@ else ()
             # Assume arm64 is the native arch (this does not prevent our build system to target armv7 later in universal binary build)
             set (ARCH_FLAGS -arch arm64)
         elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-            # Use the same target flag as configured by CMake toolchain file, if any
+            # Use the same target flag as configured by cmake toolchain file, if any
             if (ANDROID)
                 set (ARCH_FLAGS -target ${ANDROID_LLVM_TRIPLE})
             elseif (CMAKE_CXX_FLAGS MATCHES -target)

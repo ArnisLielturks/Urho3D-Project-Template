@@ -33,7 +33,7 @@
 #  URHO3D_INCLUDE_DIRS
 #  URHO3D_LIBRARIES
 #  URHO3D_VERSION
-#  URHO3D_64BIT (may be used as input variable for multilib-capable compilers; must always be specified as input variable for MSVC due to CMake/VS generator limitation)
+#  URHO3D_64BIT (may be used as input variable for multilib-capable compilers; must always be specified as input variable for MSVC due to cmake/VS generator limitation)
 #  URHO3D_LIB_TYPE (may be used as input variable as well to limit the search of library type)
 #  URHO3D_OPENGL
 #  URHO3D_SSE
@@ -112,7 +112,7 @@ else ()
             unset (URHO3D_DLL_REL CACHE)
             unset (URHO3D_DLL_DBG CACHE)
         endif ()
-        # Urho3D prefers static library type by default while CMake prefers shared one, so we need to change CMake preference to agree with Urho3D
+        # Urho3D prefers static library type by default while cmake prefers shared one, so we need to change cmake preference to agree with Urho3D
         set (CMAKE_FIND_LIBRARY_SUFFIXES_SAVED ${CMAKE_FIND_LIBRARY_SUFFIXES})
         if (NOT CMAKE_FIND_LIBRARY_SUFFIXES MATCHES ^\\.\(a|lib\))
             list (REVERSE CMAKE_FIND_LIBRARY_SUFFIXES)
@@ -133,7 +133,7 @@ else ()
                 message (FATAL_ERROR "Library type: '${URHO3D_LIB_TYPE}' is not supported")
             endif ()
         endif ()
-        # The PATH_SUFFIX does not work for CMake on Windows host system, it actually needs a prefix instead
+        # The PATH_SUFFIX does not work for cmake on Windows host system, it actually needs a prefix instead
         if (CMAKE_HOST_WIN32)
             set (CMAKE_SYSTEM_PREFIX_PATH_SAVED ${CMAKE_SYSTEM_PREFIX_PATH})
             string (REPLACE ";" "\\Urho3D;" CMAKE_SYSTEM_PREFIX_PATH "${CMAKE_SYSTEM_PREFIX_PATH_SAVED};")    # Stringify for string replacement
@@ -305,7 +305,7 @@ else ()
         endif ()
         set (${VAR} ${AUTO_DISCOVERED_${VAR}})
     endforeach ()
-    # Restore CMake global settings
+    # Restore cmake global settings
     if (CMAKE_FIND_LIBRARY_SUFFIXES_SAVED)
         set (CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SAVED})
     endif ()

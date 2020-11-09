@@ -42,7 +42,7 @@ else ()
     # Output just major.minor.patch number to stdout
     string (REGEX MATCH "[^.]+\\.[^-]+" VERSION ${LIB_REVISION})            # Assume release tag always has major.minor format with possible pre-release identifier
     if (VERSION)
-        string (REGEX MATCH "${VERSION}-([A-Z]+)" PRE_ID ${LIB_REVISION})   # Workaround as CMake's regex does not support look around
+        string (REGEX MATCH "${VERSION}-([A-Z]+)" PRE_ID ${LIB_REVISION})   # Workaround as cmake's regex does not support look around
         if (PRE_ID)
             set (VERSION ${VERSION}-${CMAKE_MATCH_1})
         endif ()

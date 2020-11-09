@@ -157,18 +157,18 @@ set (EMBUILDER          python ${EMSCRIPTEN_ROOT_PATH}/embuilder.py CACHE PATH "
 
 # Still perform the compiler checks except for those stated otherwise below
 foreach (LANG C CXX)
-    # Since currently CMake does not able to identify Emscripten compiler toolchain, set the compiler identification explicitly
+    # Since currently cmake does not able to identify Emscripten compiler toolchain, set the compiler identification explicitly
     set (CMAKE_${LANG}_COMPILER_ID_RUN TRUE)
     set (CMAKE_${LANG}_COMPILER_ID Clang)
     set (CMAKE_${LANG}_COMPILER_VERSION ${EMSCRIPTEN_EMCC_VERSION})
-    # The ABI info could not be checked as per normal as CMake does not understand the test build output from Emscripten, so bypass it also
+    # The ABI info could not be checked as per normal as cmake does not understand the test build output from Emscripten, so bypass it also
     set (CMAKE_${LANG}_ABI_COMPILED TRUE)
     set (CMAKE_${LANG}_SIZEOF_DATA_PTR 4)   # Assume it is always 32-bit for now (we could have used our CheckCompilerToolChains.cmake module here)
-    # We could not set CMAKE_EXECUTABLE_SUFFIX directly because CMake processes platform configuration files after the toolchain file and since we tell CMake that we are cross-compiling for 'Linux' platform (Emscripten is not a valid platform yet in CMake) via CMAKE_SYSTEM_NAME variable, as such CMake force initializes the CMAKE_EXECUTABLE_SUFFIX to empty string (as expected for Linux platform); To workaround it we have to use CMAKE_EXECUTABLE_SUFFIX_C and CMAKE_EXECUTABLE_SUFFIX_CXX instead, which are fortunately not being touched by platform configuration files
+    # We could not set CMAKE_EXECUTABLE_SUFFIX directly because cmake processes platform configuration files after the toolchain file and since we tell cmake that we are cross-compiling for 'Linux' platform (Emscripten is not a valid platform yet in cmake) via CMAKE_SYSTEM_NAME variable, as such cmake force initializes the CMAKE_EXECUTABLE_SUFFIX to empty string (as expected for Linux platform); To workaround it we have to use CMAKE_EXECUTABLE_SUFFIX_C and CMAKE_EXECUTABLE_SUFFIX_CXX instead, which are fortunately not being touched by platform configuration files
     set (CMAKE_EXECUTABLE_SUFFIX_${LANG} .js)
 endforeach ()
 
-# Set required compiler flags for various internal CMake checks which rely on the compiler/linker error to be occured for the check to be performed correctly
+# Set required compiler flags for various internal cmake checks which rely on the compiler/linker error to be occured for the check to be performed correctly
 set (CMAKE_REQUIRED_FLAGS "-s ERROR_ON_UNDEFINED_SYMBOLS=1")
 
 # Use response files on Windows host

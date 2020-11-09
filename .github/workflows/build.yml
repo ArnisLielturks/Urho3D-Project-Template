@@ -39,7 +39,11 @@ jobs:
       - name: Clone engine
         run: |
           git clone --depth 1 https://github.com/urho3d/Urho3D.git
-          rm -rf Urho3D/Source/Samples/*
+          rm -rf Urho3D/Source/Samples/1*
+          rm -rf Urho3D/Source/Samples/2*
+          rm -rf Urho3D/Source/Samples/3*
+          rm -rf Urho3D/Source/Samples/4*
+          rm -rf Urho3D/Source/Samples/5*
       - name: Cache
         uses: actions/cache@v2
         with:

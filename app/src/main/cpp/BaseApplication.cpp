@@ -21,6 +21,7 @@
 #include "BehaviourTree/BehaviourTree.h"
 #include "State/State.h"
 #include "Globals/Settings.h"
+#include "signal.h"
 
 #ifdef PACKAGE_MANAGER
 #include "PackageManager/PackageManager.h"

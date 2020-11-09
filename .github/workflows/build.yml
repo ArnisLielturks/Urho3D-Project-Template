@@ -8,17 +8,17 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - linux-gcc
+          - linux
           - mingw
         lib-type:
           - static
         architecture:
           - 64
         build-type:
-          - dbg
+          - rel
         include:
           - { platform: web, lib-type: static, architecture: wasm, build-type: rel }
-          - { platform: android, lib-type: shared, architecture: all, build-type: both }
+          - { platform: android, lib-type: shared, architecture: all, build-type: rel }
     env:
       HOST: ${{ github.job }}
       PLATFORM: ${{ matrix.platform }}

@@ -103,4 +103,4 @@ jobs:
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
-          ./butler push build/ci/bin ${PROJECT_NAME}:{{ matrix.platform }} --userversion ${GITHUB_RUN_NUMBER}
+          ./butler push build/ci/bin $PROJECT_NAME:${{ matrix.platform }} --userversion ${GITHUB_RUN_NUMBER}

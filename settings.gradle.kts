@@ -1,2 +1,2 @@
-rootProject.name = "ProjectTemplate"
+rootProject.name = "Testing"
 include(":app")

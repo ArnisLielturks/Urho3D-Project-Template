@@ -37,7 +37,7 @@ jobs:
           df -h
         if: matrix.platform == 'android' || matrix.build-type == 'dbg'
       - name: Clone engine
-        run: git clone --depth 1 git@github.com:urho3d/Urho3D.git
+        run: git clone --depth 1 https://github.com/urho3d/Urho3D.git
       - name: Cache
         uses: actions/cache@v2
         with:

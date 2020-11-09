@@ -1,10 +1,31 @@
-name: Builds
-
+name: CI/CD
 on: [push, pull_request]
-
 jobs:
-  build_android:
+  linux:
+    name: 🐧
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux-gcc
+          - mingw
+        lib-type:
+          - static
+        architecture:
+          - 64
+        build-type:
+          - dbg
+        include:
+          - { platform: web, lib-type: static, architecture: wasm, build-type: rel }
+          - { platform: android, lib-type: shared, architecture: all, build-type: both }
+    env:
+      HOST: ${{ github.job }}
+      PLATFORM: ${{ matrix.platform }}
+      BUILD_TYPE: ${{ matrix.build-type }}
+      LIB_TYPE: ${{ matrix.lib-type }}
+      ARCH: ${{ matrix.architecture }}
+      DBE_TAG: master
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -14,208 +35,97 @@ jobs:
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android
           sudo apt-get clean
           df -h
-      - name: Build
-        run: ./BuildConfig/android/script.sh
-      - uses: actions/upload-artifact@v1
+        if: matrix.platform == 'android' || matrix.build-type == 'dbg'
+      - name: Clone engine
+        run: git clone --depth 1 git@github.com:urho3d/Urho3D.git
+      - name: Cache
+        uses: actions/cache@v2
         with:
-          name: Build_Android.apk
-          path: Urho3D-android/ProjectTemplate/app/build/outputs/apk/debug/app-debug.apk
-
-  build_web:
-    runs-on: ubuntu-latest
-    env:
-      PLATFORM: web
-      BUILD_TYPE: dbg
-      DBE_TAG: latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        if: "!contains(github.event.head_commit.message, '[refresh_cache]')"
-        id: cache
-        with:
-          path: ${{github.workspace}}/Urho3D-web
-          key: Urho3D-${{runner.os}}-Web
-      - name: Build
-        run: ./BuildConfig/web/script.sh
-      - name: Build archive
+          path: |
+            build/cache/.ccache
+            build/cache/.gradle/caches
+            build/cache/.gradle/wrapper
+          key: |
+            ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ env.DBE_TAG }}-${{ steps.source_checksum.outputs.hexdigest }}
+          restore-keys: |
+            ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}-${{ env.DBE_TAG }}
+            ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
+      - name: DBE
         run: |
-          mkdir archive
-          cp -r Urho3D-web/build/ci/bin/ProjectTemplate* archive/
-          mv archive/ProjectTemplate.html archive/index.html
-          chmod -R 777 archive
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Build_Web
-          path: archive/
-
-  build_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        if: "!contains(github.event.head_commit.message, '[refresh_cache]')"
-        id: cache
-        with:
-          path: ${{github.workspace}}/Urho3D
-          key: Urho3D-${{runner.os}}-linux
-      - name: Build
-        run: ./BuildConfig/linux/script.sh
-      - name: Build archive
-        run: |
-          mkdir archive
-          cp Urho3D/build/native/bin/ProjectTemplate archive/ProjectTemplate || true
-          cp -r bin/Data archive/Data
-          cp -r bin/CoreData archive/CoreData
-          cp -r bin/ProjectTemplate.desktop archive/ProjectTemplate.desktop
-          rm -rf archive/Data/Saves/Achievements.json
-          chmod -R 777 archive
-          chmod a+x archive/ProjectTemplate.desktop
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Build_Linux
-          path: archive/
-
-  build_windows:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v1
-        if: "!contains(github.event.head_commit.message, '[refresh_cache]')"
-        id: cache
-        with:
-          path: ${{github.workspace}}/Urho3D
-          key: Urho3D-${{runner.os}}-windows
-      - name: Build
-        run: ./BuildConfig/mingw/script.sh
-      - name: Build archive
-        run: |
-          mkdir archive
-          cp Urho3D/build/mingw/bin/ProjectTemplate archive/ProjectTemplate || true
-          cp -r bin/Data archive/Data
-          cp -r bin/CoreData archive/CoreData
-          rm -rf archive/Data/Saves/Achievements.json
-          chmod -R 777 archive
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Build_Windows
-          path: archive/
-
-  build_osx:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-#      - uses: actions/cache@v1
-#        id: cache
-#        with:
-#          path: ${{github.workspace}}/Urho3D
-#          key: Urho3D-${{runner.os}}-OSX
-      - name: Remove previous build
-        if: "contains(github.event.head_commit.message, '[refresh_cache]')"
-        run: rm -rf Urho3D
-      - name: Download Urho3D
-        run: git clone https://github.com/ArnisLielturks/Urho3D.git --depth=1 || true
-      - name: Build Urho3D
-        run: |
-          export CPATH=`xcrun --show-sdk-path`/usr/include
-          cd ${{github.workspace}}/Urho3D
-          git pull origin master
-          ./script/cmake_generic.sh build -DURHO3D_SAMPLES=0 -DURHO3D_EXTRAS=0 -DURHO3D_TOOLS=0 -DURHO3D_PLAYER=0
-          cd build
-          make -j$(nproc)
-      - name: Build project
-        run: |
-          export URHO3D_HOME="${{github.workspace}}/Urho3D/build"
-          export CPATH=`xcrun --show-sdk-path`/usr/include
-          ./script/cmake_generic.sh build
-          cd build
-          make -j$(nproc)
-          cd ..
-      - name: Build archive
-        run: |
-          mkdir archive
-          cp build/bin/ProjectTemplate archive/ProjectTemplate || true
-          cp build/bin/ProjectTemplate_d archive/ProjectTemplate_d || true
-          cp -r bin/Data archive/Data
-          cp -r bin/CoreData archive/CoreData
-          rm -rf archive/Data/Saves/Achievements.json
-          chmod -R 777 archive
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Build_OSX
-          path: archive/
-
-  build_windows_native:
-    runs-on: [windows-latest]
-    steps:
-      - uses: actions/checkout@v2
-#      - uses: actions/cache@v1
-#      - if: "!contains(github.event.head_commit.message, '[refresh_cache]')"
-#        id: cache
-#        with:
-#          path: ${{github.workspace}}/Urho3D
-#          key: Urho3D-native-${{github.ref}}
-      - name: Clone Urho3D
-        run: |
-          git clone https://github.com/Urho3D/Urho3D.git --depth=1 Urho3D
+          cd Urho3D
+          rake update_dot_files && script/dockerized.sh ${PLATFORM/-*} env
       - name: CMake
         run: |
           cd Urho3D
-          rake cmake
+          script/dockerized.sh ${PLATFORM/-*} rake cmake
+        if: matrix.platform != 'android' && matrix.platform != 'linux-clang-format'
       - name: Build
         run: |
           cd Urho3D
-          rake build
-#          echo "Running cmake"
-#          script/cmake_vs2019.bat build -DURHO3D_LIB_TYPE=STATIC
-#          echo "Going to build dir"
-#          cd build
-#          echo "building"
-#          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-#          .\MSBuild.exe $Env:GITHUB_WORKSPACE\Urho3D\build\Urho3D.sln /p:Configuration=Release
-#          cd ../..
-      - name: Build project
+          script/dockerized.sh ${PLATFORM/-*} rake build
+        if: matrix.platform != 'linux-clang-format'
+      - name: Scaffolding - install
         run: |
-          $Env:URHO3D_HOME = "$Env:GITHUB_WORKSPACE\Urho3D\build"
-          script/cmake_vs2019.bat build
-          cd build
-          cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
-          .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\ProjectTemplate.sln /p:Configuration=Release
+          cd Urho3D
+          script/dockerized.sh ${PLATFORM/-*} rake install[~/stage]
+          if [[ $PLATFORM == android ]]; then touch build/cache/.gradle/mark; fi
+        if: matrix.platform != 'linux-clang-tidy' && matrix.platform != 'linux-clang-format'
+      - name: Scaffolding - build
+        run: |
+          URHO3D_HOME=/home/urho3d/stage/usr/local script/dockerized.sh ${PLATFORM/-*}
+        if: matrix.platform != 'linux-clang-tidy' && matrix.platform != 'linux-clang-format'
+      - name: Scaffolding - cleanup
+        run: |
+          if [[ $PLATFORM == android ]]; then
+            rm -rf build/cache/.m2
+            find build/cache/.gradle -newer build/cache/.gradle/mark -type d |xargs rm -rf
+          else
+            rm -rf build/cache/{stage,projects}
+          fi
+        if: matrix.platform != 'linux-clang-tidy' && matrix.platform != 'linux-clang-format'
+#      - name: Upload
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
+#          path: |
+#            build/dockerized-${{ matrix.platform }}/
 
-  upload_artifacts:
-    runs-on: ubuntu-latest
-    needs: [build_android, build_web, build_linux, build_windows, build_osx]
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - uses: actions/download-artifact@v1
-        name: Download Android build
-        with:
-          name: Build_Android.apk
-      - uses: actions/download-artifact@v1
-        name: Download Web build
-        with:
-          name: Build_Web
-      - uses: actions/download-artifact@v1
-        name: Download Linux build
-        with:
-          name: Build_Linux
-      - uses: actions/download-artifact@v1
-        name: Download Windows build
-        with:
-          name: Build_Windows
-      - uses: actions/download-artifact@v1
-        name: Download OSX build
-        with:
-          name: Build_OSX
-      - name: Upload all builds
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-          PROJECT_NAME: miegamicis/sandbox
-        run: |
-          ls -lah ./
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip butler.zip
-          ./butler push Build_Android.apk ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER} 
-          ./butler push Build_Linux/ ${PROJECT_NAME}:linux --userversion ${GITHUB_RUN_NUMBER}
-          ./butler push Build_OSX/ ${PROJECT_NAME}:macos --userversion ${GITHUB_RUN_NUMBER}
-          ./butler push Build_Web/ ${PROJECT_NAME}:web --userversion ${GITHUB_RUN_NUMBER}
-          ./butler push Build_Windows/ ${PROJECT_NAME}:windows --userversion ${GITHUB_RUN_NUMBER}
+
+#  upload_artifacts:
+#    runs-on: ubuntu-latest
+#    needs: [build_android, build_web, build_linux, build_windows, build_osx]
+#    if: github.ref == 'refs/heads/master'
+#    steps:
+#      - uses: actions/download-artifact@v1
+#        name: Download Android build
+#        with:
+#          name: Build_Android.apk
+#      - uses: actions/download-artifact@v1
+#        name: Download Web build
+#        with:
+#          name: Build_Web
+#      - uses: actions/download-artifact@v1
+#        name: Download Linux build
+#        with:
+#          name: Build_Linux
+#      - uses: actions/download-artifact@v1
+#        name: Download Windows build
+#        with:
+#          name: Build_Windows
+#      - uses: actions/download-artifact@v1
+#        name: Download OSX build
+#        with:
+#          name: Build_OSX
+#      - name: Upload all builds
+#        env:
+#          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+#          PROJECT_NAME: miegamicis/sandbox
+#        run: |
+#          ls -lah ./
+#          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+#          unzip butler.zip
+#          ./butler push Build_Android.apk ${PROJECT_NAME}:android --userversion ${GITHUB_RUN_NUMBER}
+#          ./butler push Build_Linux/ ${PROJECT_NAME}:linux --userversion ${GITHUB_RUN_NUMBER}
+#          ./butler push Build_OSX/ ${PROJECT_NAME}:macos --userversion ${GITHUB_RUN_NUMBER}
+#          ./butler push Build_Web/ ${PROJECT_NAME}:web --userversion ${GITHUB_RUN_NUMBER}
+#          ./butler push Build_Windows/ ${PROJECT_NAME}:windows --userversion ${GITHUB_RUN_NUMBER}

@@ -1,17 +1,37 @@
-.vscode
-.gradle
-build/
-build-windows/
-cmake-build-debug/
-.idea/
-BuildConfig/android/launcher-app/build
-BuildConfig/android/launcher-app/.externalNativeBuild
-Urho3D
-bin/Data/Textures/Avatar.png
-bin/Data/Saves/Achievements.json
-Urho3DProjectTemplate.log
-bin/Data/Textures/HeightMap.png
-.DS_Store
-nakama-cpp-sdk
-Urho3D-*
+# Code::Blocks project settings
+/*.cbp
 
+# Codelite project settings
+/*.project
+/*.workspace
+
+# Gradle project settings
+/local.properties
+.gradle/
+build/
+.cxx/
+
+# JetBrains IDE project settings
+/.idea/
+/cmake-build-*/
+*.iml
+
+# KDevelop project settings
+/*.kdev?
+
+# Qt Creator project settings
+/CMakeLists.txt.user
+
+# Visual Studio project settings
+/CMakeSettings.json
+/.vs/
+/out/
+
+# Misc.
+*~
+*.swp
+.DS_Store
+*.log
+*.bak
+Thumbs.db
+.directory

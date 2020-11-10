@@ -96,6 +96,9 @@ jobs:
           name: ${{ matrix.platform }}-${{ matrix.lib-type }}-${{ matrix.architecture }}-${{ matrix.build-type }}
           path: |
             build/ci/bin
+      - name: Tweak web build artifacts
+        if: matrix.platform == 'web'
+        run: mv build/ci/bin/ProjectTemplate.html build/ci/bin/index.html
       - name: Upload to Itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
